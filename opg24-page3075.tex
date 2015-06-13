@@ -1,0 +1,91 @@
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+
+\begin{document}
+
+\section{Opgave 24}
+Det oplyses, at
+\bas
+p+q+r &=& 0 \\
+a+b+c &=& 0 \\
+\frac{p}{a} + \frac{q}{b} + \frac{r}{c} &=& 0
+\eas
+Vis, at
+$$
+pa^2+qb^2+rc^2=0
+$$
+
+\section{Løsning}
+Betragt matricen $M$ defineret ved:
+$$
+M = \left(\begin{array}{ccc}
+    1 & 1 & 1 \\
+    \frac{1}{a} & \frac{1}{b} & \frac{1}{c} \\
+    a^2 & b^2 & c^2 
+\end{array}
+\right)
+$$
+Determinanten af denne udregnes til
+$$
+\det(M) = \frac{b^2-c^2}{a} + \frac{c^2-a^2}{b} + \frac{a^2-b^2}{c}
+$$
+
+Antag nu yderligere, at $a+b+c=0$. Så kan denne determinant omskrives på følgende måde:
+\bas
+\det(M) &=& \frac{(b+c)(b-c)}{a} + \frac{(c+a)(c-a)}{b} + \frac{(a+b)(a-b)}{c} \\
+        &=& \frac{-a(b-c)}{a} + \frac{-b(c-a)}{b} + \frac{-c(a-b)}{c} \\
+        &=& -(b-c) - (c-a) - (a-b) \\
+        &=& 0
+\eas
+Der gælder altså, at hvis $a+b+c=0$, så er de tre rækker i matricen $M$ lineært afhængige. Specielt kan den tredje række skrives som en linearkombination af de to første rækker.
+Heraf følger, at hvis $p+q+r=0$ og $\frac{p}{a} + \frac{q}{b} + \frac{r}{c}=0$, så vil der også gælde, at $pa^2+qb^2+rc^2=0$.
+
+Ovenstående udregning er tilstrækkelig, men den præcise linearkombination kan også findes. Vi ønsker altså at bestemme to tal $m$ og $n$, således at
+\bas
+a^2 &=& m+\frac{n}{a} \\
+b^2 &=& m+\frac{n}{b} \\
+c^2 &=& m+\frac{n}{c} 
+\eas
+Ved at trække de to første ligninger fra hinanden får man
+$$
+a^2-b^2 = n\left(\frac{1}{a}-\frac{1}{b}\right) = n \frac{b-a}{ab}
+$$
+Heraf følger, at 
+$$
+n = -ab(a+b)
+$$
+Under antagelsen $a+b+c=0$ giver det
+$$
+n=abc
+$$
+Herefter finder man, at
+$$
+m=a^2-bc
+$$
+Denne sidste ligning man omskrives til en symmetrisk form (igen under antagelse af $a+b+c=0$) ved at erstatte $a$ med $-(b+c)$. Det giver:
+$$
+m=(b+c)^2-bc = b^2+c^2+bc
+$$
+Vi har to forskellige udtryk for $m$. Ved at lægge dem sammen og dividere med to fås det symmetriske udtryk:
+$$
+m=\frac{1}{2} (a^2+b^2+c^2)
+$$
+Hermed er vi nået frem til følgende ligning:
+$$
+\frac{1}{2} (a^2+b^2+c^2) (p+q+r) + abc \left(\frac{p}{a} + \frac{q}{b} + \frac{r}{c} \right) = pa^2+qb^2+rc^2
+$$
+som gælder blot $a+b+c=0$.
+
+
+\end{document}
+
