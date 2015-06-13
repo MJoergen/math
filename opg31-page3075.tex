@@ -1,0 +1,55 @@
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+
+\begin{document}
+
+\section{Opgave 31}
+Find samtlige hele positive tal $n$, for hvilke $n^2+20n+15$ er et kvadrattal.
+
+\section{Løsning}
+Vi skal altså finde talpar $(m,n)$ således at 
+$$
+n^2+20n+15 = m^2
+$$
+Heraf følger specielt, at $m>n$.
+Ligningen kan også omskrives til
+$$
+(n+10)^2-85 = m^2
+$$
+Heraf følger tilsvarende, at $m<n+10$.
+
+Nu indfører vi tallet $k = m-n$. Så gælder der, at $0 < k < 10$. Indsættes nu $m=n+k$ i ligningen giver det:
+$$
+n^2+20n+15 = n^2+2nk + k^2
+$$
+Her kan $n$ isoleres:
+$$
+n = \frac{k^2-15}{2(10-k)}
+$$
+For at $n$ skal være et positivt heltal, så skal $k$ være et ulige tal større end 4 og mindre end 10. Det giver mulighederne $5$, $7$ og $9$.
+
+Vi samler resultaterne i følgende tabel
+$$
+\begin{array}{cc}
+    k & n \\
+    \hline
+    5 & 1 \\
+    7 & \frac{17}{3} \\
+    9 & 33
+\end{array}
+$$
+
+Der er således to løsninger: $n=1$ og $n=33$.
+
+\end{document}
+
