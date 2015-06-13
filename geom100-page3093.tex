@@ -1,0 +1,82 @@
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+
+\begin{document}
+
+\section{Geometriopgave 100}
+
+\section{Løsning}
+Uden tab af generalitet kan vi sætte $a=1$.
+
+Vi indfører et koordinatsystem med origo i punktet $A$ og med $x$-aksen i retning mod punktet $C$. Så har punket $P$ koordinaterne $(\frac 34, \frac 34)$ og den lille cirkel har radius $r=\frac 14$.
+
+Tangenten $DQ$ har ligningen $-hx+y=0$, hvor $h>1$ er (den endnu ukendte) hældning af linjen $DQ$. Afstanden fra punktet $P$ til denne linje skal derfor være ilg med radius. Med formlen for afstand fra punkt til linje giver det følgende ligning:
+$$
+\frac{\left|-hP_x+P_y\right|}{\sqrt{h^2+1}} = r
+$$
+
+Vi indsætter nu de kendte tal og det giver:
+$$
+\frac 34 \frac{h-1}{\sqrt{h^2+1}} = \frac 14
+$$
+Dette omskrives til følgende andengradsligning:
+$$
+4h^2-9h+4=0
+$$
+
+Punktet $Q$ vil have koordinaterne $(\frac 1h, 1)$, og den søgte afstand $|DQ|$ bliver da:
+$$
+|DQ| = \sqrt{\frac{1}{h^2} + 1} = \frac{\sqrt{h^2+1}}{h}
+$$
+Ud fra andengradsligningen får vi
+$$
+h^2+1 = \frac 94 h
+$$
+Dermed kan den søgte afstand skrives som:
+$$
+|DQ| = \frac{3}{2} \frac{1}{\sqrt h}
+$$
+
+Ved at dividere andengradsligningen med $h$ får vi
+$$
+4h-9+\frac 4h=0
+$$
+Dermed har vi, at 
+$$
+\left(2\sqrt h - \frac{2}{\sqrt h}\right)^2 = 4h + \frac 4h - 8 = 1
+$$
+Da $h>1$ har vi altså
+$$
+2\sqrt h - \frac{2}{\sqrt h} = 1
+$$
+
+Heri sætter vi nu
+$$
+x= \frac{1}{\sqrt h}
+$$
+Det giver følgende nye andengradsligning (efter multiplikation med $x$):
+$$
+-2x^2-x+2=0
+$$
+Da vi må have $0<x<1$ så er løsningen givet ved:
+$$
+\frac{1}{\sqrt h} = x=\frac{\sqrt{17}-1}{4}
+$$
+Den søgte afstand er da:
+$$
+|DQ| = \frac{3}{8} \left(\sqrt{17}-1\right)
+$$
+
+
+\end{document}
+
