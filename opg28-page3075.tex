@@ -1,0 +1,53 @@
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+
+\begin{document}
+
+\section{Opgave 28}
+Skaf rationel nævner i brøken
+$$
+\frac{1}{\sqrt[3]9 + \sqrt[3]6 + \sqrt[3]4}
+$$
+
+\section{Løsning}
+Vi benytter følgende identitet:
+$$
+(x+y+z) \left(xy+xz+yz - (x^2+y^2+z^2)\right) = 3xyz - (x^3+y^3+z^3)
+$$
+som kan verificeres ved at gange parenteserne ud.
+
+Denne ligning omskrives til:
+$$
+\frac{1}{x+y+z} = \frac{xy+xz+yz - (x^2+y^2+z^2)}{3xyz - (x^3+y^3+z^3)}
+$$
+
+Heri skal vi nu indsætte $x=\sqrt[3]9$, $y=\sqrt[3]6$ og $z=\sqrt[3]4$. Vi får følgende mellemregninger:
+\bas
+xyz &=& \sqrt[3]{216} = 6\\
+x^3+y^3+z^3 &=& 19 \\
+xy &=& \sqrt[3]{54} = 3\sqrt[3]2 \\
+xz &=& \sqrt[3]{36} \\
+yz &=& \sqrt[3]{24} = 2\sqrt[3]3 \\
+x^2 &=& \sqrt[3]{81} = 3\sqrt[3]3 \\
+y^2 &=& \sqrt[3]{36} \\
+z^2 &=& \sqrt[3]{16} = 2\sqrt[3]2
+\eas
+Det endelige resultat bliver
+\bas
+\frac{1}{\sqrt[3]9 + \sqrt[3]6 + \sqrt[3]4} 
+&=& \frac{3\sqrt[3]2 + \sqrt[3]{36} + 2\sqrt[3]3 - (3\sqrt[3]3 + \sqrt[3]{36} + 2\sqrt[3]2)}{18-19} \\
+&=& \sqrt[3]3 - \sqrt[3]2
+\eas
+
+\end{document}
+
