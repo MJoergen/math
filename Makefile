@@ -13,6 +13,6 @@ all: $(pdfs)
 	latexmk -pdf $<
 
 clean:
-	rm -f $(NAME).log $(NAME).aux $(NAME)*.pdf $(NAME)*.asy $(NAME).pre $(NAME).toc $(NAME).fdb_latexmk $(NAME).fls
+	rm -f *.log *.aux *.pdf *.asy *.pre *.toc *.fdb_latexmk *.fls
 
 
