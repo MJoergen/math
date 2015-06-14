@@ -102,18 +102,14 @@ M = \left(\begin{array}{ccc}
 \right)
 $$
 Determinanten af denne udregnes til
-$$
-\det(M) = \frac{b^2-c^2}{a} + \frac{c^2-a^2}{b} + \frac{a^2-b^2}{c}
-$$
-
-Antag nu yderligere, at $a+b+c=0$. Så kan denne determinant omskrives på følgende måde:
 \bas
-\det(M) &=& \frac{(b+c)(b-c)}{a} + \frac{(c+a)(c-a)}{b} + \frac{(a+b)(a-b)}{c} \\
-        &=& \frac{-a(b-c)}{a} + \frac{-b(c-a)}{b} + \frac{-c(a-b)}{c} \\
-        &=& -(b-c) - (c-a) - (a-b) \\
-        &=& 0
+\det(M) &=& \frac{b^2-c^2}{a} + \frac{c^2-a^2}{b} + \frac{a^2-b^2}{c} \\
+        &=& \frac{(b+c)(b-c)}{a} + \frac{(c+a)(c-a)}{b} + \frac{(a+b)(a-b)}{c} \\
+        &=& \frac{(b+c+a)(b-c)}{a} + \frac{(c+a+b)(c-a)}{b} + \frac{(a+b+c)(a-b)}{c} \\
+        && \quad -(b-c) - (c-a) - (a-b) \\
+        &=& (a+b+c) \left( \frac{b-c}{a} + \frac{c-a}{b} + \frac{a-b}{c}\right)
 \eas
-Der gælder altså, at hvis $a+b+c=0$, så er de tre rækker i matricen $M$ lineært afhængige. Specielt kan den tredje række skrives som en linearkombination af de to første rækker.
+Der gælder altså, at hvis $a+b+c=0$, så er determinanten nul, og de tre rækker i matricen $M$ er lineært afhængige. Specielt kan den tredje række skrives som en linearkombination af de to første rækker.
 Heraf følger, at hvis $p+q+r=0$ og $\frac{p}{a} + \frac{q}{b} + \frac{r}{c}=0$, så vil der også gælde, at $pa^2+qb^2+rc^2=0$.
 
 Ovenstående udregning er tilstrækkelig, men den præcise linearkombination kan også findes. Vi ønsker altså at bestemme to tal $m$ og $n$, således at
@@ -138,7 +134,7 @@ Herefter finder man, at
 $$
 m=a^2-bc
 $$
-Denne sidste ligning man omskrives til en symmetrisk form (igen under antagelse af $a+b+c=0$) ved at erstatte $a$ med $-(b+c)$. Det giver:
+Denne sidste ligning kan omskrives til en symmetrisk form (igen under antagelse af $a+b+c=0$) ved at erstatte $a$ med $-(b+c)$. Det giver:
 $$
 m=(b+c)^2-bc = b^2+c^2+bc
 $$
@@ -416,6 +412,63 @@ $$
 2 = \sqrt x
 $$
 som har løsningen $x=4$.
+
+
+\section{Opgave 39}
+Tallene $a$, $b$ og $c$ er reelle og
+$$
+a+b+c = a^2+b^2+c^2 = a^3+b^3+c^3
+$$
+Bestem værdien af tallet
+$$
+\left(\frac 1a + \frac 1b + \frac 1c\right) \left(a+b+c\right)
+$$
+
+\subsection{Løsning}
+Jeg betragter det mere generelle problem, nemlig at udtrykke tallet
+$$
+\left(\frac 1a + \frac 1b + \frac 1c\right) \left(a+b+c\right)
+$$
+ved hjælp af tallene
+\bas
+p &=& a+b+c \\
+q &=& a^2+b^2+c^2 \\
+r &=& a^3+b^3+c^3
+\eas
+Det ønskede resultat opnås da ved at sætte $p=q=r$.
+
+Først omskrives den første faktor
+$$
+\frac 1a + \frac 1b + \frac 1c = \frac{ab+ac+bc}{abc}
+$$
+Der gælder følgende identiteter:
+\bas
+(a+b+c)^2 &=& a^2+b^2+c^2 + 2(ab+ac+bc) \\
+(a+b+c)^3 &=& a^3+b^3+c^3 + 3(ab+ac+bc)(a+b+c) - 3abc \\
+\eas
+Med de førhen introducerede betegnelser kan disse relationer skrives som:
+\bas
+p^2 &=& q + 2(ab+ac+bc) \\
+p^3 &=& r + 3(ab+ac+bc)p - 3abc
+\eas
+Heraf får vi:
+\bas
+ab+ac+bc &=& \frac 12 \left(p^2-q\right) \\
+abc &=& \frac 16 \left(p^3-3pq+2r\right)
+\eas
+Vi har hermed det generelle resultat
+$$
+\left(\frac 1a + \frac 1b + \frac 1c\right) \left(a+b+c\right) = 3 \frac{p^3-pq}{p^3-3pq+2r}
+$$
+
+Nu sætter vi $q=p$ og $r=p$. Så reduceres ovenstående til
+$$
+3 \frac{p^3-p^2}{p^3-3p^2+2p} = 3 \frac{p}{p-2}
+$$
+Vi har således vist, at 
+$$
+\left(\frac 1a + \frac 1b + \frac 1c\right) \left(a+b+c\right) = 3\frac{a+b+c}{a+b+c-2}
+$$
 
 
 \section{Opgave 40}
