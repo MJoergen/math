@@ -1,0 +1,716 @@
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+
+\begin{document}
+
+\section{Geometriopgave 100}
+
+\section{Løsning}
+Uden tab af generalitet kan vi sætte $a=1$.
+
+Vi indfører et koordinatsystem med origo i punktet $A$ og med $x$-aksen i retning mod punktet $C$. Så har punket $P$ koordinaterne $(\frac 34, \frac 34)$ og den lille cirkel har radius $r=\frac 14$.
+
+Tangenten $DQ$ har ligningen $-hx+y=0$, hvor $h>1$ er (den endnu ukendte) hældning af linjen $DQ$. Afstanden fra punktet $P$ til denne linje skal derfor være ilg med radius. Med formlen for afstand fra punkt til linje giver det følgende ligning:
+$$
+\frac{\left|-hP_x+P_y\right|}{\sqrt{h^2+1}} = r
+$$
+
+Vi indsætter nu de kendte tal og det giver:
+$$
+\frac 34 \frac{h-1}{\sqrt{h^2+1}} = \frac 14
+$$
+Dette omskrives til følgende andengradsligning:
+$$
+4h^2-9h+4=0
+$$
+
+Punktet $Q$ vil have koordinaterne $(\frac 1h, 1)$, og den søgte afstand $|DQ|$ bliver da:
+$$
+|DQ| = \sqrt{\frac{1}{h^2} + 1} = \frac{\sqrt{h^2+1}}{h}
+$$
+Ud fra andengradsligningen får vi
+$$
+h^2+1 = \frac 94 h
+$$
+Dermed kan den søgte afstand skrives som:
+$$
+|DQ| = \frac{3}{2} \frac{1}{\sqrt h}
+$$
+
+Ved at dividere andengradsligningen med $h$ får vi
+$$
+4h-9+\frac 4h=0
+$$
+Dermed har vi, at 
+$$
+\left(2\sqrt h - \frac{2}{\sqrt h}\right)^2 = 4h + \frac 4h - 8 = 1
+$$
+Da $h>1$ har vi altså
+$$
+2\sqrt h - \frac{2}{\sqrt h} = 1
+$$
+
+Heri sætter vi nu
+$$
+x= \frac{1}{\sqrt h}
+$$
+Det giver følgende nye andengradsligning (efter multiplikation med $x$):
+$$
+-2x^2-x+2=0
+$$
+Da vi må have $0<x<1$ så er løsningen givet ved:
+$$
+\frac{1}{\sqrt h} = x=\frac{\sqrt{17}-1}{4}
+$$
+Den søgte afstand er da:
+$$
+|DQ| = \frac{3}{8} \left(\sqrt{17}-1\right)
+$$
+
+
+\end{document}
+
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+
+\begin{document}
+
+\section{Opgave 24}
+Det oplyses, at
+\bas
+p+q+r &=& 0 \\
+a+b+c &=& 0 \\
+\frac{p}{a} + \frac{q}{b} + \frac{r}{c} &=& 0
+\eas
+Vis, at
+$$
+pa^2+qb^2+rc^2=0
+$$
+
+\section{Løsning}
+Betragt matricen $M$ defineret ved:
+$$
+M = \left(\begin{array}{ccc}
+    1 & 1 & 1 \\
+    \frac{1}{a} & \frac{1}{b} & \frac{1}{c} \\
+    a^2 & b^2 & c^2 
+\end{array}
+\right)
+$$
+Determinanten af denne udregnes til
+$$
+\det(M) = \frac{b^2-c^2}{a} + \frac{c^2-a^2}{b} + \frac{a^2-b^2}{c}
+$$
+
+Antag nu yderligere, at $a+b+c=0$. Så kan denne determinant omskrives på følgende måde:
+\bas
+\det(M) &=& \frac{(b+c)(b-c)}{a} + \frac{(c+a)(c-a)}{b} + \frac{(a+b)(a-b)}{c} \\
+        &=& \frac{-a(b-c)}{a} + \frac{-b(c-a)}{b} + \frac{-c(a-b)}{c} \\
+        &=& -(b-c) - (c-a) - (a-b) \\
+        &=& 0
+\eas
+Der gælder altså, at hvis $a+b+c=0$, så er de tre rækker i matricen $M$ lineært afhængige. Specielt kan den tredje række skrives som en linearkombination af de to første rækker.
+Heraf følger, at hvis $p+q+r=0$ og $\frac{p}{a} + \frac{q}{b} + \frac{r}{c}=0$, så vil der også gælde, at $pa^2+qb^2+rc^2=0$.
+
+Ovenstående udregning er tilstrækkelig, men den præcise linearkombination kan også findes. Vi ønsker altså at bestemme to tal $m$ og $n$, således at
+\bas
+a^2 &=& m+\frac{n}{a} \\
+b^2 &=& m+\frac{n}{b} \\
+c^2 &=& m+\frac{n}{c} 
+\eas
+Ved at trække de to første ligninger fra hinanden får man
+$$
+a^2-b^2 = n\left(\frac{1}{a}-\frac{1}{b}\right) = n \frac{b-a}{ab}
+$$
+Heraf følger, at 
+$$
+n = -ab(a+b)
+$$
+Under antagelsen $a+b+c=0$ giver det
+$$
+n=abc
+$$
+Herefter finder man, at
+$$
+m=a^2-bc
+$$
+Denne sidste ligning man omskrives til en symmetrisk form (igen under antagelse af $a+b+c=0$) ved at erstatte $a$ med $-(b+c)$. Det giver:
+$$
+m=(b+c)^2-bc = b^2+c^2+bc
+$$
+Vi har to forskellige udtryk for $m$. Ved at lægge dem sammen og dividere med to fås det symmetriske udtryk:
+$$
+m=\frac{1}{2} (a^2+b^2+c^2)
+$$
+Hermed er vi nået frem til følgende ligning:
+$$
+\frac{1}{2} (a^2+b^2+c^2) (p+q+r) + abc \left(\frac{p}{a} + \frac{q}{b} + \frac{r}{c} \right) = pa^2+qb^2+rc^2
+$$
+som gælder blot $a+b+c=0$.
+
+
+\end{document}
+
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+
+\begin{document}
+
+\section{Opgave 25}
+Løs ligningen
+$$
+\frac{x-a-b}{c} + \frac{x-b-c}{a} + \frac{x-c-a}{b} = 3,
+$$
+hvor $a$, $b$ og $c$ ikke er 0.
+
+\section{Løsning}
+Ved inspektion ses det, at $x=a+b+c$ opfylder ligningen.
+
+Det bemærkes derefter, at ligningen er lineær i $x$, og dermed er der ikke andre løsninger.
+
+\end{document}
+
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+
+\begin{document}
+
+\section{Opgave 27}
+Vis, at hvis $5\le a\le 10$, vil
+$$
+\sqrt{a+3-4\sqrt{a-1}} + \sqrt{a+8-6\sqrt{a-1}} = 1
+$$
+
+\section{Løsning}
+Vi ser først, at 
+$$
+\left(2-\sqrt{a-1}\right)^2 = a+3-4\sqrt{a-1}
+$$
+og
+$$
+\left(3-\sqrt{a-1}\right)^2 = a+8-6\sqrt{a-1}
+$$
+
+For $5\le a\le 10$ vil der gælde, at
+
+\bas
+2-\sqrt{a-1} &\le& 0 \\
+3-\sqrt{a-1} &\ge& 0 
+\eas
+Dermed er
+$$
+\sqrt{a+3-4\sqrt{a-1}} = -(2-\sqrt{a-1}) 
+$$
+og 
+$$
+\sqrt{a+8-6\sqrt{a-1}} = 3-\sqrt{a-1} 
+$$
+Heraf følger resultatet.
+
+
+\end{document}
+
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+
+\begin{document}
+
+\section{Opgave 28}
+Skaf rationel nævner i brøken
+$$
+\frac{1}{\sqrt[3]9 + \sqrt[3]6 + \sqrt[3]4}
+$$
+
+\section{Løsning}
+Vi benytter følgende identitet:
+$$
+(x+y+z) \left(xy+xz+yz - (x^2+y^2+z^2)\right) = 3xyz - (x^3+y^3+z^3)
+$$
+som kan verificeres ved at gange parenteserne ud.
+
+Denne ligning omskrives til:
+$$
+\frac{1}{x+y+z} = \frac{xy+xz+yz - (x^2+y^2+z^2)}{3xyz - (x^3+y^3+z^3)}
+$$
+
+Heri skal vi nu indsætte $x=\sqrt[3]9$, $y=\sqrt[3]6$ og $z=\sqrt[3]4$. Vi får følgende mellemregninger:
+\bas
+xyz &=& \sqrt[3]{216} = 6\\
+x^3+y^3+z^3 &=& 19 \\
+xy &=& \sqrt[3]{54} = 3\sqrt[3]2 \\
+xz &=& \sqrt[3]{36} \\
+yz &=& \sqrt[3]{24} = 2\sqrt[3]3 \\
+x^2 &=& \sqrt[3]{81} = 3\sqrt[3]3 \\
+y^2 &=& \sqrt[3]{36} \\
+z^2 &=& \sqrt[3]{16} = 2\sqrt[3]2
+\eas
+Det endelige resultat bliver
+\bas
+\frac{1}{\sqrt[3]9 + \sqrt[3]6 + \sqrt[3]4} 
+&=& \frac{3\sqrt[3]2 + \sqrt[3]{36} + 2\sqrt[3]3 - (3\sqrt[3]3 + \sqrt[3]{36} + 2\sqrt[3]2)}{18-19} \\
+&=& \sqrt[3]3 - \sqrt[3]2
+\eas
+
+\end{document}
+
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+
+\begin{document}
+
+\section{Opgave 29}
+Vis, at der for positive tal $a$ og $b$ gælder, at
+$$
+\sqrt{2\left(\sqrt{a^2+b^2}-a\right)\left(\sqrt{a^2+b^2}-b\right)} = a+b-\sqrt{a^2+b^2}
+$$
+
+\section{Løsning}
+Vi ganger parenteseren i radikanten ud:
+\bas
+&& 2\left(\sqrt{a^2+b^2}-a\right)\left(\sqrt{a^2+b^2}-b\right) \\
+&=& 2\left(a^2+b^2-(a+b)\sqrt{a^2+b^2} + ab\right) \\
+&=& (a+b)^2 + a^2 + b^2 - 2(a+b)\sqrt{a^2+b^2} \\
+&=& \left(a+b - \sqrt{a^2+b^2}\right)^2
+\eas
+
+For positive tal gælder at
+$$
+(a+b)^2 > a^2+b^2
+$$
+og dermed
+$$
+a+b > \sqrt{a^2+b^2}
+$$
+Heraf følger det ønskede resultat.
+
+\end{document}
+
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+
+\begin{document}
+
+\section{Opgave 31}
+Find samtlige hele positive tal $n$, for hvilke $n^2+20n+15$ er et kvadrattal.
+
+\section{Løsning}
+Vi skal altså finde talpar $(m,n)$ således at 
+$$
+n^2+20n+15 = m^2
+$$
+Heraf følger specielt, at $m>n$.
+Ligningen kan også omskrives til
+$$
+(n+10)^2-85 = m^2
+$$
+Heraf følger tilsvarende, at $m<n+10$.
+
+Nu indfører vi tallet $k = m-n$. Så gælder der, at $0 < k < 10$. Indsættes nu $m=n+k$ i ligningen giver det:
+$$
+n^2+20n+15 = n^2+2nk + k^2
+$$
+Her kan $n$ isoleres:
+$$
+n = \frac{k^2-15}{2(10-k)}
+$$
+For at $n$ skal være et positivt heltal, så skal $k$ være et ulige tal større end 4 og mindre end 10. Det giver mulighederne $5$, $7$ og $9$.
+
+Vi samler resultaterne i følgende tabel
+$$
+\begin{array}{cc}
+    k & n \\
+    \hline
+    5 & 1 \\
+    7 & \frac{17}{3} \\
+    9 & 33
+\end{array}
+$$
+
+Der er således to løsninger: $n=1$ og $n=33$.
+
+\end{document}
+
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+
+\begin{document}
+
+\section{Opgave 33}
+Bestem mindsteværdien af funktionen $f(x) = (x+1)(x+2)(x+3)(x+4) + 10$.
+
+\section{Løsning}
+Først substituerer vi $x=y-\frac 52$. Det giver følgende resultat:
+\bas
+f(x) &=& \left(y-\frac 32\right) \left(y-\frac 12\right) \left(y+\frac 12\right) \left(y+\frac 32\right) + 10 \\
+     &=& \left(y^2 - \frac 14\right) \left(y^2 - \frac 94\right) + 10 \\
+     &=& y^4 - \frac 52 y^2 + \frac{169}{16}
+\eas
+Nu foretager vi yderligere en substitution $z=y^2$ og vi får:
+$$
+f(x) = z^2 - \frac 52 z + \left(\frac{13}{4}\right)^2
+$$
+
+Vi ønsker altså at bestemme mindsteværdien af dette andengradspolynomium for $z\ge 0$.
+Vi beregner først diskriminanten
+$$
+d=\left(\frac 52\right)^2 - 4 \left(\frac{13}{4}\right)^2 = -36
+$$
+Så finder vi koordinaterne for toppunktet:
+$$
+\left(\frac 54, 9 \right)
+$$
+Da første-koordinaten netop er positiv, så har vi vist, at mindsteværdien for $f(x)$ er $9$.
+
+
+\end{document}
+
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+
+\begin{document}
+
+\section{Opgave 36}
+Lad $a$ og $b$ være reelle tal, og sæt
+\bas
+p &=& a^3 -3ab^2 \\
+q &=& b^3 -3a^2b
+\eas
+Udtryk $a^2+b^2$ ved $p$ og $q$.
+
+\section{Løsning}
+Først udregner vi
+$$
+p+q = a^3+b^3-3ab(a+b)
+$$
+og
+$$
+pq = ab\left(10a^2b^2-3(a^4+b^4)\right)
+$$
+
+Lad nu $z=a^2+b^2$. Vi vil udtrykke $p+q$ og $pq$ ved $z$.
+Først har vi
+$$
+(a+b)^2 = z + 2ab
+$$
+Så får vi
+\bas
+p+q &=& (a+b)^3-6ab(a+b) \\
+    &=& (a+b)(z-4ab)
+\eas
+og
+\bas
+pq &=& ab(10a^2b^2-3(z^2-2a^2b^2)) \\
+   &=& -3abz^2+16(ab)^3
+\eas
+
+Nu udregner vi
+\bas
+(p+q)^2 &=& (z+2ab) (z-4ab)^2 \\
+        &=& z^3-6abz^2+32(ab)^3 \\
+        &=& z^3+2pq
+\eas
+Heraf ser vi, at 
+$$
+z^3 = p^2+q^2
+$$
+Altså er løsningen:
+$$
+a^2+b^2 = \sqrt[3]{p^2+q^2}
+$$
+\end{document}
+
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+
+\begin{document}
+
+\section{Opgave 37}
+Opløs følgende udtryk i faktorer
+$$
+a(b+c)^2+b(c+a)^2+c(a+b)^2-4abc
+$$
+
+\section{Løsning}
+Vi ganger parenteserne ud:
+\bas
+&=& a(b^2+c^2+2bc) + b(c^2+a^2+2ac) + c(a^2+b^2+2ab)-4abc \\
+&=& ab(a+b)+ac(a+c)+bc(b+c)+2abc \\
+&=& ab(a+b) + c\left(a(a+c)+b(b+c)+2ab\right) \\
+&=& ab(a+b) + c(a+b)(a+b+c) \\
+&=& (a+b)(ab+ca+cb+c^2) \\
+&=& (a+b)(a+c)(b+c)
+\eas
+
+\end{document}
+
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+
+\begin{document}
+
+\section{Opgave 38}
+Løs inden for de reelle tal ligningen
+$$
+x^{\sqrt x} = \left(\sqrt x\right)^x
+$$
+
+\section{Løsning}
+Vi har $x>0$. Det ses umiddelbart, at $x=1$ er en løsning. Antag derfor i det følgende at $x\neq 1$. Tag nu logaritmen på begge sider:
+$$
+\sqrt x \log x = x \log\sqrt x = \frac x2 \log x
+$$
+Da $x\neq 1$ kan vi dividere med $\log x$ på begge sider:
+$$
+\sqrt x = \frac x2
+$$
+Det omskrives til
+$$
+2 = \sqrt x
+$$
+som har løsningen $x=4$.
+
+\end{document}
+
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+
+\begin{document}
+
+\section{Opgave 40}
+Løs inden for de reelle tal ligningssystemet
+\bas
+x+y &=& z \\
+x^2+y^2 &=& z \\
+x^3+y^3 &=& z
+\eas
+
+\section{Løsning}
+Vi ser umiddelbart, at $z \ge 0$. Endvidere ser vi, at hvis $z=0$, så er der netop én løsning $(0, 0, 0)$.
+
+Antag derfor nu, at $z \ne 0$. Så udregner vi
+$$
+z^2 = (x+y)^2 = x^2+y^2+2xy = z+2xy
+$$
+og 
+$$
+z^3 = (x+y)^3 = x^3+y^3+3xy(x+y) = z(1+3xy)
+$$
+Da $z\ne 0$ kan den sidste ligning forkortes med $z$. Det giver 
+$$
+z^2=1+3xy
+$$
+Isoleres nu $xy$ i de to ovenstående ligninger for $z^2$ får vi følgende ligning:
+$$
+xy = \frac{z^2-1}{3} = \frac{z^2-z}{2}
+$$
+Det sidste lighedstegn reducerer til følgende andengradsligning
+$$
+z^2-3z+2=0
+$$
+som har løsningerne $z=1$ og $z=2$.
+
+Nu undersøger vi først $z=1$: Det giver $xy=0$, som sammen med $x+y=1$ giver to løsninger $(0, 1, 1)$ og $(1, 0, 1)$.
+
+Nu undersøger vi dernæst $z=2$: Det giver $xy=1$, som sammen med $x+y=2$ giver én løsning $(1, 1, 2)$.
+
+I alt er der fundet fire forskellige løsninger.
+
+\end{document}
+
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+
+\begin{document}
+
+\section{Opgave 42}
+Løs (uden hjælpemidler) ligningen
+$$
+x^7+3x^6+2x^5+4x^4+4x^3+2x^2+3x+1=0
+$$
+
+\section{Løsning}
+Vi ser ved indsættelse, at $x=-1$ er en løsning.
+Polynomiers division giver da følgende ligning:
+$$
+x^6+2x^5+4x^3+2x+1=0
+$$
+
+På grund af symmetrien i koefficienterne, så ser vi straks, at hvis $x$ er en løsning, da er også $\frac 1x$ en løsning.
+Derfor dividerer vi med $x^3$ så det giver:
+$$
+x^3+\frac {1}{x^3} + 2 \left(x^2+\frac{1}{x^2}\right) + 4 = 0
+$$
+Vi laver nu substitutionen
+$$
+t=x+\frac 1x
+$$
+og udregner
+$$
+t^2 = x^2+\frac{1}{x^2} + 2
+$$
+og
+$$
+t^3 = x^3+\frac {1}{x^3} + 3\left(x+\frac 1x\right)
+$$
+Dermed kan ligningen reduceres til
+$$
+t^3-3t+2t^2=0
+$$
+Da $t\neq 0$ så kan vi dividere med $t$:
+$$
+t^2+2t-3=0
+$$
+Løsningerne er $t=1$ og $t=-3$.
+
+Vi undersøger de to mulige værdier af $t$ hver for sig. 
+Substitutionen for $t$ omskrives til:
+$$
+x^2-tx+1=0
+$$
+Hvis $t=1$ så giver det
+$$
+x^2-x+1=0
+$$
+som ikke har nogen reelle løsninger.
+Dernæst hvis $t=-3$ så har vi
+$$
+x^2+3x+1=0
+$$
+Her er løsningerne
+$$
+x=\frac{-3\pm\sqrt 5}{2}
+$$
+Vi har således fundet i alt tre reelle løsninger.
+
+\end{document}
+
