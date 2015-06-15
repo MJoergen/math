@@ -5,7 +5,7 @@ tex_pdfs   = $(names:.tex=.pdf)
 pics   = fig1.asy
 asy_pdfs  += $(pics:.asy=.pdf)
 
-all: $(tex_pdfs) $(asy_pdfs)
+all: $(asy_pdfs) $(tex_pdfs)
 
 %.pdf : %.asy
 	asy $< 
