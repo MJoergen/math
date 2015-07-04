@@ -1,0 +1,110 @@
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+\usepackage{graphicx}
+\usepackage{amsfonts}
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+\newcommand{\be}{\begin{equation}}
+\newcommand{\ee}{\end{equation}}
+
+\begin{document}
+
+\section{Opgave 2a}
+Bevis følgende ulighed:
+$$
+a^3+b^3 \ge ab(a+b)
+$$
+hvor $a$ og $b$ er ikke-negative reelle tal.
+
+\subsection{Løsning}
+
+Vi benytter først den aritmetiske-geometriske ulighed på tallene $a^3$, $a^3$ og $b^3$ til at få:
+$$
+\frac{a^3+a^3+b^3}{3} \ge \sqrt[3]{a^3 a^3 b^3}
+$$
+Dette reducerer til
+$$
+\frac{2a^3+b^3}{3} \ge a^2b
+$$
+Ved at ombytte $a$ og $b$ og lægge til, så giver det
+$$
+a^3+b^3 \ge a^2b + ab^2
+$$
+hvilket er det ønskede.
+
+\section{Opgave 2b}
+Bevis følgende ulighed:
+$$
+a^4+b^4+c^4+2abc(a+b+c) \ge (ab+ac+bc)(a^2+b^2+c^2)
+$$
+hvor $a$, $b$ og $c$ alle er vilkårlige reelle tal.
+
+\subsection{Løsning}
+
+Vi omskriver højresiden:
+$$
+(ab+ac+bc)(a^2+b^2+c^2) = ab(a^2+b^2) + ac(a^2+c^2) + bc(b^2+c^2) + abc(a+b+c)
+$$
+Idet vi flytter alle led over på venstresiden, så kan uligheden skrives som:
+$$
+a^4+b^4+c^4+abc(a+b+c) - ab(a^2+b^2) - ac(a^2+c^2) - bc(b^2+c^2) \ge 0
+$$
+
+Vi laver nu følgende omskrivninger af venstresiden i denne ulighed:
+\bas
+&& a^4+b^4+c^4+abc(a+b+c) - ab(a^2+b^2) - ac(a^2+c^2) - bc(b^2+c^2) \\
+&=& a^4+a^2bc-a^3b-a^3c + b^4+b^2ac-b^3a-b^3c + c^4+c^2ab-c^3a-c^3b \\
+&=& a^2(a-b)(a-c) + b^2(b-a)(b-c) + c^2(c-a)(c-b) \\
+&=& (a-b)\left(a^2(a-c)-b^2(b-c)\right) + c^2(a-c)(b-c) 
+\eas
+
+Vi skal nu vise at dette udtryk aldrig kan være negativt.  Da udtrykket er
+symmetrisk ved permutation af de tre variabler, så kan vi uden tab af
+generalitet antage, at $a \ge b \ge c$ .  Med denne antagelse er det tydeligt,
+at begge led er ikke-negative, og vi har vist det ønskede.
+
+\section{Opgave 2c}
+Bevis følgende ulighed:
+$$
+\frac{bc}{2a+b+c} + \frac{ac}{a+2b+c} + \frac{ab}{a+b+2c} \le \frac 14 (a+b+c)
+$$
+hvor $a$, $b$ og $c$ er ikke-negative reelle tal.
+
+\subsection{Løsning}
+Ved at gange uligheden med $4(2a+b+c)(a+2b+c)(a+b+2c)$ og flytte alle led over på højresiden,
+så får vi følgende ækvivalente ulighed:
+\bas
+&&2(a^4+b^4+c^4) + 2abc(a+b+c) \\
+&&+ ab(a^2+b^2)+ac(a^2+c^2)+bc(b^2+c^2) - 6a^2b^2-6a^2c^2-6b^2c^2 \ge 0
+\eas
+Vi vil nu vise, at denne ulighed er sand.
+
+Fra opgave 2b har vi vist, at
+\be
+a^4+b^4+c^4+abc(a+b+c) - ab(a^2+b^2) - ac(a^2+c^2) - bc(b^2+c^2)  \ge 0
+\label{eq1}
+\ee
+Endvidere er det tydeligt, at 
+$$
+ab(a-b)^2 + ac(a-c)^2+bc(b-c)^2 \ge 0
+$$
+hvilket kan omskrives til
+\be
+ab(a^2+b^2) + ac(a^2+c^2) +bc(b^2+c^2) -2a^2b^2 -2a^2c^2 -2b^2c^2 \ge 0
+\label{eq2}
+\ee
+
+Ved nu at lægge 2 gange uligheden~(\ref{eq1}) sammen med 3 gange uligheden~(\ref{eq2}) så får vi det ønskede resultat.
+
+\end{document}
+
+
