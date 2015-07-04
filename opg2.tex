@@ -9,6 +9,7 @@
 
 \usepackage{graphicx}
 \usepackage{amsfonts}
+\usepackage{hyperref}
 
 %\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
 \newcommand{\bas}{\begin{eqnarray*}}
@@ -17,6 +18,10 @@
 \newcommand{\ee}{\end{equation}}
 
 \begin{document}
+
+Alle opgaverne i dette dokument er omskrivninger af resultater fra dokumentet 
+\url{https://www.tjhsst.edu/~2010bhamrick/files/dumbassing.pdf}
+
 
 \section{Opgave 2a}
 Bevis følgende ulighed:
@@ -42,6 +47,37 @@ $$
 hvilket er det ønskede.
 
 \section{Opgave 2b}
+Bevis følgende ulighed:
+$$
+2(a^3+b^3+c^3) + 3abc \ge (a^2+b^2+c^2)(a+b+c)
+$$
+hvor $a$, $b$ og $c$ er ikke-negative reelle tal.
+
+\subsection{Løsning}
+
+Vi trækker højresiden fra venstresiden, så vi i stedet for skal vise
+$$
+2(a^3+b^3+c^3) + 3abc - (a^2+b^2+c^2)(a+b+c) \ge 0
+$$
+Nu udnytter vi følgende identitet:
+$$
+(a^2+b^2+c^2)(a+b+c) = a^3+b^3+c^3 + a^2(b+c) + b^2(a+c) + c^2(a+b)
+$$
+til at omskrive venstresiden i uligheden:
+\bas
+&& 2(a^3+b^3+c^3) + 3abc - (a^2+b^2+c^2)(a+b+c) \\
+&=& a^3+b^3+c^3 + 3abc - a^2(b+c) - b^2(a+c) - c^2(a+b) \\
+&=& a\left(a^2-a(b+c)+bc\right) + b\left(b^2-b(a+c)+ac\right) + c\left(c^2-c(a+b)+ab\right) \\
+&=& a(a-b)(a-c) + b(b-a)(b-c) + c(c-a)(c-b) \\
+&=& (a-b)\Big(a(a-c)-b(b-c)\Big) + c(a-c)(b-c)
+\eas
+Vi skal nu vise at dette udtryk aldrig kan være negativt.  Da udtrykket er
+symmetrisk ved permutation af de tre variabler, så kan vi uden tab af
+generalitet antage, at $a \ge b \ge c$ .  Med denne antagelse er det tydeligt,
+at begge led er ikke-negative, og vi har vist det ønskede.
+Dette er et specialtilfælde af \href{https://en.wikipedia.org/wiki/Schur\%27s\_inequality}{Schur's inequality}.
+
+\section{Opgave 2c}
 Bevis følgende ulighed:
 $$
 a^4+b^4+c^4+2abc(a+b+c) \ge (ab+ac+bc)(a^2+b^2+c^2)
@@ -71,8 +107,9 @@ Vi skal nu vise at dette udtryk aldrig kan være negativt.  Da udtrykket er
 symmetrisk ved permutation af de tre variabler, så kan vi uden tab af
 generalitet antage, at $a \ge b \ge c$ .  Med denne antagelse er det tydeligt,
 at begge led er ikke-negative, og vi har vist det ønskede.
+Dette er et specialtilfælde af \href{https://en.wikipedia.org/wiki/Schur\%27s\_inequality}{Schur's inequality}.
 
-\section{Opgave 2c}
+\section{Opgave 2d}
 Bevis følgende ulighed:
 $$
 \frac{bc}{2a+b+c} + \frac{ac}{a+2b+c} + \frac{ab}{a+b+2c} \le \frac 14 (a+b+c)
@@ -83,12 +120,17 @@ hvor $a$, $b$ og $c$ er ikke-negative reelle tal.
 Ved at gange uligheden med $4(2a+b+c)(a+2b+c)(a+b+2c)$ og flytte alle led over på højresiden,
 så får vi følgende ækvivalente ulighed:
 \bas
-&&2(a^4+b^4+c^4) + 2abc(a+b+c) \\
-&&+ ab(a^2+b^2)+ac(a^2+c^2)+bc(b^2+c^2) - 6a^2b^2-6a^2c^2-6b^2c^2 \ge 0
+0 &\le& (2a+b+c)(a+2b+c)(a+b+2c)(a+b+c) - 4bc(a+2b+c)(a+b+2c) \\
+  && - 4ac(2a+b+c)(a+b+2c) - 4ab(2a+b+c)(a+2b+c) 
 \eas
-Vi vil nu vise, at denne ulighed er sand.
+Vi vil nu vise, at højresiden i denne ulighed er ikke-negativ.  
+Højresiden ganges ud og kan -- efter en del mellemregninger -- skrives som
+\bas
+&&2(a^4+b^4+c^4) + 2abc(a+b+c) \\
+&&+ ab(a^2+b^2)+ac(a^2+c^2)+bc(b^2+c^2) - 6a^2b^2-6a^2c^2-6b^2c^2 
+\eas
 
-Fra opgave 2b har vi vist, at
+Fra opgave 2c har vi vist, at
 \be
 a^4+b^4+c^4+abc(a+b+c) - ab(a^2+b^2) - ac(a^2+c^2) - bc(b^2+c^2)  \ge 0
 \label{eq1}
