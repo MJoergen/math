@@ -1,0 +1,218 @@
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+%\usepackage{graphicx}
+\usepackage{amsfonts}
+\usepackage{amsthm}        % Theorems
+\usepackage{amsmath}
+%\usepackage{hyperref}
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+\newcommand{\be}{\begin{equation}}
+\newcommand{\ee}{\end{equation}}
+\newcommand{\bea}{\begin{eqnarray}}
+\newcommand{\eea}{\end{eqnarray}}
+
+\newtheorem{thm}{Sætning}[section]
+\newtheorem{mydef}[thm]{Definition}
+\newtheorem{eks}[thm]{Eksempel}
+
+\title{Elliptiske funktioner}
+\date{August 2015}
+\author{Michael Jørgensen}
+
+\begin{document}
+
+\maketitle
+
+Lad der være givet to komplekse tal $\omega_1$ og $\omega_2$, som antages
+at være $R$-lineært uafhængige af hinanden. Vi definerer nu et gitter
+$L$ bestående af heltallige linearkombinationer af $\omega_1$ og $\omega_2$:
+\be
+L = \left\{ n_1 \omega_1 + n_2 \omega_2 : n_1, n_2 \in Z\right\}
+\ee
+Vi indfører nu Weierstrass' P-funktion ved følgende definition:
+\be
+P(u) = \frac{1}{u^2} + \sum_{\substack{\omega\in L\\ \omega \neq 0}}
+  \left(\frac{1}{(u-\omega)^2} - \frac{1}{\omega^2}\right),
+  \quad u\not\in L
+  \label{pu}
+\ee
+I det følgende vil vi undersøge egenskaberne af denne funktion.
+
+\section{Indledende observationer}
+\begin{thm}
+    Funktionen $P(u)$ har følgende elementære egenskaber:
+    \begin{enumerate}
+        \item Funktionen $P(u)$ er analytisk for alle $u \not\in L$. 
+        \item Funktionen $P(u)$ er lige, dvs. $P(u) = P(-u)$.
+        \item Funktionen $P(u)$ er dobbelt periodisk med perioderne $\omega_1$ og $\omega_2$, dvs. $P(u) = P(u+\omega_1) = P(u+\omega_2)$.
+    \end{enumerate}
+\end{thm}
+\begin{proof}
+    \begin{enumerate}
+        \item Følger direkte af definitionen.
+        \item Følger af, at gitteret $L$ er symmetrisk omkring $\omega=0$.
+        \item Da funktionen er analytisk, så giver ledvis differentiation:
+\be
+P'(u) = -2 \sum_{\omega\in L} \frac{1}{(u-\omega)^3}, \quad u\not\in L
+\ee
+Heraf ses, at $P'(u)$ er periodisk over hele gitteret, dvs
+\be
+P'(u+w) = P'(u),\quad \mbox{for alle $\omega\in L$}
+\ee
+
+Ved integration og benyttelse af, at $P(u)$ er lige, så fåes at også 
+$P(u)$ selv er periodisk.
+    \end{enumerate}
+\end{proof}
+
+\section{Taylor}
+
+Vi kan danne en potensudvikling af $P(u)$ omkring $u=0$ ved at benytte:
+\be
+\frac{1}{(u-\omega)^2} = 
+\frac{1}{\omega^2} \cdot \frac{1}{\left(1-\frac{u}{\omega}\right)^2} =
+\frac{1}{\omega^2} \sum_{n=0}^\infty 
+  (n+1) \left(\frac{u}{\omega}\right)^n
+\ee
+Indsættes dette i definitionen fåes følgende resultat:
+\begin{thm}
+    Funktionen P(u) har følgende rækkeudvikling:
+\be
+P(u) = \frac{1}{u^2} + \alpha_2 u^2 + \alpha_4 u^4 + \cdots,
+\ee
+hvor
+\be
+\alpha_n = (n+1) \sum_{\substack{\omega\in L\\ \omega\neq 0}} \frac{1}{\omega^{n+2}},
+\quad \mbox{$n>0$, $n$ lige}
+\label{alphan}
+\ee
+\end{thm}
+\begin{proof}
+    Følger af ovenstående.
+\end{proof}
+
+\section{Differentialligning}
+Vi kan nu vise følgende hovedresultat:
+\begin{thm}
+$P(u)$ opfylder følgende simple differentialligning:
+\be
+\left[P'(u)\right]^2 - 4 \left[P(u)\right]^3
++ 20\,\alpha_2 P(u) + 28\,\alpha_4 = 0,
+\ee
+hvor $\alpha_2$ og $\alpha_4$ er defineret oven for.
+\end{thm}
+\begin{proof}
+Vi definerer
+\be
+G(u) = \left[P'(u)\right]^2 - 4 \left[P(u)\right]^3
++ 20\,\alpha_2 P(u) + 28\,\alpha_4.
+\ee
+Ved at benytte rækkeudviklingen for $P(u)$ kan vi finde følgende
+resultat for $G(u)$:
+$$
+G(u) \rightarrow 0 \mbox{ for } u \rightarrow 0.
+$$
+Dermed er $G(u)$ uden poler, og da $G(u)$ endvidere er dobbeltperiodisk,
+så må den være konstant, altså
+$$
+G(u) = 0, \quad \mbox{for alle $u$.}
+$$
+\end{proof}
+
+\section{Additionsformel}
+Vi vil nu vise følgende additionsformel:
+\begin{thm}
+    \be
+    P(u+v) = \frac{1}{4} \left(\frac{P'(u)-P'(v)}{P(u)-P(v)}\right)^2 - P(u) - P(v)
+    \ee
+\end{thm}
+\begin{proof}
+    Vi definerer funktionen $F(u)$ ved:
+    \be
+    F(u) = P'(u) - A\cdot P(u) - B,
+    \ee
+    hvor $A$ og $B$ er komplekse konstanter.
+    Denne funktion er dobbelt-periodisk med en enkelt pol af tredie orden i $u=0$. Heraf følger, at $F(u)$ har tre (muligvis sammenfaldende) nulpunkter, hvis sum er nul. Kald de tre nulpunkter for $u_1$, $u_2$ og $u_3$. Så haves altså:
+    $$
+    u_1 + u_2 + u_3 = 0
+    \label{u123}
+    $$
+    samt
+    \be
+    P'(u_i) = A\cdot P(u_i) + B, \quad i=1,2,3
+    \label{pmui}
+    \ee
+
+    Indsættes nu denne sidste formel i differentialligningen, og sættes $x=P(u_i)$, så giver det:
+    $$
+    x^3 - \frac 14 A^2 x^2 - \frac 14 (20 \alpha_2 + 2AB) x - \frac 14 (28\alpha_4 + B^2) = 0
+    $$
+    Summen af rødderne i dette tredjegradspolynomium er givet ud fra koefficienten til $x^2$. Derfor har vi:
+    \be
+    P(u_1) + P(u_2) + P(u_3) = \frac 14 A^2.
+    \label{pu123}
+    \ee
+
+    Konstanten $A$ bestemmes ud fra~(\ref{pmui}) til
+    $$
+    A = \frac{P'(u_2)-P'(u_1)}{P(u_2)-P(u_1)}
+    $$
+    Og fra~(\ref{u123}) har vi
+    $$
+    P(u_3) = P(-u_1-u_2) = P(u_1+u_2)
+    $$
+    Disse to resultater indsættes i~(\ref{pu123}) og resultatet følger heraf.
+\end{proof}
+
+\section{Halve perioder}
+Idet vi definerer $\omega_3 = \omega_1 + \omega_2$ så gælder der:
+\begin{thm}
+    Værdierne $P(\frac{\omega_1}{2})$, $P(\frac{\omega_2}{2})$ og $P(\frac{\omega_3}{2})$
+    er alle nulpunkter til polynomiet
+    $$
+    4\,x^3 - 20\,\alpha_2 \,x - 28 \,\alpha_4 = 0
+    $$
+    Specielt gælder der, at 
+    $$
+    P\left(\frac{\omega_1}{2}\right) + P\left(\frac{\omega_2}{2}\right) + P\left(\frac{\omega_3}{2}\right) = 0
+    $$
+\end{thm}
+
+\section{Omvendt funktion}
+I det følgende specialiserer vi til, at $\omega_1$ er reel og $\omega_2$ er
+rent imaginær.  Vi ønsker nu at invertere ligning~(\ref{pu}).  Idet vi
+definerer funktionen
+\be
+I(a, b) = \int_0^\infty \frac{dt}{\sqrt{(a^2+t^2)(b^2+t^2)}},
+\ee
+samt konstanterne
+\bea
+a &=& \sqrt{x_3-x_1} \\
+b &=& \sqrt{x_3-x_2} \\
+c &=& \sqrt{x_2-x_1}
+\eea
+så vil vi bevise følgende resultat:
+\begin{thm}
+    Hvis $\omega_1$ er reel og $\omega_2$ er rent imaginær, så vil 
+    $P(\frac{\omega_1}{2})$, $P(\frac{\omega_2}{2})$ og $P(\frac{\omega_3}{2})$
+    alle være reelle, hvor $\omega_3 = \omega_1 + \omega_2$.
+    Endvidere er 
+    \bea
+    \omega_1 &=& 2 I(a,b) \\
+    \omega_2 &=& 2i I(a,c) \\
+    \omega_3 &=& 2i I(b,ic)
+    \eea
+\end{thm}
+\end{document}
+
+

@@ -1,6 +1,7 @@
 names  = nummer82.tex
 names += opg1.tex
 names += opg2.tex
+names += elliptic.tex
 tex_pdfs   = $(names:.tex=.pdf)
 
 pics   = fig1.asy
