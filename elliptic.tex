@@ -108,6 +108,7 @@ $P(u)$ opfylder følgende simple differentialligning:
 \be
 \left[P'(u)\right]^2 - 4 \left[P(u)\right]^3
 + 20\,\alpha_2 P(u) + 28\,\alpha_4 = 0,
+\label{pmu}
 \ee
 hvor $\alpha_2$ og $\alpha_4$ er defineret oven for.
 \end{thm}
@@ -173,9 +174,28 @@ Vi vil nu vise følgende additionsformel:
     $$
     Disse to resultater indsættes i~(\ref{pu123}) og resultatet følger heraf.
 \end{proof}
+\begin{thm}
+    \be
+    P(2u) = \frac 14 \left(\frac{P''(u)}{P'(u)}\right)^2 - 2P(u)
+    \ee
+\end{thm}
+\begin{proof}
+    Dette følger direkte af grænseovergangen $v\rightarrow u$.
+\end{proof}
 
 \section{Halve perioder}
 Idet vi definerer $\omega_3 = \omega_1 + \omega_2$ så gælder der:
+\begin{thm}
+    $$
+    P'\left(\frac{\omega_1}{2}\right) =
+    P'\left(\frac{\omega_2}{2}\right) =
+    P'\left(\frac{\omega_3}{2}\right) = 0
+    $$
+\end{thm}
+\begin{proof}
+    Dette følder af, at $P'(u)$ er en ulige funktion.
+\end{proof}
+
 \begin{thm}
     Værdierne $P(\frac{\omega_1}{2})$, $P(\frac{\omega_2}{2})$ og $P(\frac{\omega_3}{2})$
     er alle nulpunkter til polynomiet
@@ -187,25 +207,32 @@ Idet vi definerer $\omega_3 = \omega_1 + \omega_2$ så gælder der:
     P\left(\frac{\omega_1}{2}\right) + P\left(\frac{\omega_2}{2}\right) + P\left(\frac{\omega_3}{2}\right) = 0
     $$
 \end{thm}
+\begin{proof}
+    Dette følger af ligning~(\ref{pmu}).
+\end{proof}
 
 \section{Omvendt funktion}
 I det følgende specialiserer vi til, at $\omega_1$ er reel og $\omega_2$ er
-rent imaginær.  Vi ønsker nu at invertere ligning~(\ref{pu}).  Idet vi
+rent imaginær.  Vi ønsker nu at invertere ligning~(\ref{pu}). Specielt ønsker
+vi ud fra
+kendskab til $P\left(\frac{\omega_1}{2}\right)$,
+$P\left(\frac{\omega_2}{2}\right)$ og $P\left(\frac{\omega_3}{2}\right)$ at
+bestemme $\omega_1$ og $\omega_2$, hvor vi stadigvæk har, at $\omega_3 = \omega_1 + \omega_2$.
+
+Idet vi
 definerer funktionen
 \be
 I(a, b) = \int_0^\infty \frac{dt}{\sqrt{(a^2+t^2)(b^2+t^2)}},
 \ee
 samt konstanterne
 \bea
-a &=& \sqrt{x_3-x_1} \\
-b &=& \sqrt{x_3-x_2} \\
-c &=& \sqrt{x_2-x_1}
+a &=& \sqrt{P\left(\frac{\omega_1}{2}\right)-P\left(\frac{\omega_2}{2}\right)} \\
+b &=& \sqrt{P\left(\frac{\omega_1}{2}\right)-P\left(\frac{\omega_3}{2}\right)} \\
+c &=& \sqrt{P\left(\frac{\omega_3}{2}\right)-P\left(\frac{\omega_2}{2}\right)}
 \eea
 så vil vi bevise følgende resultat:
 \begin{thm}
-    Hvis $\omega_1$ er reel og $\omega_2$ er rent imaginær, så vil 
-    $P(\frac{\omega_1}{2})$, $P(\frac{\omega_2}{2})$ og $P(\frac{\omega_3}{2})$
-    alle være reelle, hvor $\omega_3 = \omega_1 + \omega_2$.
+    Hvis $\omega_1$ er reel og $\omega_2$ er rent imaginær, så er $a$, $b$ og $c$ alle reelle.
     Endvidere er 
     \bea
     \omega_1 &=& 2 I(a,b) \\
@@ -213,6 +240,25 @@ så vil vi bevise følgende resultat:
     \omega_3 &=& 2i I(b,ic)
     \eea
 \end{thm}
+\begin{proof}
+    Først skal man vise, at 
+    $P\left(\frac{\omega_1}{2}\right)$,
+    $P\left(\frac{\omega_2}{2}\right)$ og
+    $P\left(\frac{\omega_3}{2}\right)$ alle er reelle.
+    Dernæst skal man vise, at 
+    $$
+    P\left(\frac{\omega_2}{2}\right) <
+    P\left(\frac{\omega_3}{2}\right) <
+    P\left(\frac{\omega_1}{2}\right)
+    $$.
+    Så kan man benytte differentialligningen til at vise, at
+    $$
+    \omega_1 = 2 \int_{P\left(\frac{\omega_1}{2}\right)}^\infty 
+    \frac{dx}{\sqrt{4x^3-20\alpha_2x-28\alpha_4}}
+    $$
+    Til sidst indføres substitutionen $x = P\left(\frac{\omega_1}{2}\right) + t^2$.
+    
+\end{proof}
 \end{document}
 
 
