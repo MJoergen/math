@@ -1,0 +1,105 @@
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+\usepackage{graphicx}
+\usepackage{amsfonts}
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+
+\begin{document}
+
+\section*{Løsning til Opgavehjørnet 321}
+
+\subsection*{a}
+Vi skal finde alle reelle tal $x$ som opfylder ligningen:
+$$
+\sqrt[3]{x+1} + \sqrt[3]{3x+1} = \sqrt[3]{x-1}
+$$
+Først opløfter vi i tredje potens:
+$$
+(x+1) + (3x+1) + 3\sqrt[3]{x+1}\sqrt[3]{3x+1}\left(\sqrt[3]{x+1} + \sqrt[3]{3x+1}\right) = x-1
+$$
+Ved at benytte den oprindelige ligning kan dette omskrives til:
+$$
+3x + 3 + 3\sqrt[3]{(x+1)(3x+1)(x-1)} = 0
+$$
+Ved at dividere med $3$ og rykke rundt får vi
+$$
+x + 1 = \sqrt[3]{(x+1)(3x+1)(1-x)}
+$$
+Ved igen at opløfte i tredje får vi:
+$$
+(x+1)^3 = (x+1)(3x+1)(1-x)
+$$
+Heraf ser vi, at $x=-1$ er en mulig løsning. Ved indsættelse i den oprindelige ligning ses løsningen at passe.
+
+I det følgende antager vi, at $x\neq -1$. Ved division med $x+1$ får vi:
+$$
+(x+1)^2 + (3x+1)(x-1) = 0
+$$
+som reducerer til
+$$
+4x^2=0
+$$
+Desværre er dette ikke en løsning til den oprindelige ligning. Vi har derfor fundet, at der kun er én løsning, nemlig $x=-1$.
+
+\subsection*{b}
+Vi skal finde samtlige komplekse løsninger $w\neq z$ til nedenstående lignignssystem:
+\bas
+w^5 + w &=& z^5 + z \\
+w^5 + w^2 &=& z^5 + z^2
+\eas
+Den første ligning trækkes fra den anden, så det giver:
+$$
+w^2 - w = z^2 - z
+$$
+Dette omskrives til
+$$
+(w+z)(w-z) = w-z
+$$
+Idet vi har $w\neq z$ kan vi dividere med $w-z$:
+$$
+w+z=1
+$$
+
+For at komme videre substituerer vi
+\bas
+w &=& \frac12 + u \\
+z &=& \frac12 - u ,
+\eas
+hvor $u\neq 0$.
+Indsættelse i den første ligning giver:
+$$
+\left(u+\frac12\right)^5 + \left(u-\frac12\right)^5+2u=0
+$$
+Vi ganger parenteserne ud og får:
+$$
+2u^5 + 5u^3 + \frac{21}{8}u = 0
+$$
+Efter division med $u$ giver det:
+$$
+2u^4 + 5u^2 + \frac{21}{8} = 0
+$$
+Den sædvanlige løsningsformel giver to løsninger:
+\bas
+u^2 &=& -\frac{3}{4}\\
+u^2 &=& -\frac{7}{4}
+\eas
+
+Nu kan vi opskrive løsningnerne til de oprindelige ligninger:
+\bas
+w,z &=& \frac12 \pm \frac12 \sqrt{3} i \\
+w,z &=& \frac12 \pm \frac12 \sqrt{7} i
+\eas
+
+\end{document}
+
+
