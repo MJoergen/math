@@ -1,0 +1,93 @@
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+\usepackage{graphicx}
+\usepackage{amsfonts}
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+
+\begin{document}
+
+\section*{Løsning til 'En besynderlig ligning' side 3168}
+Vi skal løse ligningen
+$$
+2\sqrt{50+10x} + \sqrt{50-10x} = (15+7x) \sqrt{5-2x}
+$$
+Vestresiden er defineret og ikke-negativ for $-5\le x\le 5$. Højresiden er
+defineret og ikke-negativ for $-15/7 \le x \le 5/2$. I det følgende antager vi
+derfor, at $-15/7 \le x \le 5/2$.
+
+Begge sider af ligningen kvadreres:
+$$
+250 + 30x + 40\sqrt{25-x^2} = (15+7x)^2(5-2x)
+$$
+Dette kan omskrives til
+$$
+40\left(\sqrt{25-x^2}-2x\right) = 7(25+14x)\left(5-x^2\right)
+$$
+Nu ganges med $\sqrt{25-x^2}+2x$ på begge sider:
+$$
+200(5-x^2) = 7(25+14x)\left(5-x^2\right)\left(\sqrt{25-x^2}+2x\right)
+$$
+Heraf ser vi, at $x=\sqrt{5}$ er en løsning.
+
+Nu undersøges om der er andre løsninger.
+Antag derfor, at $x\neq \sqrt{5}$. Så forkortes med $5-x^2$:
+$$
+200 = 7(25+14x)\left(\sqrt{25-x^2}+2x\right)
+$$
+Dette kan omskrives til
+$$
+\sqrt{25-x^2} = \frac{200}{7(25+14x)}-2x
+$$
+
+Højresiden er aftagende for $x<-25/14$ og for $-25/14<x$.
+For $x=-15/7$ er højresiden negativ, og der er derfor ingen løsninger for $-15/7\le x<-25/14$.
+
+I intervallet $-25/14<x\le 0$ er venstresiden voksende mod værdien $5$ og højresiden 
+er aftagende fra plus uendelig mod $8/7$. Derfor vil der være netop én løsning
+i dette interval.
+
+I intervallet $0\le x \le 5/2$ er venstresiden aftagende mod værdien $5/2 \sqrt{3} \approx 4,\!3$ og højresiden er 
+aftagende fra værdien $8/7$. Der kan derfor ikke være nogen løsninger i dette interval.
+
+For at komme lidt nærmere, så kvadreres ligningen, og alle led flyttes over på venstresiden:
+$$
+49(25+14x)^2(25-x^2) - (200-350x-196x^2)^2 = 0
+$$
+Venstresiden udregnes nu til
+$$
+-5\left(9604x^4+34300x^3-33075x^2-199500x-145125\right)
+$$
+
+Dette fjerdegradspolynomium har op til fire rødder, men vi er kun interesseret
+i intervallet $-25/14<x\le 0$.
+Lad $p(x)$ være polynomiet i parentesen. Da får vi efter nogle gæt, at
+$$
+p(-1) = -3396
+$$
+og
+$$
+p(-8/7) = 4859
+$$
+
+Hermed kan vi konkludere, at den oprindelige ligning har i alt to løsninger, og disse er givet ved:
+$$
+x = \sqrt{5}
+$$
+og
+$$
+-8/7 < x < -1
+$$
+
+\end{document}
+
+
