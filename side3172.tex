@@ -1,0 +1,122 @@
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+\usepackage{graphicx}
+\usepackage{amsfonts}
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+
+\begin{document}
+
+\section*{Opgave 52}
+Lad $f(x) = x^{44} + x^{33} + x^{22} + x^{11} + 1$ og $q(x) = x^4 + x^3 + x^2 +
+x + 1$.  Vi skal vise, at $f(x)$ er deleligt med $q(x)$. Dvs vi skal vise, at
+hvis $x_0$ er en rod i $q(x)$, da er $x_0$ også en rod i $f(x)$.
+
+Lad derfor $x_0$ være en rod i $q(x)$, dvs. $q(x_0)=0$. 
+Der gælder, at
+$$
+q(x) = \frac{x^5-1}{x-1}
+$$
+Derfor er $x_0$ en rod i $x^5-1$, men med $x_0 \neq 1$.
+Dette kan skrives som $x_0\in M$, hvor
+mængden $M$ er givet ved $M = \{\alpha, \alpha^2, \alpha^3, \alpha^4\}$, hvor
+$\alpha=\exp\left(\frac{2\pi i}{5}\right)$.
+
+Da $\alpha^{11} = \left(\alpha^5\right)^2 \cdot \alpha = \alpha$, så vil 
+$x_0^{11} = x_0$ for alle $x_0\in M$.
+Vi har endvidere, at $f(x) = q(x^{11})$, og dermed er $f(x_0) = q(x_0^{11}) =
+q(x_0)$ = 0.
+
+Hermed er det vist, at $f(x)$ er deleligt med $q(x)$.
+
+\section*{Opgave 53}
+Lad $a = \sqrt[3]{60}$ og $b=2 + \sqrt[3]{7}$. Vi skal afgøre, hvilket af disse
+to tal, der er størst.  Vi udregner derfor først $a^3$ og $b^3$ og derefter
+trækker vi dem fra hinanden. Det giver:
+\bas
+\frac{b^3-a^3}{3} &=& -15 + 4\sqrt[3]{7} + 2 \left(\sqrt[3]{7}\right)^2 \\
+                  &=& f\left(\sqrt[3]{7}\right),
+\eas
+hvor $f(x) = 2x^2+4x-15$. Vi skal således afgøre fortegnet af $f(x)$ for $x =
+\sqrt[3]{7}$.
+
+Rødderne for $f(x)$ findes til $x = -1 \pm \frac12 \sqrt{34}$. Definer nu:
+$$
+x_0 = -1 + \frac12\sqrt{34}.
+$$
+Da $f(x)$ er voksende i omegnen af $x=x_0$ så gælder der, at hvis $x>x_0$ så
+er $f(x) > f(x_0)$. Vi skal derfor sammenligne $x_0$ med $\sqrt[3]{7}$.
+Vi udregner derfor
+$$
+x_0^3-7 = \frac{23}{4}\sqrt{34} - \frac{67}{2}
+$$
+
+Lad nu $A = \frac{23}{4}\sqrt{34}$ og $B = \frac{67}{2}$. Vi skal undersøge fortegnet af $A-B$. Vi udregner derfor først
+$$
+\frac{A}{B} = \frac{23\sqrt{34}}{134}
+$$
+og dernæst
+$$
+\frac{A^2}{B^2} = \frac{23^2 \cdot 34}{134^2} = \frac{17986}{17956}.
+$$
+Derfor er $A > B$. Derfor er $\sqrt[3]{7} < x_0$. Derfor er
+$f\left(\sqrt[3]{7}\right) < f(x_0) = 0$. Derfor er $b < a$. Det er således beviset, at
+$$
+2 + \sqrt[3]{7} < \sqrt[3]{60}.
+$$
+
+\section*{Opgave 60}
+Lad $f(x) = \left(x^2+3x+2\right)\cdot\left(x^2-7x+12\right)\cdot\left(x^2-2x-1\right)-24$.
+Vi skal bestemme samtlige rødder til dette sjettegradspolynomium. De to første faktorer kan faktoriseres til:
+$$
+x^2+3x+2 = (x+1)(x+2)
+$$
+og
+$$
+x^2-7x+12 = (x-3)(x-4) = (3-x)(4-x)
+$$
+Den sidste faktor kan skrives som:
+$$
+x^2-2x-1 = (x-1)^2 - 2 = (1-x)^2-2
+$$
+Heraf ses, at substitutionen $x \rightarrow 2-x$ lader rødderne uændret. Med andre ord:
+$$
+f(x) = f(2-x)
+$$
+
+På denne baggrund indfører vi nu substitutionen $x = 1+u$.
+\bas
+f(1+u) &=& \left(u^2+5u+6\right)\cdot\left(u^2-5u+6\right)\cdot\left(u^2-2\right)+24 \\
+       &=& \left(\left(u^2+6\right)^2 - \left(5u\right)^2\right)\cdot\left(u^2-2\right)+24 \\
+       &=& \left(u^4-13u^2+36\right)\cdot\left(u^2-2\right)+24
+\eas
+Nu indfører vi substitutionen $u^2=w$, hvor $w\ge 0$
+\bas
+f(1+u) &=& \left(w^2-13w+36\right)\cdot(w-2)+24\\
+       &=& w^3-15w^2+62w-48
+\eas
+
+Definér nu
+$$
+g(w) = w^3-15w^2+62w-48
+$$
+Vi ser, at $w=1$ er en rod. Vi indfører derfor substitutionen $w=1+y$ og får:
+$$
+g(1+y) = y\cdot\left(y^2-12y+35\right)
+$$
+Heraf får vi, at rødderne i $g(1+y)$ er $y=0$ og $y=5$ og $y=7$.
+Rødderne i $g(w)$ er derfor $\{1, 6, 8\}$.
+
+Dermed bliver samtlige rødder i $f(x)$ givet ved $\{0, 2, 1\pm\sqrt{6}, 1\pm\sqrt{8}\}$.
+
+\end{document}
+

@@ -3,6 +3,7 @@ names += opg1.tex
 names += opg2.tex
 names += elliptic.tex
 names += side3168.tex
+names += side3172.tex
 names += opg321.tex
 tex_pdfs   = $(names:.tex=.pdf)
 
