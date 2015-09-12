@@ -25,24 +25,61 @@
 \newtheorem{mydef}[thm]{Definition}
 \newtheorem{eks}[thm]{Eksempel}
 
-\title{Lineære sammenhænge}
+\DeclareMathSymbol{,}{\mathord}{letters}{"3B}
+
+\title{Linearitet}
 \date{September 2015}
 
 \begin{document}
 
 \maketitle
 
-\section{Eksempler på sammenhænge}
-I dette kapitel skal vi arbejde med variabelsammenhænge.
+\section{Indledning}
+I dette kapitel skal vi arbejde med lineære variabelsammenhænge.
+Vi begynder med at kigge på nogle eksempler.
 
-\begin{mydef}
-En variabelsammenhæng er en sammenhæng mellem en uafhængig variabel, ofte kaldet $x$, og en afhængig variabel, ofte kaldet $y$.
-\end{mydef}
+\subsection{Eksempel}
+Et teleselskab har et simpelt takstsystem:
+\begin{itemize}
+    \item Abonnement 20 kr. pr. måned, samt 0,50 kr. pr. talt minut.
+\end{itemize}
+Hvis en abonnent en måned taler 25 minutter, skal han betale:
+$$
+20 + 0,50\cdot25 = 32,50 \, {\rm kr},
+$$
+og tales der $x$ minutter en bestemt måned, er prisen $y$ kroner bestemt ved:
+$$
+y = 20 + 0,50\cdot x
+$$
+Man siger, at der er en {\em lineær sammenhæng} mellem samtaletiden og prisen.
 
-Vi begynder dette kapitel med at se på nogle eksempler.
+Hvis vi tegner sammenhængen i et koordinatsystem med antallet af minutter på
+$x$-aksen og prisen på $y$-aksen, så vil grafen danne en ret linje med hældning
+$0,50$ og som skærer $y$-aksen i tallet $20$, se figur 3.5.
+
+Hældningen $0,50$ angiver prisstigningen for hvert ekstra minut, der tales.
+Således er prisen for 20 minutters samtale 30 kr., og for 21 minutters
+samtale 30,50 kr.
+
+\subsection{Eksempel}
+En prøvekørsel af en bil begynder ved 5-km stenen uden for en by. Bilen kører
+en længere strækning med 90 km/t. Efter 8 minutters kørsel befinder bilen sig
+ved 17-km-stenen (hvorfor?), og efter $x$ minutter er den ved $y$-km-stenen,
+hvor
+$$
+y = 5 + 1,5\cdot x
+$$
+Her er der tale om en lineær sammenhæng mellem tiden i minutter og tallet på
+kilometerstenen.
+
 \section{Lineære sammenhænge}
 \begin{mydef}
-    En lineær sammenhæng er en sammenhæng givet ved følgende formel:
+    En variabelsammenhæng er en sammenhæng mellem en uafhængig variabel, ofte
+    kaldet $x$, og en afhængig variabel, ofte kaldet $y$.
+\end{mydef}
+
+\begin{mydef}
+    En lineær sammenhæng er en variabelsammenhæng givet ved følgende ligning:
     $$
     y = a\cdot x + b
     $$
@@ -50,10 +87,13 @@ Vi begynder dette kapitel med at se på nogle eksempler.
     
     Tallet $a$ kaldes "hældning" og tallet $b$ kaldes "skæring med $y$-aksen".
 \end{mydef}
-Grafen for en lineær sammenhæng vil altid være en ret linje. Der gælder også
-omvendt, at enhver ret linje kan beskrives ved en lineær sammenhæng, dog ikke hvis linjen er lodret.
 
-[Billede af forskellige rette linjer]
+\begin{thm}
+    Grafen for en lineær sammenhæng er en ret linje.
+    Linjens placering i et koordinatsystem er bestemt af tallen $a$ og $b$.
+    Således er $a$ linjens hældning, dvs $y$ vokser med $a$ hver gang $x$ vokser med 1.
+    Linjen skærer $y$-aksen i punktet $(0, b)$.
+\end{thm}
 
 Eksempler på lineære sammenhænge er:
 
@@ -64,6 +104,8 @@ Eksempler på lineære sammenhænge er:
     $\bullet\quad y=3x$    & Her er $a=3$ og $b=0$.
 \end{tabular}
 
+
+[Billede af forskellige rette linjer]
 
 \subsection{$y=ax+b$}
 \subsection{$y=ax$}
