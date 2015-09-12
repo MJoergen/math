@@ -35,7 +35,7 @@
 \maketitle
 
 \section{Indledning}
-I dette kapitel skal vi arbejde med lineære variabelsammenhænge.
+I dette afsnit skal vi arbejde med lineære variabelsammenhænge.
 Vi begynder med at kigge på nogle eksempler.
 
 \subsection{Eksempel}
@@ -84,38 +84,209 @@ kilometerstenen.
     y = a\cdot x + b
     $$
     hvor $a$ og $b$ er tal.
-    
-    Tallet $a$ kaldes "hældning" og tallet $b$ kaldes "skæring med $y$-aksen".
 \end{mydef}
 
 \begin{thm}
-    Grafen for en lineær sammenhæng er en ret linje.
-    Linjens placering i et koordinatsystem er bestemt af tallen $a$ og $b$.
-    Således er $a$ linjens hældning, dvs $y$ vokser med $a$ hver gang $x$ vokser med 1.
-    Linjen skærer $y$-aksen i punktet $(0, b)$.
+    Grafen for en lineær sammenhæng er en ret linje.  Linjens placering i et
+    koordinatsystem er bestemt af tallen $a$ og $b$.  Således er $a$ linjens
+    hældning, dvs $y$ vokser med $a$ hver gang $x$ vokser med 1.  Linjen skærer
+    $y$-aksen i punktet $(0; b)$.  Tallet $a$ kaldes derfor linjens "hældning"
+    og tallet $b$ kaldes linjens "skæring med $y$-aksen".
 \end{thm}
 
 Eksempler på lineære sammenhænge er:
 
 \begin{tabular}{ll}
-    $\bullet\quad y=2x+1$  & Her er $a=2$ og $b=1$. \\
-    $\bullet\quad y=-3x-4$ & Her er $a=-3$ og $b=-4$. \\
-    $\bullet\quad y=1-x$   & Her er $a=-1$ og $b=1$. \\
+    $\bullet\quad y=3x-5$  & Her er $a=3$ og $b=-5$. \\
+    $\bullet\quad y=-2x+1$ & Her er $a=-2$ og $b=1$. \\
+    $\bullet\quad y=4-x$   & Her er $a=-1$ og $b=4$. \\
     $\bullet\quad y=3x$    & Her er $a=3$ og $b=0$.
 \end{tabular}
 
-
 [Billede af forskellige rette linjer]
 
-\subsection{$y=ax+b$}
-\subsection{$y=ax$}
-\subsection{Betydning af $a$ og $b$}
-\subsection{Grafens udseende}
+Vi kan opstille en tabel ("sildeben") over koordinater $(x; y)$, der passer i
+ligningen $y=3x-5$:
+$$
+\begin{tabular}{c|c|c|c|c|c|c}
+    x &  -2 & -1 &  0 &  1 & 2 & 3 \\
+    \hline
+    y & -11 & -8 & -5 & -2 & 1 & 4
+\end{tabular}
+$$
+Linjen går altså gennem punkterne $(0; -5)$, $(1; -2)$ osv, se figur 3.2.
+
+\section{Ligefrem proportionalitet}
+Man bruger den talemåde, at to variabler $x$ og $y$ er {\em ligefrem
+proportionale} (eller blot: proportionale), hvis de "stiger og falder i samme
+takt". Vi skal se på, hvad denne lidt løse udtalelse dækker over.
+
+Hvis en bil kører med konstant hastighed, f.eks. 90 km/t, kan vi opstille en
+tabel over sammenhængen mellem tiden $x$ og den tilbagelagte afstand $y$:
+$$
+\begin{tabular}{c|c|c|c|c|c|c}
+    x ({\rm min}) & 10 & 20 & 30 & 40 & 60 & 120 \\
+    \hline
+    y ({\rm km})  & 15 & 30 & 45 & 60 & 90 & 180  
+\end{tabular}
+$$
+Vi ser, at $y$ netop er $1,5$ gange så stor som $x$, så sammenhængen mellem $x$
+og $y$ kan udtrykkes som
+$$
+y = 1,5\cdot x
+$$
+Talemåden "$y$ ændrer sig i samme takt som $x$" betyder netop, at $x$ skal
+ganges med et fast tal (her $1,5$) for at give $y$. Man kan også udtrykke det
+sådan:
+\begin{itemize}
+    \item Når $x$ bliver dobbelt så stor, bliver $y$ også dobbelt så stor.
+    \item Når $x$ bliver tre gange så stor, bliver $y$ også tre gange så stor.
+    \item osv.
+\end{itemize}
+Hvis man med konstant hastighed kører dobbelt så lang tid, tilbagelægger man
+også dobbelt så lang afstand, se figur 3.6.
+
+I dette tilfælde er tidsrummet $x$ og afstanden $y$ proportionale, og tallet
+$1,5$ kaldes proportionalitetsfaktoren, fordi det netop er en faktor foran $x$.
+
+Man kan også sige, at forholdet mellem $y$ og $x$ er konstant, fordi vi får:
+$$
+y = 1,5\cdot x \, \Leftrightarrow \, \frac{y}{x} = 1,5
+$$
+Forholdet mellem afstand og tid kaldes hastighed, og tallet angiver her netop
+hastigheden: bilen kører med en hastighed på $1,5$ km/min, svarende til $90$
+km/t.
+
+Sammenhængen illustreres som en ret linje gennem $(0;0)$ med hældningen $1,5$.
+
+\begin{mydef}
+    To variabler $x$ og $y$ kaldes proportionale, hvis der findes et tal $k$, så
+    $$
+    y = k\cdot x \, {\rm eller} \, \frac{y}{x} = k
+    $$
+    Tallet $k$ kaldes proportionalitetsfaktoren. Sammenhængen mellem $x$ og $y$
+    illustreres i koordinatsystemet af en ret linje gennem $(0; 0)$ med 
+    hældning $k$.
+\end{mydef}
+
+\section{Linje gennem to punkter}
+Vi vil bestemme hældningen for en linje, der går gennem
+to punkter med kendte koordinater. Vi viser følgende sætning:
+\begin{thm}
+    Hvis $A(x_1; y_1)$ og $B(x_2; y_2)$ er to punkter på en ret linje, der ikke
+    er lodret, er hældningen $a$ bestemt ved
+    $$
+    a = \frac{y_2-y_1}{x_2-x_1}
+    $$
+\end{thm}
+\begin{proof}
+    Linjens ligning er 
+    $$
+    y = a\cdot x + b
+    $$
+    og netop de punkter, som ligger på linjen, har koordinater, der passer i
+    ligningen.  Da $A$ og $B$ ligger på linjen, passer deres koordinater altså
+    i ligningen, dvs.
+    $$
+    y_1 = a\cdot x_1 + b \, {\rm og} \, y_2 = a\cdot x_2 + b 
+    $$
+    Vi trækker den første ligning fra den sidste og får
+    \bas
+    y_2 - y_1 &=& a\cdot x_2 + b - (a\cdot x_1 + b) \\
+              &=& a\cdot x_2 - a\cdot x_1 \\
+              &=& a\cdot \left(x_2-x_1\right) 
+    \eas
+    altså
+    $$
+    a = \frac{y_2-y_1}{x_2-x_1}
+    $$
+    og det var netop, hvad vi ville vise.
+\end{proof}
+
+Læg mærke til, at vi i den sidste ligning har divideret med tallet $x_2-x_1$ på
+begge sider af lighedstegnet. Dette tal er nemlig ikke $0$, fordi $x_1$ og
+$x_2$ er forskellige tal -- vi har jo netop forudsat, at linjen ikke er lodret.
+
+I formlen for hældningen $a$ angiver tælleren $y_2-y_1$ den lodrette afstand
+mellem punkterne $A$ og $B$, mens nævneren $x_2-x_1$ angiver den vandrette
+afstand. Vi kan derfor lidt populært sige, at
+$$
+a = \pm \frac{\rm lodret afstand}{\rm vandret afstand}
+$$
+Her står $\pm$ for at minde om, at der skal anbringes et minus foran brøken,
+hvis hældningen er negativ.
+\begin{eks}
+    Vi ser på linjen $m$ gennem $A(-1; 3)$ og $B(4; 5)$.
+    Linjens hældning er
+    $$
+    a = \frac{5-3}{4-(-1)} = \frac{2}{5}
+    $$
+\end{eks}
+
+Når man har beregnet hældningen $a$ så vil man også gerne bestemme skæringen
+$b$.
+\begin{thm}
+    Hvis $A(x_1; y_1)$ er et punkt på en ret linje, og linjen har hældningen
+    $a$, så er skæringen $b$ bestemt ved
+    $$
+    b = y_1 - a\cdot x_1
+    $$
+\end{thm}
+\begin{proof}
+    Linjens ligning er 
+    $$
+    y = a\cdot x + b
+    $$
+    og netop de punkter, som ligger på linjen, har koordinater, der passer i
+    ligningen.  Da $A$ ligger på linjen, passer dens koordinater altså i
+    ligningen, dvs.
+    $$
+    y_1 = a\cdot x_1 + b 
+    $$
+    Heri isoleres $b$:
+    $$
+    b = y_1 - a\cdot x_1
+    $$
+\end{proof}
+
+Bemærk, at linjens ligning kan også skrives som
+\bas
+y &=& a\cdot x + y_1 - a\cdot x_1 \\
+  &=& a\cdot (x-x_1) + y_1 
+\eas
+
+
 \section{Løse førstegradsligninger}
-\section{To ligninger med to ubekendte}
-\section{Linjens ligning (hældning og punkt)}
-\section{Bestemmelse af $a$ og $b$}
+
+\section{Skæring mellem linjer}
+Hvis to linjers ligninger er kendt, vil vi finde koordinaterne til linjernes
+skæringspunkt (hvis de ikke er parallelle).
+
+Linjerne $m$ og $n$ har f.eks. ligningner
+$$
+m: y=\frac{3}{4}x+2\,{\rm og}\,n: y=-\frac{1}{2}x+4\frac{1}{2}
+$$
+I skæringspunktet mellem linjerne skal $y$-værdien for de to linjer være den
+samme, så der må gælde, at
+$$
+\frac{3}{4}x+2=-\frac{1}{2}x+4\frac{1}{2}
+$$
+og denne ligning løses lettest ved at gange med brøkernes fællesnævner $4$ på
+begge sider:
+$$
+3x+8 = -2x+18\,\Leftrightarrow\,5x=10\,\Leftrightarrow\,x=2.
+$$
+Denne værdi af $x$ indsættes i en af ligningerne, ligegyldig hvilken:
+$$
+y=-\frac{1}{2}\cdot 2+4\frac{1}{2} = -1+4\frac12 = 3\frac12.
+$$
+Skæringspunktet har altså koordinaterne $(2; 3\frac12)$, hvilket ser ud til at
+stemme med figuren.
+
 \section{Lineær regression og vækst}
+I mange tilfælde undersøger vi data, som kun tilnærmelsesvist passer med en ret
+linje. Vi ser på et eksempel.
+
 \subsection{Måling af sands densitet}
 [Billede af måleglas med sand ovenpå en vægt]
 
@@ -140,6 +311,24 @@ ligger meget tæt på denne linje.  Der er altså en sammenhæng mellem vægtens
 visning og mængden af sandet. Da grafen passer med en ret linje, kalder vi
 denne sammenhæng for en {\em lineær sammenhæng}.
 
+Hældningen $a$ fortolkes som det vægten stiger med (i gram), når der tilføres 
+$1\, {\rm cm}^3$ sand. Dette kaldes for sandets {\em densitet}. Vi ser således, 
+at sand har en densitet på ca. $1,8\, {\rm g}/{\rm cm}^3$.
+
+Med et CAS-værktøj er det muligt at beregne den "bedste" rette linje ud fra
+nogle givne punkter. Dette kaldes {\em lineær regression}, og den beregnede
+linje kaldes {\em regressionslinjen}. Nogle steder kaldes det også for
+tendenslinjen.
+
+\subsection{Korrelation}
+Det er muligt at angive et tal for, hvor godt linjen passer med de givne
+punkter.  De fleste CAS-værktøjer vil udover linjens ligning og give en {\em
+korrelationskoefficient}.  Denne vil altid være mellem $0$ og $1$. Værdien er
+præcis $1$ netop når punkterne ligger præcist på en ret linje.  I praksis vil
+man anse den lineære sammenhæng for god, når korrelationskoefficienten er
+$0,99$ eller derover.
+
+
 \subsection{Et lys der brænder}
 [Billede af et brændende stearinlys på en vægt]
 
@@ -162,7 +351,6 @@ På figuren er også indtegnet en ret linje, og det er tydeligt, at punkterne
 ligger meget tæt på denne linje.  Der er altså også her en lineær sammenhæng
 mellem vægtens visning og den tid lyset har brændt.
 
-\subsection{Korrelation}
 \section{Intervaller og uligheder}
 
 \end{document}
