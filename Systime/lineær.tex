@@ -1,0 +1,51 @@
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+%\usepackage{graphicx}
+\usepackage{amsfonts}
+\usepackage{amsthm}        % Theorems
+\usepackage{amsmath}
+%\usepackage{hyperref}
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+\newcommand{\be}{\begin{equation}}
+\newcommand{\ee}{\end{equation}}
+\newcommand{\bea}{\begin{eqnarray}}
+\newcommand{\eea}{\end{eqnarray}}
+
+\newtheorem{thm}{Sætning}[section]
+\newtheorem{mydef}[thm]{Definition}
+\newtheorem{eks}[thm]{Eksempel}
+
+\title{Lineære funktioner}
+\date{September 2015}
+
+\begin{document}
+
+\maketitle
+
+\section{Eksempler på sammenhænge}
+\section{Lineære funktioner}
+\subsection{$y=ax+b$}
+\subsection{$y=ax$}
+\subsection{Betydning af $a$ og $b$}
+\subsection{Grafens udseende}
+\section{Løse førstegradsligninger}
+\section{To ligninger med to ubekendte}
+\section{Linjens ligning (hældning og punkt)}
+\section{Bestemmelse af $a$ og $b$}
+\section{Lineær regression og vækst}
+\subsection{Korrelation}
+\section{Intervaller og uligheder}
+
+\end{document}
+
+
