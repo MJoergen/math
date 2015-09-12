@@ -25,7 +25,7 @@
 \newtheorem{mydef}[thm]{Definition}
 \newtheorem{eks}[thm]{Eksempel}
 
-\title{Lineære funktioner}
+\title{Lineære sammenhænge}
 \date{September 2015}
 
 \begin{document}
@@ -33,7 +33,38 @@
 \maketitle
 
 \section{Eksempler på sammenhænge}
-\section{Lineære funktioner}
+I dette kapitel skal vi arbejde med variabelsammenhænge.
+
+\begin{mydef}
+En variabelsammenhæng er en sammenhæng mellem en uafhængig variabel, ofte kaldet $x$, og en afhængig variabel, ofte kaldet $y$.
+\end{mydef}
+
+Vi begynder dette kapitel med at se på nogle eksempler.
+\section{Lineære sammenhænge}
+\begin{mydef}
+    En lineær sammenhæng er en sammenhæng givet ved følgende formel:
+    $$
+    y = a\cdot x + b
+    $$
+    hvor $a$ og $b$ er tal.
+    
+    Tallet $a$ kaldes "hældning" og tallet $b$ kaldes "skæring med $y$-aksen".
+\end{mydef}
+Grafen for en lineær sammenhæng vil altid være en ret linje. Der gælder også
+omvendt, at enhver ret linje kan beskrives ved en lineær sammenhæng, dog ikke hvis linjen er lodret.
+
+[Billede af forskellige rette linjer]
+
+Eksempler på lineære sammenhænge er:
+
+\begin{tabular}{ll}
+    $\bullet\quad y=2x+1$  & Her er $a=2$ og $b=1$. \\
+    $\bullet\quad y=-3x-4$ & Her er $a=-3$ og $b=-4$. \\
+    $\bullet\quad y=1-x$   & Her er $a=-1$ og $b=1$. \\
+    $\bullet\quad y=3x$    & Her er $a=3$ og $b=0$.
+\end{tabular}
+
+
 \subsection{$y=ax+b$}
 \subsection{$y=ax$}
 \subsection{Betydning af $a$ og $b$}
@@ -43,6 +74,52 @@
 \section{Linjens ligning (hældning og punkt)}
 \section{Bestemmelse af $a$ og $b$}
 \section{Lineær regression og vækst}
+\subsection{Måling af sands densitet}
+[Billede af måleglas med sand ovenpå en vægt]
+
+Vi stiller et måleglas ovenpå en vægt og hælder gradvist sand i glasset. Vi
+aflæser sandets rumfang i ${\rm cm}^3$ og kalder det for $x$. Vi aflæser også
+vægtens visning i gram og kalder det for $y$. Det kunne f.eks. give følgende
+tabel:
+$$
+\begin{tabular}{c|c|c|c|c|c|c}
+    x &   0 &  50 & 100 & 150 & 200 & 250 \\
+    \hline
+    y & 300 & 400 & 500 & 600 & 700 & 800
+\end{tabular}
+$$
+Hvis vi afsætter disse punkter i et koordinatsystem, så får vi følgende figur:
+
+[Billede af graf af ovenstående punkter]
+
+Vi ser således, at når mængden af sand øges, så stiger vægten. 
+På figuren er også indtegnet en ret linje, og det er tydeligt, at punkterne
+ligger meget tæt på denne linje.  Der er altså en sammenhæng mellem vægtens
+visning og mængden af sandet. Da grafen passer med en ret linje, kalder vi
+denne sammenhæng for en {\em lineær sammenhæng}.
+
+\subsection{Et lys der brænder}
+[Billede af et brændende stearinlys på en vægt]
+
+Vi stiller et stearinlys ovenpå en vægt og antænder lyset. Efter lidt tid måler
+vi tiden i minutter og kalder det for $x$. Vi aflæser også vægtens visning i
+gram og kalder det for $y$. Det kunne f.eks. give følgende tabel:
+$$
+\begin{tabular}{c|c|c|c|c|c|c}
+    x &  0 &  5 & 10 & 15 & 20 & 25 \\
+    \hline
+    y & 30 & 29 & 28 & 27 & 26 & 25
+\end{tabular}
+$$
+Hvis vi afsætter disse punkter i et koordinatsystem, så får vi følgende figur:
+
+[Billede af graf af ovenstående punkter]
+
+Vi ser således, at når tiden går, så bliver vægten mindre.
+På figuren er også indtegnet en ret linje, og det er tydeligt, at punkterne
+ligger meget tæt på denne linje.  Der er altså også her en lineær sammenhæng
+mellem vægtens visning og den tid lyset har brændt.
+
 \subsection{Korrelation}
 \section{Intervaller og uligheder}
 
