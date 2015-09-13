@@ -1,0 +1,88 @@
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+\usepackage{graphicx}
+\usepackage{amsfonts}
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+
+\begin{document}
+
+\section*{Opgave 103}
+
+I $\Delta ABP$ er $A=45^\circ$ og $B=15^\circ$. Siden $AP$ forlænges ud over
+$P$ til $C$, så $PC = 2\cdot AP$. Vi skal vise, at $\angle ACB = 75^\circ$.
+
+Vi har umiddelbart, at $\angle APB = 120^\circ$.  Sinusrelationerne i $\Delta
+ABP$ giver derefter:
+$$
+AB = AP \cdot \frac{\sin 120^\circ}{\sin 15^\circ}
+$$
+Kald nu den søgte vinkel $\angle ACB$ for $y$.  Da er $\angle ABC = 135^\circ -
+y$.  Så giver sinusrelationerne i
+$\Delta ABC$:
+$$
+AB = AC \cdot \frac{\sin (y)}{\sin(135^\circ-y)}
+$$
+Kombineres disse to ligninger, sammen med $AC = 3 \cdot AP$ giver det
+$$
+\frac{\sin 120^\circ}{\sin 15^\circ} = 3 \cdot \frac{\sin (y)}{\sin(135^\circ-y)}
+$$
+som kan omskrives til:
+$$
+\sin 120^\circ \cdot \sin(135^\circ - y) = 3 \cdot \sin 15^\circ \cdot \sin(y)
+$$
+Denne ligning skal nu løses.
+
+Additionsformlerne giver:
+$$
+\sin 120^\circ \cdot \left(\sin 135^\circ \cdot \cos (y) - \cos 135^\circ \cdot \sin
+(y)\right) = 3 \cdot \sin 15^\circ \cdot \sin(y)
+$$
+som reduceres til:
+$$
+\sin 60^\circ \cdot \sin 45^\circ \cdot (\cos(y) + \sin(y)) = 3 \cdot \sin 15^\circ \cdot \sin(y)
+$$
+Efter nogle flere omskrivninger kan det skrives som:
+$$
+\tan(y) = \frac{\sin 60^\circ \cdot \sin 45^\circ}{3\cdot\sin15^\circ -
+\sin 60^\circ \cdot \sin 45^\circ}
+$$
+
+Additionsformlerne bruges igen, denne gang til at omskrive:
+$$
+\sin 60^\circ = \sin(45^\circ + 15^\circ) = \sin 45^\circ \cdot (
+\cos 15^\circ + \sin 15^\circ)
+$$
+Ved dernæst at benytte, at $2\sin^2 45^\circ = 1$ reducerer ligningen til:
+$$
+\tan(y) = \frac{\sin 15^\circ + \cos 15^\circ}{5\cdot\sin 15^\circ - \cos
+15^\circ}
+$$
+Der forkortes med $\cos 15^\circ$:
+$$
+\tan(y) = \frac{\tan 15^\circ + 1}{5 \cdot \tan 15^\circ - 1}
+$$
+
+Heri indsættes $\tan 15^\circ = 2 - \sqrt{3}$. Det giver
+\bas
+\tan(y) &=& \frac{3-\sqrt{3}}{9-5\sqrt{3}} \\
+        &=& \frac{(3-\sqrt{3})(9+5\sqrt{3})}{81-25\cdot 3} \\
+        &=& 2 + \sqrt{3}
+\eas
+Dette sidste genkender vi som $\tan 75^\circ$. Vi har dermed vist, at
+$\angle ACB = 75^\circ$.
+
+
+
+
+\end{document}
+

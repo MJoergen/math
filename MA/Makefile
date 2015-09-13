@@ -4,6 +4,7 @@ names += opg2.tex
 names += side3168.tex
 names += side3172.tex
 names += opg321.tex
+names += opg103.tex
 tex_pdfs   = $(names:.tex=.pdf)
 
 pics   = fig1.asy
