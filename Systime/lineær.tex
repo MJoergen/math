@@ -35,10 +35,10 @@
 \maketitle
 
 \section{Indledning}
-I dette afsnit skal vi arbejde med lineære variabelsammenhænge.
-Vi begynder med at kigge på nogle eksempler.
+Vi skal i dette afsnit beskæftige os med lineære sammenhænge mellem to variable
+størrelser $x$ og $y$.  Vi begynder med at kigge på nogle eksempler.
 
-\subsection{Eksempel}
+\subsection{Eksempel (kopi af eksempel 3.1 i Mat-C bogen)}
 Et teleselskab har et simpelt takstsystem:
 \begin{itemize}
     \item Abonnement 20 kr. pr. måned, samt 0,50 kr. pr. talt minut.
@@ -53,13 +53,15 @@ y = 20 + 0,50\cdot x
 $$
 Man siger, at der er en {\em lineær sammenhæng} mellem samtaletiden og prisen.
 
-Hvis vi tegner sammenhængen i et koordinatsystem med antallet af minutter på
-$x$-aksen og prisen på $y$-aksen, så vil grafen danne en ret linje med hældning
-$0,50$ og som skærer $y$-aksen i tallet $20$, se figur 3.5.
+Hvis vi afbilder sammenhængen i et koordinatsystem med antallet af minutter på
+$x$-aksen og prisen på $y$-aksen, vil sammenhørende værdier af $x$ og $y$ (dvs
+af taletid og pris) udgøre en ret linje med hældning $0,50$, som skærer
+$y$-aksen i tallet $20$ (det koster 20 kroner at tale i 0 minutter), se figur
+3.5.
 
-Hældningen $0,50$ angiver prisstigningen for hvert ekstra minut, der tales.
-Således er prisen for 20 minutters samtale 30 kr., og for 21 minutters
-samtale 30,50 kr.
+Hældningen $0,50$ angiver prisstigningen for hvert ekstra minut, der tales --
+den er 0,40 kroner.  Prisen for 20 minutters samtale er 30 kr., og for 21
+minutters samtale er den 30,50 kr.
 
 \subsection{Eksempel}
 En prøvekørsel af en bil begynder ved 5-km stenen uden for en by. Bilen kører
@@ -86,14 +88,6 @@ kilometerstenen.
     hvor $a$ og $b$ er tal.
 \end{mydef}
 
-\begin{thm}
-    Grafen for en lineær sammenhæng er en ret linje.  Linjens placering i et
-    koordinatsystem er bestemt af tallen $a$ og $b$.  Således er $a$ linjens
-    hældning, dvs $y$ vokser med $a$ hver gang $x$ vokser med 1.  Linjen skærer
-    $y$-aksen i punktet $(0; b)$.  Tallet $a$ kaldes derfor linjens "hældning"
-    og tallet $b$ kaldes linjens "skæring med $y$-aksen".
-\end{thm}
-
 Eksempler på lineære sammenhænge er:
 
 \begin{tabular}{ll}
@@ -103,7 +97,16 @@ Eksempler på lineære sammenhænge er:
     $\bullet\quad y=3x$    & Her er $a=3$ og $b=0$.
 \end{tabular}
 
-[Billede af forskellige rette linjer]
+[FIGUR 3.4]
+
+\begin{thm}
+    For linjen med ligningen
+    $$
+    y = a\cdot x + b
+    $$
+    gælder, at $a$ er linjens hældning, dvs linjen vokser med $a$ enheder, når $x$
+    vokser med 1 enhed. Punktet $(0; b)$ er linjens skæringspunkt med $y$-aksen.
+\end{thm}
 
 Vi kan opstille en tabel ("sildeben") over koordinater $(x; y)$, der passer i
 ligningen $y=3x-5$:
@@ -116,7 +119,9 @@ $$
 $$
 Linjen går altså gennem punkterne $(0; -5)$, $(1; -2)$ osv, se figur 3.2.
 
-\section{Ligefrem proportionalitet}
+[FIGUR 3.2]
+
+\section{Ligefrem proportionalitet (kopi af afsnit i Mat-C bogen)}
 Man bruger den talemåde, at to variabler $x$ og $y$ er {\em ligefrem
 proportionale} (eller blot: proportionale), hvis de "stiger og falder i samme
 takt". Vi skal se på, hvad denne lidt løse udtalelse dækker over.
@@ -169,6 +174,10 @@ Sammenhængen illustreres som en ret linje gennem $(0;0)$ med hældningen $1,5$.
     hældning $k$.
 \end{mydef}
 
+\subsection{Eksempel (sammenhæng mellem masse og volumen)}
+
+\subsection{Eksempel (kopi af eksempel 3.4)}
+
 \section{Linje gennem to punkter}
 Vi vil bestemme hældningen for en linje, der går gennem
 to punkter med kendte koordinater. Vi viser følgende sætning:
@@ -211,15 +220,15 @@ I formlen for hældningen $a$ angiver tælleren $y_2-y_1$ den lodrette afstand
 mellem punkterne $A$ og $B$, mens nævneren $x_2-x_1$ angiver den vandrette
 afstand. Vi kan derfor lidt populært sige, at
 $$
-a = \pm \frac{\rm lodret afstand}{\rm vandret afstand}
+a = \pm \frac{\mbox{lodret afstand}}{\mbox{vandret afstand}}
 $$
 Her står $\pm$ for at minde om, at der skal anbringes et minus foran brøken,
 hvis hældningen er negativ.
 \begin{eks}
-    Vi ser på linjen $m$ gennem $A(-1; 3)$ og $B(4; 5)$.
+    Vi ser på linjen $l$ gennem $A(-1; 3)$ og $B(4; 5)$.
     Linjens hældning er
     $$
-    a = \frac{5-3}{4-(-1)} = \frac{2}{5}
+    a = \frac{5-3}{4-(-1)} = \frac{2}{5} = 0,4
     $$
 \end{eks}
 
@@ -249,22 +258,27 @@ $b$.
     $$
 \end{proof}
 
+\begin{thm}
 Bemærk, at linjens ligning kan også skrives som
 \bas
 y &=& a\cdot x + y_1 - a\cdot x_1 \\
   &=& a\cdot (x-x_1) + y_1 
 \eas
+\end{thm}
+\begin{proof}
+    TADA
+\end{proof}
 
 
-\section{Løse førstegradsligninger}
+\section{Løse førstegradsligninger (kopi af afsnittet ligninger fra Mat-A1 bogen)}
 
 \section{Skæring mellem linjer}
 Hvis to linjers ligninger er kendt, vil vi finde koordinaterne til linjernes
 skæringspunkt (hvis de ikke er parallelle).
 
-Linjerne $m$ og $n$ har f.eks. ligningner
+Linjerne $l$ og $m$ har f.eks. ligningner
 $$
-m: y=\frac{3}{4}x+2\,{\rm og}\,n: y=-\frac{1}{2}x+4\frac{1}{2}
+l: y=\frac{3}{4}x+2\,\,{\mbox{og}}\,\,m: y=-\frac{1}{2}x+4\frac{1}{2}
 $$
 I skæringspunktet mellem linjerne skal $y$-værdien for de to linjer være den
 samme, så der må gælde, at
@@ -283,16 +297,17 @@ $$
 Skæringspunktet har altså koordinaterne $(2; 3\frac12)$, hvilket ser ud til at
 stemme med figuren.
 
-\section{Lineær regression og vækst}
+\section{Lineær regression og vækst (se Mat-A2 bogen)}
 I mange tilfælde undersøger vi data, som kun tilnærmelsesvist passer med en ret
 linje. Vi ser på et eksempel.
 
 \subsection{Måling af sands densitet}
 [Billede af måleglas med sand ovenpå en vægt]
 
+HENVIS TIL EKSEMPEL 3.2 TIDLIGERE.
+
 Vi stiller et måleglas ovenpå en vægt og hælder gradvist sand i glasset. Vi
-aflæser sandets rumfang i ${\rm cm}^3$ og kalder det for $x$. Vi aflæser også
-vægtens visning i gram og kalder det for $y$. Det kunne f.eks. give følgende
+aflæser sandets rumfang og vægtens visning . Det kunne f.eks. give følgende
 tabel:
 $$
 \begin{tabular}{c|c|c|c|c|c|c}
@@ -301,6 +316,12 @@ $$
     y & 300 & 400 & 500 & 600 & 700 & 800
 \end{tabular}
 $$
+hvor vi har følgende identifikationer:
+\begin{itemize}
+    \item $x$ er sandets rumfang i ${\rm cm}^3$
+    \item $y$ er vægtens visning i gram.
+\end{itemize}
+
 Hvis vi afsætter disse punkter i et koordinatsystem, så får vi følgende figur:
 
 [Billede af graf af ovenstående punkter]
@@ -311,9 +332,13 @@ ligger meget tæt på denne linje.  Der er altså en sammenhæng mellem vægtens
 visning og mængden af sandet. Da grafen passer med en ret linje, kalder vi
 denne sammenhæng for en {\em lineær sammenhæng}.
 
+\subsubsection{Fortolkning af $a$ og $b$}
 Hældningen $a$ fortolkes som det vægten stiger med (i gram), når der tilføres 
 $1\, {\rm cm}^3$ sand. Dette kaldes for sandets {\em densitet}. Vi ser således, 
 at sand har en densitet på ca. $1,8\, {\rm g}/{\rm cm}^3$.
+
+Tallet $b$ fortolkes som vægten af selve måleglasset, idet det jo er vægtens
+visning, når måleglasset er tomt.
 
 Med et CAS-værktøj er det muligt at beregne den "bedste" rette linje ud fra
 nogle givne punkter. Dette kaldes {\em lineær regression}, og den beregnede
