@@ -28,7 +28,6 @@
 \DeclareMathSymbol{,}{\mathord}{letters}{"3B}
 
 \title{Linearitet}
-\date{September 2015}
 
 \begin{document}
 
@@ -59,8 +58,10 @@ af taletid og pris) udgøre en ret linje med hældning $0,50$, som skærer
 $y$-aksen i tallet $20$ (det koster 20 kroner at tale i 0 minutter), se figur
 3.5.
 
+[FIGUR 3.5]
+
 Hældningen $0,50$ angiver prisstigningen for hvert ekstra minut, der tales --
-den er 0,40 kroner.  Prisen for 20 minutters samtale er 30 kr., og for 21
+den er 0,50 kroner.  Prisen for 20 minutters samtale er 30 kr., og for 21
 minutters samtale er den 30,50 kr.
 
 \subsection{Eksempel}
@@ -88,7 +89,7 @@ kilometerstenen.
     hvor $a$ og $b$ er tal.
 \end{mydef}
 
-Eksempler på lineære sammenhænge er:
+Eksempler på sådanne lineære sammenhænge er (se figur xx):
 
 \begin{tabular}{ll}
     $\bullet\quad y=3x-5$  & Her er $a=3$ og $b=-5$. \\
@@ -97,18 +98,22 @@ Eksempler på lineære sammenhænge er:
     $\bullet\quad y=3x$    & Her er $a=3$ og $b=0$.
 \end{tabular}
 
-[FIGUR 3.4]
+[FIGUR SOM VISER OVENSTÅENDE RETTE LINJER]
+
+Vi interesserer os for de koordinatsæt $(x,\,y)$, der passer i en sådan lineær
+sammenhæng. Fra folkeskolen vides, at sådanne koordinatsæt udgør en ret linje.
 
 \begin{thm}
     For linjen med ligningen
     $$
     y = a\cdot x + b
     $$
-    gælder, at $a$ er linjens hældning, dvs linjen vokser med $a$ enheder, når $x$
-    vokser med 1 enhed. Punktet $(0; b)$ er linjens skæringspunkt med $y$-aksen.
+    gælder, at $a$ er linjens hældning, dvs linjen vokser med $a$ enheder, når
+    $x$ vokser med 1 enhed. Punktet $(0,\,b)$ er linjens skæringspunkt med
+    $y$-aksen.
 \end{thm}
 
-Vi kan opstille en tabel ("sildeben") over koordinater $(x; y)$, der passer i
+Vi kan opstille en tabel ("sildeben") over koordinater $(x,\,y)$, der passer i
 ligningen $y=3x-5$:
 $$
 \begin{tabular}{c|c|c|c|c|c|c}
@@ -117,9 +122,26 @@ $$
     y & -11 & -8 & -5 & -2 & 1 & 4
 \end{tabular}
 $$
-Linjen går altså gennem punkterne $(0; -5)$, $(1; -2)$ osv, se figur 3.2.
+Linjen går altså gennem punkterne $(0,\-5)$, $(1,\,-2)$ osv, se figur 3.2.
 
 [FIGUR 3.2]
+
+Hældningen er illustreret på figur 3.3. Hvis $x$ vokser til $x+1$, så vokser
+$y$ fra $y_1$ til $y_2$ og forskellen $y_2-y_1$ er netop $a$. Bemærk, at $a$
+også kan være negativ, nemlig når $y$ falder i værdi, når $x$ vokser.
+
+[FIGUR 3.3]
+
+Linjer med samme hældning er parallelle. Linjer med positiv hældning forløber
+opad mod højre, linjer med negativ hældning nedad mod højre. Linjer med
+hældning 0 er vandrette.  Sådanne linjer har en ligning af formen $y=0x+b$
+eller blot $y=b$.
+
+At tallet $b$ er linjens skæringspunkt med $y$-aksen følger af, at
+koordinatsættet $(0,\,b)$ passer i ligningen
+$$
+b = 0\cdot x+b
+$$
 
 \section{Ligefrem proportionalitet (kopi af afsnit i Mat-C bogen)}
 Man bruger den talemåde, at to variabler $x$ og $y$ er {\em ligefrem
