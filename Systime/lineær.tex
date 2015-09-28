@@ -173,6 +173,8 @@ sådan:
 Hvis man med konstant hastighed kører dobbelt så lang tid, tilbagelægger man
 også dobbelt så lang afstand, se figur 3.6.
 
+[FIGUR 3.6]
+
 I dette tilfælde er tidsrummet $x$ og afstanden $y$ proportionale, og tallet
 $1,5$ kaldes proportionalitetsfaktoren, fordi det netop er en faktor foran $x$.
 
@@ -184,22 +186,33 @@ Forholdet mellem afstand og tid kaldes hastighed, og tallet angiver her netop
 hastigheden: bilen kører med en hastighed på $1,5$ km/min, svarende til $90$
 km/t.
 
-Sammenhængen illustreres som en ret linje gennem $(0;0)$ med hældningen $1,5$.
+Sammenhængen illustreres som en ret linje gennem $(0,\,0)$ med hældningen $1,5$.
 
 \begin{mydef}
     To variabler $x$ og $y$ kaldes proportionale, hvis der findes et tal $k$, så
     $$
-    y = k\cdot x \, {\rm eller} \, \frac{y}{x} = k
+    y = k\cdot x \,\, {\rm eller} \,\, \frac{y}{x} = k
     $$
     Tallet $k$ kaldes proportionalitetsfaktoren. Sammenhængen mellem $x$ og $y$
-    illustreres i koordinatsystemet af en ret linje gennem $(0; 0)$ med 
+    illustreres i koordinatsystemet af en ret linje gennem $(0,\,0)$ med 
     hældning $k$.
 \end{mydef}
 
 \subsection{Eksempel (sammenhæng mellem masse og volumen)}
 
+Et eksempel på ligefrem proportionalitet er sammenhængen mellem masse og rumfang af sand.
+Der gælder nemlig, at en liter sand vejer ca. 1,8 kg. To liter sand vejer derfor ca. 3,6 kg,
+og generelt $x$ liter sand vejer $y$ kg, hvor
+$$
+y = 1,8 \cdot x
+$$
+Tallet $1,8$ er således vægten af én liter sand og det kaldes for sandets massefylde eller densitet.
+Grafen (se figur xx) går gennem $(0,\,0)$ fordi nul liter sand vejer ikke noget.
+
+[FIGUR]
+
 \subsection{Eksempel (kopi af eksempel 3.4)}
-I eksempel xx så vi på teleselskabet, hvor prisen $y$ (naturligvis) afhænger af
+I eksempel 1.1 så vi på teleselskabet, hvor prisen $y$ (naturligvis) afhænger af
 taletiden $x$ i minutter:
 $$
 y=20+0,5x
@@ -217,7 +230,7 @@ sådan som kravet til proportionalitet er.
 Vi vil bestemme hældningen for en linje, der går gennem
 to punkter med kendte koordinater. Vi viser følgende sætning:
 \begin{thm}
-    Hvis $A(x_1; y_1)$ og $B(x_2; y_2)$ er to punkter på en ret linje, der ikke
+    Hvis $A(x_1,\,y_1)$ og $B(x_2,\,y_2)$ er to punkter på en ret linje, der ikke
     er lodret, er hældningen $a$ bestemt ved
     $$
     a = \frac{y_2-y_1}{x_2-x_1}
@@ -232,7 +245,7 @@ to punkter med kendte koordinater. Vi viser følgende sætning:
     ligningen.  Da $A$ og $B$ ligger på linjen, passer deres koordinater altså
     i ligningen, dvs.
     $$
-    y_1 = a\cdot x_1 + b \, {\rm og} \, y_2 = a\cdot x_2 + b 
+    y_1 = a\cdot x_1 + b \,\, {\rm og} \,\, y_2 = a\cdot x_2 + b 
     $$
     Vi trækker den første ligning fra den sidste og får
     \bas
@@ -260,7 +273,7 @@ $$
 Her står $\pm$ for at minde om, at der skal anbringes et minus foran brøken,
 hvis hældningen er negativ.
 \begin{eks}
-    Vi ser på linjen $l$ gennem $A(-1; 3)$ og $B(4; 5)$.
+    Vi ser på linjen $l$ gennem $A(-1,\,3)$ og $B(4,\,5)$.
     Linjens hældning er
     $$
     a = \frac{5-3}{4-(-1)} = \frac{2}{5} = 0,4
@@ -270,7 +283,7 @@ hvis hældningen er negativ.
 Når man har beregnet hældningen $a$ så vil man også gerne bestemme skæringen
 $b$.
 \begin{thm}
-    Hvis $A(x_1; y_1)$ er et punkt på en ret linje, og linjen har hældningen
+    Hvis $A(x_1,\,y_1)$ er et punkt på en ret linje, og linjen har hældningen
     $a$, så er skæringen $b$ bestemt ved
     $$
     b = y_1 - a\cdot x_1
@@ -294,14 +307,19 @@ $b$.
 \end{proof}
 
 \begin{thm}
-Bemærk, at linjens ligning kan også skrives som
+    Hvis $A(x_1,\,y_1)$ er et punkt på en ret linje, og linjen har hældningen
+    $a$, så er linjens lignign givet ved
+    $$
+    y = a\cdot (x-x_1) + y_1 
+    $$
+\end{thm}
+\begin{proof}
+    Vi indsætter resultatet fra sætning 4.3 i linjens ligning:
 \bas
 y &=& a\cdot x + y_1 - a\cdot x_1 \\
   &=& a\cdot (x-x_1) + y_1 
 \eas
-\end{thm}
-\begin{proof}
-    TADA
+Dermed har vi vist det ønskede.
 \end{proof}
 
 
@@ -319,14 +337,15 @@ $$
 Hvis man foretager en række omformninger af en ligning for at finde en løsning,
 bruger man symbolet $\iff$ , en dobbeltpil (eller en biimplikation), mellem
 ligninger, der har de samme løsninger. Fx har vi
-$$
-2(3x - 1) = x - 4(2 - x)\iff 6x - 2 = x - 8 + 4x\iff
-6x - 2 = 5x - 8 \iff x = -6 \; .
-$$
+\bas
+&& 2(3x - 1) = x - 4(2 - x)\\
+&\iff& 6x - 2 = x - 8 + 4x\\
+&\iff& 6x - 2 = 5x - 8 \\
+&\iff& x = -6 
+\eas
 Hver af de fire ligninger har den samme løsning. Man siger, at sådanne
 ligninger er ensbetydende. Man kan også sige, at ensbetydende ligninger fremgår
-af hinanden ved ’lovlige’ omformninger. Nedenfor kommer vi ind på, hvad dette
-betyder.
+af hinanden ved ’lovlige’ omformninger.
 
 Vi anfører de vigtigste regler for løsning af ligninger.
 
@@ -337,25 +356,29 @@ Vi anfører de vigtigste regler for løsning af ligninger.
 Hvis to linjers ligninger er kendt, vil vi finde koordinaterne til linjernes
 skæringspunkt (hvis de ikke er parallelle).
 
-Linjerne $l$ og $m$ har f.eks. ligningner
+Linjerne $l$ og $m$ har f.eks. ligningerne (se figur xx)
 $$
-l: y=\frac{3}{4}x+2\,\,{\mbox{og}}\,\,m: y=-\frac{1}{2}x+4\frac{1}{2}
+l: y=0,5x+2\,\,{\mbox{og}}\,\,m: y=-3x+5
 $$
+
+[FIGUR]
+
 I skæringspunktet mellem linjerne skal $y$-værdien for de to linjer være den
 samme, så der må gælde, at
 $$
 \frac{3}{4}x+2=-\frac{1}{2}x+4\frac{1}{2}
 $$
-og denne ligning løses lettest ved at gange med brøkernes fællesnævner $4$ på
-begge sider:
-$$
-3x+8 = -2x+18\,\Leftrightarrow\,5x=10\,\Leftrightarrow\,x=2.
-$$
+og denne ligning løses på følgende måde:
+\bas
+&& 0,5x+3x=5+2\\
+&\iff& 3,5x=7\\
+&\iff& x=2
+\eas
 Denne værdi af $x$ indsættes i en af ligningerne, ligegyldig hvilken:
 $$
-y=-\frac{1}{2}\cdot 2+4\frac{1}{2} = -1+4\frac12 = 3\frac12.
+y=0,5\cdot2-2=-1
 $$
-Skæringspunktet har altså koordinaterne $(2; 3\frac12)$, hvilket ser ud til at
+Skæringspunktet har altså koordinaterne $(2,\,1)$, hvilket ser ud til at
 stemme med figuren.
 
 \section{Lineær regression og vækst (se Mat-A2 bogen)}
@@ -364,8 +387,6 @@ linje. Vi ser på et eksempel.
 
 \subsection{Måling af sands densitet}
 [Billede af måleglas med sand ovenpå en vægt]
-
-HENVIS TIL EKSEMPEL 3.2 TIDLIGERE.
 
 Vi stiller et måleglas ovenpå en vægt og hælder gradvist sand i glasset. Vi
 aflæser sandets rumfang og vægtens visning . Det kunne f.eks. give følgende
@@ -389,30 +410,27 @@ Hvis vi afsætter disse punkter i et koordinatsystem, så får vi følgende figu
 
 Vi ser således, at når mængden af sand øges, så stiger vægten. 
 På figuren er også indtegnet en ret linje, og det er tydeligt, at punkterne
-ligger meget tæt på denne linje.  Der er altså en sammenhæng mellem vægtens
-visning og mængden af sandet. Da grafen passer med en ret linje, kalder vi
-denne sammenhæng for en {\em lineær sammenhæng}.
+ligger meget tæt på denne linje.  Der er altså en tilnærmelses lineær
+sammenhæng mellem vægtens visning og mængden af sandet. 
 
 \subsubsection{Fortolkning af $a$ og $b$}
-Hældningen $a$ fortolkes som det vægten stiger med (i gram), når der tilføres 
-$1\, {\rm cm}^3$ sand. Dette kaldes for sandets {\em densitet}. Vi ser således, 
-at sand har en densitet på ca. $1,8\, {\rm g}/{\rm cm}^3$.
+Hældningen $a$ fortolkes som det vægten stiger med (i gram), når sandets
+rumfang (i ${\rm cm}^3$) øges med 1.  Dette kaldes for sandets {\em densitet}.
+Vi ser således, at sand har en densitet på ca. $1,8\, {\rm g}/{\rm cm}^3$.
 
 Tallet $b$ fortolkes som vægten af selve måleglasset, idet det jo er vægtens
 visning, når måleglasset er tomt.
 
 Med et CAS-værktøj er det muligt at beregne den "bedste" rette linje ud fra
 nogle givne punkter. Dette kaldes {\em lineær regression}, og den beregnede
-linje kaldes {\em regressionslinjen}. Nogle steder kaldes det også for
+linje kaldes {\em regressionslinjen}. Nogle steder kaldes dette også for
 tendenslinjen.
 
 \subsection{Korrelation}
 Det er muligt at angive et tal for, hvor godt linjen passer med de givne
 punkter.  De fleste CAS-værktøjer vil udover linjens ligning og give en {\em
-korrelationskoefficient}.  Denne vil altid være mellem $0$ og $1$. Værdien er
-præcis $1$ netop når punkterne ligger præcist på en ret linje.  I praksis vil
-man anse den lineære sammenhæng for god, når korrelationskoefficienten er
-$0,99$ eller derover.
+korrelationskoefficient}.  Denne vil altid være mellem $-1$ og $1$. Værdien er
+præcis $1$ eller $-1$ netop når punkterne ligger præcist på en ret linje.
 
 
 \subsection{Et lys der brænder}
@@ -434,13 +452,18 @@ Hvis vi afsætter disse punkter i et koordinatsystem, så får vi følgende figu
 
 Vi ser således, at når tiden går, så bliver vægten mindre.
 På figuren er også indtegnet en ret linje, og det er tydeligt, at punkterne
-ligger meget tæt på denne linje.  Der er altså også her en lineær sammenhæng
-mellem vægtens visning og den tid lyset har brændt.
+ligger meget tæt på denne linje.  Der er altså også her en tilnærmelses lineær
+sammenhæng mellem vægtens visning og den tid lyset har brændt.
+
+Vi fortolker hældningen $a$ som lysets brænd-hastighed, dvs 0,2 gram/minut.
+Tallet $b$ er lysets masse ved forsøgets start.
 
 \section{Intervaller og uligheder}
 
 Vi kender den sædvanlige tallinje med begyndelsespunkt O og det såkaldte
 enhedspunkt E, der svarer til tallet 1. Længden af linjestykket OE er altså 1.
+
+[FIGUR 2.3 fra MAT-A1 bogen]
 
 Vi ser på visse dele af tallinjen, de såkaldte intervaller.
 
@@ -452,9 +475,6 @@ Hvis a og b er to tal, så a < b, skriver vi (se fig. 2.3):
     \item $]a;b]$ : alle tal fra a til b, men ikke med a,
     \item $]a;b[$ : alle tal mellem a og b, a og b ikke medregnet .
 \end{itemize}
-
-[FIGUR 2.3 fra MAT-A1 bogen]
-
 Disse afsnit af tallinjen kaldes intervaller, og a og b er deres endepunkter.
 
 Vi siger, at et interval er
@@ -463,7 +483,7 @@ Vi siger, at et interval er
     \item halvåbent, hvis det ene, men ikke det andet endepunkt er med i intervallet,
     \item åbent, hvis ingen af endepunkterne er med i intervallet.
 \end{itemize}
-Intervaller af en af disse fire typer er begrænsede, og deres længde er $b-a$.
+Intervaller af disse fire typer er alle begrænsede, og deres længde er $b-a$.
 
 \begin{eks}
 Intervallet $[3;7[$ består af alle tal på tallinjen mellem 3 og 7; 3 er
@@ -501,7 +521,7 @@ Endelig kan man også skrive intervallet $]-\infty ;\infty [$. Dette angiver
 alle tal på tallinjen.
 
 \section{Uligheder (kopieret fra Mat-B1 HTX)}
-Vi har hidtil set på en række forskellige ligningstyper. Fælles for disse
+Vi har tidligere set på en række forskellige ligningstyper. Fælles for disse
 ligninger er, at de alle indeholder et lighedstegn. Vi skal nu se på et emne,
 der under ét benævnes uligheder. Uligheder optræder også i teknikkens verden.
 Skibe, der skal kunne besejle Panama-kanalen, må højest være 32,3 meter bredde.
@@ -518,7 +538,7 @@ $$
 Som det ses, optræder der ulighedstegn. Dem findes der fire af, to skarpe og to svage:
 
 \begin{itemize}
-    \item Mindre end, (skarp)  <
+    \item Mindre end, (skarp) <
     \item Større end, (skarp) >
     \item Mindre end eller lig med, (svag) $\leq$
     \item Større end eller lig med, (svag) $\geq$
@@ -539,9 +559,7 @@ $$
 $$
 13-x>3 \Leftrightarrow 13>3+x \Leftrightarrow 10>x
 $$
-
 Bemærk, at en ulighed kan læses fra to sider:
-
 $10 < x$ er det samme som $x > 10$
 
 Ved multiplikation og division skal vi være forsigtige. Det er tydeligt for enhver, at:
@@ -562,9 +580,7 @@ Det går ikke! -2 er jo større end -7. Vi er åbenbart nødt til at vende uligh
 $$
 2<7 \Leftrightarrow (-1) \cdot 2 > (-1) \cdot 7 \Leftrightarrow -2>-7
 $$
-Ud fra eksemplerne kan vi opstille følgende:
-
-Regel 2.6 ID
+Ud fra eksemplerne kan vi opstille følgende regler:
 \begin{enumerate}
     \item Et led flyttes fra den ene side af ulighedstegnet til den anden side ved at skifte fortegn på leddet.
     \item Man må gange og dividere med det samme positive tal, undtagen 0, på begge sider af ulighedstegnet.
@@ -572,7 +588,6 @@ Regel 2.6 ID
 \end{enumerate}
 
 \begin{eks}
-EKSEMPEL 2.21 ID
 Vi løser uligheden:
 $$
 3 \cdot x - 7 \geq 8
@@ -620,7 +635,7 @@ Altså samme løsning som før. Heldigvis!
 \end{eks}
 
 \subsection{Dobbeltuligheder}
-En ulighed med to ulighedstegn, der vender samme vej (hvorfor skal de vende samme vej?!) kaldes for en dobbeltulighed:
+En ulighed med to ulighedstegn, der vender samme vej (hvorfor skal de vende samme vej?) kaldes for en dobbeltulighed:
 $$
 x-1 < 2x + 3 < x+11
 $$
@@ -639,5 +654,4 @@ $$
 $$
 
 \end{document}
-
 
