@@ -177,6 +177,19 @@ Sammenhængen illustreres som en ret linje gennem $(0;0)$ med hældningen $1,5$.
 \subsection{Eksempel (sammenhæng mellem masse og volumen)}
 
 \subsection{Eksempel (kopi af eksempel 3.4)}
+I eksempel xx så vi på teleselskabet, hvor prisen $y$ (naturligvis) afhænger af
+taletiden $x$ i minutter:
+$$
+y=20+0,5x
+$$
+Her er prisen ikke proportional med taletiden: Dobbelt så lang taletid koster ikke
+det dobbelte:
+\begin{itemize}
+    \item 15 minutter koster $20+0,5\cdot 15 = 27,50$ kroner.
+    \item 30 minutter koster $20+0,5\cdot 30 = 35,00$ kroner.
+\end{itemize}
+I koordinatsystemet går linjen med ligningen $y=20+0,5x$ nemlig ikke gennem (0, 0),
+sådan som kravet til proportionalitet er.
 
 \section{Linje gennem to punkter}
 Vi vil bestemme hældningen for en linje, der går gennem
@@ -271,6 +284,32 @@ y &=& a\cdot x + y_1 - a\cdot x_1 \\
 
 
 \section{Løse førstegradsligninger (kopi af afsnittet ligninger fra Mat-A1 bogen)}
+En ligning er af første grad, hvis den er af typen
+$$
+ax + b = 0\; ,
+$$
+eller umiddelbart kan omskrives til en sådan ligning. Her er et par eksempler:
+$$
+3x - 4 = 8 + 2x \quad , \quad 5(x - 4) + 2x = 6x - 2(3 - 4x)\; .
+$$
+
+\subsection{Ensbetydende ligninger}
+Hvis man foretager en række omformninger af en ligning for at finde en løsning,
+bruger man symbolet $\iff$ , en dobbeltpil (eller en biimplikation), mellem
+ligninger, der har de samme løsninger. Fx har vi
+$$
+2(3x - 1) = x - 4(2 - x)\iff 6x - 2 = x - 8 + 4x\iff
+6x - 2 = 5x - 8 \iff x = -6 \; .
+$$
+Hver af de fire ligninger har den samme løsning. Man siger, at sådanne
+ligninger er ensbetydende. Man kan også sige, at ensbetydende ligninger fremgår
+af hinanden ved ’lovlige’ omformninger. Nedenfor kommer vi ind på, hvad dette
+betyder.
+
+Vi anfører de vigtigste regler for løsning af ligninger.
+
+[ANIMATION OM REGNEREGLER 1--4]
+
 
 \section{Skæring mellem linjer}
 Hvis to linjers ligninger er kendt, vil vi finde koordinaterne til linjernes
@@ -377,6 +416,205 @@ ligger meget tæt på denne linje.  Der er altså også her en lineær sammenhæ
 mellem vægtens visning og den tid lyset har brændt.
 
 \section{Intervaller og uligheder}
+
+Vi kender den sædvanlige tallinje med begyndelsespunkt O og det såkaldte
+enhedspunkt E, der svarer til tallet 1. Længden af linjestykket OE er altså 1.
+
+Vi ser på visse dele af tallinjen, de såkaldte intervaller.
+
+\subsection{Begrænsede intervaller}
+Hvis a og b er to tal, så a < b, skriver vi (se fig. 2.3):
+\begin{itemize}
+    \item $[a;b]$ : alle tal mellem a og b, a og b medregnet,
+    \item $[a;b[$ : alle tal fra og med a til, men ikke med b,
+    \item $]a;b]$ : alle tal fra a til b, men ikke med a,
+    \item $]a;b[$ : alle tal mellem a og b, a og b ikke medregnet .
+\end{itemize}
+
+[FIGUR 2.3 fra MAT-A1 bogen]
+
+Disse afsnit af tallinjen kaldes intervaller, og a og b er deres endepunkter.
+
+Vi siger, at et interval er
+\begin{itemize}
+    \item lukket, hvis begge endepunkter er med i intervallet,
+    \item halvåbent, hvis det ene, men ikke det andet endepunkt er med i intervallet,
+    \item åbent, hvis ingen af endepunkterne er med i intervallet.
+\end{itemize}
+Intervaller af en af disse fire typer er begrænsede, og deres længde er $b-a$.
+
+\begin{eks}
+Intervallet $[3;7[$ består af alle tal på tallinjen mellem 3 og 7; 3 er
+medregnet og 7 er ikke medregnet. Intervallets længde er $7-3 = 4$ .
+
+Intervallet $[-5;8]$ består af alle tal mellem -5 og 8, og både -5 og 8
+tilhører intervallet. Dets længde er 13 fordi $8 - (-5) = 13$ .
+
+På tallinjen er et intervals længde altså afstanden mellem endepunkterne.
+\end{eks}
+
+\subsection{Ubegrænsede intervaller}
+Vi får tit brug for at se på tal, der på tallinjen ligger til højre eller til
+venstre for et givet tal (fig. 2.4), fx alle tal der er større end 17, eller
+alle tal der er mindre end eller lig med 50.
+
+Det giver anledning til disse skrivemåder:
+
+\begin{itemize}
+    \item $[a;\infty[$  : alle tal større end eller lig med a
+    \item $]a;\infty[$  : alle tal større end a
+    \item $]-\infty;b]$ : alle tal mindre end eller lig med b
+    \item $]-\infty;b[$ : alle tal mindre end b
+\end{itemize}
+Tegnet $\infty$ læses ’uendelig’.
+
+Intervallerne af typerne $]a;\infty [$ og $]-\infty ;b[$ kaldes åbne, da a og b
+ikke medregnes, og intervallerne af typerne $[a;\infty [$ og $]-\infty ;b]$
+kaldes lukkede, da a og b medregnes.
+
+Disse intervaller er ubegrænsede, fordi de ikke har nogen længde – det
+fortsætter ’i det uendelige’ i den ene ende af tallinjen.
+
+Endelig kan man også skrive intervallet $]-\infty ;\infty [$. Dette angiver
+alle tal på tallinjen.
+
+\section{Uligheder (kopieret fra Mat-B1 HTX)}
+Vi har hidtil set på en række forskellige ligningstyper. Fælles for disse
+ligninger er, at de alle indeholder et lighedstegn. Vi skal nu se på et emne,
+der under ét benævnes uligheder. Uligheder optræder også i teknikkens verden.
+Skibe, der skal kunne besejle Panama-kanalen, må højest være 32,3 meter bredde.
+
+$$
+B\leq 32,3 \, \text{m}
+$$
+Temperaturen skal være mindst $800^\circ$ i en given proces:
+
+
+$$
+T \geq 800 ^\circ C
+$$
+Som det ses, optræder der ulighedstegn. Dem findes der fire af, to skarpe og to svage:
+
+\begin{itemize}
+    \item Mindre end, (skarp)  <
+    \item Større end, (skarp) >
+    \item Mindre end eller lig med, (svag) $\leq$
+    \item Større end eller lig med, (svag) $\geq$
+\end{itemize}
+
+Et par eksempler på uligheder:
+
+$$
+x-2>7 \;\;\; \text{og} \;\;\; 3\cdot x-12\geq 4
+$$
+
+Når vi skal løse uligheder, er teknikken stort set den samme som ved ligninger, dog med en enkelt vigtig undtagelse.
+
+Et led kan flyttes fra den ene side af ulighedstegnet til den anden side ved at skifte fortegn:
+$$
+x+3<7 \Leftrightarrow x<7-3 \Leftrightarrow x<4
+$$
+$$
+13-x>3 \Leftrightarrow 13>3+x \Leftrightarrow 10>x
+$$
+
+Bemærk, at en ulighed kan læses fra to sider:
+
+$10 < x$ er det samme som $x > 10$
+
+Ved multiplikation og division skal vi være forsigtige. Det er tydeligt for enhver, at:
+$$
+2<7
+$$
+Vi ganger med et positivt tal på begge sider:
+$$
+3 \cdot 2 <3 \cdot 7 \Leftrightarrow 6<21
+$$
+Det gik fint.
+
+Vi prøver at nu at gange med et negativt tal, her -1, på begge sider af ulighedstegnet:
+$$
+(-1) \cdot 2 < (-1) \cdot 7 \Leftrightarrow -2<-7
+$$
+Det går ikke! -2 er jo større end -7. Vi er åbenbart nødt til at vende ulighedstegnet om:
+$$
+2<7 \Leftrightarrow (-1) \cdot 2 > (-1) \cdot 7 \Leftrightarrow -2>-7
+$$
+Ud fra eksemplerne kan vi opstille følgende:
+
+Regel 2.6 ID
+\begin{enumerate}
+    \item Et led flyttes fra den ene side af ulighedstegnet til den anden side ved at skifte fortegn på leddet.
+    \item Man må gange og dividere med det samme positive tal, undtagen 0, på begge sider af ulighedstegnet.
+    \item Man må gange og dividere med det samme negative tal på begge sider af ulighedstegnet, hvis man samtidig vender ulighedstegnet om.
+\end{enumerate}
+
+\begin{eks}
+EKSEMPEL 2.21 ID
+Vi løser uligheden:
+$$
+3 \cdot x - 7 \geq 8
+$$
+Led kan flyttes som i ligninger:
+$$
+3 \cdot x \geq 8+7 \Leftrightarrow 3 \cdot x \geq 15
+$$
+Vi må gange og dividere med positive tal:
+$$
+3 \cdot x \geq 15 \Leftrightarrow x \geq 5
+$$
+\end{eks}
+
+\begin{eks}
+Vi løser denne ulighed:
+$$
+-4 \cdot x + 1 \leq 21
+$$
+Et led flyttes:
+$$
+-4 \cdot x \leq 21 -1 \Leftrightarrow -4 \cdot x \leq 20
+$$
+Nu skal vi passe på! Vi isolerer x ved at dividere med -4 på begge sider og skal huske at vende ulighedstegnet:
+$$
+-4 \cdot x \leq 20 \Leftrightarrow x \geq-5
+$$
+
+Vi kunne have grebet opgaven anderledes an:
+$$
+-4 \cdot x + 1 \leq 21
+$$
+$$
+-4 \cdot x + 1 \leq 21 \Leftrightarrow 1 - 21 \leq 4 \cdot x
+$$
+Nu er koefficienten foran x positiv:
+$$
+1-21 \leq 4 \cdot x \Leftrightarrow -20 \leq 4 \cdot x \Leftrightarrow -5 \leq x
+$$
+Hvis vi læser løsningen ”baglæns” fås:
+$$
+x \geq -5
+$$
+Altså samme løsning som før. Heldigvis!
+\end{eks}
+
+\subsection{Dobbeltuligheder}
+En ulighed med to ulighedstegn, der vender samme vej (hvorfor skal de vende samme vej?!) kaldes for en dobbeltulighed:
+$$
+x-1 < 2x + 3 < x+11
+$$
+
+Den løses ved at opdele uligheden i to uligheder:
+$$
+x - 1 < 2x + 3 \;\;\; \text{og} \;\;\; 2x + 3 < x + 11
+$$
+der løses med den angivne metode, og hvor den endelige løsning skal opfylde begge kriterier. I det angivne tilfælde skal der gælde:
+$$
+x>-4 \;\;\; \text{og} \;\;\; x<8
+$$
+Og dermed skal der alt i alt gælde at
+$$
+-4 < x < 8
+$$
 
 \end{document}
 
