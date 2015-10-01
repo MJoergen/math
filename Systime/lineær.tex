@@ -7,7 +7,7 @@
 \usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
 % Abstract etc. (god at have).
 
-%\usepackage{graphicx}
+\usepackage{graphicx}
 \usepackage{amsfonts}
 \usepackage{amsthm}        % Theorems
 \usepackage{amsmath}
@@ -58,13 +58,18 @@ af taletid og pris) udgøre en ret linje med hældning $0,50$, som skærer
 $y$-aksen i tallet $20$ (det koster 20 kroner at tale i 0 minutter), se figur
 3.5.
 
-[FIGUR 3.5]
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig35}
+    \caption{Figur 3.5}
+    \label{fig35}
+\end{figure}
 
 Hældningen $0,50$ angiver prisstigningen for hvert ekstra minut, der tales --
 den er 0,50 kroner.  Prisen for 20 minutters samtale er 30 kr., og for 21
 minutters samtale er den 30,50 kr.
 
-\subsection{Eksempel}
+\subsection{Eksempel -- kopi af eksempel 3.2 i Mat-C bogen}
 En prøvekørsel af en bil begynder ved 5-km stenen uden for en by. Bilen kører
 en længere strækning med 90 km/t. Efter 8 minutters kørsel befinder bilen sig
 ved 17-km-stenen (hvorfor?), og efter $x$ minutter er den ved $y$-km-stenen,
@@ -89,6 +94,9 @@ kilometerstenen.
     hvor $a$ og $b$ er tal.
 \end{mydef}
 
+Vi interesserer os for de koordinatsæt $(x,\,y)$, der passer i en sådan lineær
+sammenhæng. Fra folkeskolen vides, at sådanne koordinatsæt udgør en ret linje.
+
 Eksempler på sådanne lineære sammenhænge er (se figur xx):
 
 \begin{tabular}{ll}
@@ -98,17 +106,20 @@ Eksempler på sådanne lineære sammenhænge er (se figur xx):
     $\bullet\quad y=3x$    & Her er $a=3$ og $b=0$.
 \end{tabular}
 
-[FIGUR SOM VISER OVENSTÅENDE RETTE LINJER]
-
-Vi interesserer os for de koordinatsæt $(x,\,y)$, der passer i en sådan lineær
-sammenhæng. Fra folkeskolen vides, at sådanne koordinatsæt udgør en ret linje.
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig-def-22}
+    \caption{Figur xx}
+    \label{fig-def-22}
+\end{figure}
 
 \begin{thm}
-    For linjen med ligningen
+    For den lineære sammenhæng
     $$
     y = a\cdot x + b
     $$
-    gælder, at $a$ er linjens hældning, dvs linjen vokser med $a$ enheder, når
+    gælder, at grafen er en ret linje, hvor
+    $a$ er linjens hældning, dvs linjen vokser med $a$ enheder, når
     $x$ vokser med 1 enhed. Punktet $(0,\,b)$ er linjens skæringspunkt med
     $y$-aksen.
 \end{thm}
@@ -124,13 +135,23 @@ $$
 $$
 Linjen går altså gennem punkterne $(0,\-5)$, $(1,\,-2)$ osv, se figur 3.2.
 
-[FIGUR 3.2]
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.2\textwidth]{fig32}
+    \caption{Figur 3.2}
+    \label{fig32}
+\end{figure}
 
 Hældningen er illustreret på figur 3.3. Hvis $x$ vokser til $x+1$, så vokser
 $y$ fra $y_1$ til $y_2$ og forskellen $y_2-y_1$ er netop $a$. Bemærk, at $a$
 også kan være negativ, nemlig når $y$ falder i værdi, når $x$ vokser.
 
-[FIGUR 3.3]
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig33}
+    \caption{Figur 3.3}
+    \label{fig33}
+\end{figure}
 
 Linjer med samme hældning er parallelle. Linjer med positiv hældning forløber
 opad mod højre, linjer med negativ hældning nedad mod højre. Linjer med
@@ -173,7 +194,12 @@ sådan:
 Hvis man med konstant hastighed kører dobbelt så lang tid, tilbagelægger man
 også dobbelt så lang afstand, se figur 3.6.
 
-[FIGUR 3.6]
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig36}
+    \caption{Figur 3.6}
+    \label{fig36}
+\end{figure}
 
 I dette tilfælde er tidsrummet $x$ og afstanden $y$ proportionale, og tallet
 $1,5$ kaldes proportionalitetsfaktoren, fordi det netop er en faktor foran $x$.
@@ -200,16 +226,14 @@ Sammenhængen illustreres som en ret linje gennem $(0,\,0)$ med hældningen $1,5
 
 \subsection{Eksempel (sammenhæng mellem masse og volumen)}
 
-Et eksempel på ligefrem proportionalitet er sammenhængen mellem masse og rumfang af sand.
-Der gælder nemlig, at en liter sand vejer ca. 1,8 kg. To liter sand vejer derfor ca. 3,6 kg,
-og generelt $x$ liter sand vejer $y$ kg, hvor
+Et eksempel på ligefrem proportionalitet er sammenhængen mellem masse og rumfang af olie.
+Der gælder nemlig, at en liter olie vejer ca. 0,8 kg. To liter olie vejer derfor ca. 1,6 kg,
+og generelt $x$ liter olie vejer $y$ kg, hvor
 $$
-y = 1,8 \cdot x
+y = 0,8 \cdot x
 $$
-Tallet $1,8$ er således vægten af én liter sand og det kaldes for sandets massefylde eller densitet.
-Grafen (se figur xx) går gennem $(0,\,0)$ fordi nul liter sand vejer ikke noget.
-
-[FIGUR]
+Tallet $0,8$ er således vægten af én liter olie og det kaldes for olieets massefylde eller densitet.
+At olie flyder oven på vand skyldes netop, at densiteten af olie er mindre end vands densitet.
 
 \subsection{Eksempel (kopi af eksempel 3.4)}
 I eksempel 1.1 så vi på teleselskabet, hvor prisen $y$ (naturligvis) afhænger af
@@ -226,7 +250,7 @@ det dobbelte:
 I koordinatsystemet går linjen med ligningen $y=20+0,5x$ nemlig ikke gennem (0, 0),
 sådan som kravet til proportionalitet er.
 
-\section{Linje gennem to punkter}
+\section{Linje gennem to punkter -- omskrevet fra tilsvarende afsnit i Mat-C bogen}
 Vi vil bestemme hældningen for en linje, der går gennem
 to punkter med kendte koordinater. Vi viser følgende sætning:
 \begin{thm}
@@ -304,6 +328,7 @@ $b$.
     $$
     b = y_1 - a\cdot x_1
     $$
+Dermed har vi vist det ønskede.
 \end{proof}
 
 \begin{thm}
@@ -316,7 +341,7 @@ $b$.
 \begin{proof}
     Vi indsætter resultatet fra sætning 4.3 i linjens ligning:
 \bas
-y &=& a\cdot x + y_1 - a\cdot x_1 \\
+y &=& a\cdot x + (y_1 - a\cdot x_1) \\
   &=& a\cdot (x-x_1) + y_1 
 \eas
 Dermed har vi vist det ønskede.
@@ -352,21 +377,26 @@ Vi anfører de vigtigste regler for løsning af ligninger.
 [ANIMATION OM REGNEREGLER 1--4]
 
 
-\section{Skæring mellem linjer}
+\section{Skæring mellem linjer -- omskrevet fra tilsvarende afsnit i Mat-C bogen}
 Hvis to linjers ligninger er kendt, vil vi finde koordinaterne til linjernes
 skæringspunkt (hvis de ikke er parallelle).
 
 Linjerne $l$ og $m$ har f.eks. ligningerne (se figur xx)
 $$
-l: y=0,5x+2\,\,{\mbox{og}}\,\,m: y=-3x+5
+l: y=0,5x-2\,\,{\mbox{og}}\,\,m: y=-3x+5
 $$
 
-[FIGUR]
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig6}
+    \caption{Figur 6}
+    \label{fig6}
+\end{figure}
 
 I skæringspunktet mellem linjerne skal $y$-værdien for de to linjer være den
 samme, så der må gælde, at
 $$
-\frac{3}{4}x+2=-\frac{1}{2}x+4\frac{1}{2}
+0,5x-2 = -3x+5
 $$
 og denne ligning løses på følgende måde:
 \bas
@@ -381,89 +411,117 @@ $$
 Skæringspunktet har altså koordinaterne $(2,\,1)$, hvilket ser ud til at
 stemme med figuren.
 
-\section{Lineær regression og vækst (se Mat-A2 bogen)}
-I mange tilfælde undersøger vi data, som kun tilnærmelsesvist passer med en ret
-linje. Vi ser på et eksempel.
+\section{Lineær regression -- kopi af afsnit i Mat-A2 bogen}
+På fig. 5.4 er afsat punkterne med koordinaterne (1, 2), (2, 5), (3, 6) og (4,
+7). De ligger ikke på ret linje, men med tilnærmelse ligger de på linjen med
+ligningen y = 1,6x + 1.
 
-\subsection{Måling af sands densitet}
-[Billede af måleglas med sand ovenpå en vægt]
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig54}
+    \caption{Figur 5.4}
+    \label{fig54}
+\end{figure}
 
-Vi stiller et måleglas ovenpå en vægt og hælder gradvist sand i glasset. Vi
-aflæser sandets rumfang og vægtens visning . Det kunne f.eks. give følgende
-tabel:
+Men er dette nu den 'nøjagtigste' linje? Skulle vi måske hellere have valgt
+linjen y = 1,65x + 0,97 eller y = 1,58x + 1,04 eller ...?
+
+Man benytter sædvanligvis ved tilnærmelse med rette linjer til givne
+målepunkter en metode, der kaldes de mindste kvadraters metode.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig55}
+    \caption{Figur 5.5}
+    \label{fig55}
+\end{figure}
+
+På fig. 5.5 er en række punkter afsat, og linjen m er tegnet. Desuden er de
+lodrette afstande $d_1$, $d_2$, $d_3$, ..., $d_n$ fra målepunkterne til linjen afsat. Man
+kan så udregne summen $D$ af kvadraterne (kvadratsummen) på afstandene:
+
 $$
+D = {d_1}^2 + {d_2}^2 + {d_3}^2 + \ldots + {d_n}^2 \; . 
+$$
+
+Hvis man vælger en anden linje, får man selvfølgelig i reglen en anden kvadratsum.
+
+Man har vedtaget at den linje, der gør kvadratsummen $D$ mindst mulig, er den
+'bedste' linje. Metoden kaldes de mindste kvadraters metode, og den linje, der
+fremkommer, kaldes regressionslinjen svarende til punkterne. Vi går ikke ind
+på, hvordan linjen matematisk bestemmes. 
+
+
+Man har undersøgt højden af et stort antal piger og beregnet middelhøjden for
+hver årgang. Pigernes højde ved forskellige aldre fremgår af skemaet.
+
 \begin{tabular}{c|c|c|c|c|c|c|c}
-    x &   0 &  1,9 & 2,7 & 4,1 & 5,6 & 6,7 & 7,8 \\
-    \hline
-    y & 26,5 & 29,19 & 30,37 & 33,1 & 35,38 & 37,12 & 38,96
+    Alder (år), x &  2 &  3 &  4 &  5 &  6 &  7 &  8 \\
+    Højde (cm), y &  89,2 &   98,3 &   104,9 &  112,0 &  118,1 &  123,4 &  131,3
 \end{tabular}
+
+\begin{tabular}{c|c|c|c|c|c|c}
+    Alder (år), x  & 9  & 10 & 11&  12 & 13 & 14 \\
+    Højde (cm), y  & 136,4 &  142,5 &  151,1 &  155,4 &  159,8 &  161,5
+\end{tabular}
+
+Det ser ud til, at højden øges med ca. 6 cm, når alderen øges med 1 år, så det
+er rimeligt at forvente en lineær sammenhæng.
+
+Ved hjælp af CAS kan vi finde ligningen for regressionslinjen til
+
 $$
-hvor vi har følgende identifikationer:
-\begin{itemize}
-    \item $x$ er sandets rumfang i ${\rm cm}^3$
-    \item $y$ er vægtens visning i gram.
-\end{itemize}
+y = 6,17x + 80,19 \; .
+$$
 
-Hvis vi afsætter disse punkter i et koordinatsystem, så får vi følgende figur:
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig56}
+    \caption{Figur 5.6}
+    \label{fig56}
+\end{figure}
 
-[Billede af graf af ovenstående punkter]
-
-Vi ser således, at når mængden af sand øges, så stiger vægten. 
-På figuren er også indtegnet en ret linje, og det er tydeligt, at punkterne
-ligger meget tæt på denne linje.  Der er altså en tilnærmelses lineær
-sammenhæng mellem vægtens visning og mængden af sandet. 
-
-\subsubsection{Fortolkning af $a$ og $b$}
-Hældningen $a$ fortolkes som det vægten stiger med (i gram), når sandets
-rumfang (i ${\rm cm}^3$) øges med 1.  Dette kaldes for sandets {\em densitet}.
-Vi ser således, at sand har en densitet på ca. $1,6\, {\rm g}/{\rm cm}^3$.
-
-Tallet $b$ fortolkes som vægten af selve måleglasset, idet det jo er vægtens
-visning, når måleglasset er tomt.
-
-Med et CAS-værktøj er det muligt at beregne den "bedste" rette linje ud fra
-nogle givne punkter. Dette kaldes {\em lineær regression}, og den beregnede
-linje kaldes {\em regressionslinjen}. Nogle steder kaldes dette også for
-tendenslinjen.
+Den gennemsnitlige vækst i pigernes højde er altså 6,17 cm pr. år. På fig. 5.6
+ses et diagram over pigernes højder med regressionslinjen indtegnet.
 
 \subsection{Korrelation}
-Det er muligt at angive et tal for, hvor godt linjen passer med de givne
-punkter.  De fleste CAS-værktøjer vil udover linjens ligning og give en {\em
-korrelationskoefficient}.  Denne vil altid være mellem $-1$ og $1$. Værdien er
-præcis $1$ eller $-1$ netop når punkterne ligger præcist på en ret linje.
+CAS giver foruden regressionslinjens ligning den såkaldte
+korrelations\-koef\-fi\-cient $r$. Vi kommer ikke her ind på teorien bag beregningen af
+dette tal, men nøjes med at bemærke, at korrelationskoefficienten er et mål for
+den lineære sammenhæng mellem punkterne.
+
+Vi bemærker følgende om korrelationskoefficienten r:
+
+\begin{itemize}
+    \item Hvis $r = 1$ ligger punkterne præcis på ret linje med positiv hældning.
+    \item Hvis $0 < r < 1$ har regressionslinjen positiv hældning. Jo tættere $r$
+        er på 1, desto tættere ligger punkterne på linjen.
+    \item Hvis $r = 0$ eller tæt ved 0, er der ingen eller kun svag lineær sammenhæng.
+    \item Hvis $-1 < r < 0$ har regressionslinjen negativ hældning. Jo tættere $r$
+        er på -1, desto tættere ligger punkterne på linjen.
+    \item Hvis $r = -1$ ligger punkterne præcis på ret linje med negativ hældning. 
+\end{itemize}
+På fig. 5.7 er disse forhold illustreret.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig57}
+    \caption{Figur 5.7}
+    \label{fig57}
+\end{figure}
 
 
-\subsection{Et stearinlys der brænder}
-[Billede af et brændende stearinlys på en vægt]
-
-Vi stiller et stearinlys ovenpå en vægt og antænder lyset. Efter lidt tid måler
-vi tiden i minutter og kalder det for $x$. Vi aflæser også vægtens visning i
-gram og kalder det for $y$. Det kunne f.eks. give følgende tabel:
-$$
-\begin{tabular}{c|c|c|c|c|c|c|c|c|c}
-    x &    0 &  5 & 10 & 15 & 20 & 25 & 30 & 35 & 40\\
-    \hline
-    y & 71,7 & 71,0 & 70,3 & 69,5 & 68,8 & 68,0 & 67,3 & 66,5 & 65,9
-\end{tabular}
-$$
-Hvis vi afsætter disse punkter i et koordinatsystem, så får vi følgende figur:
-
-[Billede af graf af ovenstående punkter]
-
-Vi ser således, at når tiden går, så bliver vægten mindre.
-På figuren er også indtegnet en ret linje, og det er tydeligt, at punkterne
-ligger meget tæt på denne linje.  Der er altså også her en tilnærmelses lineær
-sammenhæng mellem vægtens visning og den tid lyset har brændt.
-
-Vi fortolker hældningen $a$ som lysets brænd-hastighed, dvs 0,15 gram/minut.
-Tallet $b$ er stearinlysets masse ved forsøgets start.
-
-\section{Intervaller og uligheder}
+\section{Intervaller -- kopi af afsnit fra Mat-A1 bogen}
 
 Vi kender den sædvanlige tallinje med begyndelsespunkt O og det såkaldte
 enhedspunkt E, der svarer til tallet 1. Længden af linjestykket OE er altså 1.
 
-[FIGUR 2.3 fra MAT-A1 bogen]
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig23}
+    \caption{Figur 2.3}
+    \label{fig23}
+\end{figure}
 
 Vi ser på visse dele af tallinjen, de såkaldte intervaller.
 
@@ -520,7 +578,7 @@ fortsætter ’i det uendelige’ i den ene ende af tallinjen.
 Endelig kan man også skrive intervallet $]-\infty ;\infty [$. Dette angiver
 alle tal på tallinjen.
 
-\section{Uligheder (kopieret fra Mat-B1 HTX)}
+\section{Uligheder (kopi af Mat-B1 HTX)}
 Vi har tidligere set på en række forskellige ligningstyper. Fælles for disse
 ligninger er, at de alle indeholder et lighedstegn. Vi skal nu se på et emne,
 der under ét benævnes uligheder. Uligheder optræder også i teknikkens verden.
