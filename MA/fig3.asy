@@ -37,9 +37,22 @@ draw(pa..pb);
 draw(pb..pc);
 draw(pc..pa);
 draw(pa..pq);
+draw(pn..pq);
+
+void make_right(pair p0, pair p1, pair p2, real s)
+{
+    real d1 = length(p1-p0);
+    real d2 = length(p2-p0);
+    p1 = p0 + s*(p1-p0)/d1;
+    p2 = p0 + s*(p2-p0)/d2;
+    pair pm = p1-p0+p2;
+    draw(pm..p1);
+    draw(pm..p2);
+} // end of make_right
 
 draw(pc..ps, dashed);
 draw(circle(po, r));
+make_right(pq, pn, pb, 0.03);
 
 label("\mbox{\footnotesize A}", pa, SW);
 label("\mbox{\footnotesize B}", pb, SE);
@@ -47,7 +60,7 @@ label("\mbox{\footnotesize C}", pc, SW);
 label("\mbox{\footnotesize S}", ps, SE);
 label("\mbox{\footnotesize M}", pm, N);
 label("\mbox{\footnotesize Q}", pq, S);
-label("\mbox{\footnotesize N}", pn, S);
+label("\mbox{\footnotesize N}", pn, N);
 
 draw(pa..pn, dotted);
 draw(pb..pn, dotted);
