@@ -1,0 +1,142 @@
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+\usepackage{graphicx}
+\usepackage{amsfonts}
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+
+\begin{document}
+
+\section*{Løsning til Opgavehjørnet 322}
+
+\subsection*{Opgave}
+En sekskant har sidelængder 2, 2, 7, 7, 11, 11. Bestem radius
+i den omskrevne cirkel, hvis sekskanten er indskrivelig.
+
+\subsection*{Løsning}
+Der gælder følgende sammenhæng for en korde $k$ som spænder
+over en centervinkel $v$ i en cirkel med radius $r$:
+$$
+\sin\left(\frac{v}{2}\right) = \frac{k}{2r}
+$$
+I sekskanten er der seks centervinkler, som tilsammen udgør 360 grader.
+De seks centervinkler er parvis ens og kaldes for $u$, $v$ og $w$.
+Vi har derfor, at 
+$$
+2u+2v+2w = 360
+$$
+hvor
+\bas
+\sin\left(\frac{u}{2}\right) &=& \frac{2}{2r} \\
+\sin\left(\frac{v}{2}\right) &=& \frac{7}{2r} \\
+\sin\left(\frac{w}{2}\right) &=& \frac{11}{2r}
+\eas
+Dette er fire ligninger med fire ubekendte.
+
+For at lette løsningen introduceres de halve centervinkler $A=u/2$, $B=v/2$ og
+$C=w/2$, samt diameteren $x$.
+Dette giver:
+\bas
+\sin A &=& \frac{2}{x} \\
+\sin B &=& \frac{7}{x} \\
+\sin C &=& \frac{11}{x}
+\eas
+med
+$$
+A+B+C=90
+$$
+
+Vi benytter nu følgende relation, som gælder for alle vinkler, der opfylder $A+B+C=90$:
+$$
+\sin^2 A + \sin^2 B + \sin^2 C + 2 \sin A \sin B \sin C = 1
+$$
+Denne relation bevises senere. Ved indsættelse af ovenstående formler for
+$\sin A$ osv får vi
+$$
+\frac{4}{x^2} + \frac{49}{x^2} + \frac{121}{x^2} + \frac{2\cdot2\cdot7\cdot11}{x^3} = 1
+$$
+som omskrives til
+$$
+x^3 - 174\cdot x - 308 = 0
+$$
+
+Da diameteren er den længste korde, må vi have $x>11$. For\-tegns\-under\-søgelse
+viser, at der netop er én løsning i dette interval. Vi undersøger nu
+primfaktorer for konstantleddet: $308 = 2^2\cdot 7\cdot 11$. Den laveste faktor
+større end $11$ er $14$. Ved indsættelse ses, at $x=14$ er en rod.
+
+Vi har således fundet diameteren i cirklen. Radius er dermed $r=7$.
+
+\subsection*{Bevis for trigonometrisk relation}
+Hvis $A+B+C=90$, så gælder ifølge additionsformlerne
+\bas
+0 &=& \cos(A+B+C) \\
+  &=& \cos A \cos B \cos C - \cos A \sin B \sin C - \sin A \cos B \sin C - \sin A \sin B \cos C
+\eas
+Vi vil gerne eliminere forekomsten af $\cos{}$ på begge sider.
+Det første led rykkes over på venstresiden og der kvadreres:
+\bas
+&& \cos^2 A \cos^2 B \cos^2 C \\
+&=& \left(\cos A \sin B \sin C + \sin A \cos B \sin C + \sin A \sin B \cos C\right)^2 \\
+&=& \cos^2 A \sin^2 B \sin^2 C + \sin^2 A \cos^2 B \sin^2 C + \sin^2 A \sin^2 B \cos^2 C \\
+&& + 2\sin A\cos A \sin B \cos B \sin^2 C \\
+&& + 2\sin A\cos A \sin^2 B \sin C \cos C \\
+&& + 2\sin^2 A \sin B \cos B \sin C \cos C 
+\eas
+
+De tre første led på højresiden rykkes over på venstresiden, og der reduceres:
+\bas
+&& \cos^2 A \cos^2 B \cos^2 C - 
+\cos^2 A \sin^2 B \sin^2 C - \sin^2 A \cos^2 B \sin^2 C \\
+&& - \sin^2 A \sin^2 B \cos^2 C \\
+&=& (1-\sin^2 A) (1-\sin^2 B) (1-\sin^2 C) - (1-\sin^2 A) \sin^2 B \sin^2 C \\
+&& - \sin^2 A (1-\sin^2 B) \sin^2 C - \sin^2 A \sin^2 B (1-\sin^2 C) \\
+&=& 1 - (\sin^2 A + \sin^2 B + \sin^2 C) + 2 \sin^2 A \sin^2 B \sin^2 C 
+\eas
+
+Vi har således indtil videre følgende relation:
+\bas
+&&1 - (\sin^2 A + \sin^2 B + \sin^2 C) + 2 \sin^2 A \sin^2 B \sin^2 C  \\
+&=& 2\sin A\cos A \sin B \cos B \sin^2 C \\
+&& + 2\sin A\cos A \sin^2 B \sin C \cos C \\
+&& + 2\sin^2 A \sin B \cos B \sin C \cos C 
+\eas
+Højresiden kan reduceres til:
+$$
+2\sin A\sin B \sin C \left (\cos A \cos B \sin C + \cos A \sin B \cos C + \sin A \cos B \cos C\right)
+$$
+
+For at komme videre må vi også bruge additionsformlerne for sinus:
+\bas
+1 &=& \sin(A+B+C) \\
+  &=& \sin A \cos B \cos C + \cos A \sin B \cos C + \cos A \cos B \sin C \\
+  &&- \sin A \sin B \sin C
+\eas
+Heraf følger, at
+\bas
+&& \cos A \cos B \sin C + \cos A \sin B \cos C + \sin A \cos B \cos C \\
+&=& 1 + \sin A \sin B \sin C
+\eas
+
+Det hele kombineres nu til:
+\bas
+&&1 - (\sin^2 A + \sin^2 B + \sin^2 C) + 2 \sin^2 A \sin^2 B \sin^2 C  \\
+&=& 2\sin A\sin B \sin C \left ( 1 + \sin A \sin B \sin C \right) 
+\eas
+Der reduceres nu:
+$$
+1 - (\sin^2 A + \sin^2 B + \sin^2 C) = 2\sin A\sin B \sin C 
+$$
+Hermed har vi vist den ønskede relation.
+
+\end{document}
+
