@@ -1,0 +1,204 @@
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+%\usepackage{graphicx}
+%\usepackage{amsfonts}
+%\usepackage{esvect}
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+\newcommand{\be}{\begin{equation}}
+\newcommand{\ee}{\end{equation}}
+
+\usepackage{amsthm}        % Theorems
+\newtheorem{thm}{Sætning}[section]
+\newtheorem{lem}{Lemma}[section]
+\newtheorem{mydef}[thm]{Definition}
+\newtheorem{eks}[thm]{Eksempel}
+
+\begin{document}
+
+\section*{Opgave}
+Bestem samtlige heltallige løsninger til
+\be
+(a^2-1)(b^2-1) = c^2,
+\label{eq1}
+\ee
+hvor $1<a\le b$.
+
+\section*{Løsning}
+Vi definerer matricen 
+$$
+A = \left(\begin{array}{cc}
+        a & -1 \\
+        1-a^2 & a
+\end{array}\right)
+$$
+som opfylder $\det A = 1$. Dernæst introducerer vi 
+$$
+\left(\begin{array}{c}\tilde b \\ \tilde c\end{array}\right) = 
+A \cdot \left(\begin{array}{c} b \\ c\end{array}\right) =
+\left(\begin{array}{c} ab-c \\ (1-a^2)b+ac\end{array}\right)
+$$
+Vi fuldfører nu løsningen ved en række lemmaer.
+
+\begin{lem}
+    Hvis $(a,b,c)$ er en løsning til~(\ref{eq1}), så er også $(a,\tilde b,
+    \tilde c)$ en løsning.
+\end{lem}
+\begin{proof}
+    Vi udregner
+    \bas
+    && (a^2-1)({\tilde b}^2-1) - {\tilde c}^2 \\
+    &=& (a^2-1)\left(a^2b^2 + c^2 - 2abc - 1\right) - (1-a^2)^2b^2-a^2c^2-2a(1-a^2)bc \\
+    &=& (a^2-1)\left(a^2b^2 + c^2 - 2abc - 1 - (a^2-1)b^2 + 2abc\right) - a^2c^2 \\
+    &=& (a^2-1)(b^2 + c^2 - 1) - a^2c^2 \\
+    &=& (a^2-1)(b^2-1) - c^2
+    \eas
+\end{proof}
+
+\begin{lem}
+    Hvis $(a,b,c)$ er en løsning til~(\ref{eq1}), med $1<a\le b$
+    så gælder
+    $$
+    0 < \tilde b
+    $$
+\end{lem}
+\begin{proof}
+    Fra ligning~(\ref{eq1}) har vi umiddelbart, at $c<ab$. Heraf følger det ønskede.
+\end{proof}
+
+\begin{lem}
+    Hvis $(a,b,c)$ er en løsning til~(\ref{eq1}), med $1<a\le b$
+    så gælder
+    $$
+    \tilde b < b
+    $$
+\end{lem}
+\begin{proof}
+    Dette føres som et modstridsbevis. Dvs antag at $\tilde b \ge b$. Det giver
+    følgende kæde.
+    \bas
+    && \tilde b \ge b \\
+    &\Rightarrow& ab-c \ge b \\
+    &\Rightarrow& (a-1)b \ge c \\
+    &\Rightarrow& (a-1)bc \ge c^2 = (a^2-1)(b^2-1) \\
+    &\Rightarrow& bc \ge (a+1)(b^2-1)
+    \eas
+    
+    Derudover finder vi:
+    \bas
+    && (a-1)b \ge c \\
+    &\Rightarrow& (a-1)b^2 \ge bc \ge (a+1)(b^2-1) \\
+    &\Rightarrow& ab^2-b^2 \ge ab^2+b^2-a-1 \\
+    &\Rightarrow& a+1 \ge 2b^2 \ge 2a^2
+    \eas
+    Det sidste er en modstrid for $a>1$, og dermed er det ønskede vist.
+\end{proof}
+
+\begin{lem}
+    Hvis $(a,b,c)$ er en løsning til~(\ref{eq1}), med $1<a\le b$
+    så gælder
+    $$
+    0 < \tilde c
+    $$
+\end{lem}
+\begin{proof}
+    Dette føres også som et modstridsbevis. Dvs antag at $0 \ge \tilde c$. Det
+    giver følgende kæde.
+    \bas
+    &&0 \ge \tilde c\\
+    &\Rightarrow& 0 \ge (1-a^2)b+ac \\
+    &\Rightarrow& (a^2-1)b \ge ac \\
+    &\Rightarrow& (a^2-1)bc \ge ac^2 = a(a^2-1)(b^2-1) \\
+    &\Rightarrow& bc \ge a(b^2-1) \\
+    \eas
+    
+    Derudover finder vi:
+    \bas
+    && (a^2-1)b \ge ac \\
+    &\Rightarrow& (a^2-1)b^2 \ge abc \ge a^2(b^2-1) \\
+    &\Rightarrow& a^2 \ge b^2
+    \eas
+    Det sidste er en modstrid, og dermed er det ønskede vist.
+\end{proof}
+
+Vi har således vist, at fra enhver løsning $(a,b,c)$ med $1<a\le b$ og $c>0$
+kan vi konstruere en ny løsning $(a, \tilde b, \tilde c)$ med $0<\tilde b < b$
+og $0 < \tilde c$. Ved eventuel ombytning af $a$ og $\tilde b$ kan vi endvidere
+opnå, at $a\le\tilde b$. Processen kan dermed gentages indtil vi når løsninger
+af formen $(1, b, 0)$.
+
+Afbildning kan også inverteres, og dermed kan vi rekursivt generere samtlige
+løsninger. I det følgende udledes en formel for resultatet. Vi får brug for
+Chebyshev polynomierne af første art $T_n(x)$ og anden art $U_n(x)$, defineret
+ved henholdsvis:
+$$
+T_n(\cos\theta) = \cos n\theta
+$$
+og
+$$
+U_n(\cos\theta) = \frac{\sin (n+1)\theta}{\sin\theta}
+$$
+De opfylder begge den samme rekursionsformel:
+$$
+T_{n+2}(x) = 2xT_{n+1}(x) - T_n(x)
+$$
+men med de forskellige begyndelsesbetingelser:
+\bas
+T_0(x) &=& 1 \\
+T_1(x) &=& x \\
+U_0(x) &=& 1 \\
+U_1(x) &=& 2x
+\eas
+Disse polynomier opfylder bl.a. følgende indbyrdes relationer:
+\bas
+T_m^2(x) - 1 &=& (x^2-1)U_{m-1}^2(x) \\
+T_{m+n}(x) - T_{|m-n|}(x) &=& 2(x^2-1)U_{m-1}(x)U_{n-1}(x) \\
+T_m(x) T_n(x) &=& \frac12 \left(T_{m+n}(x) + T_{|m-n|}(x)\right)
+\eas
+
+Lad nu $a=T_m(x)$ og $\tilde b = T_n(x)$. Da udregner vi 
+\bas
+(a^2-1)({\tilde b}^2-1) &=& (T_m^2(x)-1)(T_n^2(x)-1) \\
+                        &=& (x^2-1)^2 U_{m-1}^2(x) U_{n-1}^2(x) \\
+                        &=& \left( (x^2-1) U_{m-1}(x) U_{n-1}(x)\right)^2
+\eas
+Dermed er 
+\bas
+\tilde c &=& (x^2-1) U_{m-1}(x) U_{n-1}(x) \\
+         &=& \frac 12 \left(T_{m+n}(x) - T_{|m-n|}(x)\right)
+\eas
+
+Nu udregner vi transformationen tilbage til $(a,b,c)$:
+\bas
+b &=& a\tilde b + \tilde c \\
+  &=& T_m(x) T_n(x) + \frac 12 \left(T_{m+n}(x) - T_{|m-n|}(x)\right) \\
+  &=& \frac12 \left(T_{m+n}(x) + T_{|m-n|}(x)\right) + \frac 12 \left(T_{m+n}(x) - T_{|m-n|}(x)\right) \\
+  &=& T_{m+n}(x)
+\eas
+Dermed bliver 
+$$
+c = \frac 12 \left(T_{2m+n}(x) - T_{n}(x)\right)
+$$
+
+Vi har således vist følgende resultat:
+\begin{thm}
+    Samtlige heltallige løsninger til ligning~(\ref{eq1}) er givet ved:
+    \bas
+    a &=& T_m(x) \\
+    b &=& T_n(x) \\
+    c &=& \frac 12 \left(T_{m+n}(x) - T_{|m-n|}(x)\right) 
+    \eas
+    hvor $x$ er et vilkårligt heltal.
+\end{thm}
+
+\end{document}
+
