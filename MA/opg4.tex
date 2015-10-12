@@ -31,23 +31,18 @@ Bestem samtlige heltallige løsninger til
 (a^2-1)(b^2-1) = c^2,
 \label{eq1}
 \ee
-hvor $1<a\le b$.
+hvor $1\le a\le b$ og $c\ge 0$.
 
 \section*{Løsning}
-Vi definerer matricen 
-$$
-A = \left(\begin{array}{cc}
-        a & -1 \\
-        1-a^2 & a
-\end{array}\right)
-$$
-som opfylder $\det A = 1$. Dernæst introducerer vi 
-$$
-\left(\begin{array}{c}\tilde b \\ \tilde c\end{array}\right) = 
-A \cdot \left(\begin{array}{c} b \\ c\end{array}\right) =
-\left(\begin{array}{c} ab-c \\ (1-a^2)b+ac\end{array}\right)
-$$
-Vi fuldfører nu løsningen ved en række lemmaer.
+Ligningen har de trivielle løsninger af formen $(1, b, 0)$ for vilkårlig
+heltallig $b\ge 1$. I det følgende antager vi, at $a>1$ og $c>0$.
+
+Vi definerer først den lineære afbildning
+\bas
+\tilde b &=& ab-c \\
+\tilde c &=& (1-a^2)b+ac
+\eas
+Vi viser første nogle lemmaer, inden vi fuldfører løsningen.
 
 \begin{lem}
     Hvis $(a,b,c)$ er en løsning til~(\ref{eq1}), så er også $(a,\tilde b,
@@ -65,7 +60,7 @@ Vi fuldfører nu løsningen ved en række lemmaer.
 \end{proof}
 
 \begin{lem}
-    Hvis $(a,b,c)$ er en løsning til~(\ref{eq1}), med $1<a\le b$
+    Hvis $(a,b,c)$ er en løsning til~(\ref{eq1}), med $1<a\le b$ og $c>0$
     så gælder
     $$
     0 < \tilde b
@@ -76,7 +71,7 @@ Vi fuldfører nu løsningen ved en række lemmaer.
 \end{proof}
 
 \begin{lem}
-    Hvis $(a,b,c)$ er en løsning til~(\ref{eq1}), med $1<a\le b$
+    Hvis $(a,b,c)$ er en løsning til~(\ref{eq1}), med $1<a\le b$ og $c>0$
     så gælder
     $$
     \tilde b < b
@@ -84,7 +79,7 @@ Vi fuldfører nu løsningen ved en række lemmaer.
 \end{lem}
 \begin{proof}
     Dette føres som et modstridsbevis. Dvs antag at $\tilde b \ge b$. Det giver
-    følgende kæde.
+    følgende kæde:
     \bas
     && \tilde b \ge b \\
     &\Rightarrow& ab-c \ge b \\
@@ -104,42 +99,42 @@ Vi fuldfører nu løsningen ved en række lemmaer.
 \end{proof}
 
 \begin{lem}
-    Hvis $(a,b,c)$ er en løsning til~(\ref{eq1}), med $1<a\le b$
+    Hvis $(a,b,c)$ er en løsning til~(\ref{eq1}), med $1<a\le b$ og $c>0$
     så gælder
     $$
-    0 < \tilde c
+    0 \le \tilde c
     $$
 \end{lem}
 \begin{proof}
-    Dette føres også som et modstridsbevis. Dvs antag at $0 \ge \tilde c$. Det
+    Dette føres også som et modstridsbevis. Dvs antag at $0 > \tilde c$. Det
     giver følgende kæde.
     \bas
-    &&0 \ge \tilde c\\
-    &\Rightarrow& 0 \ge (1-a^2)b+ac \\
-    &\Rightarrow& (a^2-1)b \ge ac \\
-    &\Rightarrow& (a^2-1)bc \ge ac^2 = a(a^2-1)(b^2-1) \\
-    &\Rightarrow& bc \ge a(b^2-1) \\
+    &&0 > \tilde c\\
+    &\Rightarrow& 0 > (1-a^2)b+ac \\
+    &\Rightarrow& (a^2-1)b > ac \\
+    &\Rightarrow& (a^2-1)bc > ac^2 = a(a^2-1)(b^2-1) \\
+    &\Rightarrow& bc > a(b^2-1) \\
     \eas
     
     Derudover finder vi:
     \bas
-    && (a^2-1)b \ge ac \\
-    &\Rightarrow& (a^2-1)b^2 \ge abc \ge a^2(b^2-1) \\
-    &\Rightarrow& a^2 \ge b^2
+    && (a^2-1)b > ac \\
+    &\Rightarrow& (a^2-1)b^2 > abc > a^2(b^2-1) \\
+    &\Rightarrow& a^2 > b^2
     \eas
     Det sidste er en modstrid, og dermed er det ønskede vist.
 \end{proof}
 
 Vi har således vist, at fra enhver løsning $(a,b,c)$ med $1<a\le b$ og $c>0$
 kan vi konstruere en ny løsning $(a, \tilde b, \tilde c)$ med $0<\tilde b < b$
-og $0 < \tilde c$. Ved eventuel ombytning af $a$ og $\tilde b$ kan vi endvidere
-opnå, at $a\le\tilde b$. Processen kan dermed gentages indtil vi når løsninger
-af formen $(1, b, 0)$.
+og $0 \le \tilde c$. Ved eventuel ombytning af $a$ og $\tilde b$ kan vi
+endvidere opnå, at $a\le\tilde b$. Processen kan dermed gentages indtil vi når
+de trivielle løsninger af formen $(1, b, 0)$.
 
-Afbildning kan også inverteres, og dermed kan vi rekursivt generere samtlige
-løsninger. I det følgende udledes en formel for resultatet. Vi får brug for
-Chebyshev polynomierne af første art $T_n(x)$ og anden art $U_n(x)$, defineret
-ved henholdsvis:
+Afbildningen kan også inverteres, og dermed kan vi rekursivt generere samtlige
+løsninger. I det følgende udledes en kompakt formel for samtlige løsninger. Vi
+får brug for Chebyshev polynomierne af første art $T_n(x)$ og anden art
+$U_n(x)$, defineret ved henholdsvis:
 $$
 T_n(\cos\theta) = \cos n\theta
 $$
@@ -158,6 +153,8 @@ T_1(x) &=& x \\
 U_0(x) &=& 1 \\
 U_1(x) &=& 2x
 \eas
+Dvs de er begge polynomier med heltallige koefficienter.
+
 Disse polynomier opfylder bl.a. følgende indbyrdes relationer:
 \bas
 T_m^2(x) - 1 &=& (x^2-1)U_{m-1}^2(x) \\
@@ -165,31 +162,7 @@ T_{m+n}(x) - T_{|m-n|}(x) &=& 2(x^2-1)U_{m-1}(x)U_{n-1}(x) \\
 T_m(x) T_n(x) &=& \frac12 \left(T_{m+n}(x) + T_{|m-n|}(x)\right)
 \eas
 
-Lad nu $a=T_m(x)$ og $\tilde b = T_n(x)$. Da udregner vi 
-\bas
-(a^2-1)({\tilde b}^2-1) &=& (T_m^2(x)-1)(T_n^2(x)-1) \\
-                        &=& (x^2-1)^2 U_{m-1}^2(x) U_{n-1}^2(x) \\
-                        &=& \left( (x^2-1) U_{m-1}(x) U_{n-1}(x)\right)^2
-\eas
-Dermed er 
-\bas
-\tilde c &=& (x^2-1) U_{m-1}(x) U_{n-1}(x) \\
-         &=& \frac 12 \left(T_{m+n}(x) - T_{|m-n|}(x)\right)
-\eas
-
-Nu udregner vi transformationen tilbage til $(a,b,c)$:
-\bas
-b &=& a\tilde b + \tilde c \\
-  &=& T_m(x) T_n(x) + \frac 12 \left(T_{m+n}(x) - T_{|m-n|}(x)\right) \\
-  &=& \frac12 \left(T_{m+n}(x) + T_{|m-n|}(x)\right) + \frac 12 \left(T_{m+n}(x) - T_{|m-n|}(x)\right) \\
-  &=& T_{m+n}(x)
-\eas
-Dermed bliver 
-$$
-c = \frac 12 \left(T_{2m+n}(x) - T_{n}(x)\right)
-$$
-
-Vi har således vist følgende resultat:
+Vi er nu klar til at give den fuldstændige løsning:
 \begin{thm}
     Samtlige heltallige løsninger til ligning~(\ref{eq1}) er givet ved:
     \bas
@@ -197,8 +170,36 @@ Vi har således vist følgende resultat:
     b &=& T_n(x) \\
     c &=& \frac 12 \left(T_{m+n}(x) - T_{|m-n|}(x)\right) 
     \eas
-    hvor $x$ er et vilkårligt heltal.
+    hvor $x\ge 0$ er et vilkårligt heltal, og $m,n \ge 0$ er heltallige.
 \end{thm}
+\begin{proof}
+    Først viser vi, at de givne værdier opfylder ligning~(\ref{eq1}). 
+Lad nu $a=T_m(x)$ og $b = T_n(x)$. Da udregner vi 
+\bas
+(a^2-1)(b^2-1) &=& (T_m^2(x)-1)(T_n^2(x)-1) \\
+                        &=& (x^2-1)^2 U_{m-1}^2(x) U_{n-1}^2(x) \\
+                        &=& \left( (x^2-1) U_{m-1}(x) U_{n-1}(x)\right)^2
+\eas
+Endvidere er 
+\bas
+c &=& \frac 12 \left(T_{m+n}(x) - T_{|m-n|}(x)\right) \\
+&=& (x^2-1) U_{m-1}(x) U_{n-1}(x) 
+\eas
+Hermed er det vist, at det vitterlig er en løsning.
+
+Nu viser vi, at det også er samtlige løsninger. Vi udregner derfor
+transformationen til $(a,\tilde b,\tilde c)$:
+\bas
+\tilde b &=& a b - c \\
+  &=& T_m(x) T_n(x) - \frac 12 \left(T_{m+n}(x) - T_{|m-n|}(x)\right) \\
+  &=& \frac12 \left(T_{m+n}(x) + T_{|m-n|}(x)\right) - \frac 12 \left(T_{m+n}(x) - T_{|m-n|}(x)\right) \\
+  &=& T_{|m-n|}(x)
+\eas
+Således er $\tilde b$ skrevet på samme form som $b$. Dermed er det vist, at transformationen ikke genererer andre løsninger end de givne.
+
+Vi har således vist det ønskede.
+
+\end{proof}
 
 \end{document}
 
