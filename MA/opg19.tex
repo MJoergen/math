@@ -1,0 +1,72 @@
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+\usepackage{graphicx}
+\usepackage{amsfonts}
+\usepackage{esvect}
+\usepackage{hyperref}
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+
+\begin{document}
+
+\section*{Opgave 19 -- side 3278}
+Vi skal vise, at
+$$
+\cos\left(2\arctan\frac17\right) = \sin\left(4\arctan\frac13\right)
+$$
+
+\section*{Løsning}
+Vi udregner begge sider hver for sig ved hjælp af komplekse tal. Betragt først
+det komplekse enhedstal
+$$
+z = \frac{7+i}{\sqrt{50}} = e^{i\phi}
+$$
+hvor $\phi = \arctan\frac17$. Så har vi, at 
+\bas
+\cos\left(2\arctan\frac17\right) &=&
+\cos(2\phi) \\
+&=& \Re(z^2) \\
+&=& \Re\left(\frac{48+14i}{50}\right) \\
+&=& \frac{24}{25}
+\eas
+
+Betragt dernæst det komplekse enhedstal
+$$
+w = \frac{3+i}{\sqrt{10}} = e^{i\psi}
+$$
+hvor $\psi = \arctan\frac13$. Så har vi, at
+\bas
+\sin\left(4\arctan\frac13\right) &=& \sin(4\psi) \\
+                                 &=& \Im(w^4) \\
+                                 &=& \Im\left(\frac{28+96i}{100}\right) \\
+                                 &=& \frac{24}{25}
+\eas
+Hermed er det ønskede vist.
+
+Som tillæg kan nævnes, at relationen også viser, at 
+$$
+\phi = \frac{\pi}{2} - \psi
+$$
+eller med andre ord:
+$$
+2\arctan\frac17 + 4\arctan\frac13 = \frac{\pi}{2}
+$$
+Der findes mange relationer af denne form, et andet eksempel er:
+$$
+4\arctan\frac15 - \arctan\frac{1}{239} = \frac{\pi}{4}
+$$
+Se mere på \url{https://en.wikipedia.org/wiki/Machin-like_formula}
+
+
+\end{document}
+
+
