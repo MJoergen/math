@@ -34,15 +34,15 @@ Bestem samtlige heltallige løsninger til
 hvor $1\le a\le b$ og $c\ge 0$.
 
 \section*{Løsning}
-Ligningen har de trivielle løsninger af formen $(1, b, 0)$ for vilkårlig
-heltallig $b\ge 1$. I det følgende antager vi, at $a>1$ og $c>0$.
+Ligningen har trivielle løsninger af formen $(1, b, 0)$ for vilkårlig
+heltallig $b\ge 1$. I det følgende antager vi derfor, at $a>1$ og $c>0$.
 
 Vi definerer først den lineære afbildning
 \bas
 \tilde b &=& ab-c \\
 \tilde c &=& (1-a^2)b+ac
 \eas
-Vi viser første nogle lemmaer, inden vi fuldfører løsningen.
+Vi viser nogle lemmaer, inden vi fuldfører løsningen.
 
 \begin{lem}
     Hvis $(a,b,c)$ er en løsning til~(\ref{eq1}), så er også $(a,\tilde b,
@@ -57,6 +57,7 @@ Vi viser første nogle lemmaer, inden vi fuldfører løsningen.
     &=& (a^2-1)(b^2 + c^2 - 1) - a^2c^2 \\
     &=& (a^2-1)(b^2-1) - c^2
     \eas
+    Hermed er det ønskede vist.
 \end{proof}
 
 \begin{lem}
@@ -130,10 +131,10 @@ kan vi konstruere en ny løsning $(a, \tilde b, \tilde c)$ med $0<\tilde b < b$
 og $0 \le \tilde c$. Ved eventuel ombytning af $a$ og $\tilde b$ kan vi
 endvidere opnå, at $a\le\tilde b$. Processen kan dermed gentages indtil vi når
 de trivielle løsninger af formen $(1, b, 0)$.
-
 Afbildningen kan også inverteres, og dermed kan vi rekursivt generere samtlige
-løsninger. I det følgende udledes en kompakt formel for samtlige løsninger. Vi
-får brug for Chebyshev polynomierne af første art $T_n(x)$ og anden art
+løsninger. I det følgende udledes en kompakt formel for samtlige løsninger.
+
+Vi får brug for Chebyshev polynomierne af første art $T_n(x)$ og anden art
 $U_n(x)$, defineret ved henholdsvis:
 $$
 T_n(\cos\theta) = \cos n\theta
@@ -153,14 +154,14 @@ T_1(x) &=& x \\
 U_0(x) &=& 1 \\
 U_1(x) &=& 2x
 \eas
-Dvs de er begge polynomier med heltallige koefficienter.
-
+Specielt er de begge polynomier med heltallige koefficienter.
 Disse polynomier opfylder bl.a. følgende indbyrdes relationer:
 \bas
 T_m^2(x) - 1 &=& (x^2-1)U_{m-1}^2(x) \\
 T_{m+n}(x) - T_{|m-n|}(x) &=& 2(x^2-1)U_{m-1}(x)U_{n-1}(x) \\
-T_m(x) T_n(x) &=& \frac12 \left(T_{m+n}(x) + T_{|m-n|}(x)\right)
+T_m(x) T_n(x) &=& \frac12 \left(T_{m+n}(x) + T_{|m-n|}(x)\right),
 \eas
+som alle nemt vises ud fra definitionen.
 
 Vi er nu klar til at give den fuldstændige løsning:
 \begin{thm}
