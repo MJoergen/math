@@ -1,0 +1,50 @@
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+%\usepackage{graphicx}
+%\usepackage{amsfonts}
+%\usepackage{esvect}
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+\newcommand{\be}{\begin{equation}}
+\newcommand{\ee}{\end{equation}}
+
+\usepackage{amsthm}        % Theorems
+\newtheorem{thm}{Sætning}[section]
+\newtheorem{lem}{Lemma}[section]
+\newtheorem{mydef}[thm]{Definition}
+\newtheorem{eks}[thm]{Eksempel}
+
+\begin{document}
+
+\section*{Opgave}
+Udregn
+$$
+\tan(100^\circ) + 4\sin(100^\circ)
+$$
+
+\section*{Løsning}
+\bas
+&&\tan(100^\circ) + 4\sin(100^\circ) \\
+&=&\frac{\sin(100^\circ) + 4\sin(100^\circ)\cos(100^\circ)}{\cos(100^\circ)} \\
+&=&\frac{\sin(100^\circ) + 2\sin(200^\circ)}{\cos(100^\circ)} \\
+&=&\frac{\sin(100^\circ) - 2\sin(20^\circ)}{\cos(100^\circ)} \\
+&=&\frac{\sin(100^\circ) - \sin(20^\circ) - \sin(20^\circ)}{\cos(100^\circ)} \\
+&=&\frac{2\cos(60^\circ)\sin(40^\circ) - \sin(20^\circ)}{\cos(100^\circ)} \\
+&=&\frac{\sin(40^\circ) - \sin(20^\circ)}{\cos(100^\circ)} \\
+&=&\frac{2\cos(30^\circ)\sin(10^\circ)}{\cos(100^\circ)} \\
+&=&\frac{2\cos(30^\circ)\sin(10^\circ)}{-\sin(10^\circ)} \\
+&=&-2\cos(30^\circ)\\
+&=&-\sqrt{3}
+\eas
+
+\end{document}
+

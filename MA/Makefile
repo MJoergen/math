@@ -3,6 +3,7 @@ names += opg1.tex
 names += opg2.tex
 names += opg3.tex
 names += opg4.tex
+names += opg5.tex
 names += opg19.tex
 names += side3168.tex
 names += side3172.tex
