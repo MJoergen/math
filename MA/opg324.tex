@@ -1,0 +1,111 @@
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+\usepackage{graphicx}
+\usepackage{amsfonts}
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+\newcommand{\mod}{\mbox{mod}}
+
+\begin{document}
+
+\section*{Løsning til Opgavehjørnet 324}
+
+\subsection*{Opgave a}
+Et polynomium $p(x)$ med hele koefficienter opfylder:
+$$
+p(1) = 11 < p(6) < p(13) = 215 < p(17) = 1115.
+$$
+Bestem p(6)
+
+\subsection*{Løsning a}
+Ud fra de tre opgivne funktionsværdier kan vi ved polynomiers division skrive $p(x)$ på følgende tre måder:
+\bas
+p(x) &=& (x-1) \cdot Q(x) + 11 \\
+p(x) &=& (x-13) \cdot R(x) + 215 \\
+p(x) &=& (x-17) \cdot S(x) + 1115
+\eas
+Indsættes heri $x=6$ fås:
+\bas
+p(6) &=& 5 \cdot Q(6) + 11 \\
+p(6) &=& -7 \cdot R(6) + 215 \\
+p(6) &=& -11 \cdot S(6) + 1115
+\eas
+Da $p(x)$ har heltallige koefficienter gælder dette også for polynomierne $Q(x)$, $R(x)$ og $S(x)$, og dermed er tallene $Q(6)$, $R(6)$ og $S(6)$ alle heltal.
+
+Vi udregner nu resten af $p(6)$ efter division med henholdsvis $5$, $7$ og $11$. Det giver:
+\bas
+p(6) &\equiv& 1 \,\,\mod\,\,  5\\
+p(6) &\equiv& 5 \,\,\mod\,\,  7\\
+p(6) &\equiv& 4 \,\,\mod\,\, 11
+\eas
+Ved nu at benytte den kinesiske restklassesætning, så finder man, at
+$$
+p(6) \equiv 26 \,\,\mod\,\, 385
+$$
+
+Da vi har, at $11 < p(6) < 215$ må der gælde, at $p(6) = 26$.
+
+\subsection*{Opgave b}
+Polynomiet $p(x) = x^3 - 8x^2 + 5x + 7$ har rødderne $a$, $b$ og $c$. Bestem 
+$a^2+b^2+c^2$ og $a^4+b^4+c^4$.
+
+\subsection*{Løsning b}
+Polynomiet kan faktoriseres som
+$$
+p(x) = (x-a)(x-b)(x-c)
+$$
+Ved at gange parenteserne ud kan det også skrives som:
+$$
+p(x) = x^3 - (a+b+c) x^2 + (ab+ac+bc) x - abc
+$$
+Ved nu at sammenligne koefficienterne med forskriften for $p(x)$ ser vi, at
+\bas
+a+b+c &=& 8 \\
+ab+ac+bc &=& 5 \\
+abc &=& -7
+\eas
+
+Nu benytter vi følgende algebraiske identitet:
+$$
+(a+b+c)^2 = a^2+b^2+c^2 + 2(ab+ac+bc)
+$$
+Heraf får vi umiddelbart, at
+\bas
+a^2+b^2+c^2 &=& (a+b+c)^2 - 2(ab+ac+bc) \\
+            &=& 8^2 - 2\cdot 5 \\
+            &=& 54
+\eas
+
+For at bestemme $a^4+b^4+c^4$, så ganger vi først polynomiet $p(x)$ med $x-8$. Dette giver:
+\bas
+h(x) &=& (x-8)(x^3-8x^2+5x+7) \\
+     &=& x^4-59x^2+47x+56
+\eas
+Dette polynomium er af fjerde grad og har ikke noget led af tredje grad. Dette viser sig at være praktisk.
+
+Da $a$, $b$ og $c$ er rødder i $p(x)$ er de også rødder i $h(x)$. Dermed gælder, at $h(a) = h(b) = h(c) = 0$. Nu adderes disse på følgende måde:
+\bas
+0 &=& h(a) + h(b) + h(c) \\
+  &=& (a^4-59a^2+47a+56)
+    + (b^4-59b^2+47b+56)
+    + (c^4-59c^2+47c+56) \\
+  &=& a^4+b^4+c^4 - 59(a^2+b^2+c^2) + 47(a+b+c) + 56\cdot 3 
+\eas
+Heraf får vi, at
+\bas
+a^4+b^4+c^4 &=& 59(a^2+b^2+c^2) - 47(a+b+c)-56\cdot 3 \\
+            &=& 59\cdot 54 - 47\cdot 8 - 56\cdot 3 \\
+            &=& 2642
+\eas
+
+\end{document}
+
