@@ -31,9 +31,9 @@ Der er givet følgende ligning:
 $$
 x\sqrt{1-y^2} + y\sqrt{1-x^2} = k
 $$
-hvor $x$ og $y$ er reelle, og hvor $k$ er en reel konstant.
+hvor $x$ og $y$ er reelle, og hvor $k$ er en positiv konstant.
 
-For enhver værdi af $k$ bestemmer ovenstående ligning en punkmængde i $(x,y)$ planen. Bestem denne punktmængde udtrykt med $k$.
+For enhver værdi af $k$ bestemmer ovenstående ligning en punktmængde i $(x,y)$ planen. Bestem denne punktmængde udtrykt med $k$.
 
 \section*{Løsning}
 Der må gælde: $-1\le x,y\le 1$. Lad nu $x=\sin(A)$ og
@@ -46,11 +46,11 @@ Additionsformlen giver nu:
 $$
 \sin(A+B) = k
 $$
-Heraf ses tydeligt, at løsningsmængden er tom med mindre $-1\le k\le 1$. Antag derfor, at $k$ kan opfylder dette, og skriv det som 
+Heraf ses tydeligt, at løsningsmængden er tom med mindre $k\le 1$. Antag derfor, at $k$ kan opfylder dette, og skriv det som 
 $$
 k = \sin(C)
 $$
-hvor $-90\degree \le C \le 90\degree$. Dermed er $\cos(C) = \sqrt{1-k^2}$.
+hvor $0\degree < C \le 90\degree$. Dermed er $\cos(C) = \sqrt{1-k^2}$.
 
 Nu kan lignigen skrives som
 $$
@@ -64,13 +64,13 @@ og
 $$
 A+B = 180\degree - C
 $$
-Vi kan isolere $B$ is disse to løsnigner, men må samtidig tage højde for, at $B$ skal opfylde $-90\degree\le B\le 90\degree$. Det giver følgende to løsninger:
+Vi kan isolere $B$ is disse to løsninger, men må samtidig tage højde for, at $B$ skal opfylde $-90\degree\le B\le 90\degree$. Det giver følgende to løsninger:
 $$
-B = C-A, \quad A \ge C\degree-90
+B = C-A, \quad A \ge C-90\degree, \quad \cos(A+B) = \cos(C)
 $$
 og
 $$
-B = 180\degree - C - A, \quad A \ge 90\degree-C
+B = 180\degree - C - A, \quad A \ge 90\degree-C, \quad \cos(A+B) = -\cos(C)
 $$
 
 For at vende tilbage til $(x,y)$ koordinaterne, så benytter vi nu følgende trigonometriske identitet:
@@ -105,6 +105,7 @@ a = \frac{k}{\sqrt{1\pm\sqrt{1-k^2}}} \\
 b = \frac{k}{\sqrt{1\mp\sqrt{1-k^2}}}
 \eas
 Læg mærke til, at $a\cdot b = k$ og $a^2 + b^2 = 2$.
+Ergo er løsningsmængden delmængder af to ellipser.
 
 I den første løsning $B = C-A, \quad A \ge C-90\degree$ skal der gælde
 \bas
@@ -116,7 +117,7 @@ x &=& \sin(A) \\
 I den anden løsning $B = 180\degree - C - A, \quad A \ge 90\degree-C$
 skal der tilsvarende gælde: $x \ge \sqrt{1-k^2}$.
 
-Vi har således fundet frem til følgende: For $-1\le k \le 1$ består løsningsmængden af to ellipse-udsnit. Den første har storaksen på linjen $y=-x$ og gælder i intervallet $-\sqrt{1-k^2} \le x \le 1$. Den anden har storaksen på linjen $y=x$ og gælder i intervallet $\sqrt{1-k^2} \le x \le 1$.
+Vi har således fundet frem til følgende: For $k \le 1$ består løsningsmængden af to ellipse-udsnit. Den første har storaksen på linjen $y=-x$ og gælder i intervallet $-\sqrt{1-k^2} \le x \le 1$. Den anden har storaksen på linjen $y=x$ og gælder i intervallet $\sqrt{1-k^2} \le x \le 1$.
 
 Den følgende figur viser løsningsmængden for $k=0.8$.
 
