@@ -1,0 +1,76 @@
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+\usepackage{graphicx}
+\usepackage{amsfonts}
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+
+\begin{document}
+
+\section*{Geometriopgave 159}
+I en halvcirkel med centrum $O$ og radius $\sqrt{50}$ er $AB$ diameter. $D$ 
+er et punkt i cirklens indre og $C$ og $E$ ligger på cirklen, så $CD \perp DE$, $CD \parallel AB$ og $CD=6$, $DE=2$. Bestem $OD$.
+
+
+\section*{Løsning}
+\begin{figure}[ht]
+    \centering
+    \includegraphics{side3371fig}
+    \label{side3371fig}
+\end{figure}
+
+Siden $CD$ forlænges ud over $D$, så den skærer cirklen i $F$. Cirklen
+omskriver trekanten $CEF$ og arealet af trekant $CEF$ kan derfor skrives på to
+måder:
+$$
+T = \frac12 \cdot DE \cdot CF = \frac{CE\cdot EF\cdot CF}{4R},
+$$
+hvor $R$ er radius i cirklen.
+Der divideres med den fælles faktor $CF$, og resultatet omskrives til:
+$$
+2 \cdot DE \cdot R = CE \cdot EF
+$$
+Kvadrering og brug af Pythagoras giver:
+$$
+4 \cdot DE^2 \cdot R^2 = (CD^2 + DE^2) \cdot (DF^2 + DE^2)
+$$
+Indsættes nu $DE = 2$, $CD = 6$ og $R = \sqrt{50}$ giver det følgende
+ligning til bestemmelse af $DF$:
+$$
+4\cdot 4\cdot 50 = (6^2 + 2^2)\cdot(DF^2 + 2^2)
+$$
+Løsning giver
+$$
+DF = 4
+$$
+
+Midtpunktet af $CF$ kaldes $G$ og der gælder så, at $OG\perp CF$ fordi $CF$ er parallel med $AB$. Vi har,
+at 
+$$
+GF = \frac12 CF = \frac12 (CD + DF) = \frac12 (6+4) = 5
+$$
+Dermed bliver 
+$$
+GD = GF - DF = 5 - 4 = 1
+$$
+Dernæst er 
+$$
+OG = \sqrt{OF^2 - GF^2} = \sqrt{50 - 5^2} = 5
+$$
+Til sidst har vi:
+$$
+OD = \sqrt{OG^2 + GD^2} = \sqrt{5^2 + 1^2} = \sqrt{26}.
+$$
+
+
+\end{document}
+
