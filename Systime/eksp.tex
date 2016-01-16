@@ -1,0 +1,96 @@
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+\usepackage{graphicx}
+\usepackage{amsfonts}
+\usepackage{amsthm}        % Theorems
+\usepackage{amsmath}
+%\usepackage{hyperref}
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+\newcommand{\be}{\begin{equation}}
+\newcommand{\ee}{\end{equation}}
+\newcommand{\bea}{\begin{eqnarray}}
+\newcommand{\eea}{\end{eqnarray}}
+
+\newtheorem{thm}{Sætning}[section]
+\newtheorem{mydef}[thm]{Definition}
+\newtheorem{eks}[thm]{Eksempel}
+
+\DeclareMathSymbol{,}{\mathord}{letters}{"3B}
+
+\title{Eksponentielle funktioner}
+
+\begin{document}
+
+\maketitle
+
+\section{Indledning}
+\section{Renteformlen}
+\section{Eksponentielle funktioner}
+Vi kalder funktioer af typen
+$$
+f(x) = ba^x
+$$
+for {\em eksponentielle funktioner}. Tallene $a$ og $b$ er konstanter. Følgende funktioner er 
+eksempler på eksponentielle funktioner:
+$$
+\begin{array}{rcll}
+    f(x) &=& 3 4^x & (a=4, b=3) \\
+    g(x) &=& 4 0.91^z & (a=0.91, b=4) 
+\end{array}
+$$
+
+\begin{eks}
+    Man støder ofte på eksponentielle funktioner
+    \begin{itemize}
+        \item Renteformlen kan skrives som
+            $$
+            f(x) = K_0 (1+r)^x
+            $$
+            hvor $a=1+r$ og $b=K_0$.
+        \item 
+    \end{itemize}
+\end{eks}
+
+\subsection{Konstanternes betydning}
+\subsubsection{Konstanten $b$}
+Figuren viser grafen for de to eksponentielle funktioner $f(x)$ og $g(x)$
+angivet ovenfor. Vi bemærker, at grafen i alle tre tilfælde går igennem punkter $(0, b)$.
+Da
+$$
+f(0) = b\cdot a^0 = b
+$$
+må det være tilfældet for en hvilken som helst eksponentiel funktion.
+
+\subsubsection{Konstanten $a$}
+For at få et indtryk af betydningen af $a$, sætter vi $b=1$ og tegner grafen
+for en række forskellige værdier af $a$, se figuren. Vi iagttager, at 
+\begin{itemize}
+    \item Når $a>0$ er $f(x)$ voksende, og grafen krummer opad (grafen er {\em konveks}).
+    \item Når $a<0$ er $f(x)$ aftagende, og grafen nærmer sig mere og mere
+        $x$-aksen når $x$ bliver større og større.
+\end{itemize}
+I begge tilfælde siger man også, at $x$-aksen er en vandret {\em asymptote}.
+De karakteristisks træk ved eksponentialfunktioner er samlet på figuren.
+
+\subsection{Vækstegenskaber}
+Ekspontialfunktioner kaldes også {\em absolut-procent vækst}. Betegnelsen dækker over følgende egenskab:
+{\em Når $x$ ændres med en fast værdi $h$, så ændres $y$ med en fast procent $r$.}
+Som et eksempel på denne type vækst ser vi på den eksponentielle funktion
+$$
+f(x) = 2,15 \cdot 1,12^x
+$$
+For $x=2$ finder vi $f(2) = 2,15 \cdot 1,12^2 = $
+
+
+\end{document}
+

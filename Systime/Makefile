@@ -1,4 +1,5 @@
 names  = lineær.tex
+names += eksp.tex
 tex_pdfs   = $(names:.tex=.pdf)
 
 %pics   = fig1.asy
