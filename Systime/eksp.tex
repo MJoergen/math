@@ -103,8 +103,8 @@ $$
 \subsection{Konstanternes betydning}
 \subsubsection{Konstanten $b$}
 Figuren viser grafen for de to eksponentielle funktioner $f(x)$ og $g(x)$
-angivet ovenfor. Vi bemærker, at grafen i alle tre tilfælde går igennem punkter $(0, b)$.
-Da
+angivet ovenfor. Vi bemærker, at grafen i alle tre tilfælde går igennem punkter
+$(0, b)$.  Da
 $$
 f(0) = b\cdot a^0 = b
 $$
@@ -122,9 +122,10 @@ I begge tilfælde siger man også, at $x$-aksen er en vandret {\em asymptote}.
 De karakteristisks træk ved eksponentialfunktioner er samlet på figuren.
 
 \subsection{Vækstegenskaber}
-Ekspontialfunktioner kaldes også {\em absolut-procent vækst}. Betegnelsen dækker over følgende egenskab:
-{\em Når $x$ ændres med en fast værdi $h$, så ændres $y$ med en fast procent $r$.}
-Som et eksempel på denne type vækst ser vi på den eksponentielle funktion
+Ekspontialfunktioner kaldes også {\em absolut-procent vækst}. Betegnelsen
+dækker over følgende egenskab: {\em Når $x$ ændres med en fast værdi $h$, så
+ændres $y$ med en fast procent $r$.} Som et eksempel på denne type vækst ser vi
+på den eksponentielle funktion
 $$
 f(x) = 2,15 \cdot 1,12^x
 $$
@@ -141,7 +142,8 @@ hvilket er en relativ stigning i y-værdierne på
 $$
 \frac{y_2-y_1}{y_1} \cdot 100\% = \frac{3,125 - 2,697}{2,697} \cdot 100 \% = 16 \%.
 $$
-Resultatet af en tilsvarende beregning for hhv $x_1 = 10$ og $x_1 = 15$ er vist i tabellen nedenfor:
+Resultatet af en tilsvarende beregning for hhv $x_1 = 10$ og $x_1 = 15$ er vist
+i tabellen nedenfor:
 $$
 \begin{array}{|c|c|c|c|c|}
     \hline 
@@ -155,20 +157,22 @@ $$
     \hline
 \end{array}
 $$
-Det interessant er her, at vi i alle tre tilfælde med en stigning i $x$-værdierne på $1,3$ får en ændring
-i $y$-værdierne på $16\%$.
+Det interessant er her, at vi i alle tre tilfælde med en stigning i
+$x$-værdierne på $1,3$ får en ændring i $y$-værdierne på $16\%$.
 
-Resultatet er tilsyneladende uafhængigt af, hvilken $x$-værdi, der tages udgangspunkt i. Den følgende beregning viser,
-at det er tilfældet:
+Resultatet er tilsyneladende uafhængigt af, hvilken $x$-værdi, der tages
+udgangspunkt i. Den følgende beregning viser, at det er tilfældet:
 $$
 f(x + 1,3) = 2,15 \cdot 1,12^{x+1,3} = 2,15 \cdot 1,12^x \cdot 1,12^1,3 = 2,15 \cdot 1,12^x \cdot 1,16 = f(x) \cdot 1,16.
 $$
-Beregningen viser, at hvis der lægges $1,3$ til $x$, så skal $f(x)$ ganges med $1,16$. Det er det samme som at sige,
-at når $x$ stiger med 1,13, så stiger $f(x)$ med $16\%$.
+Beregningen viser, at hvis der lægges $1,3$ til $x$, så skal $f(x)$ ganges med
+$1,16$. Det er det samme som at sige, at når $x$ stiger med 1,13, så stiger
+$f(x)$ med $16\%$.
 
 \begin{thm}
     For en eksponentiel funktion $f(x) = ba^x$ gælder:
-    Hvis $x$ ændres med en fast værdi $h$, så ændres $f(x)$ med en fast procent $r_y$. Skrives $r_y$ som decimaltal gælder formlen
+    Hvis $x$ ændres med en fast værdi $h$, så ændres $f(x)$ med en fast procent
+    $r_y$. Skrives $r_y$ som decimaltal gælder formlen
     $$
     1+r_y = a^h
     $$
@@ -178,12 +182,13 @@ at når $x$ stiger med 1,13, så stiger $f(x)$ med $16\%$.
     $$
     f(x+h) = ba^{x+h} = ba^x a^h = f(x) a^h
     $$
-    hvilket viser, at når $x$ stiger med $h$, så fremskrives $y=f(x)$ med faktoren $a^h$. Lader vi $r_y$ som decimaltal være bestemt
-    ved
+    hvilket viser, at når $x$ stiger med $h$, så fremskrives $y=f(x)$ med
+    faktoren $a^h$. Lader vi $r_y$ som decimaltal være bestemt ved
     $$
     a^h = 1+r_y
     $$
-    så viser ligningen $f(x+h) = f(x) a^h$, at når $x$ stiger med værdien $h$, så stiger $y=f(X)$ med $r_y$ procent.
+    så viser ligningen $f(x+h) = f(x) a^h$, at når $x$ stiger med værdien $h$,
+    så stiger $y=f(X)$ med $r_y$ procent.
 \end{proof}
 
 \begin{eks}
@@ -210,6 +215,82 @@ at når $x$ stiger med 1,13, så stiger $f(x)$ med $16\%$.
             Dvs $x$ skal aftage med $0,21$.
     \end{enumerate}
 \end{eks}
+
+\section{Eksponentialfunktion fastlagt ved to punkter}
+Vi har tidligere set, at to punkter $(x_1,y_1)$ og $(x_2, y_2)$ fastlægger en
+lineær funktion. Det eneste krav er, at de to punkter ikke er placeret, så det
+ene er lodret over det andet, dvs der skal gælde $x_1 \neq x_2$. Der gælder et
+tilsvarende resultat for eksponentielle funktioner.
+
+Hvis vi vil bestemme den eksponentielle funktion $f(x) = ba^x$, der har en
+graf, der går igennem punkterne $(2, 6)$ og $(3, 2)$, kan vi går frem på
+følgende måde:
+Da grafen for $f(x)$ går igennem de to punkter, er $f(2) = 18$ og $f(4) = 2$. Dvs.
+\bas
+2 &=& b a^4 \\
+18 &=& b a^2 
+\eas
+Ved at dividere hhv venstresiderne med hinanden og højresiderne med hinanden får vi en ligning,
+hvor $a$ kan bestemmes:
+$$
+\frac{2}{18} = \frac{b a^4}{b a^2} \Leftrightarrow 
+\frac{2}{18} = \frac{a^4}{a^2} \Leftrightarrow 
+\frac{2}{18} = a^{4-2} 
+$$
+Dette kan reduceres yderligere, og grundtallet $a$ kan nu isoleres
+$$
+\frac{1}{9} = a^2 \Leftrightarrow a = \sqrt{\left(\frac{1}{9}\right)} = \frac{1}{\sqrt{9}} = \frac{1}{3}
+$$
+
+Konstanten $b$ bestemmes nu ved
+$$
+18 = b \left(\frac{1}{3}\right)^2  \Leftrightarrow
+18 = b \frac{1}{9}  \Leftrightarrow
+b = 18\cdot 9 = 162 
+$$
+Som svar finder vi altså den eksponentielle funktion $f(x) = 162\cdot \left(\frac{1}{3}\right)^x$, se også figuren.
+
+Beregningen kan også foretages vha en formel:
+\begin{thm}
+    Lad $(x_1,y_1)$ og $(x_2,y_2)$ være to punkter i første kvadrant, hvor $x_1
+    \neq x_2$. Så findes netop én ekspontiel funktion $f(x) = b a^x$, hvis graf går igennem disse punkter.
+    Konstanterne $a$ og $b$ kan bestemmes ved:
+    $$
+    a = \sqrt[x_2-x_1]{\frac{y_2}{y_1}} \quad \hbox{og} \quad b = \frac{y_1}{a^x_1}
+    $$
+\end{thm}
+\begin{proof}
+    Beviset forløber på samme måde som beregningen ovenfor: Da grafen for $f(x)$ skal gå igennem de to punkter,
+    skal punkternes koordinater passe i forskriften $f(x) = ba^x$:
+    \bas
+    y_1 &=& b a^{x_1} \\
+    y_2 &=& b a^{x_2}
+    \eas
+    Ved at dividere hhv venstresiderne med hinanden og højresiderne med hinanden kan vi opstille en ny ligning,
+    hvor $b$ kan forkortes væk:
+    $$
+    \frac{y_2}{y_1} = \frac{b a^{x_2}}{b a^{x_1}} \Leftrightarrow
+    \frac{y_2}{y_1} = \frac{a^{x_2}}{a^{x_1}} \Leftrightarrow
+    \frac{y_2}{y_1} = a^{x_2-x_1} 
+    $$
+    Vi tager nu den $(x_2-x_1)$'te rod på begge sider:
+    $$
+    a = \sqrt[x_2-x_1]{\frac{y_2}{y_1}}
+    $$
+    Formlen for $b$ fremkommer ved at isolere $b$ i ligningen $y_1 = b a^{x-1}$.
+\end{proof}
+
+\begin{eks}
+    Forskriften for den eksponentielle funktion, hvis graf går gennem punkterne $(2, 7)$ og $(5, 8)$ kan vi bestemme ved
+    $$
+    a = \sqrt[5-2]{\frac{8}{7}} = 1,046 \quad \hbox{og} \quad b = \frac{7}{1,046^2} = 6,398
+    $$
+    Afrundet til 2 decimaler er forskriften derfor $f(x) = 6,398 \cdot 1,046^x$.
+\end{eks}
+
+
+
+
 
 
 
