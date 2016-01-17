@@ -31,12 +31,16 @@
 
 \begin{document}
 
-\maketitle
+%\maketitle
 
 \section{Indledning}
+I matematikken og i den virkelige verden møder man mange forskellige funktioner.
+Foruden lineære funktioner er der to, som man støder på særligt ofte, nemlig
+{\em eksponentielle funktioner} og {\em potensfunktioner}.
+
 \section{Renteformlen}
 Hvis en størrelse på 800 ({\em begyndelsesværdien}) vokser med $4\%$ pr. måned
-({\em vækstraten}) i en længere periode, kan vi beregne dens værdi til
+({\em vækst\-raten}) i en længere periode, kan vi beregne dens værdi til
 forskellige tidspunkter:
 \begin{itemize}
     \item Efter 1 måned er værdien $800\cdot 1,04 = 832$.
@@ -55,23 +59,38 @@ bruger vi den mere neutrale betegnelse {\em termin} for tidsrummet mellem to
 
 Hvis vi betegner værdien efter $n$ terminer med $K_n$ og begyndelsesværdien med
 $K_0$, gælder åbenbart følgende formel:
-\begin{eks}
-    {\em Renterformlen}. En størrelse med begyndelsesværdien $K_0$ ændrer sig
-    med procenter $r$ pr. termin. Efter $n$ terminer er størrelsen da ændret
+\begin{mydef}
+    {\em Renteformlen}. En størrelse med begyndelsesværdien $K_0$ ændrer sig
+    med procenten $r$ pr. termin. Efter $n$ terminer er størrelsen da ændret
     til slutværdien $K_n$, hvor
     $$
     K_n = K_0 \cdot (1+r)^n
     $$
-\end{eks}
+\end{mydef}
 Formlen kaldes {\em renteformlen}, fordi man kan opfatte situationen, som om en
 person sætter $K_0$ kr. ({\em begyndelseskapitalen}) ind på en konto i et
-pengeinstitut. Beløbet står derefter til en {\em rentefod} (vækstrate) på $r$
+penge\-institut. Beløbet står derefter til en {\em rentefod} (vækstrate) på $r$
 pr. termin i $n$ terminer, uden at der hæves eller sættes yderligere beløb ind.
 Så er beløbet efter $n$ terminer vokset til $K_n$ ({\em slutkapitalen}).
 
-Selv beskedne udsving i rentefoden kan gennem tiden have store virkninger. På figuren
-ses, hvordan en størrelse med begyndelsesværdien 2 (eller 200 eller 20000 \ldots) udvikler
-sig gennem tiden med rentefødder på $6\%$, $9\%$ og $12\%$.
+Selv beskedne udsving i rentefoden kan gennem tiden have store virkninger. På
+figuren ses, hvordan en størrelse med begyndelsesværdien 2 (eller 200 eller
+20000 \ldots) udvikler sig gennem tiden med rentefødder på $6\%$, $9\%$ og
+$12\%$.
+
+[FIGUR 7 side 347 i A1-bogen]
+
+\begin{eks}
+    Jeg sætter $12000$ kroner ind på en opsparingskonto med en årlig rente på
+    $2\%$. Hvor meget står der på kontoen efter $10$ år?
+
+    Dette kan udregnes ved at indsætte i renteformlen: $K_0 = 12000$, $r = 0,02$
+    og $n = 10$. Det giver:
+    $$
+    12000 \cdot 1,02^{10} = 14628
+    $$
+    Altså vil der på kontoen efter $10$ år stå beløbet $14628$ kroner.
+\end{eks}
 
 Renteformlen er et eksempel på en eksponentiel funktion. Vi ser nu på en mere generel
 definition af eksponentielle funktioner.
@@ -79,14 +98,17 @@ definition af eksponentielle funktioner.
 \section{Eksponentielle funktioner}
 Vi kalder funktioner af typen
 $$
-f(x) = ba^x
+f(x) = b\cdot a^x
 $$
-for {\em eksponentielle funktioner}. Tallene $a$ og $b$ er konstanter. Følgende funktioner er 
+for {\em eksponentielle funktioner}. Tallene $a$ og $b$ er positive konstanter.
+Tallet $a$ kaldes også for {\em grundtallet}.
+
+Følgende funktioner er 
 eksempler på eksponentielle funktioner:
 $$
 \begin{array}{rcll}
-    f(x) &=& 3 4^x & (a=4, b=3) \\
-    g(x) &=& 4 0.91^z & (a=0.91, b=4) 
+    f(x) &=& 3,1 \cdot 1,4^x & (a=1,4, \,\,b=3,1) \\
+    g(x) &=& 4,7 \cdot 0,91^x & (a=0,91, \,\,b=4,7) 
 \end{array}
 $$
 
@@ -102,24 +124,45 @@ $$
 
 \subsection{Konstanternes betydning}
 \subsubsection{Konstanten $b$}
+\begin{figure}[ht]
+    \centering
+    \includegraphics{eksp-b}
+    \label{eksp-b}
+\end{figure}
+
 Figuren viser grafen for de to eksponentielle funktioner $f(x)$ og $g(x)$
-angivet ovenfor. Vi bemærker, at grafen i alle tre tilfælde går igennem punkter
-$(0, b)$.  Da
+angivet ovenfor. Vi bemærker, at grafen i begge tilfælde går igennem punktet
+$(0, \,b)$.  Da
 $$
 f(0) = b\cdot a^0 = b
 $$
-må det være tilfældet for en hvilken som helst eksponentiel funktion.
+må dette være tilfældet for en hvilken som helst eksponentiel funktion.
 
 \subsubsection{Konstanten $a$}
+\begin{figure}[ht]
+    \centering
+    \includegraphics{eksp-a}
+    \label{eksp-a}
+\end{figure}
+
 For at få et indtryk af betydningen af $a$, sætter vi $b=1$ og tegner grafen
 for en række forskellige værdier af $a$, se figuren. Vi iagttager, at 
 \begin{itemize}
     \item Når $a>0$ er $f(x)$ voksende, og grafen krummer opad (grafen er {\em konveks}).
+        Når $x$ bliver mindre og mindre, så nærmer grafen sig $x$-aksen.
     \item Når $a<0$ er $f(x)$ aftagende, og grafen nærmer sig mere og mere
-        $x$-aksen når $x$ bliver større og større.
+        $x$-aksen, når $x$ bliver større og større.
 \end{itemize}
 I begge tilfælde siger man også, at $x$-aksen er en vandret {\em asymptote}.
-De karakteristisks træk ved eksponentialfunktioner er samlet på figuren.
+De karakteristiske træk ved eksponentialfunktioner er samlet på figuren.
+
+Læg mærke til, at grafen aldrig rammer eller krydser $x$-aksen.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics{eksp-c}
+    \label{eksp-c}
+\end{figure}
 
 \subsection{Vækstegenskaber}
 Ekspontialfunktioner kaldes også {\em absolut-procent vækst}. Betegnelsen
@@ -129,14 +172,15 @@ på den eksponentielle funktion
 $$
 f(x) = 2,15 \cdot 1,12^x
 $$
-Forøges $x_1 = 2$ med $1,3$ fås $x_2 = x_1 + 1,3 = 2 + 1,3 = 3,3$. De tilsvarende 
+Vi tager udgangspunkt i værdien $x_1=2$ og forøger denne med $1,3$. Dette giver
+en ny $x$-værdi: $x_2 = x_1 + 1,3 = 2 + 1,3 = 3,3$. De tilsvarende 
 funktionsværdier er 
 $$
 y_1 = f(x_1) = f(2) = 2,15 \cdot 1,12^2 = 2,697
 $$
 og
 $$
-y_2 = f(x_2) = f(3,3) = 2,15 \cdot 1,12^3,3 = 3,125
+y_2 = f(x_2) = f(3,3) = 2,15 \cdot 1,12^{3,3} = 3,125
 $$
 hvilket er en relativ stigning i y-værdierne på 
 $$
@@ -157,38 +201,40 @@ $$
     \hline
 \end{array}
 $$
-Det interessant er her, at vi i alle tre tilfælde med en stigning i
+Det interessante er her, at vi i alle tre tilfælde med en stigning i
 $x$-værdierne på $1,3$ får en ændring i $y$-værdierne på $16\%$.
 
 Resultatet er tilsyneladende uafhængigt af, hvilken $x$-værdi, der tages
 udgangspunkt i. Den følgende beregning viser, at det er tilfældet:
 $$
-f(x + 1,3) = 2,15 \cdot 1,12^{x+1,3} = 2,15 \cdot 1,12^x \cdot 1,12^1,3 = 2,15 \cdot 1,12^x \cdot 1,16 = f(x) \cdot 1,16.
+f(x + 1,3) = 2,15 \cdot 1,12^{x+1,3} = 2,15 \cdot 1,12^x \cdot 1,12^{1,3} = 2,15 \cdot 1,12^x \cdot 1,16 = f(x) \cdot 1,16.
 $$
 Beregningen viser, at hvis der lægges $1,3$ til $x$, så skal $f(x)$ ganges med
 $1,16$. Det er det samme som at sige, at når $x$ stiger med 1,13, så stiger
 $f(x)$ med $16\%$.
 
+Der gælder hele generelt følgende resultat:
+
 \begin{thm}
-    For en eksponentiel funktion $f(x) = ba^x$ gælder:
+    For en eksponentiel funktion $f(x) = b\cdot a^x$ gælder:
     Hvis $x$ ændres med en fast værdi $h$, så ændres $f(x)$ med en fast procent
-    $r_y$. Skrives $r_y$ som decimaltal gælder formlen
+    $r$. Skrives $r$ som decimaltal gælder formlen
     $$
-    1+r_y = a^h
+    1+r = a^h
     $$
 \end{thm}
 \begin{proof}
     For en hvilken som helst positiv konstant $h$ har vi
     $$
-    f(x+h) = ba^{x+h} = ba^x a^h = f(x) a^h
+    f(x+h) = b\cdot a^{x+h} = b\cdot a^x\cdot  a^h = f(x)\cdot  a^h
     $$
     hvilket viser, at når $x$ stiger med $h$, så fremskrives $y=f(x)$ med
-    faktoren $a^h$. Lader vi $r_y$ som decimaltal være bestemt ved
+    faktoren $a^h$. Lader vi $r$ som decimaltal være bestemt ved
     $$
-    a^h = 1+r_y
+    a^h = 1+r
     $$
-    så viser ligningen $f(x+h) = f(x) a^h$, at når $x$ stiger med værdien $h$,
-    så stiger $y=f(X)$ med $r_y$ procent.
+    så viser ligningen $f(x+h) = f(x) \cdot a^h$, at når $x$ stiger med værdien $h$,
+    så stiger $y=f(x)$ med $r$ procent.
 \end{proof}
 
 \begin{eks}
@@ -202,15 +248,15 @@ $f(x)$ med $16\%$.
     \begin{enumerate}
         \item Vi benytter sætningen oven for med $h=3,1$:
             $$
-            1+r_y = 1,2^3,1 = 1,76 \Leftrightarrow r_y = 0,76
+            1+r_y = 1,2^{3,1} = 1,76 \Leftrightarrow r = 0,76
             $$
             Funktionsværdien $f(x)$ vokser altså med $76\%$.
-        \item Vi benytter samme sætning, men nu med $r_y = -58\% = -0,58$.
+        \item Vi benytter samme sætning, men nu med $r = -58\% = -0,58$.
             $$
             1-0,58 = 1,2^h \Leftrightarrow 0,42 = 1,2^h \Leftrightarrow \ln(0,42) = \ln(1,2^h) \Leftrightarrow
             $$
             $$
-            \ln(0,42) = h\cdot \ln(1,2) \Leftrightarrow h = -0,21.
+            \ln(0,42) = h\cdot \ln(1,2) \Leftrightarrow h = \frac{\ln(0,42)}{\ln(1,2)} = -0,21.
             $$
             Dvs $x$ skal aftage med $0,21$.
     \end{enumerate}
@@ -222,38 +268,44 @@ lineær funktion. Det eneste krav er, at de to punkter ikke er placeret, så det
 ene er lodret over det andet, dvs der skal gælde $x_1 \neq x_2$. Der gælder et
 tilsvarende resultat for eksponentielle funktioner.
 
-Hvis vi vil bestemme den eksponentielle funktion $f(x) = ba^x$, der har en
-graf, der går igennem punkterne $(2, 6)$ og $(3, 2)$, kan vi går frem på
+Hvis vi vil bestemme den eksponentielle funktion $f(x) = b\cdot a^x$, der har en
+graf, der går igennem punkterne $(5, 2)$ og $(3, 18)$, kan vi gå frem på
 følgende måde:
-Da grafen for $f(x)$ går igennem de to punkter, er $f(2) = 18$ og $f(4) = 2$. Dvs.
+Da grafen for $f(x)$ går igennem de to punkter, er $f(5) = 2$ og $f(3) = 18$. Dvs.
 \bas
-2 &=& b a^4 \\
-18 &=& b a^2 
+b \cdot a^5  &=& 2\\
+b \cdot a^3  &=& 18
 \eas
 Ved at dividere hhv venstresiderne med hinanden og højresiderne med hinanden får vi en ligning,
 hvor $a$ kan bestemmes:
 $$
-\frac{2}{18} = \frac{b a^4}{b a^2} \Leftrightarrow 
-\frac{2}{18} = \frac{a^4}{a^2} \Leftrightarrow 
-\frac{2}{18} = a^{4-2} 
+\frac{b\cdot a^5}{b\cdot a^3} = \frac{2}{18} \Leftrightarrow 
+\frac{a^5}{a^3} = \frac{2}{18} \Leftrightarrow 
+a^{5-3} = \frac{2}{18}  
 $$
 Dette kan reduceres yderligere, og grundtallet $a$ kan nu isoleres
 $$
-\frac{1}{9} = a^2 \Leftrightarrow a = \sqrt{\left(\frac{1}{9}\right)} = \frac{1}{\sqrt{9}} = \frac{1}{3}
+a^2 = \frac{1}{9} \Leftrightarrow a = \sqrt{\frac{1}{9}} = \frac{1}{\sqrt{9}} = \frac{1}{3}
 $$
 
 Konstanten $b$ bestemmes nu ved
 $$
-18 = b \left(\frac{1}{3}\right)^2  \Leftrightarrow
-18 = b \frac{1}{9}  \Leftrightarrow
-b = 18\cdot 9 = 162 
+b \cdot \left(\frac{1}{3}\right)^3 = 18 \Leftrightarrow
+b \cdot \frac{1}{27} = 18  \Leftrightarrow
+b = 18\cdot 27 = 486
 $$
-Som svar finder vi altså den eksponentielle funktion $f(x) = 162\cdot \left(\frac{1}{3}\right)^x$, se også figuren.
+Som svar finder vi altså den eksponentielle funktion $f(x) = 486\cdot \left(\frac{1}{3}\right)^x$, se også figuren.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics{eksp-d}
+    \label{eksp-d}
+\end{figure}
 
 Beregningen kan også foretages vha en formel:
 \begin{thm}
     Lad $(x_1,y_1)$ og $(x_2,y_2)$ være to punkter i første kvadrant, hvor $x_1
-    \neq x_2$. Så findes netop én ekspontiel funktion $f(x) = b a^x$, hvis graf går igennem disse punkter.
+    \neq x_2$. Så findes netop én ekspontiel funktion $f(x) = b \cdot a^x$, hvis graf går igennem disse punkter.
     Konstanterne $a$ og $b$ kan bestemmes ved:
     $$
     a = \sqrt[x_2-x_1]{\frac{y_2}{y_1}} \quad \hbox{og} \quad b = \frac{y_1}{a^x_1}
@@ -261,15 +313,15 @@ Beregningen kan også foretages vha en formel:
 \end{thm}
 \begin{proof}
     Beviset forløber på samme måde som beregningen ovenfor: Da grafen for $f(x)$ skal gå igennem de to punkter,
-    skal punkternes koordinater passe i forskriften $f(x) = ba^x$:
+    skal punkternes koordinater passe i forskriften $f(x) = b\cdot a^x$:
     \bas
-    y_1 &=& b a^{x_1} \\
-    y_2 &=& b a^{x_2}
+    y_1 &=& b \cdot a^{x_1} \\
+    y_2 &=& b\cdot  a^{x_2}
     \eas
     Ved at dividere hhv venstresiderne med hinanden og højresiderne med hinanden kan vi opstille en ny ligning,
     hvor $b$ kan forkortes væk:
     $$
-    \frac{y_2}{y_1} = \frac{b a^{x_2}}{b a^{x_1}} \Leftrightarrow
+    \frac{y_2}{y_1} = \frac{b\cdot  a^{x_2}}{b \cdot a^{x_1}} \Leftrightarrow
     \frac{y_2}{y_1} = \frac{a^{x_2}}{a^{x_1}} \Leftrightarrow
     \frac{y_2}{y_1} = a^{x_2-x_1} 
     $$
@@ -277,20 +329,16 @@ Beregningen kan også foretages vha en formel:
     $$
     a = \sqrt[x_2-x_1]{\frac{y_2}{y_1}}
     $$
-    Formlen for $b$ fremkommer ved at isolere $b$ i ligningen $y_1 = b a^{x-1}$.
+    Formlen for $b$ fremkommer ved at isolere $b$ i ligningen $y_1 = b\cdot  a^{x-1}$.
 \end{proof}
 
 \begin{eks}
     Forskriften for den eksponentielle funktion, hvis graf går gennem punkterne $(2, 7)$ og $(5, 8)$ kan vi bestemme ved
     $$
-    a = \sqrt[5-2]{\frac{8}{7}} = 1,046 \quad \hbox{og} \quad b = \frac{7}{1,046^2} = 6,398
+    a = \sqrt[5-2]{\frac{8}{7}} = \sqrt[3]{1,143} = 1,046 \quad \hbox{og} \quad b = \frac{7}{1,046^2} = 6,398
     $$
-    Afrundet til 2 decimaler er forskriften derfor $f(x) = 6,398 \cdot 1,046^x$.
+    Forskriften er derfor $f(x) = 6,398 \cdot 1,046^x$.
 \end{eks}
-
-
-
-
 
 
 
