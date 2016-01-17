@@ -37,8 +37,11 @@
 I matematikken og i den virkelige verden møder man mange forskellige funktioner.
 Foruden lineære funktioner er der to, som man støder på særligt ofte, nemlig
 {\em eksponentielle funktioner} og {\em potensfunktioner}.
+Disse to typer funktioner bliver behandlet i dette og næste kapitel.
 
 \section{Renteformlen}
+Vi begynder med en formel for beregning af rentes rente.
+
 Hvis en størrelse på 800 ({\em begyndelsesværdien}) vokser med $4\%$ pr. måned
 ({\em vækst\-raten}) i en længere periode, kan vi beregne dens værdi til
 forskellige tidspunkter:
@@ -73,13 +76,6 @@ penge\-institut. Beløbet står derefter til en {\em rentefod} (vækstrate) på 
 pr. termin i $n$ terminer, uden at der hæves eller sættes yderligere beløb ind.
 Så er beløbet efter $n$ terminer vokset til $K_n$ ({\em slutkapitalen}).
 
-Selv beskedne udsving i rentefoden kan gennem tiden have store virkninger. På
-figuren ses, hvordan en størrelse med begyndelsesværdien 2 (eller 200 eller
-20000 \ldots) udvikler sig gennem tiden med rentefødder på $6\%$, $9\%$ og
-$12\%$.
-
-[FIGUR 7 side 347 i A1-bogen]
-
 \begin{eks}
     Jeg sætter $12000$ kroner ind på en opsparingskonto med en årlig rente på
     $2\%$. Hvor meget står der på kontoen efter $10$ år?
@@ -92,6 +88,13 @@ $12\%$.
     Altså vil der på kontoen efter $10$ år stå beløbet $14628$ kroner.
 \end{eks}
 
+Selv beskedne udsving i rentefoden kan gennem tiden have store virkninger. På
+figuren ses, hvordan en størrelse med begyndelsesværdien 2 (eller 200 eller
+20000 \ldots) udvikler sig gennem tiden med rentefødder på $6\%$, $9\%$ og
+$12\%$.
+
+[FIGUR 7 side 347 i A1-bogen]
+
 Renteformlen er et eksempel på en eksponentiel funktion. Vi ser nu på en mere generel
 definition af eksponentielle funktioner.
 
@@ -101,14 +104,15 @@ $$
 f(x) = b\cdot a^x
 $$
 for {\em eksponentielle funktioner}. Tallene $a$ og $b$ er positive konstanter.
-Tallet $a$ kaldes også for {\em grundtallet}.
+Tallet $a$ kaldes også for {\em grundtallet} eller for {\em
+fremskrivningsfaktoren}. Tallet $b$ kaldes for {\em begyndelsesværdien}.
 
 Følgende funktioner er 
 eksempler på eksponentielle funktioner:
 $$
 \begin{array}{rcll}
-    f(x) &=& 3,1 \cdot 1,4^x & (a=1,4, \,\,b=3,1) \\
-    g(x) &=& 4,7 \cdot 0,91^x & (a=0,91, \,\,b=4,7) 
+    f(x) &=& 3,1 \cdot 1,4^x & (b=3,1\, , \,\, a=1,4) \\
+    g(x) &=& 4,7 \cdot 0,91^x & (b=4,7\, , \,\, a=0,91) 
 \end{array}
 $$
 
