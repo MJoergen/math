@@ -2,8 +2,11 @@ names  = lineær.tex
 names += eksp.tex
 tex_pdfs   = $(names:.tex=.pdf)
 
-%pics   = fig1.asy
-%asy_pdfs  += $(pics:.asy=.pdf)
+pics   = eksp-b.asy
+pics  += eksp-a.asy
+pics  += eksp-c.asy
+pics  += eksp-d.asy
+asy_pdfs  += $(pics:.asy=.pdf)
 
 all: $(asy_pdfs) $(tex_pdfs)
 
