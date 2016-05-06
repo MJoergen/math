@@ -28,6 +28,7 @@
 \DeclareMathSymbol{,}{\mathord}{letters}{"3B}
 
 \title{Eksponentielle funktioner}
+\date{\vspace{-5ex}}
 
 \begin{document}
 
@@ -40,7 +41,7 @@ funktioner, og i de næste kapitler vil vi møde bl.a. logaritmefunktioner og
 potensfunktioner.
 
 Fælles for alle disse funktioner er, at de har en lang række forskellige
-anvendelser. Således optræder eksponentielle funktioner bl.a inden for økonomi
+anvendelser. Således optræder eksponentielle funktioner bl.a. inden for økonomi
 (rente og rentes rente), biologi (vækst af bakterier og andre organismer),
 fysik (radioaktivitet), m.m.
 
@@ -56,11 +57,13 @@ efter 1 år bliver der indsat 5 \% af 1000 kroner på kontoen. Det
 udregner vi til $ \frac{5}{100} \cdot 1000 = 50 $ kroner. Så efter 1 år står
 der nu 1050 kroner på kontoen.  Efter det andet år bliver der nu indsat 5 \% af
 1050 kroner, dvs $ \frac{5}{100} \cdot 1050 = 52,50$ kroner.
-Det giver et samlet beløb efter 2 år på 1102,50 kroner. Læg mærke til, at rentebeløbet
-det andet år (52,50 kroner) er større end rentebeløbet det første år (50 kroner).
+Det giver et samlet beløb efter 2 år på 1102,50 kroner. Læg mærke til, at
+rentebeløbet det andet år (52,50 kroner) er større end rentebeløbet det første
+år (50 kroner).
 
-Hvis jeg gerne vil beregne, hvad saldoen bliver efter 8 år, så kan man fortsætte ovenstående
-beregninger. Det er praktisk at opstille beregningerne i et skema som vist her:
+Hvis vi gerne vil beregne, hvad saldoen bliver efter 8 år, så kan vi fortsætte
+ovenstående beregninger. Det er praktisk at opstille beregningerne i et skema
+som vist her:
 $$
 \begin{array}{r|c|l}
     \mbox{efter år} & \mbox{saldo} & \mbox{rentebeløb} \\
@@ -84,18 +87,20 @@ $$
 8 & 1477,47 & 
 \end{array}
 $$
-Det vil sige, at efter 8 år, så vil der stå 1477,47 kroner på saldoen.
-Dette er en temmelig besværlig metode, og der er en meget nemmere måde at nå frem til
-resultatet 1477,47 kroner på, som vi skal se i det følgende.
+Det vil sige, at efter 8 år, så vil der stå 1477,47 kroner på saldoen.  Dette
+er dog en temmelig besværlig metode, og der er en meget nemmere måde at nå frem
+til resultatet 1477,47 kroner på, som vi skal se i det følgende.
 
-For hvert år der går bliver saldoen ganget med
+For det første bemærker vi, at for hvert år der går, bliver saldoen ganget med
 1,05. Dette kan vi indse ved følgende udregning: Efter det første år bliver
-saldoen udregnet som: $1050 = 1000 + 50 = 1000 + 0,05\cdot 1000 = 1,05 \cdot 1000$.
+saldoen udregnet som: $1050 = 1000 + 50 = 1000 + 0,05\cdot 1000 = 1,05 \cdot
+1000$.
 
 Saldoen efter 2 år kan så udregnes som $1,05\cdot 1050 = 1,05 \cdot (1,05 \cdot
 1000) = 1,05^2 \cdot 1000$. Saldoen efter 3 år kan på samme måde udregnes som
 $1,05\cdot1,05\cdot1,05\cdot 1000 = 1,05^3 \cdot 1000$. Efter 8 år er saldoen
-derfor på $1,05^8\cdot 1000$.
+derfor på $1,05^8\cdot 1000$. Hvis vi udregner dette på lommeregner, så giver
+det netop ca. 1477 kroner.
 
 Denne metode kan udtrykkes ved følgende formel:
 \begin{thm}
@@ -114,9 +119,8 @@ decimaltal. Dvs. hvis renten er 5\%, så er vækstraten $r=\frac{5}{100}=0,05$.
 
 I det følgende gennemgår vi nogle eksempler på anvendelse af renteformlen.
 \begin{eks}
-    Jeg arver 20000 kroner og indsætter beløbet på en
-    opsparingskonto som giver 4\% i rente om året. Efter 7 år, hvad vil der stå
-    på kontoen?
+    Jeg arver 20000 kroner og indsætter beløbet på en opsparingskonto, som
+    giver 4\% i rente om året. Efter 7 år, hvad vil der stå på kontoen?
 \end{eks}
 \begin{proof}[Svar]
     Først udregnes vækstraten $r=\frac{4}{100} = 0,04$. Så indsættes i renteformlen:
@@ -133,7 +137,7 @@ Renteformlen kan også bruges, når man låner penge, hvis man ikke betaler af
     lægges 1,8 \% i rente hver måned, hvor meget skylder jeg efter 2 år?
 \end{eks}
 \begin{proof}[Svar]
-    Når rente bliver tilskrevet hver måned, så skal tiden på 2 år omregnes til
+    Når renten bliver tilskrevet hver måned, så skal tiden på 2 år omregnes til
     måneder, dvs 24 måneder. Dette er antallet af terminer. Vækstraten er $r =
     \frac{1,8}{100} = 0,018$, og renteformlen giver derfor:
     $$
@@ -143,7 +147,9 @@ Renteformlen kan også bruges, når man låner penge, hvis man ikke betaler af
 \end{proof}
 
 \section{Eksponentielle funktioner}
-Renteformlen er et eksempel på en eksponentiel funktion. I det følgende gennemgår vi en mere generel formel for eksponentielle funktioner, som kan bruges i mange andre sammenhænge end økonomi.
+Renteformlen er et eksempel på en eksponentiel funktion. I det følgende
+gennemgår vi en mere generel formel for eksponentielle funktioner, som kan
+bruges i mange andre sammenhænge end økonomi.
 
 \subsection{Forskrift}
 \begin{mydef}
@@ -151,30 +157,61 @@ Renteformlen er et eksempel på en eksponentiel funktion. I det følgende gennem
     $$
     f(x) = b\cdot a^x
     $$
-    hvor $a$ kaldes {\em fremskrivningsfaktor},  mens $b$ kaldes {\em
+    hvor $a$ kaldes {\em fremskrivningsfaktor} og $b$ kaldes {\em
     begyndelsesværdi}. Både $a$ og $b$ vil altid være positive konstanter.
     Definitionsmængden for en eksponentiel funktion er alle tal, dvs $x$ kan
     være både positiv og negativ; værdimængden er alle positive tal, dvs
     $f(x)$ vil altid være positiv.
 \end{mydef}
 
-
-Der er følgende sammenhæng mellem vækstraten $r$ og fremskrivningsfaktoren $a$:
+Følgende funktioner er eksempler på eksponentielle funktioner:
 $$
-a = 1 + r
+\begin{array}{rcll}
+    f(x) &=& 3,1 \cdot 1,4^x & ( a=1,4  \, ; \, \, b=3,1) \\
+    g(x) &=& 4,7 \cdot 0,91^x & (a=0,91 \, ; \, \, b=4,7) 
+\end{array}
 $$
 
-\subsection{Grafens udseende}
-Eksponentielle funktioner er alle monotone; deres monotoniforhold er bestemt af
-fremskrivningsfaktoren: Hvis $a>1$ så er funktionen voksende, hvis $a<1$ så er
-funktionen aftagende.
 \begin{figure}[ht]
     \centering
     \includegraphics{eksp-b}
     \label{eksp-b}
 \end{figure}
-På figuren ses to eksempler, én som er voksende (hvor $a=1,4$) og én som er
-aftagende (hvor $a=0,9$).
+På figuren ses graferne for disse to funktioner.
+
+\begin{thm}
+    Renteformlen svarer til ovenstående definition, hvis man sætter
+    \bas
+    f(x) = K_n & : & \hbox{værdien efter $n$ terminer.} \\
+       b = K_0 & : & \hbox{begyndelsesværdi.} \\
+       a = 1+r & : & \hbox{fremskrivningsfaktor.} \\
+       x = n   & : & \hbox{antallet af terminer.}
+    \eas
+\end{thm}
+
+\subsection{Grafens udseende}
+Eksponentielle funktioner er alle monotone; deres monotoniforhold er bestemt af
+fremskrivningsfaktoren. Tallene $a$ og $b$ har betydning for, hvordan grafen
+ser ud, som det fremgår af følgende:
+
+\begin{itemize}
+    \item Hvis $a>1$ er funktionen voksende og grafen krummer opad (grafen
+        er {\em konveks}).  Når $x$ bliver mindre og mindre, nærmer grafen
+        sig $x$-aksen.
+    \item Hvis $a<1$ er funktionen aftagende, og grafen nærmer sig
+        $x$-aksen, når $x$ bliver større og større.
+\end{itemize}
+
+I begge tilfælde siger man også, at $x$-aksen er en vandret {\em asymptote}.
+De karakteristiske træk ved eksponentialfunktioner er samlet på figuren.
+
+Læg mærke til, at grafen aldrig rammer eller krydser $x$-aksen.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics{eksp-c}
+    \label{eksp-c}
+\end{figure}
 
 \begin{thm}
     En eksponentiel funktion vil altid skære $y$-aksen i punktet $(0,b)$.
@@ -195,8 +232,8 @@ I det følgende ser vi på nogle eksempler.
     Antallet af ænder i et område er på et tidspunkt målt til 270 ænder. Hvert
     år vokser antallet af ænder med 7 \%. Opskriv en eksponentiel funktion.
 \end{eks}
-\begin{proof}{Svar}
-    Dette kan oversættes til følgende formel for antallet af ænder efter $x$ år:
+\begin{proof}[Svar]
+    Vi kan opskrive følgende formel for antallet af ænder efter $x$ år:
     $$
     f(x) = 270 \cdot 1,07^x
     $$
@@ -208,12 +245,13 @@ I det følgende ser vi på nogle eksempler.
     Radioaktiviteten af en mængde stof er på et tidspunkt målt til 700. Efter
     hver time falder strålingen med 3\%. Opskriv en eksponentiel funktion.
 \end{eks}
-\begin{proof}{Svar}
+\begin{proof}[Svar]
     Radioaktiviteten efter $x$ timer kan udregnes ved følgende forskrift:
     $$
     f(x) = 700 \cdot 0,97^x
     $$
     Her er fremskrivningsfaktoren udregnet som $1 + \frac{-3}{100} = 1-0,03 = 0,97$.
+    Da $a<1$ så betyder det, at radioaktiviteten bliver mindre og mindre med tiden.
 \end{proof}
 
 Man skal også kunne oversætte tilbage, dvs fortolke en forskrift. Vi ser på et eksempel:
@@ -223,16 +261,20 @@ Man skal også kunne oversætte tilbage, dvs fortolke en forskrift. Vi ser på e
     $$
     f(x) = 10000 \cdot 1,27^x
     $$
-    hvor $x$ måles i år. Hvad fortæller tallene i forskriften om antallet af profiler?
+    hvor $x$ måles i år. Hvad fortæller tallene i forskriften om antallet af
+    profiler?
 \end{eks}
 \begin{proof}[Svar]
-    Til at begynde med er der 10000 profiler på det nye sociale medie. Hvert år bliver der 27 \% flere profiler.
+    Vi genkender, at der er tale om en eksponentiel funktion med $a=1,27$ og
+    $b=10000$.  Disse værdier fortolker vi som, at der til at begynde med er
+    10000 profiler på det nye sociale medie, og hvert år bliver der 27 \% flere
+    profiler.
 \end{proof}
 
 \section{Regression}
-Eksponentielle funktoner bruges også, når man kun har givet nogle få
-data-punkter. Et eksempel kunne være det årlige antal af tvangsopløste
-selskaber for en række år, givet ved nedenstående tabel:
+Eksponentielle funktoner bruges også, når man kun har givet nogle
+data-punkter. Et eksempel kunne være nedenstående tabel, som viser det årlige
+antal af tvangsopløste selskaber for en række år:
 $$
 \begin{array}{l|c|c|c|c}
     \mbox{År efter 2006} & 0 & 1 & 2 & 3 \\
@@ -243,17 +285,21 @@ $$
 Tabellen skal læses således, at der f.eks. i år 2009 (3 år efter 2006) blev
 opløst i alt 5530 selskaber.
 
-Hvis vi indtegner disse fire punkter i et koordinatsystem, så ser vi en tydelig
-voksende tendens. Måske kan dette beskrives ved en eksponentiel funktion?
-
 \begin{figure}[ht]
     \centering
     \includegraphics[width=10cm]{eksp-eks1}
 \end{figure}
 
-Vi spørger altså, om der findes værdier for tallene $a$ og $b$ som passer med disse punkter. Det viser sig, at overensstemmelsen ikke er perfekt, men at man med {\em regression} kan finde de værdier som passer bedst.
+Hvis vi indtegner disse fire punkter i et koordinatsystem, så ser vi en
+voksende tendens, som krummer opad. Kan disse data mon beskrives ved en
+eksponentiel funktion?
 
-På et CAS-værktøj kan man ved hjælp af eksponentiel regression beregne, at tallene $a$ og $b$ skal have værdierne: 
+Vi spørger altså, om der findes værdier for tallene $a$ og $b$, som passer med
+disse punkter. Det viser sig, at overensstemmelsen ikke er perfekt, men at man
+med {\em regression} kan finde de værdier, som passer bedst.
+
+På et CAS-værktøj kan man ved hjælp af eksponentiel regression beregne, at
+tallene $a$ og $b$ skal have værdierne: 
 $$
 a = 1,35214
 $$
@@ -264,10 +310,18 @@ Det svarer således til funktionen
 $$
 f(x) = 2154,74 \cdot 1,35214 ^x
 $$
-Tallene i denne forskrift skal fortolkes på følgende måde: I år 2006 var der ca. 2155 tvangsopløste selskaber, og antallet er siden da vokset med ca. 35 \% om året.
+Tallene i denne forskrift skal fortolkes på følgende måde: I år 2006 var der
+ca. 2155 tvangsopløste selskaber, og antallet er siden da vokset med ca. 35 \%
+om året.
 
-Vi kan også tegne grafen for denne eksponentielle funktion og se, at den
-passer rimeligt godt med punkterne.
+På næste figur har vi tegnet grafen for denne eksponentielle funktion og vi kan
+se, at den passer rimeligt godt med punkterne.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics{eksp-e}
+    \label{eksp-e}
+\end{figure}
 
 Vi siger her, at den eksponentielle funktion er en {\em model} for antallet af
 tvangsopløste selskaber. Den gør os i stand til at {\em forudsige}, hvordan
@@ -281,14 +335,124 @@ udviklingen vil fortsætte.
     $$
     f(5) = 2154,74 \cdot 1,35214^5 = 9738,7
     $$
-    Dette resultat fortolker vi som, at den den eksponentielle
+    Dette resultat fortolker vi som, at den eksponentielle
     model forudsiger, at ca. 9740 selskaber vil blive tvangsopløst i 2011.
 \end{proof}
     
 
+\subsection{Vækstegenskaber}
+Nu vil vi gå lidt dybere ind i betydningen af fremskrivningsfaktoren. Vi har tidligere
+set, at når $x$ stiger med 1, så bliver $f(x)$ ganget med $a$. Dette så vi bl.a. da
+vi behandlede rentes rente i begyndelsen af kapitlet.
+
+Som et eksempel på denne type vækst ser vi på den eksponentielle funktion
+$$
+f(x) = 2,15 \cdot 1,12^x
+$$
+Vi laver igen et sildeben:
+$$
+\begin{array}{r|l}
+    x & f(x) \\
+    0 & 2,15 \\
+    1 & 2,15 \cdot 1,12^1 = 2,41 \\
+    2 & 2,15 \cdot 1,12^2 = 2,70 \\
+    3 & 2,15 \cdot 1,12^3 = 3,02
+\end{array}
+$$
+Hvert tal i kolonnen $f(x)$ fremkommer ved at gange det foregående tal med
+1,12. F.eks. gælder $2,41 \cdot 1,12 = 2,70$. Det vil sige, at når $x$ stiger
+med 1, så bliver $f(x)$ ganget med 1,12.
+
+Hved sker der mon så, hvis $x$ stiger med 2? Så bliver $f(x)$ ganget med
+$1,12^2 = 1,25$.  Det kan vi checke i ovenstående tabel ved at udregne
+$2,15*1,25 = 2,69$ og $2,41*1,25 = 3,01$, som passer bortset fra afrunding på
+sidste decimal.
+
+Der gælder helt generelt, at hver gang $x$ stiger med en fast værdi, så bliver
+$f(x)$ ganget med en fast faktor. Dette er beskrevet i følgende sætning:
+
+\begin{thm}
+    For en eksponentiel funktion $f(x) = b\cdot a^x$ gælder: Hvis $x$ ændres
+    med en fast værdi $h$, så ganges $f(x)$ med en fast faktor $a^h$.
+\end{thm}
+\begin{proof}
+    For en hvilken som helst positiv konstant $h$ har vi
+    $$
+    f(x+h) = b\cdot a^{x+h} = b\cdot a^x\cdot  a^h = f(x)\cdot  a^h
+    $$
+    hvilket viser, at når $x$ stiger med $h$, så bliver $f(x)$ ganget med
+    faktoren $a^h$. 
+\end{proof}
+
+\begin{eks}
+    Vi ser på $f(x) = 21,5 \cdot 1,2^x$ og ønsker at svare på følgende
+    spørgsmål: Hvor meget vokser $f(x)$ med, når $x$ vokser med $3,1$?
+\end{eks}
+\begin{proof}[Svar]
+    Vi benytter sætningen oven for med $h=3,1$ og udregner derfor:
+    $$
+    1,2^{3,1} = 1,76 
+    $$
+    Funktionsværdien $f(x)$ bliver altså ganget med faktoren 1,76, hvilket
+    svarer til, at den vokser med $76\%$.
+\end{proof}
+
+
 \section{Eksponentialfunktion fastlagt ved to punkter}
 Hvis man kun kender to punkter, så vil der være netop én eksponentiel funktion
-som går præcist gennem de to punkter. Dette fremgår af følgende sætning:
+som præcist går gennem de to punkter. Dette er samme situation som ved lineære
+funktioner.
+
+Vi viser først ved et eksempel, hvordan man kan bestemme værdierne for tallene
+$a$ og $b$, når man kender koordinaterne for de to punkter.
+Hvis vi vil bestemme den eksponentielle funktion $f(x) = b\cdot a^x$, der har en
+graf, der går igennem punkterne $(3, 2)$ og $(5, 18)$, kan vi gå frem på
+følgende måde:
+Da grafen for $f(x)$ går igennem de to punkter, er $f(3) = 2$ og $f(5) = 18$. Dvs.
+\bas
+b \cdot a^3  &=& 2\\
+b \cdot a^5  &=& 18
+\eas
+Ved at isolere $b$ i den første ligning får vi
+$$
+b = \frac{2}{a^3}
+$$
+Dette indsættes i den anden ligning:
+$$
+\frac{2}{a^3} \cdot a^5 = 18
+$$
+som omskrives til
+$$
+\frac{2 \cdot a^5}{a^3} = 18
+$$
+Nu divideres med 2 på begge sider:
+$$
+\frac{a^5}{a^3} = 9
+$$
+Nu benyttes en potensregneregel til at reducere:
+$$
+a^2 = 9
+$$
+og vi ser at $a=3$ er den eneste løsning, fordi $a$ skal være positiv.
+
+Derefter finder vi, at 
+$$
+b = \frac{2}{3^3} = \frac{2}{27}
+$$
+
+Vi har således fundet frem til, at der er netop én eksponentiel funktion gennem de to givne punkter, og 
+den har forskriften (se også figuren):
+$$
+f(x) = \frac{2}{27} \cdot 3^x
+$$
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics{eksp-d}
+    \label{eksp-d}
+\end{figure}
+
+Denne metode er beskrevet i følgende sætning:
 
 \begin{thm}
     Hvis en eksponentiel funktion går gennem de to punkter $(x_1, y_1)$ og $(x_2, y_2)$,
@@ -333,6 +497,5 @@ som går præcist gennem de to punkter. Dette fremgår af følgende sætning:
     $$
 \end{proof}
 
-Eksempler, hvor man ikke skal bruge denne sætning.
 \end{document}
 
