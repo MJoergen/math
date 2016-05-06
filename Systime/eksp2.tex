@@ -21,9 +21,10 @@
 \newcommand{\bea}{\begin{eqnarray}}
 \newcommand{\eea}{\end{eqnarray}}
 
-\newtheorem{thm}{Sætning}[section]
-\newtheorem{mydef}[thm]{Definition}
-\newtheorem{eks}[thm]{Eksempel}
+\theoremstyle{plain}
+\newtheorem*{thm}{Sætning}
+\newtheorem*{mydef}{Definition}
+\newtheorem*{eks}{Eksempel}
 
 \DeclareMathSymbol{,}{\mathord}{letters}{"3B}
 
@@ -34,7 +35,7 @@
 
 \maketitle
 
-\section{Indledning}
+\section*{Indledning}
 I denne bog kommer vi til at møde mange forskellige funktioner. Vi har allerede
 arbejdet med lineære funktioner. I dette kapitel er emnet eksponentielle
 funktioner, og i de næste kapitler vil vi møde bl.a. logaritmefunktioner og
@@ -45,7 +46,7 @@ anvendelser. Således optræder eksponentielle funktioner bl.a. inden for økono
 (rente og rentes rente), biologi (vækst af bakterier og andre organismer),
 fysik (radioaktivitet), m.m.
 
-\section{Renteformlen}
+\section*{Renteformlen}
 \begin{figure}[ht]
     \centering
     \includegraphics[width=10cm]{penge}
@@ -87,6 +88,11 @@ $$
 8 & 1477,47 & 
 \end{array}
 $$
+\begin{figure}[ht]
+    \centering
+    \includegraphics{eksp-f}
+    \label{eksp-f}
+\end{figure}
 Det vil sige, at efter 8 år, så vil der stå 1477,47 kroner på saldoen.  Dette
 er dog en temmelig besværlig metode, og der er en meget nemmere måde at nå frem
 til resultatet 1477,47 kroner på, som vi skal se i det følgende.
@@ -146,12 +152,12 @@ Renteformlen kan også bruges, når man låner penge, hvis man ikke betaler af
     Den samlede gæld er derfor vokset til over 26000 kroner på de 2 år.
 \end{proof}
 
-\section{Eksponentielle funktioner}
+\section*{Eksponentielle funktioner}
 Renteformlen er et eksempel på en eksponentiel funktion. I det følgende
 gennemgår vi en mere generel formel for eksponentielle funktioner, som kan
 bruges i mange andre sammenhænge end økonomi.
 
-\subsection{Forskrift}
+\subsection*{Forskriften for en eksponentiel funktion}
 \begin{mydef}
     En eksponentiel funktion er givet ved følgende forskrift:
     $$
@@ -189,7 +195,7 @@ På figuren ses graferne for disse to funktioner.
     \eas
 \end{thm}
 
-\subsection{Grafens udseende}
+\subsection*{Grafens udseende}
 Eksponentielle funktioner er alle monotone; deres monotoniforhold er bestemt af
 fremskrivningsfaktoren. Tallene $a$ og $b$ har betydning for, hvordan grafen
 ser ud, som det fremgår af følgende:
@@ -203,9 +209,8 @@ ser ud, som det fremgår af følgende:
 \end{itemize}
 
 I begge tilfælde siger man også, at $x$-aksen er en vandret {\em asymptote}.
-De karakteristiske træk ved eksponentialfunktioner er samlet på figuren.
-
-Læg mærke til, at grafen aldrig rammer eller krydser $x$-aksen.
+De karakteristiske træk ved eksponentielle funktioner er samlet på figuren.  Læg
+mærke til, at grafen aldrig rammer eller krydser $x$-aksen.
 
 \begin{figure}[ht]
     \centering
@@ -214,14 +219,14 @@ Læg mærke til, at grafen aldrig rammer eller krydser $x$-aksen.
 \end{figure}
 
 \begin{thm}
-    En eksponentiel funktion vil altid skære $y$-aksen i punktet $(0,b)$.
+    En eksponentiel funktion vil altid skære $y$-aksen i punktet $(0,\,b)$.
 \end{thm}
 \begin{proof}
     Dette ses ved at indsætte $x$-koordinaten $x=0$ i forskriften:
     $f(0) = b\cdot a^0 = b\cdot 1 = b$.
 \end{proof}
 
-\subsection{Sproglig formulering}
+\subsection*{Sproglig formulering}
 Eksponentielle funktioner optræder hver gang en størrelse vokser eller falder
 med en fast procent.
 
@@ -271,7 +276,7 @@ Man skal også kunne oversætte tilbage, dvs fortolke en forskrift. Vi ser på e
     profiler.
 \end{proof}
 
-\section{Regression}
+\section*{Regression}
 Eksponentielle funktoner bruges også, når man kun har givet nogle
 data-punkter. Et eksempel kunne være nedenstående tabel, som viser det årlige
 antal af tvangsopløste selskaber for en række år:
@@ -312,10 +317,8 @@ f(x) = 2154,74 \cdot 1,35214 ^x
 $$
 Tallene i denne forskrift skal fortolkes på følgende måde: I år 2006 var der
 ca. 2155 tvangsopløste selskaber, og antallet er siden da vokset med ca. 35 \%
-om året.
-
-På næste figur har vi tegnet grafen for denne eksponentielle funktion og vi kan
-se, at den passer rimeligt godt med punkterne.
+om året.  På næste figur har vi tegnet grafen for denne eksponentielle funktion
+og vi kan se, at den passer rimeligt godt med punkterne.
 
 \begin{figure}[ht]
     \centering
@@ -340,7 +343,7 @@ udviklingen vil fortsætte.
 \end{proof}
     
 
-\subsection{Vækstegenskaber}
+\section*{Vækstegenskaber}
 Nu vil vi gå lidt dybere ind i betydningen af fremskrivningsfaktoren. Vi har tidligere
 set, at når $x$ stiger med 1, så bliver $f(x)$ ganget med $a$. Dette så vi bl.a. da
 vi behandlede rentes rente i begyndelsen af kapitlet.
@@ -353,6 +356,7 @@ Vi laver igen et sildeben:
 $$
 \begin{array}{r|l}
     x & f(x) \\
+    \hline
     0 & 2,15 \\
     1 & 2,15 \cdot 1,12^1 = 2,41 \\
     2 & 2,15 \cdot 1,12^2 = 2,70 \\
@@ -363,9 +367,9 @@ Hvert tal i kolonnen $f(x)$ fremkommer ved at gange det foregående tal med
 1,12. F.eks. gælder $2,41 \cdot 1,12 = 2,70$. Det vil sige, at når $x$ stiger
 med 1, så bliver $f(x)$ ganget med 1,12.
 
-Hved sker der mon så, hvis $x$ stiger med 2? Så bliver $f(x)$ ganget med
+Hved sker der mon så, hvis $x$ stiger med 2? Svar: Så bliver $f(x)$ ganget med
 $1,12^2 = 1,25$.  Det kan vi checke i ovenstående tabel ved at udregne
-$2,15*1,25 = 2,69$ og $2,41*1,25 = 3,01$, som passer bortset fra afrunding på
+$2,15\cdot1,25 = 2,69$ og $2,41\cdot1,25 = 3,01$, som passer bortset fra afrunding på
 sidste decimal.
 
 Der gælder helt generelt, at hver gang $x$ stiger med en fast værdi, så bliver
@@ -394,12 +398,12 @@ $f(x)$ ganget med en fast faktor. Dette er beskrevet i følgende sætning:
     1,2^{3,1} = 1,76 
     $$
     Funktionsværdien $f(x)$ bliver altså ganget med faktoren 1,76, hvilket
-    svarer til, at den vokser med $76\%$.
+    svarer til, at $f(x)$ vokser med $76\%$.
 \end{proof}
 
 
-\section{Eksponentialfunktion fastlagt ved to punkter}
-Hvis man kun kender to punkter, så vil der være netop én eksponentiel funktion
+\section*{Eksponentiel funktion fastlagt ved to punkter}
+Hvis man kun kender to punkter, så vil der være netop én eksponentiel funktion,
 som præcist går gennem de to punkter. Dette er samme situation som ved lineære
 funktioner.
 
@@ -433,7 +437,7 @@ Nu benyttes en potensregneregel til at reducere:
 $$
 a^2 = 9
 $$
-og vi ser at $a=3$ er den eneste løsning, fordi $a$ skal være positiv.
+og vi ser, at $a=3$ er den eneste løsning, fordi $a$ skal være positiv.
 
 Derefter finder vi, at 
 $$
@@ -455,7 +459,7 @@ $$
 Denne metode er beskrevet i følgende sætning:
 
 \begin{thm}
-    Hvis en eksponentiel funktion går gennem de to punkter $(x_1, y_1)$ og $(x_2, y_2)$,
+    Hvis en eksponentiel funktion går gennem de to punkter $(x_1, \,y_1)$ og $(x_2, \,y_2)$,
     så er tallene $a$ og $b$ givet ved:
     $$
     a = \left(\frac{y_2}{y_1}\right)^{\frac{1}{x_2-x_1}}
@@ -466,8 +470,8 @@ Denne metode er beskrevet i følgende sætning:
     $$
 \end{thm}
 \begin{proof}
-    At funktionen går gennem punktet $(x_1, y_1)$ betyder, at $y_1 = f(x_1)$ og tilsvarende for punktet
-    $(x_2,y_2)$. Ved at indsætte den generelle forskrift for en eksponentiel funktion, så giver det:
+    At funktionen går gennem punktet $(x_1, \,y_1)$ betyder, at $y_1 = f(x_1)$ og tilsvarende for punktet
+    $(x_2,\,y_2)$. Ved at indsætte den generelle forskrift for en eksponentiel funktion, så giver det:
     $$
     y_1 = b\cdot a^{x_1}
     $$
@@ -475,8 +479,8 @@ Denne metode er beskrevet i følgende sætning:
     $$
     y_2 = b \cdot a^{x_2}
     $$
-    Dette er to ligninger med de to ubekendte $a$ og $b$. For at løse denne ligning, så er det smart først
-    at isolere $b$ i den første ligning. Det giver:
+    Dette er to ligninger med de to ubekendte $a$ og $b$. For at løse disse ligninger, så 
+    isolerer vi $b$ i den første ligning. Det giver:
     $$
     b = \frac{y_1}{a^{x_1}}
     $$

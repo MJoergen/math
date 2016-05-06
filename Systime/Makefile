@@ -8,6 +8,7 @@ pics  += eksp-a.asy
 pics  += eksp-c.asy
 pics  += eksp-d.asy
 pics  += eksp-e.asy
+pics  += eksp-f.asy
 pics  += linear-1.asy
 pics  += linear-2.asy
 pics  += linear-3.asy
