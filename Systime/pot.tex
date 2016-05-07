@@ -1,0 +1,435 @@
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+\usepackage{graphicx}
+\usepackage{amsfonts}
+\usepackage{amsthm}        % Theorems
+\usepackage{amsmath}
+%\usepackage{hyperref}
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+\newcommand{\be}{\begin{equation}}
+\newcommand{\ee}{\end{equation}}
+\newcommand{\bea}{\begin{eqnarray}}
+\newcommand{\eea}{\end{eqnarray}}
+
+\theoremstyle{plain}
+\newtheorem*{thm}{Sætning}
+\newtheorem*{mydef}{Definition}
+\newtheorem*{eks}{Eksempel}
+
+\DeclareMathSymbol{,}{\mathord}{letters}{"3B}
+
+\title{Rødder og potenser}
+\date{\vspace{-5ex}}
+
+\begin{document}
+
+\maketitle
+
+\section*{Indledning}
+I matematik gør man stort brug af {\em rødder} og {\em potenser}, så dette
+kapitel er en gennemgang af de vigtigste regneregler.
+
+\section*{Rødder}
+Du kender allerede {\em kvadratrod}. Vi skal her se på andre rødder også, dvs.
+kubikrødder m.m.
+
+Vi minder først om definitionen på kvadratroden af et positivt tal:
+\begin{mydef}
+    Kvadratroden af et ikke-negativt tal $a$ er dét ikke-negative tal, hvis
+    andenpotens er $a$. Med andre ord, for $a\ge 0$ gælder:
+    $$
+    \sqrt{a} = b \,\, \Leftrightarrow \,\, b^2 = a
+    $$
+\end{mydef}
+
+Læg mærke til, at det tal, vi tager kvadratroden af, må ikke være negativt. Desuden er resultatet altid positivt eller 0. Således er
+$$
+\sqrt{36} = 6,\quad \mbox{fordi 6 er positiv, og $6^2=36$}
+$$
+$$
+\sqrt{0} = 0,\quad \mbox{fordi 0 er ikke negativ, og $0^2=0$}
+$$
+Ofte bliver kvadratroden af et tal et decimaltal, f.eks. er $\sqrt{320} =
+17,88854\ldots$ fordi $17,88854\ldots^2 = 320$.
+
+På lignende måde definerer vi {\em kubikroden} af et tal:
+\begin{mydef}
+    Kubikroden af et tal $a$ er det tal, hvis tredjepotens er $a$:
+    $$
+    \sqrt[3]{a} = b \,\, \Leftrightarrow \,\, b^3 = a
+    $$
+\end{mydef}
+Her har vi ingen krav til tallet $a$ -- det kan godt være negativt. For
+eksempel er
+$$
+\sqrt[3]{8} = 2,\quad \mbox{fordi $2^3=8$}
+$$
+$$
+\sqrt[3]{-58} = -3,87088\ldots,\quad \mbox{fordi $(-3,87088\ldots)^3=-58$}
+$$
+
+Vi definerer på samme måde {\em den $n$-te rod} at et tal på følgende måde:
+\begin{mydef}
+    \leavevmode
+    \begin{itemize}
+        \item $a>0$ : $\sqrt[n]{a}$ er dét positive tal, hvis $n$-te potens er
+            $a$, dvs $\sqrt[n]{a} = b \Leftrightarrow b^n=a$.
+        \item $a=0$ : $\sqrt[n]{a} = \sqrt[n]{0} =0$.
+        \item $a<0$ : Hvis $n$ er lige er $\sqrt[n]{a}$ ikke defineret.  Hvis
+            $n$ er ulige, er $\sqrt[n]{a}$ dét negative tal, hvis $n$-te potens
+            er $a$.
+    \end{itemize}
+
+    $n$ kaldes {\em rodeksponenten}, $a$ er {\em radikanden}.
+\end{mydef}
+
+\begin{eks}
+    I skemaet nedenfor ses forskellige eksempler på rødder, delt op efter
+    fortegnet for $a$, og om $n$ er lige eller ulige.
+    $$
+    \begin{array}{r|c|l}
+        \sqrt[n]{a} & \mbox{$n$ lige} & \mbox{$n$ ulige} \\
+        \hline
+        a > 0 & \sqrt[4]{16} = 2 & \sqrt[3]{27} = 3 \\
+        \hline
+        a = 0 & \sqrt[4]{0} = 0 & \sqrt[3]{0} = 0 \\
+        \hline
+        a < 0 & \mbox{Ikke defineret} & \sqrt[3]{-27} = -3
+    \end{array}
+    $$
+\end{eks}
+
+Vi skal senere se, at man med fordel kan beregne rødder som potenser ved hjælp
+af potensopløftning.
+
+\subsection*{Regneregler for rødder}
+Der gælder nogle regneregler for kvadratrødder, som vi anfører her uden bevis.
+\begin{thm}
+    For ikke-negative tal $a$ og $b$ gælder
+    $$
+    \sqrt{a\cdot b} = \sqrt{a} \cdot \sqrt{b}, \quad
+    \sqrt{\frac{a}{b}} = \frac{\sqrt{a}}{\sqrt{b}} (b>0)
+    $$
+    For {\em alle} reelle tal $a$ gælder desuden
+    $$
+    \sqrt{a^2} = |a|
+    $$
+\end{thm}
+
+Vi ser på nogle anvendelser af disse regneregler:
+\begin{eks}
+    Efter den første regneregel gælder
+    $$
+    \sqrt{3} \cdot \sqrt{12} = \sqrt{36} = 6
+    $$
+    
+    Denne regel kan også bruges, hvis man vil sætte en faktor uden for rodtegnet, f.eks.:
+    $$
+    \sqrt{72} = \sqrt{36\cdot 2} = \sqrt{36} \cdot \sqrt{2} = 6\sqrt{2}
+    $$
+    og
+    $$
+    \sqrt{45} = \sqrt{9\cdot 5} = \sqrt{9} \cdot \sqrt{5} = 3\sqrt{5}
+    $$
+
+    Tilsvarende kan vi sætte en faktor ind under rodtegnet:
+    $$
+    4\sqrt{3} = \sqrt{16} \cdot \sqrt{3} = \sqrt{16\cdot 3} = \sqrt{48}
+    $$
+    og
+    $$
+    3\sqrt{7} = \sqrt{9} \cdot \sqrt{7} = \sqrt{9\cdot 7} = \sqrt{63}
+    $$
+
+    Desuden kan vi reducere udtryk, der indeholder flere kvadratrodstegn:
+    $$
+    2\cdot\sqrt{18} \cdot \sqrt{2} = 2\cdot\sqrt{18\cdot 2} = 2\cdot \sqrt{36}
+    = 2\cdot 6 = 12
+    $$
+
+    Specielt er
+    $$
+    {\sqrt{5}}^3 = \sqrt{5} \cdot \sqrt{5} \cdot \sqrt{5} = 5\sqrt{5}
+    $$
+    og
+    $$
+    \sqrt{5^3} = \sqrt{5^2} \cdot \sqrt{5} = 5\sqrt{5}
+    $$
+
+\end{eks}
+
+Vi kan {\em ikke} lægge kvadratrødder sammen ved hjælp af nogen regneregel.
+Således er
+$$
+\sqrt{16+9} = \sqrt{25} = 5,\quad \mbox{men $\sqrt{16}+\sqrt{9} = 4+3 = 7$}
+$$
+
+Læg desuden mærke til den vigtige regel:
+$$
+\sqrt{a} \cdot \sqrt{a} = a,\quad \mbox{for $a\ge 0$}
+$$
+fordi $\sqrt{a}$ er det ikke-negative tal, som ganget med sig selv giver $a$.
+
+Ved at dividere med $\sqrt{a}$ på begge sider af lighedstegnet får følgende
+regel:
+$$
+a = \sqrt{a}\cdot\sqrt{a} \Leftrightarrow \frac{a}{\sqrt{a}} = \sqrt{a}
+$$
+
+\begin{eks}
+    Division af rødder foregår efter regnereglen på følgende måde:
+    $$
+    \frac{\sqrt{75}}{\sqrt{3}} = \sqrt{\frac{75}{3}} = \sqrt{25} = 5
+    $$
+    og
+    $$
+    \frac{\sqrt{150}}{\sqrt{18}} = \sqrt{\frac{150}{18}} = \sqrt{\frac{25}{3}}
+    = \frac{\sqrt{25}}{\sqrt{3}} = \frac{5}{\sqrt{3}}
+    $$
+\end{eks}
+
+
+
+
+\section*{Potenser}
+Hvis $a$ er et reelt tal (kaldet {\em grundtallet}) og $n$ er et positivt
+heltal (kaldet {\em eksponenten}), så er symbolet $a^n$ defineret på følgende
+måde:
+$$
+a^n = a \cdot a \cdot a \cdots a,\quad \mbox{$n$ faktorer}
+$$
+For eksempel har vi $a^2 = a \cdot a$ og $a^3 = a \cdot a \cdot a$.
+
+Læg mærke til forskellen mellem
+$$
+a^2 = a \cdot a
+$$
+og
+$$
+2a = a + a
+$$
+
+\subsection*{Potens med hel eksponent}
+Vi kan regne med potenser, hvor eksponenten er positiv og hel på følgende måde:
+\begin{itemize}
+    \item $a^2 \cdot a^3 = a^5$, fordi $a^2\cdot a^3 = (a\cdot a)\cdot (a \cdot
+        a\cdot a) = a^{2+3} = a^5$.
+    \item $\frac{a^6}{a^4} = a^2$, fordi $\frac{a^6}{a^4} = \frac{a \cdot a
+        \cdot a\cdot a\cdot a\cdot a}{a\cdot a\cdot a\cdot a} = a\cdot a = a^2
+        = a^{6-4}$.
+    \item $a^3\cdot b^3 = (a\cdot b)^3$, fordi $a^3 \cdot b^3 = a\cdot a\cdot
+        a\cdot b\cdot b\cdot b = a\cdot b\cdot a\cdot b\cdot a\cdot b = (a\cdot
+        b)^3$.
+    \item $\frac{a^3}{b^3} = \left(\frac{a}{b}\right)^3$, fordi
+        $\frac{a^3}{b^3} = \frac{a\cdot a\cdot a}{b\cdot b\cdot b} =
+        \frac{a}{b} \cdot \frac{a}{b} \cdot \frac{a}{b} =
+        \left(\frac{a}{b}\right)^3$.
+    \item $(a^4)^3 = a^{12}$, fordi $(a^4)^3 = a^4\cdot a^4 \cdot a^4 =
+        a^{4+4+4} = a^{12}$.
+\end{itemize}
+Dette kan formuleres som følgende generelle regneregler:
+\begin{thm}
+    For reelle tal $a$ og $b$ og hele positive eksponenter $m$ og $n$ gælder:
+    
+    \begin{enumerate}
+        \item $a^m \cdot a^n = a^{m+n}$
+        \item $\frac{a^m}{a^n} = a^{m-n}$, \quad $a\neq 0$
+        \item $a^n\cdot b^n = (a\cdot b)^n$
+        \item $\frac{a^n}{b^n} = \left(\frac{a}{b}\right)^n$, \quad $b\neq 0$
+        \item $(a^n)^m = a^{n\cdot m}$.
+    \end{enumerate}
+\end{thm}
+
+\subsection*{Potens med ikke-positiv eksponent}
+Det viser sig nyttigt at kunne definere og regne med potenser, hvor eksponenten
+ikke er positiv. Det vil sige, vi vil se på udtryk som 
+$$
+2^{-4}\quad \mbox{og} \quad 3,6^0
+$$
+og finde ud af, hvordan en fornuftig definition kan se ud. Vi ønsker nemlig
+stadig, at potensregnereglerne i sætningen oven over skal være gyldige, også
+for eksponenter, der er negative eller 0.
+
+Hvis vi kræver at regel 1 skal gælde, får vi ved at sætte $m=0$, at der gælder
+$$
+a^n \cdot a^0 = a^{n+0} = a^n,\quad \mbox{så $a^0=1$.}
+$$
+Hvis vi igen benytter regel 1 med to modsatte hele tal $n$ og $-n$, får vi ved at benytte, at $a^0=1$, at
+$$
+a^{-n} \cdot a^n = a^{-n+n} = a^0 = 1
+$$
+$$
+a^{-n} \cdot a^n = 1 \,\,\Leftrightarrow \,\,a^{-n} = \frac{1}{a^n}
+$$
+Dette motiverer hermed følgende definition
+\begin{mydef}
+    For alle reelle tal $a\neq 0$ og $n$ hel er
+    $$
+    a^0 = 1,\quad a^{-n} = \frac{1}{a^n}
+    $$
+\end{mydef}
+
+Vi kan bruge denne definition til at udregne
+$$
+2^{-4} = \frac{1}{2^4} = \frac{1}{16} = 0,0625
+$$
+og
+$$
+3,6^0 = 1
+$$
+Mere komplicerede eksempler kan også udregnes med denne definition:
+$$
+\left(\frac{3}{4}\right)^{-2} = \frac{1}{\left(\frac{3}{4}\right)^2} = \frac{1}{\frac{9}{16}} = \frac{16}{9}
+$$
+
+Negative eksponenter bruges især for potenser med 10 som grundtal, når man vil angive meget små tal, f.eks.
+$$
+10^{-3} = \frac{1}{10^3} = \frac{1}{1000} = 0,001
+$$
+og
+$$
+0,00072 = 7,2\cdot 10^{-4}
+$$
+Denne måde at skrive tal på kaldes {\em eksponentiel notation}.
+
+
+\subsection*{Potens med brøkeksponent}
+Vi har i det ovenstående udvidet potensbegrebet, så regnereglerne for potenser også gælder for hele eksponenter, der er negative eller 0. Vi skal nu foretage yderligere en udvidelse, idet vi vil se på potenser, hvis eksponenter er brøker. Vi skal altså se på potenser som
+$$
+5^{\frac12} \quad,\quad 0,54^{2,5} \quad,\quad
+\left(\frac{23}{11}\right)^{-3,76}
+$$
+I disse tilfælde skal grundtallet være positivt.
+
+\subsubsection*{Stambrøk som eksponent}
+Vi ser først på de tilfælde, hvor eksponenten er en {\em stambrøk}, dvs en brøk
+med tælleren 1.
+
+\paragraph*{Eksponenten $\frac12$}
+Vi vil give en meningsfuld definition af, hvad potensen $a^{\frac12}$ skal
+betyde.  Vi ønsker fortsat, at alle potensregnereglerne skal gælde -- også for
+potenser med eksponenten $\frac12$. Vi får efter regel 5, at 
+$$
+\left(a^{\frac12}\right)^2 = a^{\frac12 \cdot 2} = a^1 = a
+$$
+Dvs at $a^\frac12$ er et positivt tal, som opløftet i 2. potens giver $a$.
+Derfor er det fornuftigt at vedtage, at
+$$
+a^\frac12 = \sqrt{a}
+$$
+
+\paragraph*{Eksponenten $\frac13$}
+Dernæst ser vi på potensen $\frac13$. Vi går frem på samme måde som før og
+udregner
+$$
+\left(a^{\frac13}\right)^3 = a^{\frac13 \cdot 3} = a^1 = a
+$$
+Da altså $a^\frac13$ er et tal, der opløftet i 3. potens giver $a$, vælger vi
+at definere:
+$$
+a^\frac13 = \sqrt[3]{a}
+$$
+
+\paragraph*{Eksponenten $\frac1n$}
+I almindelighed kan vi åbenbart som ovenfor udregne
+$$
+\left(a^{\frac1n}\right)^n = a^{\frac1n \cdot n} = a^1 = a
+$$
+så
+$$
+a^\frac1n = \sqrt[n]{a}
+$$
+
+Dette leder frem til følgende definition
+\begin{mydef}
+    Hvis $n$ er et positivt helt tal, og $a$ er positiv, så sætter vi
+    $$
+    a^\frac1n = \sqrt[n]{a}
+    $$
+\end{mydef}
+
+\subsubsection*{Ikke-stambrøk som eksponent}
+Nu ser vi på potenser, hvis eksponenter er brøker, som ikke er stambrøker.
+Vi betragter potensen $a^{\frac34}$, og ved hjælp af denne finder vi en generel
+formel.
+
+Vi benytter ovenstående regel for stambrøkseksponent:
+$$
+a^\frac1n = \sqrt[n]{a}
+$$
+og desuden benytter vi potensregneregel nummer 5:
+$$
+\left(a^n\right)^m = a^{n\cdot m}
+$$
+
+Så omskriver vi:
+$$
+a^{\frac34} = a^{3\cdot \frac14} = \left(a^3\right)^\frac14 = \sqrt[4]{a^3}
+$$
+Vi kan også foretage en anden omskrivning:
+$$
+a^{\frac34} = a^{\frac14 \cdot 3} = \left(a^\frac14\right)^3 =
+\left(\sqrt[4]{a}\right)^3
+$$
+Altså har vi fundet frem til, at der er to måder at omskrive potensen $a^\frac34$ på, nemlig:
+$$
+a^\frac34 = \sqrt[4]{a^3} = \left(\sqrt[4]{a}\right)^3
+$$
+Samme omskrivninger kan vi åbenbart foretage, hvis der er tale om en anden brøk
+end $\frac34$, så vi fremsætter derfor følgende definition:
+\begin{mydef}
+    Hvis $a$ er et positivt tal, og $p$ er hel, og $q$ er hel og positiv, så
+    definerer vi potensen $a^\frac{p}{q}$ på følgende to ækvivalente måder:
+    $$
+    a^\frac{p}{q} = \left(\sqrt[q]{a}\right)^p = \sqrt[q]{a^p}
+    $$
+\end{mydef}
+
+Vi ser igen på nogle eksempler på anvendelse af denne nye definition.
+\begin{eks}
+    Ved hjælp af ovenstående definition på potenser med brøk som eksponent,
+    får vi ved at benytte, at $16=2^4$, at
+    $$
+    16^\frac34 = \sqrt[4]{16^3} = \sqrt[4]{\left(2^4\right)^3} = 
+    \sqrt[4]{2^{12}} = 2^\frac{12}{4} = 2^3 = 8
+    $$
+
+    Hvis eksponenten er en decimalbrøk, kan potesen også omskrives til et rodudtryk:
+    $$
+    a^{0,3} = a^\frac{3}{10} = \sqrt[10]{a^3}
+    $$
+\end{eks}
+
+\subsection*{Ligninger med potenser og rødder}
+
+Vi får senere brug for at kunne løse lignigner, hvor den ubekendte indgår i
+potens- og rodudtryk. Vi viser ved et par eksempler, hvordan dette kan foregå:
+
+\begin{eks}
+    Vi løser her nogle lignigner, hvor $x$ indgår som grundtal i potenser, og
+    angiver løsningerne med 5 decimaler. Læg mærke til det dobbelte fortegn 
+    $\pm$ i forbindelse med {\em lige} eksponenter:
+    $$
+    x^7 = 385 \quad\Leftrightarrow\quad x = \sqrt[7]{385} = 2,34073
+    $$
+    $$
+    x^6 = 4953 \quad\Leftrightarrow\quad x = \pm \sqrt[6]{4953} = \pm 4,12868
+    $$
+    $$
+    x^3 = -98,7 \quad\Leftrightarrow\quad x = \sqrt[3]{-98,7} = -4,62139
+    $$
+\end{eks}
+
+
+\end{document}
+
