@@ -39,13 +39,19 @@
 I matematik gør man stort brug af {\em rødder} og {\em potenser}, så dette
 kapitel er en gennemgang af de vigtigste regneregler.
 
+Vi vil gerne kunne forstå betydningen af udtryk som $2,3^{7,4}$, samt løse
+ligninger af typen $x^{5,1} = 2,8$.
+
+Vi begynder med velkendte begreber, og søger så at generalisere definitionerne,
+mens vi bibeholder regnereglerne.
+
 \section*{Rødder}
 Du kender allerede {\em kvadratrod}. Vi skal her se på andre rødder også, dvs.
 kubikrødder m.m.
 
 Vi minder først om definitionen på kvadratroden af et positivt tal:
 \begin{mydef}
-    Kvadratroden af et ikke-negativt tal $a$ er dét ikke-negative tal, hvis
+    Kvadratroden af et ikke-negativt tal $a$ er dét ikke-negative tal $b$, hvis
     andenpotens er $a$. Med andre ord, for $a\ge 0$ gælder:
     $$
     \sqrt{a} = b \,\, \Leftrightarrow \,\, b^2 = a
@@ -59,17 +65,27 @@ $$
 $$
 \sqrt{0} = 0,\quad \mbox{fordi 0 er ikke negativ, og $0^2=0$}
 $$
+$$
+\sqrt{-7} \quad \mbox{er ikke defineret.}
+$$
 Ofte bliver kvadratroden af et tal et decimaltal, f.eks. er $\sqrt{320} =
-17,88854\ldots$ fordi $17,88854\ldots^2 = 320$.
+17,88854\ldots$ fordi $(17,88854\ldots)^2 = 320$.
+
+Der findes metoder til at udregne kvadratroden af et tal uden at bruge
+lommeregner, men de er besværlige og som regel vil man benytte lommeregner.
+
+Vi skal senere se, at man med fordel kan beregne rødder som potenser ved hjælp
+af potensopløftning.
 
 På lignende måde definerer vi {\em kubikroden} af et tal:
 \begin{mydef}
-    Kubikroden af et tal $a$ er det tal, hvis tredjepotens er $a$:
+    Kubikroden af et tal $a$ skrives som $\sqrt[3]{a}$ og er det tal $b$, hvis
+    tredjepotens er $a$:
     $$
     \sqrt[3]{a} = b \,\, \Leftrightarrow \,\, b^3 = a
     $$
 \end{mydef}
-Her har vi ingen krav til tallet $a$ -- det kan godt være negativt. For
+Her har vi ingen krav til tallet $a$; det kan godt være negativt. For
 eksempel er
 $$
 \sqrt[3]{8} = 2,\quad \mbox{fordi $2^3=8$}
@@ -78,11 +94,11 @@ $$
 \sqrt[3]{-58} = -3,87088\ldots,\quad \mbox{fordi $(-3,87088\ldots)^3=-58$}
 $$
 
-Vi definerer på samme måde {\em den $n$-te rod} at et tal på følgende måde:
+Vi definerer på samme måde {\em den $n$-te rod} af et tal på følgende måde:
 \begin{mydef}
     \leavevmode
     \begin{itemize}
-        \item $a>0$ : $\sqrt[n]{a}$ er dét positive tal, hvis $n$-te potens er
+        \item $a>0$ : $\sqrt[n]{a}$ er dét positive tal $b$, hvis $n$-te potens er
             $a$, dvs $\sqrt[n]{a} = b \Leftrightarrow b^n=a$.
         \item $a=0$ : $\sqrt[n]{a} = \sqrt[n]{0} =0$.
         \item $a<0$ : Hvis $n$ er lige er $\sqrt[n]{a}$ ikke defineret.  Hvis
@@ -109,16 +125,21 @@ Vi definerer på samme måde {\em den $n$-te rod} at et tal på følgende måde:
     $$
 \end{eks}
 
-Vi skal senere se, at man med fordel kan beregne rødder som potenser ved hjælp
-af potensopløftning.
+I simple tilfælde kan man selv regne ud, hvad $n$-te roden er. F.eks. er $\sqrt[3]{8}=2$,
+fordi $2^3 = 8$. Men i almindelighed bliver svaret et decimaltal, og dette udregnes typisk
+på lommeregner.
 
-\subsection*{Regneregler for rødder}
-Der gælder nogle regneregler for kvadratrødder, som vi anfører her uden bevis.
+Pas på med at forveksle udtrykkene $\sqrt[3]{8}$ og $3\sqrt{8}$. Det første
+giver $\sqrt[3]{8}=2$, mens det andet giver $3\sqrt{8}=3\cdot \sqrt{8} =
+8,48528$.
+
+\subsection*{Regneregler for kvadratrod}
+Der gælder nogle regneregler for kvadratrod, som vi anfører her uden bevis.
 \begin{thm}
     For ikke-negative tal $a$ og $b$ gælder
     $$
     \sqrt{a\cdot b} = \sqrt{a} \cdot \sqrt{b}, \quad
-    \sqrt{\frac{a}{b}} = \frac{\sqrt{a}}{\sqrt{b}} (b>0)
+    \sqrt{\frac{a}{b}} = \frac{\sqrt{a}}{\sqrt{b}} \quad (b>0)
     $$
     For {\em alle} reelle tal $a$ gælder desuden
     $$
@@ -180,7 +201,7 @@ $$
 $$
 fordi $\sqrt{a}$ er det ikke-negative tal, som ganget med sig selv giver $a$.
 
-Ved at dividere med $\sqrt{a}$ på begge sider af lighedstegnet får følgende
+Ved at dividere med $\sqrt{a}$ på begge sider af lighedstegnet får vi følgende
 regel:
 $$
 a = \sqrt{a}\cdot\sqrt{a} \Leftrightarrow \frac{a}{\sqrt{a}} = \sqrt{a}
@@ -199,8 +220,6 @@ $$
 \end{eks}
 
 
-
-
 \section*{Potenser}
 Hvis $a$ er et reelt tal (kaldet {\em grundtallet}) og $n$ er et positivt
 heltal (kaldet {\em eksponenten}), så er symbolet $a^n$ defineret på følgende
@@ -208,7 +227,7 @@ måde:
 $$
 a^n = a \cdot a \cdot a \cdots a,\quad \mbox{$n$ faktorer}
 $$
-For eksempel har vi $a^2 = a \cdot a$ og $a^3 = a \cdot a \cdot a$.
+For eksempel har vi $a^2 = a \cdot a$ og $a^5 = a \cdot a \cdot a \cdot a \cdot a$.
 
 Læg mærke til forskellen mellem
 $$
@@ -218,6 +237,9 @@ og
 $$
 2a = a + a
 $$
+
+I dette afsnit vil vi give mening til udtryk som $a^{2,3}$, men først ser vi
+på regnereglerne for potenser.
 
 \subsection*{Potens med hel eksponent}
 Vi kan regne med potenser, hvor eksponenten er positiv og hel på følgende måde:
@@ -243,7 +265,7 @@ Dette kan formuleres som følgende generelle regneregler:
     
     \begin{enumerate}
         \item $a^m \cdot a^n = a^{m+n}$
-        \item $\frac{a^m}{a^n} = a^{m-n}$, \quad $a\neq 0$
+        \item $\frac{a^m}{a^n} = a^{m-n}$, \quad $a\neq 0$, \quad $m>n$
         \item $a^n\cdot b^n = (a\cdot b)^n$
         \item $\frac{a^n}{b^n} = \left(\frac{a}{b}\right)^n$, \quad $b\neq 0$
         \item $(a^n)^m = a^{n\cdot m}$.
@@ -251,8 +273,7 @@ Dette kan formuleres som følgende generelle regneregler:
 \end{thm}
 
 \subsection*{Potens med ikke-positiv eksponent}
-Det viser sig nyttigt at kunne definere og regne med potenser, hvor eksponenten
-ikke er positiv. Det vil sige, vi vil se på udtryk som 
+Vi er nu klar til at se på udtryk som 
 $$
 2^{-4}\quad \mbox{og} \quad 3,6^0
 $$
@@ -260,7 +281,7 @@ og finde ud af, hvordan en fornuftig definition kan se ud. Vi ønsker nemlig
 stadig, at potensregnereglerne i sætningen oven over skal være gyldige, også
 for eksponenter, der er negative eller 0.
 
-Hvis vi kræver at regel 1 skal gælde, får vi ved at sætte $m=0$, at der gælder
+Hvis vi kræver, at regel 1 skal gælde, får vi ved at sætte $m=0$, at der gælder
 $$
 a^n \cdot a^0 = a^{n+0} = a^n,\quad \mbox{så $a^0=1$.}
 $$
@@ -322,7 +343,7 @@ potenser med eksponenten $\frac12$. Vi får efter regel 5, at
 $$
 \left(a^{\frac12}\right)^2 = a^{\frac12 \cdot 2} = a^1 = a
 $$
-Dvs at $a^\frac12$ er et positivt tal, som opløftet i 2. potens giver $a$.
+Dvs at $a^\frac12$ er et positivt tal, som opløftet i andenpotens giver $a$.
 Derfor er det fornuftigt at vedtage, at
 $$
 a^\frac12 = \sqrt{a}
@@ -334,8 +355,8 @@ udregner
 $$
 \left(a^{\frac13}\right)^3 = a^{\frac13 \cdot 3} = a^1 = a
 $$
-Da altså $a^\frac13$ er et tal, der opløftet i 3. potens giver $a$, vælger vi
-at definere:
+Da altså $a^\frac13$ er et tal, der opløftet i tredjepotens giver $a$, vælger
+vi at definere:
 $$
 a^\frac13 = \sqrt[3]{a}
 $$
@@ -357,6 +378,14 @@ Dette leder frem til følgende definition
     a^\frac1n = \sqrt[n]{a}
     $$
 \end{mydef}
+
+På denne måde kan rødder omskrives til potenser. Således er $\sqrt[3]{8} =
+8^{\frac13} = 2$.  Tilsvarende kan $\sqrt[7]{45}$ udregnes som $45^\frac17 =
+1,72256$.
+
+I praksis udregnes både rødder og potenser på lommeregner. Dog er det nyttigt
+at vide, potensen $\frac12$ svarer til kvadratrod, dvs. $9^\frac12 = \sqrt{9} =
+3$.
 
 \subsubsection*{Ikke-stambrøk som eksponent}
 Nu ser vi på potenser, hvis eksponenter er brøker, som ikke er stambrøker.
@@ -404,7 +433,7 @@ Vi ser igen på nogle eksempler på anvendelse af denne nye definition.
     \sqrt[4]{2^{12}} = 2^\frac{12}{4} = 2^3 = 8
     $$
 
-    Hvis eksponenten er en decimalbrøk, kan potesen også omskrives til et rodudtryk:
+    Hvis eksponenten er en decimalbrøk, kan potensen også omskrives til et rodudtryk:
     $$
     a^{0,3} = a^\frac{3}{10} = \sqrt[10]{a^3}
     $$
@@ -412,7 +441,7 @@ Vi ser igen på nogle eksempler på anvendelse af denne nye definition.
 
 \subsection*{Ligninger med potenser og rødder}
 
-Vi får senere brug for at kunne løse lignigner, hvor den ubekendte indgår i
+Vi får senere brug for at kunne løse ligninger, hvor den ubekendte indgår i
 potens- og rodudtryk. Vi viser ved et par eksempler, hvordan dette kan foregå:
 
 \begin{eks}
@@ -429,6 +458,13 @@ potens- og rodudtryk. Vi viser ved et par eksempler, hvordan dette kan foregå:
     x^3 = -98,7 \quad\Leftrightarrow\quad x = \sqrt[3]{-98,7} = -4,62139
     $$
 \end{eks}
+
+Mere komplekse ligninger kan også løses ved først at isolere potensen:
+$$
+4,7 x^{11} = 1024 \quad \Leftrightarrow \quad
+x^{11} = \frac{1024}{4,7} \quad \Leftrightarrow \quad
+x = \sqrt[11]{\frac{1024}{4,7}} = 1,63141
+$$
 
 
 \end{document}
