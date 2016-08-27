@@ -1,0 +1,102 @@
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+\usepackage{graphicx}
+\usepackage{amsfonts}
+\usepackage{amsthm}        % Theorems
+\usepackage{amsmath}
+\usepackage{enumitem}
+%\usepackage{hyperref}
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+\newcommand{\be}{\begin{equation}}
+\newcommand{\ee}{\end{equation}}
+\newcommand{\bea}{\begin{eqnarray}}
+\newcommand{\eea}{\end{eqnarray}}
+
+\theoremstyle{plain}
+\newtheorem*{thm}{Sætning}
+\newtheorem*{mydef}{Definition}
+\newtheorem*{eks}{Eksempel}
+
+\DeclareMathSymbol{,}{\mathord}{letters}{"3B}
+
+\title{Projektopgave om potensfunktioner}
+\date{\vspace{-5ex}}
+
+\begin{document}
+
+\maketitle
+
+\section*{Indledning}
+Planeternes bevægelse rundt om Solen har været genstand for spekulation i årtusinder.
+Da den tyske matematiker Johannes Kepler i år 1600 blev ansat hos den danske
+astronom Tycho Brahe, så begyndte et bemærkelsesværdigt samarbejde, der ledte frem til
+en dybere forståelse af planetbevægelserne. På baggund af Brahe's detaljerede observationer
+lykkedes det Kepler i 
+
+\section*{Opgave 1}
+Den følgende tabel viser sammenhørende værdier for planeternes afstand til Solen og
+omløbstid omkring Solen.
+
+\vspace{2ex}
+
+\begin{center}
+\begin{tabular}{r|r|r}
+    \hline
+    Planet  & afstand   & omløbstid \\
+            & $a$/AU    & $T$/år   \\
+    \hline 
+    Merkur  &  $0,3871$ &   $0,2408$ \\
+    Venus   &  $0,7233$ &   $0,6152$ \\
+    Jorden  &  $1,0000$ &   $1,0000$ \\
+    Mars    &  $1,5237$ &   $1,8808$ \\
+    Jupiter &  $5,2034$ &  $11,8626$ \\
+    Saturn  &  $9,5371$ &  $29,4475$ \\
+    Uranus  & $19,1913$ &  $84,0168$ \\
+    Neptun  & $30,0690$ & $164,7913$ \\
+    \hline 
+\end{tabular}
+\end{center}
+
+\begin{enumerate}[label=\alph*.]
+    \item Lav en figur, hvor du viser planeternes omløbstid om Solen som
+        funktion af deres afstand til Solen.
+    \item Lav en lineær regression og diskutér modellens gyldighed.
+\end{enumerate}
+
+I stedet for en simpel lineær model skal du nu omregne tabellens data ved hjælp af 
+10-tals logaritmen.
+\begin{enumerate}[label=\alph*. ,resume]
+    \item Lav en ny tabel, hvor du beregner 10-tals logaritmen til både afstand
+        og omløbstid, se nedenstående.
+\end{enumerate}
+
+\begin{center}
+\begin{tabular}{r|r|r}
+    \hline
+    Planet  & $\log(a)$   & $\log(T)$ \\
+    \hline 
+    Merkur  &  $-0,4122$ &   $-0,6183$ \\
+    \ldots  & \ldots    & \ldots  \\
+    \hline 
+\end{tabular}
+\end{center}
+
+\begin{enumerate}[label=\alph*. ,resume]
+    \item Lav en figur, hvor du viser $\log(T)$ som funktion af $\log(a)$.
+    \item Lav en lineær regression på denne figur og diskutér modellens gyldighed.
+    \item Opskriv forskiften på formen $\log(T) = \ldots$.
+    \item Omskriv forskiften til formen $T = \ldots$.
+\end{enumerate}
+
+\end{document}
+
