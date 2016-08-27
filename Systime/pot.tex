@@ -36,7 +36,7 @@
 \maketitle
 
 \section*{Indledning}
-I matematik gør man stort brug af {\em rødder} og {\em potenser}, så dette
+I matematik gør man brug af {\em rødder} og {\em potenser}, så dette
 kapitel er en gennemgang af de vigtigste regneregler.
 
 Vi vil gerne kunne forstå betydningen af udtryk som $2,3^{7,4}$, samt løse
@@ -46,7 +46,7 @@ Vi begynder med velkendte begreber, og søger så at generalisere definitionerne
 mens vi bibeholder regnereglerne.
 
 \section*{Rødder}
-Du kender allerede {\em kvadratrod}. Vi skal her se på andre rødder også, dvs.
+Du kender allerede {\em kvadratrod}. Vi skal her se på andre rødder, dvs.
 kubikrødder m.m.
 
 Vi minder først om definitionen på kvadratroden af et positivt tal:
@@ -58,18 +58,19 @@ Vi minder først om definitionen på kvadratroden af et positivt tal:
     $$
 \end{mydef}
 
-Læg mærke til, at det tal, vi tager kvadratroden af, må ikke være negativt. Desuden er resultatet altid positivt eller 0. Således er
+Læg mærke til, at det tal, vi tager kvadratroden af, ikke må være negativt.
+Desuden er resultatet altid positivt eller 0. Således er
 $$
-\sqrt{36} = 6,\quad \mbox{fordi 6 er positiv, og $6^2=36$}
+\sqrt{36} = 6,\quad \mbox{fordi 6 er positiv, og $6^2=36$},
 $$
 $$
-\sqrt{0} = 0,\quad \mbox{fordi 0 er ikke negativ, og $0^2=0$}
+\sqrt{0} = 0,\quad \mbox{fordi 0 er ikke negativ, og $0^2=0$},
 $$
 $$
 \sqrt{-7} \quad \mbox{er ikke defineret.}
 $$
 Ofte bliver kvadratroden af et tal et decimaltal, f.eks. er $\sqrt{320} =
-17,88854\ldots$ fordi $(17,88854\ldots)^2 = 320$.
+17,88854\ldots$ fordi $17,88854\ldots^2 = 320$.
 
 Der findes metoder til at udregne kvadratroden af et tal uden at bruge
 lommeregner, men de er besværlige og som regel vil man benytte lommeregner.
@@ -91,10 +92,10 @@ $$
 \sqrt[3]{8} = 2,\quad \mbox{fordi $2^3=8$}
 $$
 $$
-\sqrt[3]{-58} = -3,87088\ldots,\quad \mbox{fordi $(-3,87088\ldots)^3=-58$}
+\sqrt[3]{-58} = -3,87088\ldots,\quad \mbox{fordi $-3,87088\ldots^3=-58$}
 $$
 
-Vi definerer på samme måde {\em den $n$-te rod} af et tal på følgende måde:
+På samme måde definerer vi {\em den $n$-te rod} af et tal:
 \begin{mydef}
     \leavevmode
     \begin{itemize}
@@ -118,9 +119,9 @@ Vi definerer på samme måde {\em den $n$-te rod} af et tal på følgende måde:
         \hline
         a > 0 & \sqrt[4]{16} = 2 & \sqrt[3]{27} = 3 \\
         \hline
-        a = 0 & \sqrt[4]{0} = 0 & \sqrt[3]{0} = 0 \\
+        a = 0 & \sqrt[4]{0} = 0 & \sqrt[7]{0} = 0 \\
         \hline
-        a < 0 & \mbox{Ikke defineret} & \sqrt[3]{-27} = -3
+        a < 0 & \mbox{Ikke defineret} & \sqrt[5]{-32} = -2
     \end{array}
     $$
 \end{eks}
@@ -139,11 +140,11 @@ Der gælder nogle regneregler for kvadratrod, som vi anfører her uden bevis.
     For ikke-negative tal $a$ og $b$ gælder
     $$
     \sqrt{a\cdot b} = \sqrt{a} \cdot \sqrt{b}, \quad
-    \sqrt{\frac{a}{b}} = \frac{\sqrt{a}}{\sqrt{b}} \quad (b>0)
+    \sqrt{\frac{a}{b}} = \frac{\sqrt{a}}{\sqrt{b}} \quad (b>0).
     $$
     For {\em alle} reelle tal $a$ gælder desuden
     $$
-    \sqrt{a^2} = |a|
+    \sqrt{a^2} = |a|.
     $$
 \end{thm}
 
@@ -151,40 +152,40 @@ Vi ser på nogle anvendelser af disse regneregler:
 \begin{eks}
     Efter den første regneregel gælder
     $$
-    \sqrt{3} \cdot \sqrt{12} = \sqrt{36} = 6
+    \sqrt{3} \cdot \sqrt{12} = \sqrt{36} = 6.
     $$
     
     Denne regel kan også bruges, hvis man vil sætte en faktor uden for rodtegnet, f.eks.:
     $$
-    \sqrt{72} = \sqrt{36\cdot 2} = \sqrt{36} \cdot \sqrt{2} = 6\sqrt{2}
+    \sqrt{72} = \sqrt{36\cdot 2} = \sqrt{36} \cdot \sqrt{2} = 6\sqrt{2},
     $$
     og
     $$
-    \sqrt{45} = \sqrt{9\cdot 5} = \sqrt{9} \cdot \sqrt{5} = 3\sqrt{5}
+    \sqrt{45} = \sqrt{9\cdot 5} = \sqrt{9} \cdot \sqrt{5} = 3\sqrt{5}.
     $$
 
     Tilsvarende kan vi sætte en faktor ind under rodtegnet:
     $$
-    4\sqrt{3} = \sqrt{16} \cdot \sqrt{3} = \sqrt{16\cdot 3} = \sqrt{48}
+    4\sqrt{3} = \sqrt{16} \cdot \sqrt{3} = \sqrt{16\cdot 3} = \sqrt{48},
     $$
     og
     $$
-    3\sqrt{7} = \sqrt{9} \cdot \sqrt{7} = \sqrt{9\cdot 7} = \sqrt{63}
+    3\sqrt{7} = \sqrt{9} \cdot \sqrt{7} = \sqrt{9\cdot 7} = \sqrt{63}.
     $$
 
     Desuden kan vi reducere udtryk, der indeholder flere kvadratrodstegn:
     $$
     2\cdot\sqrt{18} \cdot \sqrt{2} = 2\cdot\sqrt{18\cdot 2} = 2\cdot \sqrt{36}
-    = 2\cdot 6 = 12
+    = 2\cdot 6 = 12.
     $$
 
     Specielt er
     $$
-    {\sqrt{5}}^3 = \sqrt{5} \cdot \sqrt{5} \cdot \sqrt{5} = 5\sqrt{5}
+    {\sqrt{5}}^3 = \sqrt{5} \cdot \sqrt{5} \cdot \sqrt{5} = 5\sqrt{5},
     $$
     og
     $$
-    \sqrt{5^3} = \sqrt{5^2} \cdot \sqrt{5} = 5\sqrt{5}
+    \sqrt{5^3} = \sqrt{5^2} \cdot \sqrt{5} = 5\sqrt{5}.
     $$
 
 \end{eks}
@@ -192,19 +193,19 @@ Vi ser på nogle anvendelser af disse regneregler:
 Vi kan {\em ikke} lægge kvadratrødder sammen ved hjælp af nogen regneregel.
 Således er
 $$
-\sqrt{16+9} = \sqrt{25} = 5,\quad \mbox{men $\sqrt{16}+\sqrt{9} = 4+3 = 7$}
+\sqrt{16+9} = \sqrt{25} = 5,\quad \mbox{men $\sqrt{16}+\sqrt{9} = 4+3 = 7$}.
 $$
 
 Læg desuden mærke til den vigtige regel:
 $$
-\sqrt{a} \cdot \sqrt{a} = a,\quad \mbox{for $a\ge 0$}
+\sqrt{a} \cdot \sqrt{a} = a,\quad \mbox{for $a\ge 0$},
 $$
 fordi $\sqrt{a}$ er det ikke-negative tal, som ganget med sig selv giver $a$.
 
 Ved at dividere med $\sqrt{a}$ på begge sider af lighedstegnet får vi følgende
 regel:
 $$
-a = \sqrt{a}\cdot\sqrt{a} \Leftrightarrow \frac{a}{\sqrt{a}} = \sqrt{a}
+a = \sqrt{a}\cdot\sqrt{a} \Leftrightarrow \frac{a}{\sqrt{a}} = \sqrt{a}.
 $$
 
 \begin{eks}
@@ -221,11 +222,11 @@ $$
 
 
 \section*{Potenser}
-Hvis $a$ er et reelt tal (kaldet {\em grundtallet}) og $n$ er et positivt
-heltal (kaldet {\em eksponenten}), så er symbolet $a^n$ defineret på følgende
+Hvis $a$ er et reelt tal (kaldet {\em grundtallet}), og $n$ er et positivt
+heltal (kaldet {\em eksponenten}), så er $a^n$ defineret på følgende
 måde:
 $$
-a^n = a \cdot a \cdot a \cdots a,\quad \mbox{$n$ faktorer}
+a^n = a \cdot a \cdot a \cdots a,\quad \mbox{$n$ faktorer}.
 $$
 For eksempel har vi $a^2 = a \cdot a$ og $a^5 = a \cdot a \cdot a \cdot a \cdot a$.
 
@@ -237,9 +238,6 @@ og
 $$
 2a = a + a
 $$
-
-I dette afsnit vil vi give mening til udtryk som $a^{2,3}$, men først ser vi
-på regnereglerne for potenser.
 
 \subsection*{Potens med hel eksponent}
 Vi kan regne med potenser, hvor eksponenten er positiv og hel på følgende måde:
@@ -265,7 +263,7 @@ Dette kan formuleres som følgende generelle regneregler:
     
     \begin{enumerate}
         \item $a^m \cdot a^n = a^{m+n}$
-        \item $\frac{a^m}{a^n} = a^{m-n}$, \quad $a\neq 0$, \quad $m>n$
+        \item $\frac{a^m}{a^n} = a^{m-n}$, \quad $a\neq 0$
         \item $a^n\cdot b^n = (a\cdot b)^n$
         \item $\frac{a^n}{b^n} = \left(\frac{a}{b}\right)^n$, \quad $b\neq 0$
         \item $(a^n)^m = a^{n\cdot m}$.
@@ -278,14 +276,15 @@ $$
 2^{-4}\quad \mbox{og} \quad 3,6^0
 $$
 og finde ud af, hvordan en fornuftig definition kan se ud. Vi ønsker nemlig
-stadig, at potensregnereglerne i sætningen oven over skal være gyldige, også
+stadig, at potensregnereglerne i sætningen ovenover skal være gyldige, også
 for eksponenter, der er negative eller 0.
 
 Hvis vi kræver, at regel 1 skal gælde, får vi ved at sætte $m=0$, at der gælder
 $$
 a^n \cdot a^0 = a^{n+0} = a^n,\quad \mbox{så $a^0=1$.}
 $$
-Hvis vi igen benytter regel 1 med to modsatte hele tal $n$ og $-n$, får vi ved at benytte, at $a^0=1$, at
+Hvis vi igen benytter regel 1 med to modsatte hele tal $n$ og $-n$, får vi ved
+at benytte, at $a^0=1$, at
 $$
 a^{-n} \cdot a^n = a^{-n+n} = a^0 = 1
 $$
@@ -296,7 +295,7 @@ Dette motiverer hermed følgende definition
 \begin{mydef}
     For alle reelle tal $a\neq 0$ og $n$ hel er
     $$
-    a^0 = 1,\quad a^{-n} = \frac{1}{a^n}
+    a^0 = 1,\quad a^{-n} = \frac{1}{a^n}.
     $$
 \end{mydef}
 
@@ -333,7 +332,7 @@ $$
 I disse tilfælde skal grundtallet være positivt.
 
 \subsubsection*{Stambrøk som eksponent}
-Vi ser først på de tilfælde, hvor eksponenten er en {\em stambrøk}, dvs en brøk
+Vi ser først på de tilfælde, hvor eksponenten er en {\em stambrøk}, dvs. en brøk
 med tælleren 1.
 
 \paragraph*{Eksponenten $\frac12$}
@@ -343,39 +342,39 @@ potenser med eksponenten $\frac12$. Vi får efter regel 5, at
 $$
 \left(a^{\frac12}\right)^2 = a^{\frac12 \cdot 2} = a^1 = a
 $$
-Dvs at $a^\frac12$ er et positivt tal, som opløftet i andenpotens giver $a$.
+Dvs. at $a^\frac12$ er et positivt tal, som opløftet i andenpotens giver $a$.
 Derfor er det fornuftigt at vedtage, at
 $$
-a^\frac12 = \sqrt{a}
+a^\frac12 = \sqrt{a}.
 $$
 
-\paragraph*{Eksponenten $\frac13$}
+\paragraph*{Eksponenten $\frac13$.}
 Dernæst ser vi på potensen $\frac13$. Vi går frem på samme måde som før og
 udregner
 $$
-\left(a^{\frac13}\right)^3 = a^{\frac13 \cdot 3} = a^1 = a
+\left(a^{\frac13}\right)^3 = a^{\frac13 \cdot 3} = a^1 = a.
 $$
 Da altså $a^\frac13$ er et tal, der opløftet i tredjepotens giver $a$, vælger
 vi at definere:
 $$
-a^\frac13 = \sqrt[3]{a}
+a^\frac13 = \sqrt[3]{a}.
 $$
 
-\paragraph*{Eksponenten $\frac1n$}
+\paragraph*{Eksponenten $\frac1n$.}
 I almindelighed kan vi åbenbart som ovenfor udregne
 $$
-\left(a^{\frac1n}\right)^n = a^{\frac1n \cdot n} = a^1 = a
+\left(a^{\frac1n}\right)^n = a^{\frac1n \cdot n} = a^1 = a,
 $$
 så
 $$
-a^\frac1n = \sqrt[n]{a}
+a^\frac1n = \sqrt[n]{a}.
 $$
 
 Dette leder frem til følgende definition
 \begin{mydef}
     Hvis $n$ er et positivt helt tal, og $a$ er positiv, så sætter vi
     $$
-    a^\frac1n = \sqrt[n]{a}
+    a^\frac1n = \sqrt[n]{a}.
     $$
 \end{mydef}
 
@@ -418,9 +417,9 @@ Samme omskrivninger kan vi åbenbart foretage, hvis der er tale om en anden brø
 end $\frac34$, så vi fremsætter derfor følgende definition:
 \begin{mydef}
     Hvis $a$ er et positivt tal, og $p$ er hel, og $q$ er hel og positiv, så
-    definerer vi potensen $a^\frac{p}{q}$ på følgende to ækvivalente måder:
+    definerer vi potensen $a^\frac{p}{q}$ på følgende to måder:
     $$
-    a^\frac{p}{q} = \left(\sqrt[q]{a}\right)^p = \sqrt[q]{a^p}
+    a^\frac{p}{q} = \left(\sqrt[q]{a}\right)^p = \sqrt[q]{a^p}.
     $$
 \end{mydef}
 
@@ -445,7 +444,7 @@ Vi får senere brug for at kunne løse ligninger, hvor den ubekendte indgår i
 potens- og rodudtryk. Vi viser ved et par eksempler, hvordan dette kan foregå:
 
 \begin{eks}
-    Vi løser her nogle lignigner, hvor $x$ indgår som grundtal i potenser, og
+    Vi løser her nogle ligninger, hvor $x$ indgår som grundtal i potenser, og
     angiver løsningerne med 5 decimaler. Læg mærke til det dobbelte fortegn 
     $\pm$ i forbindelse med {\em lige} eksponenter:
     $$
