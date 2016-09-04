@@ -29,53 +29,57 @@
 
 \DeclareMathSymbol{,}{\mathord}{letters}{"3B}
 
-\title{Projektopgave om potensfunktioner}
+\title{Projektopgaver om potensfunktioner}
 \date{\vspace{-5ex}}
 
 \begin{document}
 
 \maketitle
 
-\section*{Indledning}
-Planeternes bevægelse rundt om Solen har været genstand for spekulation i årtusinder.
-Da den tyske matematiker Johannes Kepler i år 1600 blev ansat hos den danske
-astronom Tycho Brahe, så begyndte et bemærkelsesværdigt samarbejde, der ledte frem til
-en dybere forståelse af planetbevægelserne. På baggund af Brahe's detaljerede observationer
-lykkedes det Kepler i 
+\section*{Opgave 1 -- Keplers 3. lov}
+Planeternes bevægelse rundt om Solen har været genstand for spekulation i
+årtusinder.  Da den tyske matematiker Johannes Kepler i år 1600 blev ansat hos
+den danske astronom Tycho Brahe, så begyndte et bemærkelsesværdigt samarbejde,
+der ledte frem til en dybere forståelse af planetbevægelserne. På baggund af
+Brahe's detaljerede observationer lykkedes det Kepler i 1618 at gennemskue
+systemet i planeternes bevægelse, og formulerede det som tre love.
 
-\section*{Opgave 1}
-Den følgende tabel viser sammenhørende værdier for planeternes afstand til Solen og
-omløbstid omkring Solen.
+I denne opgave skal vi undersøge Keplers 3. lov, som omhandler sammenhængen
+mellem en planets omløbstid rundt om Solen, og planetens afstand til Solen.
+
+Den følgende tabel viser sammenhørende værdier for planeternes afstand $x$ til
+Solen (målt i antal millioner km) og omløbstid $y$ omkring Solen (målt i år).
 
 \vspace{2ex}
 
 \begin{center}
 \begin{tabular}{r|r|r}
     \hline
-    Planet  & afstand   & omløbstid \\
-            & $a$/AU    & $T$/år   \\
+            & $x$                 & $y$ \\
+    Planet  & afstand i mio km    & omløbstid i år   \\
     \hline 
-    Merkur  &  $0,3871$ &   $0,2408$ \\
-    Venus   &  $0,7233$ &   $0,6152$ \\
-    Jorden  &  $1,0000$ &   $1,0000$ \\
-    Mars    &  $1,5237$ &   $1,8808$ \\
-    Jupiter &  $5,2034$ &  $11,8626$ \\
-    Saturn  &  $9,5371$ &  $29,4475$ \\
-    Uranus  & $19,1913$ &  $84,0168$ \\
-    Neptun  & $30,0690$ & $164,7913$ \\
+    Merkur  &  $  57,9$ &   $0,241$ \\
+    Venus   &  $ 108,2$ &   $0,615$ \\
+    Jorden  &  $ 149,6$ &   $1,000$ \\
+    Mars    &  $ 227,9$ &   $1,881$ \\
+    Jupiter &  $ 778,4$ &  $11,863$ \\
+    Saturn  &  $1426,7$ &  $29,448$ \\
+    Uranus  &  $2871,0$ &  $84,017$ \\
+    Neptun  &  $4498,3$ & $164,791$ \\
     \hline 
 \end{tabular}
 \end{center}
 
-\begin{enumerate}[label=\alph*.]
+\begin{enumerate}[label=(\alph*)]
     \item Lav en figur, hvor du viser planeternes omløbstid om Solen som
         funktion af deres afstand til Solen.
-    \item Lav en lineær regression og diskutér modellens gyldighed.
+    \item Lav en lineær regression og bestem forskriften på formen $y=ax+b$ og
+        diskutér modellens gyldighed.
 \end{enumerate}
 
 I stedet for en simpel lineær model skal du nu omregne tabellens data ved hjælp af 
 10-tals logaritmen.
-\begin{enumerate}[label=\alph*. ,resume]
+\begin{enumerate}[label=(\alph*) ,resume]
     \item Lav en ny tabel, hvor du beregner 10-tals logaritmen til både afstand
         og omløbstid, se nedenstående.
 \end{enumerate}
@@ -83,19 +87,119 @@ I stedet for en simpel lineær model skal du nu omregne tabellens data ved hjæl
 \begin{center}
 \begin{tabular}{r|r|r}
     \hline
-    Planet  & $\log(a)$   & $\log(T)$ \\
+    Planet  & $\log(x)$   & $\log(y)$ \\
     \hline 
-    Merkur  &  $-0,4122$ &   $-0,6183$ \\
+    Merkur  &  $1,76$ &   $-0,618$ \\
     \ldots  & \ldots    & \ldots  \\
     \hline 
 \end{tabular}
 \end{center}
 
-\begin{enumerate}[label=\alph*. ,resume]
-    \item Lav en figur, hvor du viser $\log(T)$ som funktion af $\log(a)$.
-    \item Lav en lineær regression på denne figur og diskutér modellens gyldighed.
-    \item Opskriv forskiften på formen $\log(T) = \ldots$.
-    \item Omskriv forskiften til formen $T = \ldots$.
+\begin{enumerate}[label=(\alph*) ,resume]
+    \item Lav en figur, hvor du viser $\log(y)$ som funktion af $\log(x)$.
+    \item Lav en lineær regression på denne figur og bestem forskriften på formen
+        $\log(y) = a\cdot\log(x)+b$ og diskutér modellens gyldighed.
+    \item Omskriv forskriften til en potensfunktion på formen $y = b\cdot x^a$. \label{pot}
+\end{enumerate}
+
+Keplers lov ses ofte formuleret på følgende måde:
+$$
+y^2 = k \cdot x^3
+$$
+\begin{enumerate}[label=(\alph*) ,resume]
+    \item Vis, at svaret i spørgsmål~\ref{pot} kan omskrives til ovenstående formel.
+\end{enumerate}
+
+
+Udover de kendte planeter, så findes der også en række dværgplaneter, der
+ligesom planeterne bevæger sig rundt om Solen. Den største dværgplanet er
+Ceres, som befinder sig i afstanden ca. 414 millioner km fra Solen.
+
+\begin{enumerate}[label=(\alph*) ,resume]
+    \item Beregn omløbstiden i år for dværgplaneten Ceres.
+\end{enumerate}
+
+\section*{Opgave 2 -- Newtons tyngdelov}
+Mange sammenhænge i fysik kan beskrives ved potensfunktioner. Newton
+postulerede i 1687 at tyngdekraften mellem to masser aftager med kvadratet på
+afstanden.  Denne påstand bliver verificeret i denne opgave.
+
+Tyngdeaccelerationen på Jorden kendes som $g=9,82\, {\rm m}/{\rm s}^2$.
+Ligeledes er Jordens radius en kendt værdi, nemlig $x=6730$ km.
+
+Vi skal nu først bestemme værdien af tyngdeaccelerationen i samme afstand som Månens.
+Denne kan beregnes som
+\be
+a = \frac{v^2}{r}
+\label{acc}
+\ee
+hvor $v$ er månens fart i m/s og $r$ er månens afstand i m til Jordens centrum. 
+
+\begin{enumerate}[label=(\alph*)]
+    \item Vis, at ovenstående formel for tyngdeaccelerationen kan omskrives til 
+        $$
+        a = \left(\frac{2\pi}{T}\right)^2 \cdot r,
+        $$
+        hvor $T$ er Månens omløbstid om Jorden målt i sekunder. \label{a}
+\end{enumerate}
+
+Månens omløbstid er 27,32 dage og dens afstand til Jorden er 384400 km.
+
+\begin{enumerate}[label=(\alph*) ,resume]
+    \item Omregn Månens omløbstid til sekunder og afstand til meter, og vis dermed, at tyngdeaccelerationen
+        i Månens afstand har værdien $0,00272\, {\rm m}/{\rm s}^2$.
+\end{enumerate}
+
+Dette giver følgende tabel over sammenhængen mellem afstand til Jordens centrum og størrelsen af tyngdeaccelerationen:
+
+\begin{center}
+\begin{tabular}{r|r|r}
+    \hline
+          & $x$                         & $y$ \\
+    Sted  & afstand til Jordens centrum & tyngdeacceleration   \\
+          & i millioner meter           & i ${\rm m}/{\rm s}^2$  \\
+    \hline 
+    Jordens overflade & $6,73$  & $9,82$ \\
+    ved Månen         & $384,4$ & $0,00272$ \\
+    \hline 
+\end{tabular}
+\end{center}
+
+Newton påstår nu, at sammenhængen mellem afstand og tyngdeacceleration kan beskrives ved en potensfunktion.
+
+\begin{enumerate}[label=(\alph*) ,resume]
+    \item Beregn værdierne af $a$ og $b$ i potensfunktionen $y=b\cdot x^a$.
+    \item Vis, at dette kan omskrives til $y=\frac{b}{x^2}$. \label{n}
+\end{enumerate}
+
+Nu kombinerer vi svarene i spørgsmål~\ref{a} og~\ref{n}, og vi får følgende ligning:
+$$
+\frac{b}{x^2} = \left(\frac{2\pi}{y}\right)^2 \cdot x,
+$$
+hvor $x$ er afstanden til Jordens centrum målt i meter, og $y$ er omløbstiden
+rundt om Jorden målt i sekunder.
+\begin{enumerate}[label=(\alph*) ,resume]
+    \item Vis, at denne ligning kan omskrives til Keplers lov $y^2 = k\cdot x^3$. \label{newt}
+\end{enumerate}
+
+Newtons og Keplers love gælder derfor både for bevægelse rundt om Jorden og rundt om Solen.
+
+
+\section*{Opgave 3 -- Den Internationale Rumstation ISS}
+Den Internationale Rumstation befinder sig i en højde af ca. 386 km over Jordens overflade.
+\begin{enumerate}[label=(\alph*)]
+    \item Beregn afstanden fra den Internationale Rumstation til Jordens centrum.
+    \item Brug ligningen i Opgave 2 spørgsmål~\ref{newt} til at beregne Rumstationens omløbstid.
+\end{enumerate}
+
+
+\section*{Opgave 4 -- Geostationære satellitter}
+En geostationær satellit har en omløbstid som er lig med Jordens egen rotationstid.
+\begin{enumerate}[label=(\alph*)]
+    \item Hvad er omløbstiden for en geostationær satellit (målt i dage)?
+    \item Brug ligningen i Opgave 2 spørgsmål~\ref{newt} til at beregne afstanden fra en geostationær
+        satellit til Jordens centrum.
+    \item Beregn herefter en geostationær satellits højde over Jordens overflade.
 \end{enumerate}
 
 \end{document}
