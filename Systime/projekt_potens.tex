@@ -112,7 +112,7 @@ $$
 
 
 Udover de kendte planeter, så findes der også en række dværgplaneter, der
-ligesom planeterne bevæger sig rundt om Solen. Den største dværgplanet er
+ligesom planeterne bevæger sig rundt om Solen. En af disse dværgplaneter er
 Ceres, som befinder sig i afstanden ca. 414 millioner km fra Solen.
 
 \begin{enumerate}[label=(\alph*) ,resume]
@@ -121,26 +121,26 @@ Ceres, som befinder sig i afstanden ca. 414 millioner km fra Solen.
 
 \section*{Opgave 2 -- Newtons tyngdelov}
 Mange sammenhænge i fysik kan beskrives ved potensfunktioner. Newton
-postulerede i 1687 at tyngdekraften mellem to masser aftager med kvadratet på
+postulerede i 1687, at tyngdekraften mellem to masser aftager med kvadratet på
 afstanden.  Denne påstand bliver verificeret i denne opgave.
 
 Tyngdeaccelerationen på Jorden kendes som $g=9,82\, {\rm m}/{\rm s}^2$.
 Ligeledes er Jordens radius en kendt værdi, nemlig $x=6730$ km.
 
-Vi skal nu først bestemme værdien af tyngdeaccelerationen i samme afstand som Månens.
+Vi skal nu først bestemme værdien af tyngdeaccelerationen i samme af\-stand som Månens.
 Denne kan beregnes som
 \be
 a = \frac{v^2}{r}
 \label{acc}
 \ee
-hvor $v$ er månens fart i m/s og $r$ er månens afstand i m til Jordens centrum. 
+hvor $v$ er månens fart og $r$ er månens afstand til Jordens centrum. 
 
 \begin{enumerate}[label=(\alph*)]
     \item Vis, at ovenstående formel for tyngdeaccelerationen kan omskrives til 
         $$
         a = \left(\frac{2\pi}{T}\right)^2 \cdot r,
         $$
-        hvor $T$ er Månens omløbstid om Jorden målt i sekunder. \label{a}
+        hvor $T$ er Månens omløbstid om Jorden. \label{a}
 \end{enumerate}
 
 Månens omløbstid er 27,32 dage og dens afstand til Jorden er 384400 km.
@@ -168,18 +168,28 @@ Dette giver følgende tabel over sammenhængen mellem afstand til Jordens centru
 Newton påstår nu, at sammenhængen mellem afstand og tyngdeacceleration kan beskrives ved en potensfunktion.
 
 \begin{enumerate}[label=(\alph*) ,resume]
-    \item Beregn værdierne af $a$ og $b$ i potensfunktionen $y=b\cdot x^a$.
-    \item Vis, at dette kan omskrives til $y=\frac{b}{x^2}$. \label{n}
+    \item Beregn værdierne af $a$ og $b$ i den potensfunktion $y=b\cdot x^a$,
+        som går gennem de to punkter angivet i tabellen. \label{p1}
+\end{enumerate}
+
+Newton formulerede sin lov som
+$$
+a = \frac{k}{r^2},
+$$
+hvor $r$ er afstanden til centrum og $a$ er tyngdeaccelerationen.
+
+\begin{enumerate}[label=(\alph*) ,resume]
+    \item Vis, at svaret i~\ref{p1} kan omskrives til ovenstående formel.
 \end{enumerate}
 
 Nu kombinerer vi svarene i spørgsmål~\ref{a} og~\ref{n}, og vi får følgende ligning:
 $$
-\frac{b}{x^2} = \left(\frac{2\pi}{y}\right)^2 \cdot x,
+\frac{b}{r^2} = \left(\frac{2\pi}{T}\right)^2 \cdot r,
 $$
-hvor $x$ er afstanden til Jordens centrum målt i meter, og $y$ er omløbstiden
-rundt om Jorden målt i sekunder.
+hvor $r$ er afstanden til Jordens centrum, og $T$ er omløbstiden
+rundt om Jorden.
 \begin{enumerate}[label=(\alph*) ,resume]
-    \item Vis, at denne ligning kan omskrives til Keplers lov $y^2 = k\cdot x^3$. \label{newt}
+    \item Vis, at denne ligning kan omskrives til Keplers lov $T^2 = k\cdot r^3$. \label{newt}
 \end{enumerate}
 
 Newtons og Keplers love gælder derfor både for bevægelse rundt om Jorden og rundt om Solen.
