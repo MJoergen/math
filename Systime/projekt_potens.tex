@@ -98,16 +98,15 @@ I stedet for en simpel lineær model skal du nu omregne tabellens data ved hjæl
 \begin{enumerate}[label=(\alph*) ,resume]
     \item Lav en figur, hvor du viser $\log(y)$ som funktion af $\log(x)$.
     \item Lav en lineær regression på denne figur og bestem forskriften på formen
-        $\log(y) = a\cdot\log(x)+b$ og diskutér modellens gyldighed.
-    \item Omskriv forskriften til en potensfunktion på formen $y = b\cdot x^a$. \label{pot}
+        $\log(y) = a\cdot\log(x)+b$ og diskutér modellens gyldighed. \label{log}
 \end{enumerate}
 
 Keplers lov ses ofte formuleret på følgende måde:
 $$
-y^2 = k \cdot x^3
+y = k \cdot x^{3/2}
 $$
 \begin{enumerate}[label=(\alph*) ,resume]
-    \item Vis, at svaret i spørgsmål~\ref{pot} kan omskrives til ovenstående formel.
+    \item Vis, at svaret i spørgsmål~\ref{log} kan omskrives til ovenstående formel.
 \end{enumerate}
 
 
@@ -127,8 +126,8 @@ afstanden.  Denne påstand bliver verificeret i denne opgave.
 Tyngdeaccelerationen på Jorden kendes som $g=9,82\, {\rm m}/{\rm s}^2$.
 Ligeledes er Jordens radius en kendt værdi, nemlig $x=6730$ km.
 
-Vi skal nu først bestemme værdien af tyngdeaccelerationen i samme afstand som Månens.
-Denne kan beregnes som
+Vi skal nu først bestemme værdien af tyngdeaccelerationen i samme afstand fra
+Jorden som Månens.  Denne kan beregnes som
 \be
 a = \frac{v^2}{r}
 \label{acc}
@@ -143,21 +142,23 @@ hvor $v$ er månens fart i m/s og $r$ er månens afstand i m til Jordens centrum
         hvor $T$ er Månens omløbstid om Jorden målt i sekunder. \label{a}
 \end{enumerate}
 
-Månens omløbstid er 27,32 dage og dens afstand til Jorden er 384400 km.
+Månens omløbstid er 27,32 dage og dens afstand til Jordens centrum er 384400 km.
 
 \begin{enumerate}[label=(\alph*) ,resume]
-    \item Omregn Månens omløbstid til sekunder og afstand til meter, og vis dermed, at tyngdeaccelerationen
-        i Månens afstand har værdien $0,00272\, {\rm m}/{\rm s}^2$.
+    \item Omregn Månens omløbstid til sekunder og afstand til meter, og vis
+        dermed, at tyngdeaccelerationen i Månens afstand fra Jorden har værdien
+        $0,00272\, {\rm m}/{\rm s}^2$.
 \end{enumerate}
 
-Dette giver følgende tabel over sammenhængen mellem afstand til Jordens centrum og størrelsen af tyngdeaccelerationen:
+Dette giver følgende tabel over sammenhængen mellem afstand til Jordens centrum
+og størrelsen af tyngdeaccelerationen:
 
 \begin{center}
 \begin{tabular}{r|r|r}
     \hline
           & $x$                         & $y$ \\
     Sted  & afstand til Jordens centrum & tyngdeacceleration   \\
-          & i millioner meter           & i ${\rm m}/{\rm s}^2$  \\
+          & i tusind km                 & i ${\rm m}/{\rm s}^2$  \\
     \hline 
     Jordens overflade & $6,73$  & $9,82$ \\
     ved Månen         & $384,4$ & $0,00272$ \\
@@ -165,7 +166,8 @@ Dette giver følgende tabel over sammenhængen mellem afstand til Jordens centru
 \end{tabular}
 \end{center}
 
-Newton påstår nu, at sammenhængen mellem afstand og tyngdeacceleration kan beskrives ved en potensfunktion.
+Newton kommer nu med den hypotese, at sammenhængen mellem afstand og
+tyngdeacceleration kan beskrives ved en potensfunktion.
 
 \begin{enumerate}[label=(\alph*) ,resume]
     \item Beregn værdierne af $a$ og $b$ i potensfunktionen $y=b\cdot x^a$.
