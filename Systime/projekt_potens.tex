@@ -36,7 +36,7 @@
 
 \maketitle
 
-\section*{Opgave 1 -- Keplers 3. lov}
+\section*{Opgave 1 -- Keplers 3. lov for planeter}
 Planeternes bevægelse rundt om Solen har været genstand for spekulation i
 årtusinder.  Da den tyske matematiker Johannes Kepler i år 1600 blev ansat hos
 den danske astronom Tycho Brahe, så begyndte et bemærkelsesværdigt samarbejde,
@@ -178,40 +178,48 @@ Newton formulerede sin lov som
 $$
 a = \frac{k}{r^2},
 $$
-hvor $r$ er afstanden til centrum og $a$ er tyngdeaccelerationen.
+hvor $r$ er afstanden til Jordens centrum og $a$ er tyngdeaccelerationen.
 
 \begin{enumerate}[label=(\alph*) ,resume]
     \item Vis, at svaret i~\ref{p1} kan omskrives til ovenstående formel.
 \end{enumerate}
 
-Nu kombinerer vi svarene i spørgsmål~\ref{a} og~\ref{n}, og vi får følgende ligning:
+
+\section*{Opgave 3 -- Keplers 3. lov for bevægelse om Jorden}
+Keplers 3. lov gælder også for bevægelse om Jorden. Den siger, at
 $$
-\frac{b}{r^2} = \left(\frac{2\pi}{T}\right)^2 \cdot r,
+T^2 = k\cdot r^3,
 $$
-hvor $r$ er afstanden til Jordens centrum, og $T$ er omløbstiden
-rundt om Jorden.
-\begin{enumerate}[label=(\alph*) ,resume]
-    \item Vis, at denne ligning kan omskrives til Keplers lov $T^2 = k\cdot r^3$. \label{newt}
-\end{enumerate}
+hvor $T$ er omløbstiden om Jorden i timer, $r$ er afstanden til Jordens centrum
+i tusinde km, og $k$ er en konstant. Denne formel gælder både for satellitter
+og for Jordens måne.
 
-Newtons og Keplers love gælder derfor både for bevægelse rundt om Jorden og rundt om Solen.
-
-
-\section*{Opgave 3 -- Den Internationale Rumstation ISS}
-Den Internationale Rumstation befinder sig i en højde af ca. 386 km over Jordens overflade.
+Månen har en omløbstid på $27,32$ dage og en afstand til Jordens centrum på
+$384,4$ tusinde km.
 \begin{enumerate}[label=(\alph*)]
-    \item Beregn afstanden fra den Internationale Rumstation til Jordens centrum.
-    \item Brug ligningen i Opgave 2 spørgsmål~\ref{newt} til at beregne Rumstationens omløbstid.
+    \item Omregn månens omløbstid på $27,32$ dage til timer.
+    \item Beregn værdien af $k$ ved at indsætte værdierne for Månen.
 \end{enumerate}
 
 
-\section*{Opgave 4 -- Geostationære satellitter}
-En geostationær satellit har en omløbstid som er lig med Jordens egen rotationstid.
-\begin{enumerate}[label=(\alph*)]
-    \item Hvad er omløbstiden for en geostationær satellit (målt i dage)?
-    \item Brug ligningen i Opgave 2 spørgsmål~\ref{newt} til at beregne afstanden fra en geostationær
+
+Den Internationale Rumstation befinder sig i en højde af ca. $0,386$ tusinde km over
+Jordens overflade. Jordens radius er $6,73$ tusinde km.
+\begin{enumerate}[label=(\alph*), resume]
+    \item Beregn afstanden fra den Internationale Rumstation til Jordens
+        centrum.
+    \item Brug ovenstående ligning til at beregne Rumstationens omløbstid.
+    \item Hvor mange gange kommer Rumstationen rundt om Jorden på et døgn?
+\end{enumerate}
+
+
+En geostationær satellit har en omløbstid som er lig med Jordens egen
+rotationstid.
+\begin{enumerate}[label=(\alph*), resume]
+    \item Gør rede for, at omløbstiden for en geostationær satellit er 24 timer.
+    \item Brug ovenstående ligning til at beregne afstanden fra en geostationær
         satellit til Jordens centrum.
-    \item Beregn herefter en geostationær satellits højde over Jordens overflade.
+    \item Hvor højt over Jordens overflade befinder en geostationær satellit sig?
 \end{enumerate}
 
 \end{document}
