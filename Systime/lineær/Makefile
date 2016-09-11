@@ -8,6 +8,8 @@ pics  += linear-4.asy
 pics  += linear-5.asy
 pics  += linear-6.asy
 pics  += linear-7.asy
+pics  += linear-8.asy
+pics  += linear-9.asy
 asy_pdfs  += $(pics:.asy=.pdf)
 
 all: $(asy_pdfs) $(tex_pdfs)
