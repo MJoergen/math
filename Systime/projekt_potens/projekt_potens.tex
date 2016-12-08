@@ -39,21 +39,21 @@
 \section*{Opgave 1 -- Keplers 3. lov for planeter}
 Planeternes bevægelse rundt om Solen har været genstand for spekulation i
 årtusinder.  Da den tyske matematiker Johannes Kepler i år 1600 blev ansat hos
-den danske astronom Tycho Brahe, så begyndte et bemærkelsesværdigt samarbejde,
+den danske astronom Tycho Brahe, begyndte et bemærkelsesværdigt samarbejde,
 der ledte frem til en dybere forståelse af planetbevægelserne. På baggund af
-Brahe's detaljerede observationer lykkedes det Kepler i 1618 at gennemskue
+Brahes detaljerede observationer lykkedes det Kepler i 1618 at gennemskue
 systemet i planeternes bevægelse, og formulerede det som tre love.
 
 I denne opgave skal vi undersøge Keplers 3. lov, som omhandler sammenhængen
-mellem en planets omløbstid rundt om Solen, og planetens afstand til Solen.
+mellem en planets omløbstid om solen, og planetens afstand til solen.
 
 Den følgende tabel viser sammenhørende værdier for planeternes afstand $x$ til
-Solen (målt i antal millioner km) og omløbstid $y$ omkring Solen (målt i år).
+solen (målt i antal millioner km) og omløbstid $y$ omkring solen (målt i år).
 
 \vspace{2ex}
 
 \begin{center}
-\begin{tabular}{r|r|r}
+\begin{tabular}{|r|r|r|}
     \hline
             & $x$                 & $y$ \\
     Planet  & afstand i mio km    & omløbstid i år   \\
@@ -71,21 +71,21 @@ Solen (målt i antal millioner km) og omløbstid $y$ omkring Solen (målt i år)
 \end{center}
 
 \begin{enumerate}[label=(\alph*)]
-    \item Lav en figur, hvor du viser planeternes omløbstid om Solen som
-        funktion af deres afstand til Solen.
-    \item Lav en lineær regression og bestem forskriften på formen $y=ax+b$ og
-        diskutér modellens gyldighed.
+    \item Tegn en figur, hvor du viser planeternes omløbstid om Solen som
+        funktion af deres afstand til solen.
+    \item Foretag en lineær regression og bestem forskriften på formen
+        $y=ax+b$. Diskutér modellens gyldighed.
 \end{enumerate}
 
 I stedet for en simpel lineær model skal du nu omregne tabellens data ved hjælp af 
 10-tals logaritmen.
 \begin{enumerate}[label=(\alph*) ,resume]
-    \item Lav en ny tabel, hvor du beregner 10-tals logaritmen til både afstand
+    \item Udfyld en tabel, hvor du beregner 10-tals logaritmen til både afstand
         og omløbstid, se nedenstående.
 \end{enumerate}
 
 \begin{center}
-\begin{tabular}{r|r|r}
+\begin{tabular}{|r|r|r|}
     \hline
     Planet  & $\log(x)$   & $\log(y)$ \\
     \hline 
@@ -96,8 +96,8 @@ I stedet for en simpel lineær model skal du nu omregne tabellens data ved hjæl
 \end{center}
 
 \begin{enumerate}[label=(\alph*) ,resume]
-    \item Lav en figur, hvor du viser $\log(y)$ som funktion af $\log(x)$.
-    \item Lav en lineær regression på denne figur og bestem forskriften på formen
+    \item Tegn en figur, hvor du viser $\log(y)$ som funktion af $\log(x)$.
+    \item Foretag en lineær regression på denne figur og bestem forskriften på formen
         $\log(y) = a\cdot\log(x)+b$ og diskutér modellens gyldighed. \label{log}
 \end{enumerate}
 
@@ -110,7 +110,7 @@ $$
 \end{enumerate}
 
 
-Udover de kendte planeter, så findes der også en række dværgplaneter, der
+Udover de kendte planeter, findes der også en række dværgplaneter, der
 ligesom planeterne bevæger sig rundt om Solen. En af disse dværgplaneter er
 Ceres, som befinder sig i afstanden ca. 414 millioner km fra Solen.
 
@@ -120,54 +120,59 @@ Ceres, som befinder sig i afstanden ca. 414 millioner km fra Solen.
 
 \section*{Opgave 2 -- Newtons tyngdelov}
 Mange sammenhænge i fysik kan beskrives ved potensfunktioner. Newton
-postulerede i 1687, at tyngdekraften mellem to masser aftager med kvadratet på
-afstanden.  Denne påstand bliver verificeret i denne opgave.
+postulerede i 1687, at tiltrækningen mellem to masser aftager med kvadratet på
+afstanden til centrum.  Denne påstand bliver verificeret i denne opgave.
 
-Tyngdeaccelerationen på Jorden kendes som $g=9,82\, {\rm m}/{\rm s}^2$.
-Ligeledes er Jordens radius en kendt værdi, nemlig $x=6730$ km.
+Tiltrækningen ved Jordens overflade kendes som tyngdeaccelerationen $g=9,82\,
+{\rm m}/{\rm s}^2$.  Ligeledes er Jordens radius en kendt værdi, nemlig
+$x=6730$ km.
 
-Vi skal nu først bestemme værdien af tyngdeaccelerationen i samme af\-stand fra
-Jorden som Månens.  Denne kan beregnes som
+Vi skal nu først bestemme en værdi for Jordens tiltrækning på månen.
+Denne kan beregnes som
 \be
-a = \frac{v^2}{r}
+a = \frac{v^2}{r}\,,
 \label{acc}
 \ee
-hvor $v$ er månens fart og $r$ er månens afstand til Jordens centrum. 
+hvor $v$ er månens fart målt i meter pr. sekund og $r$ er månens afstand til
+Jordens centrum målt i meter.  Tiltrækningen måles i ${\rm m}/{\rm s}^2$.
 
 \begin{enumerate}[label=(\alph*)]
-    \item Vis, at ovenstående formel for tyngdeaccelerationen kan omskrives til 
+    \item Vis, at ovenstående formel for tiltrækningen kan omskrives til 
         $$
-        a = \left(\frac{2\pi}{T}\right)^2 \cdot r,
+        a = \left(\frac{2\pi}{T}\right)^2 \cdot r\,,
         $$
-        hvor $T$ er Månens omløbstid om Jorden. \label{a}
+        hvor $T$ er Månens omløbstid om Jorden målt i sekunder, idet månens
+        hastighed $v$ antages at være lig med omkredsen af månens bane
+        divideret med omløbstiden. \label{a}
 \end{enumerate}
 
 Månens omløbstid er 27,32 dage og dens afstand til Jordens centrum er 384400 km.
 
 \begin{enumerate}[label=(\alph*) ,resume]
-    \item Omregn Månens omløbstid til sekunder og afstand til meter, og vis
-        dermed, at tyngdeaccelerationen i Månens afstand fra Jorden har værdien
-        $0,00272\, {\rm m}/{\rm s}^2$.
+    \item Omregn Månens omløbstid til sekunder og månens afstand til Jordens
+        centrum til meter. Vis derefter, at Jordens tiltrækning på månen har
+        værdien $0,00272\, {\rm m}/{\rm s}^2$.
 \end{enumerate}
 
 Dette giver følgende tabel over sammenhængen mellem afstand til Jordens centrum
-og størrelsen af tyngdeaccelerationen:
+og størrelsen af tiltrækningen:
 
 \begin{center}
-\begin{tabular}{r|r|r}
+\begin{tabular}{|r|r|r|}
     \hline
           & $x$                         & $y$ \\
-    Sted  & afstand til Jordens centrum & tyngdeacceleration   \\
-          & i tusind km                 & i ${\rm m}/{\rm s}^2$  \\
+    Sted  & afstand til Jordens centrum & tiltrækning   \\
+          & i km                        & i ${\rm m}/{\rm s}^2$  \\
     \hline 
-    Jordens overflade & $6,73$  & $9,82$ \\
-    ved Månen         & $384,4$ & $0,00272$ \\
+    Jordens overflade & $6730$  & $9,82$ \\
+    \hline
+    ved Månen         & $384400$ & $0,00272$ \\
     \hline 
 \end{tabular}
 \end{center}
 
 Newton kommer nu med den hypotese, at sammenhængen mellem afstand og
-tyngdeacceleration kan beskrives ved en potensfunktion.
+tiltrækning kan beskrives ved en potensfunktion.
 
 \begin{enumerate}[label=(\alph*) ,resume]
     \item Beregn værdierne af $a$ og $b$ i den potensfunktion $y=b\cdot x^a$,
@@ -176,16 +181,15 @@ tyngdeacceleration kan beskrives ved en potensfunktion.
 
 Newton formulerede sin lov som
 $$
-a = \frac{k}{r^2},
+y = \frac{b}{x^2}\,.
 $$
-hvor $r$ er afstanden til Jordens centrum og $a$ er tyngdeaccelerationen.
 
 \begin{enumerate}[label=(\alph*) ,resume]
     \item Vis, at svaret i~\ref{p1} kan omskrives til ovenstående formel.
 \end{enumerate}
 
 
-\section*{Opgave 3 -- Keplers 3. lov for bevægelse om Jorden}
+\section*{Opgave 3 -- Keplers 3. lov benyttet for bevægelse om Jorden}
 Keplers 3. lov gælder også for bevægelse om Jorden. Den siger, at
 $$
 T^2 = k\cdot r^3,
@@ -198,23 +202,24 @@ Månen har en omløbstid på $27,32$ dage og en afstand til Jordens centrum på
 $384,4$ tusinde km.
 \begin{enumerate}[label=(\alph*)]
     \item Omregn månens omløbstid på $27,32$ dage til timer.
-    \item Beregn værdien af $k$ ved at indsætte værdierne for Månen.
+    \item Beregn værdien af $k$.
 \end{enumerate}
 
 
 
-Den Internationale Rumstation befinder sig i en højde af ca. $0,386$ tusinde km over
-Jordens overflade. Jordens radius er $6,73$ tusinde km.
+Den Internationale Rumstation befinder sig i en højde af ca. $386$ km over
+Jordens overflade. Jordens radius er ca. $6730$ km.
 \begin{enumerate}[label=(\alph*), resume]
     \item Beregn afstanden fra den Internationale Rumstation til Jordens
-        centrum.
-    \item Brug ovenstående ligning til at beregne Rumstationens omløbstid.
-    \item Hvor mange gange kommer Rumstationen rundt om Jorden på et døgn?
+        centrum målt i tusinde km.
+    \item Brug ovenstående ligning til at beregne rumstationens omløbstid.
+    \item Hvor mange gange kommer rumstationen rundt om Jorden på et døgn?
 \end{enumerate}
 
 
-En geostationær satellit har en omløbstid som er lig med Jordens egen
-rotationstid.
+En geostationær satellit er en satellit, som hele tiden befinder sig over det
+samme punkt på Ækvator.  Satellittens omløbstid er derfor lig med
+Jordens egen rotationstid.
 \begin{enumerate}[label=(\alph*), resume]
     \item Gør rede for, at omløbstiden for en geostationær satellit er 24 timer.
     \item Brug ovenstående ligning til at beregne afstanden fra en geostationær
