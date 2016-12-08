@@ -25,6 +25,6 @@ label("B", pb, W);
 label("$(x_1,y_1)$", pa, E);
 label("$(x_2,y_2)$", pb, E);
 
-xaxis("$x$",NoTicks);
-yaxis("$y$",NoTicks);
+xaxis("$x$",NoTicks,EndArrow);
+yaxis("$y$",NoTicks,EndArrow);
 

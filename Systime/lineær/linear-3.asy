@@ -35,6 +35,6 @@ label("$(4, 5)$", pb, SE);
 
 draw(graph(f1, -2, 5), red);
 
-xaxis("$x$",NoTicks);
-yaxis("$y$",NoTicks);
+xaxis("$x$",NoTicks,EndArrow);
+yaxis("$y$",NoTicks,EndArrow);
 

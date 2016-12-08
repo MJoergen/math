@@ -49,6 +49,6 @@ label("$(x_2,y_2)$", pb, SE);
 
 draw(graph(f1, -1, 5), red);
 
-xaxis("$x$",NoTicks);
-yaxis("$y$",NoTicks);
+xaxis("$x$",NoTicks,EndArrow);
+yaxis("$y$",NoTicks,EndArrow);
 

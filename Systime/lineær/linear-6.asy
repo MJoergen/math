@@ -34,7 +34,7 @@ label("$(1, -2)$", p1, E, black);
 label("$(2,  1)$", p2, E, black);
 label("$(3,  4)$", p3, E, black);
 
-xaxis("$x$", RightTicks(Label(align=right), new real[]{-2,2,4}, new real[]{-1,1,3}));
-yaxis("$y$", LeftTicks(NoZero));
+xaxis("$x$", RightTicks(Label(align=right), new real[]{-2,2,4}, new real[]{-1,1,3}),EndArrow);
+yaxis("$y$", LeftTicks(NoZero),EndArrow);
 
 fixedscaling((-0.5, -6), (4, 6));

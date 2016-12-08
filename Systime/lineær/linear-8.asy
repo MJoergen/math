@@ -48,7 +48,7 @@ label("$15$", (p1+(15,7.5))/2, E);
 label("$8$", (p4+(44,54))/2, S);
 label("$12$", (p5+(44,54))/2, E);
 
-xaxis("min", RightTicks(new real[]{10,20,30,40,50}));
-yaxis("km", LeftTicks(NoZero));
+xaxis("min", RightTicks(new real[]{10,20,30,40,50}),EndArrow);
+yaxis("km", LeftTicks(NoZero),EndArrow);
 
 fixedscaling((-10, -10), (60, 80));

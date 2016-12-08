@@ -29,7 +29,7 @@ dot(p3);
 
 draw(graph(f1, -0.5, 5));
 
-xaxis("$x$", RightTicks(new real[]{1,2,3,4,5}));
-yaxis("$y$", LeftTicks(NoZero, n=1));
+xaxis("$x$", RightTicks(new real[]{1,2,3,4,5}),EndArrow);
+yaxis("$y$", LeftTicks(NoZero, n=1),EndArrow);
 
 //fixedscaling((-0.5, -6), (4, 6));

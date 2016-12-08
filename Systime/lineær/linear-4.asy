@@ -19,5 +19,5 @@ real f1(real x)
 
 draw("$y=20+0,\!5x$", graph(f1, 0, 20), red);
 
-xaxis("min.",RightTicks(Label(align=left), NoZero));
-yaxis("kr.",LeftTicks(NoZero));
+xaxis("min.",RightTicks(Label(align=left), NoZero),EndArrow);
+yaxis("kr.",LeftTicks(NoZero),EndArrow);

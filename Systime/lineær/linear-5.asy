@@ -42,5 +42,5 @@ label("$y=-2x+1$", (-1.5, f2(-1.5)), W, red);
 label("$y=4-x$",   ( 8.0, f3( 8.0)), W, black);
 label("$y=3x$",    (-1.0, f4(-1.0)), W, purple);
 
-xaxis("$x$", RightTicks(Label(align=left), NoZero));
-yaxis("$y$", LeftTicks(NoZero));
+xaxis("$x$", RightTicks(Label(align=left), NoZero),EndArrow);
+yaxis("$y$", LeftTicks(NoZero),EndArrow);
