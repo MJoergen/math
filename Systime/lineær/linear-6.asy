@@ -14,9 +14,8 @@ size(7cm);
 
 import graph;
 
-texpreamble("\usepackage[T1]{fontenc}");
-texpreamble("\usepackage{verdana}");
-defaultpen(font("T1","verdana","m","n"));
+texpreamble("\usepackage{MyriadPro}");
+texpreamble("\usepackage{sfmath}");
 
 pen blue_thin   = rgb("77afc3");
 pen purple_thin = rgb("916fa2");

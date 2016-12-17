@@ -12,6 +12,8 @@ size(200, IgnoreAspect);
 
 import graph;
 
+//defaultpen(font("T1","vna","m","n"));
+
 real f1(real x)
 {
     return 0.5*x+2;
