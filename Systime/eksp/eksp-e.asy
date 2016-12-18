@@ -30,13 +30,13 @@ pen green_default  = green_thin  + 1.0;
 // End preamble
 //////////////////////////////////////////////////////////////////
 
-label("$x$", ( 6,  -150), align=SW);
+label("$x$", ( 5,  -150), align=SW);
 label("$y$", (-0.2, 7000),   align=SW);
 
-ticks xticks = RightTicks(scale(0.6)*Label(align=right), new real[]{-1, 1, 2, 3, 4, 5}, Size=2);
+ticks xticks = RightTicks(scale(0.6)*Label(align=right), new real[]{-1, 1, 2, 3, 4}, Size=2);
 ticks yticks = LeftTicks(scale(0.6)*Label(align=left), new real[]{1000, 2000, 3000, 4000, 5000, 6000}, Size=2);
 
-xaxis(xticks, Arrow(HookHead), xmin=-1.5, xmax=6);
+xaxis(xticks, Arrow(HookHead), xmin=-1.5, xmax=5);
 yaxis(yticks, Arrow(HookHead), ymin=-1000, ymax=7000);
 
 xequals(-1, dotted);
@@ -45,7 +45,6 @@ xequals(2, dotted);
 xequals(3, dotted);
 xequals(4, dotted);
 xequals(5, dotted);
-xequals(6, dotted);
 
 yequals(-1000, dotted);
 yequals(1000, dotted);
@@ -73,5 +72,5 @@ dot(p2);
 dot(p3);
 dot(p4);
 
-label("$f(x) = 2155 \cdot 1,\!35^x$", (3, 2000), blue_default, Fill(white));
+label("$f(x) = 2155 \cdot 1,\!35^x$", (2.5, 2000), blue_default, Fill(white));
 

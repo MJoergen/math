@@ -1,7 +1,8 @@
-import unicode;
+//////////////////////////////////////////////////////////////////
+// Begin preamble
+
 if(!settings.multipleView) settings.batchView=false;
 settings.tex="pdflatex";
-defaultfilename="eksp-f";
 if(settings.render < 0) settings.render=4;
 settings.outformat="";
 settings.inlineimage=true;
@@ -9,9 +10,62 @@ settings.embed=true;
 settings.toolbar=false;
 viewportmargin=(2,2);
 
-size(200, IgnoreAspect);
+size(7cm, 7cm, IgnoreAspect);
 
 import graph;
+
+texpreamble("\usepackage{MyriadPro}");
+texpreamble("\usepackage{sfmath}");
+texpreamble("\DeclareMathSymbol{,}{\mathord}{letters}{\"3B}");
+
+pen blue_thin   = rgb("77afc3");
+pen purple_thin = rgb("916fa2");
+pen yellow_thin = rgb("f49e42");
+pen green_thin  = rgb("6a9f7b");
+
+pen blue_default   = blue_thin   + 1.0;
+pen purple_default = purple_thin + 1.0;
+pen yellow_default = yellow_thin + 1.0;
+pen green_default  = green_thin  + 1.0;
+
+// End preamble
+//////////////////////////////////////////////////////////////////
+
+label("{\aa}r", ( 9,    -30), align=SW);
+label("saldo", (-0.25, 1700),   align=SW);
+
+ticks xticks = RightTicks(scale(0.6)*Label(align=right), new real[]{1, 2, 3, 4, 5, 6, 7, 8}, Size=2);
+ticks yticks = LeftTicks(scale(0.6)*Label(align=left), new real[]{500, 1000, 1500}, Size=2);
+
+xaxis(xticks, Arrow(HookHead), xmin=0, xmax=9);
+yaxis(yticks, Arrow(HookHead), ymin=0, ymax=1700);
+
+xequals(1, dotted);
+xequals(2, dotted);
+xequals(3, dotted);
+xequals(4, dotted);
+xequals(5, dotted);
+xequals(6, dotted);
+xequals(7, dotted);
+xequals(8, dotted);
+
+yequals(100, dotted);
+yequals(200, dotted);
+yequals(300, dotted);
+yequals(400, dotted);
+yequals(500, dotted);
+yequals(600, dotted);
+yequals(700, dotted);
+yequals(800, dotted);
+yequals(900, dotted);
+yequals(1000, dotted);
+yequals(1100, dotted);
+yequals(1200, dotted);
+yequals(1300, dotted);
+yequals(1400, dotted);
+yequals(1500, dotted);
+yequals(1600, dotted);
+
 
 real f1(real x)
 {
@@ -38,9 +92,3 @@ dot(p6);
 dot(p7);
 dot(p8);
 
-// draw("$f(x) = 2155 \cdot 1,\!35^x$", graph(f1, 0, 4), red);
-
-xaxis("år",RightTicks(Label(align=left), NoZero));
-yaxis("saldo",LeftTicks(NoZero));
-
-// fixedscaling((-0.5, -500), (4.5, 6000));

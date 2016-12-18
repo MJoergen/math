@@ -69,6 +69,6 @@ pair F2(real x) {return (x,f2(x));}
 draw(graph(f1, -3, 3), blue_default);
 draw(graph(f2, -3, 3), purple_default);
 
-label("$a<0$", F1(-2.0), NE, blue_default, Fill(white));
-label("$a>0$", F2(2.0), NW, purple_default, Fill(white));
+label("$a<1$", F1(-2.0), NE, blue_default, Fill(white));
+label("$a>1$", F2(2.0), NW, purple_default, Fill(white));
 

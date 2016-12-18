@@ -31,13 +31,13 @@ pen green_default  = green_thin  + 1.0;
 //////////////////////////////////////////////////////////////////
 
 label("$x$", ( 6,  -1.5), align=SW);
-label("$y$", (-0.2, 55),   align=SW);
+label("$y$", (-0.2, 45),   align=SW);
 
 ticks xticks = RightTicks(scale(0.6)*Label(align=right), new real[]{-1, 1, 2, 3, 4, 5}, Size=2);
-ticks yticks = LeftTicks(scale(0.6)*Label(align=left), new real[]{-10, 10, 20, 30, 40, 50}, Size=2);
+ticks yticks = LeftTicks(scale(0.6)*Label(align=left), new real[]{-10, 10, 20, 30, 40}, Size=2);
 
 xaxis(xticks, Arrow(HookHead), xmin=-1, xmax=6);
-yaxis(yticks, Arrow(HookHead), ymin=-10, ymax=55);
+yaxis(yticks, Arrow(HookHead), ymin=-10, ymax=45);
 
 xequals(-1, dotted);
 xequals(1, dotted);
@@ -52,7 +52,6 @@ yequals(10, dotted);
 yequals(20, dotted);
 yequals(30, dotted);
 yequals(40, dotted);
-yequals(50, dotted);
 
 real f1(real x)
 {
@@ -62,9 +61,11 @@ real f1(real x)
 pair p1 = (3.0,  2.0);
 pair p2 = (5.0, 18.0);
 
-draw(graph(f1, 1.5, 6), blue_default);
+draw(graph(f1, 0, 5.8), blue_default);
 
 label("$f(x) = \frac{2}{27}\cdot 3^x$", (3, 30), blue_default, Fill(white));
+label("$(3,\,2)$", (2.7, 5), blue_default, Fill(white));
+label("$(5,\,18)$", (5.3, 9.5), blue_default, Fill(white));
 
 dot(p1);
 dot(p2);
