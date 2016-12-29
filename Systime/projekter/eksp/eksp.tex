@@ -42,13 +42,13 @@ Vi har givet en eksponentialfunktion
     f(x) = b\cdot a^x\,,
 \]
 hvor $a=1+r$ er fremskrivningsfaktoren og $r$ er vækstraten.
-Vækstraten er knyttet til den procentvise stigning p ved
+Vækstraten er knyttet til den procentvise stigning $p$ ved
 \[
     r = \frac{p}{100}\,,
 \]
 hvor $p$ angiver stigningen i procent.
 
-Hvis $a>1$ så er funktionen voksende, og vi definerer fordoblingskonstanten
+Hvis $a>1$ er funktionen voksende, og vi definerer fordoblingskonstanten
 $T_2$ ud fra egenskaben
 \[
     f(x+T_2) = 2\cdot f(x)\,.
@@ -81,7 +81,7 @@ Her er $\bar T_2$ en tilnærmelse til fordoblingskonstanten $T_2$.
         \begin{center}
             \begin{tabular}{|r|c|l|}
 \hline
-                p & $T_2$ & $\bar T_2$ \\
+                $p$ & $T_2$ & $\bar T_2$ \\
                 \hline
                 1 & & \\
                 \hline
@@ -111,7 +111,8 @@ Det kan vises, at når $x$ er lille, så gælder der, at
 
 \section*{Opgave 2 -- Kvadratrødder uden lommeregner}
 Vi har alle lært, at $\sqrt{9} = 3$, fordi $3^2 = 9$. I denne opgave skal vi
-arbejde med en metode til at beregne kvadratroden af et vilkårligt tal, f.eks.
+arbejde med en metode til at beregne en tilnærmelse til kvadratroden af et
+vilkårligt tal, f.eks.
 $\sqrt{21}$.
 
 Vi starter med parablen $f(x) = x^2$. For at beregne kvadratroden $\sqrt{21}$,
@@ -157,7 +158,7 @@ skæringspunktet med parablen, se figur 2.
 \end{enumerate}
 
 Det vil sige, at vores kvadratrod er tæt på $4,625$. Men vi kan
-komme tættere på resultatet ved at gentage proceduren. Dvs nu tager vi
+komme tættere på resultatet ved at gentage processen. Dvs nu tager vi
 udgangspunkt i punktet $(4,625,\,4,625^2)$ på parablen. Igen beregner vi en ligning for tangenten i dette punkt.
 
 \begin{enumerate}[label=(\alph*), resume]
@@ -167,7 +168,7 @@ udgangspunkt i punktet $(4,625,\,4,625^2)$ på parablen. Igen beregner vi en lig
 Igen beregner vi nemt, hvor denne nye tangent skærer linjen $y=21$.
 
 \begin{enumerate}[label=(\alph*), resume]
-    \item Vis, at tangenten skærer linjen $y=21$ når $x=4,5828$.
+    \item Vis, at denne nye tangent skærer linjen $y=21$ når $x=4,5828$.
 \end{enumerate}
 
 Vi er nu kommet frem til, at vores kvadratrod er tæt på $4,5828$.
@@ -281,10 +282,9 @@ Således har vi
     = 10^1 \cdot 10^{0,5} \cdot 10^{0,126} \cdot 10^{0,0625} \cdot 10^{0,03125} \,.
 \]
 
-Dernæst laves en tabel over gentagne
-kvadratrødder af tallet $10$. Denne tabel skal kun laves én gang, og kan
-eventuelt udarbejdes ved at bruge metoden angivet i projektet oven over.
-Således er:
+For at komme videre, laver vi nu en tabel over gentagne kvadratrødder af tallet
+$10$. Denne tabel skal kun laves én gang, og kan eventuelt udarbejdes ved at
+bruge metoden angivet i projektet oven over.  Således er:
 \[
     \sqrt{10} = 10^{0,5} = 3,162278 \,,
 \]
@@ -330,16 +330,16 @@ Med denne tabel kan man nemt beregne potenser af andre tal end de givne. F.eks. 
 \]
 
 \begin{enumerate}[label=(\alph*), resume]
-    \item Brug nu denne tabel til på samme måde at udregnge potensen $10^{1,71875}$.
+    \item Brug nu samme metode til at udregnge potensen $10^{1,71875}$ som en
+        tilnærmelse til $10^{1,72}$.
 \end{enumerate}
 
 \begin{enumerate}[label=(\alph*), resume]
-    \item Brug ovenstående metode til at finde en tilnærmelse til eksponenten som nu denne tabel til at udregnge potensen $10^{1,71875}$.
     \item Brug ovenstående metode til at vise, at tallet $1,72$ kan tilnærmes som
         \[
             0,5^0 + 0,5^1 + 0,5^3 + 0,5^4 + 0,5^5 + 0,5^{10} = 1,719727 \,.
         \]
-\item Brug ovenstående metode til at beregne $10^{1,719727}$ som en
+\item Brug ovenstående metode til at beregne $10^{1,719727}$ som en bedre
         tilnærmelse til $10^{1,72}$.
 \end{enumerate}
 
