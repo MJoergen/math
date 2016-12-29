@@ -1,0 +1,240 @@
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+\usepackage{graphicx}
+\usepackage{amsfonts}
+\usepackage{amsthm}        % Theorems
+\usepackage{amsmath}
+\usepackage{enumitem}
+%\usepackage{hyperref}
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+\newcommand{\be}{\begin{equation}}
+\newcommand{\ee}{\end{equation}}
+\newcommand{\bea}{\begin{eqnarray}}
+\newcommand{\eea}{\end{eqnarray}}
+
+\theoremstyle{plain}
+\newtheorem*{thm}{Sætning}
+\newtheorem*{mydef}{Definition}
+\newtheorem*{eks}{Eksempel}
+
+\DeclareMathSymbol{,}{\mathord}{letters}{"3B}
+
+\title{Projektopgaver om eksponentialfunktioner}
+\date{\vspace{-5ex}}
+
+\begin{document}
+
+\maketitle
+
+\section*{Opgave 1 -- Fordoblingskonstant}
+Vi har givet en eksponentialfunktion
+\[
+    f(x) = b\cdot a^x\,,
+\]
+hvor $a=1+r$ er fremskrivningsfaktoren og $r$ er vækstraten.
+Vækstraten er knyttet til den procentvise stigning p ved
+\[
+    r = \frac{p}{100}\,,
+\]
+hvor $p$ angiver stigningen i procent.
+
+Hvis $a>1$ så er funktionen voksende, og vi definerer fordoblingskonstanten
+$T_2$ ud fra egenskaben
+\[
+    f(x+T_2) = 2\cdot f(x)\,.
+\]
+
+\begin{enumerate}[label=(\alph*)]
+    \item Vis, ved at indsætte forskriften i ovenstående ligning, at 
+fordoblingskonstanten opfylder følgende ligning:
+\[
+    a^{T_2} = 2\,.
+\]
+\end{enumerate}
+
+Der gælder følgende eksakte formel for fordoblingskonstanten:
+\[
+    T_2 = \frac{\log(2)}{\log(1+r)}\,.
+\]
+\begin{enumerate}[label=(\alph*), resume]
+    \item Bevis ovenstående formel.
+\end{enumerate}
+
+Der gælder endvidere følgende tilnærmede formel, som til tider kan være nyttig:
+\[
+    \bar T_2 = \frac{70}{p} \,.
+\]
+Her er $\bar T_2$ en tilnærmerlse til fordoblingskonstanten $T_2$.
+
+\begin{enumerate}[label=(\alph*), resume]
+    \item Udfyld nedenstående tabel, og kommentér på resultatet.
+        \begin{center}
+            \begin{tabular}{|r|c|l|}
+\hline
+                p & $T_2$ & $\bar T_2$ \\
+                \hline
+                1 & & \\
+                \hline
+                2 & & \\
+                \hline
+                5 & & \\
+                \hline
+                10 & & \\
+                \hline
+                20 & & \\
+                \hline
+            \end{tabular}
+        \end{center}
+
+    \item Tegn graferne for de to funktioner $T_2(p)$ og $\bar T_2(p)$ i samme koordinatsystem for $p$ mellem $1$ og $20$.
+
+Det kan vises, at når $x$ er lille, så gælder der, at
+        \[
+            \log(x) \approx 0,4343 \cdot (x-1) \,.
+        \]
+
+    \item Brug ovenstående resultat til at udlede formlen for $\bar T_2$.
+
+\end{enumerate}
+
+
+\section*{Opgave 2 -- Kvadratrødder uden lommeregner}
+Vi har alle lært, at $\sqrt{9} = 3$, fordi $3^2 = 9$. I denne opgave skal vi
+arbejde med en metode til at beregne kvadratroden af et vilkårligt tal, f.eks.
+$\sqrt{21}$.
+
+Vi starter med parablen $f(x) = x^2$. For at beregne kvadratroden $\sqrt{21}$,
+så er det netop det samme som at løse ligningen $f(x) = 21$, dvs at finde
+$x$-koordinaten for skæringspunktet mellem grafen for $f(x)$ og linjen $y=21$,
+se figuren.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\textwidth]{kva1}
+    \caption{}
+    \label{fig1}
+\end{figure}
+
+I kapitel XXX lærte vi, at parablen har en tangent i ethvert punkt $(x_0,\,
+x_0^2)$, og at denne tangent har ligningen
+\[
+    y=2x_0x - x_0^2 \,.
+\]
+
+Vi tager nu udgangspunkt i punktet $(4,\,16)$ på parablen. Vi kunne have valgt
+et hvilket som helst andet punkt, men det er smart at vælge et punkt, som
+ligger tæt på det ønskede punkt med $y$-koordinaten $23$.
+
+\begin{enumerate}[label=(\alph*)]
+    \item Vis, at parablen i punktet $(4,\,16)$ har en tangent med ligningen
+        $y=8x-16$.
+\end{enumerate}
+
+Idéen er nu, at vi kan nemt beregne, hvor denne tangent skærer linjen $y=21$. 
+Da tangenten er tæt på parablen, så vil dette skæringspunkt være tæt på 
+skæringspunktet med parablen, se figuren.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\textwidth]{kva2}
+    \caption{}
+    \label{fig2}
+\end{figure}
+
+\begin{enumerate}[label=(\alph*), resume]
+    \item Vis, at tangenten skærer linjen $y=21$ når $x=4,625$.
+\end{enumerate}
+
+Det vil sige, at vores kvadratrod er tæt på $4,625$. Men vi kan
+komme tættere på resultatet ved at gentage proceduren. Dvs nu tager vi
+udgangspunkt i punktet $4,625,\,4,625^2$ på parablen. Igen beregner vi en ligning for tangenten i dette punkt.
+
+\begin{enumerate}[label=(\alph*), resume]
+    \item Vis, at parablen i punktet $4,625,\,4,625^2$ har en tangent med
+        ligningen $y=9,25x-21,3906$.
+\end{enumerate}
+Igen beregner vi nemt, hvor denne nye tangent skærer linjen $y=21$.
+
+\begin{enumerate}[label=(\alph*), resume]
+    \item Vis, at tangenten skærer linjen $y=21$ når $x=4,5828$.
+\end{enumerate}
+
+Vi er nu kommet frem til, at vores kvadratrod er tæt på $4,5828$.
+
+Det er nu klart, at denne proces kan gentages vilkårligt antal gange.
+Det viser sig, at hver gang kommer man tættere på det rigtige resultat, og
+at denne proces forløber forbavsende hurtigt.
+
+\begin{enumerate}[label=(\alph*), resume]
+    \item Gentag ovenstående proces to gange til, og udfyld de tommme felter i
+        nedenstående skema.
+        \begin{center}
+            \begin{tabular}{|r|c|l|}
+\hline
+                $x$ & tangent & ny $x$ \\
+                \hline
+                4 & 8x-16 & 4,625 \\
+                \hline
+                4,625 & 9,25x-21,3906 & 4,5828 \\
+                \hline
+                4,5828 & & \\
+                \hline
+                 & & \\
+                \hline
+            \end{tabular}
+        \end{center}
+\end{enumerate}
+
+Nu søger vi at generalisere ovenstående proces til en vilkårlig 
+kvadratrod. Vi søger altså nu at bestemme værdien af $\sqrt{A}$, hvor
+$A$ er et givet tal. Vi lader igen $x_0$ være vores startværdi.
+
+\begin{enumerate}[label=(\alph*), resume]
+    \item Vis, at parablens tangent i punktet $(x_0,\,x_0^2)$ 
+        skærer linjen $y=A$ når
+        \[
+            x = \frac{A+x_0^2}{2x_0}\,.
+        \]
+    \item Vis, at denne formel kan omskrives til 
+        \[
+            x = x_0 + \frac{A-x_0^2}{2x_0}\,.
+        \]
+    På denne form er brøkens tæller netop, hvor stor afvigelsen er i $y$-værdien,
+        og hele brøken er justeringen i $x$-værdien.
+    \item Vis, at formlen også kan omskrives til
+        \[
+            x = \frac12 \cdot \Big(\frac{A}{x_0} + x_0\Big) \,.
+        \]
+    Denne sidste form er velegnet til beregninger, fordi den indeholder færrest
+        mulige regne-operationer.
+
+    \item Brug denne sidste formel til at beregne kvadratroden $\sqrt{43}$ med
+        mindst fem decimaler. Du skal gentage processen indtil dit resultat
+        ikke længere ændrer sig.
+\end{enumerate}
+
+
+\section*{Opgave 3 -- Eksponentialfunktioner uden lommeregner}
+Vi har i afsnit XXX beskrevet, hvordan man opløfter et tal til en potens, som
+kan skrives som en brøk. Således er f.eks.
+\[
+    16^{3/4} = (\sqrt[4]{16})^3 = 2^3 = 8 \,.
+\]
+Denne metode er dog upraktisk til at beregne f.eks.
+\[
+    10^{1,7234} \,.
+\]
+
+
+\end{document}
+
