@@ -3,6 +3,7 @@ tex_pdfs   = $(names:.tex=.pdf)
 
 pics  += kva1.asy
 pics  += kva2.asy
+pics  += kva3.asy
 asy_pdfs  += $(pics:.asy=.pdf)
 
 all: $(asy_pdfs) $(tex_pdfs)

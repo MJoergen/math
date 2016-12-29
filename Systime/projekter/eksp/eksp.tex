@@ -343,5 +343,114 @@ Med denne tabel kan man nemt beregne potenser af andre tal end de givne. F.eks. 
         tilnærmelse til $10^{1,72}$.
 \end{enumerate}
 
+\section*{Opgave 4 -- Parablens toppunkt}
+Det er tidligere blevet vist, at grafen hørende til funktionen $f(x) = ax^2 + bx + c$
+er en parabel, og at denne parabel har et toppunkt givet ved koordinaterne:
+\[
+    T = \Big(\frac{-b}{2a}, \frac{-d}{4a}\Big) \,,
+\]
+hvor diskriminanten $d=b^2-4ac$. Her skal vi se på et alternativt bevis for dette
+resultat.
+
+Antag, at $a>0$. Vi undersøger nu skæringspunkterne mellem grafen for $f(x)$ og
+vandrette linjer givet ved $y=k$, hvor $k$ er en endnu ukendt konstant.
+Specielt er vi interesseret i, hvordan antallet af skæringspunkter afhænger af
+værdien af $k$.
+
+Som eksempel viser figur 3 grafen for funktionen $f(x) = x^2-6x+7$ samt tre linjer 
+af formen $y=k$. For $k=5$ er der to skæringspunkter, for $k=-2$ er der ét skæringspunkt,
+og for $k=-5$ er der ingen skæringspunkter.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\textwidth]{kva3}
+    \caption{}
+    \label{fig3}
+\end{figure}
+
+\begin{enumerate}[label=(\alph*)]
+    \item Vis, at ligningen $f(x) = k$ er en andengradsligning.
+\end{enumerate}
+
+\begin{enumerate}[label=(\alph*), resume]
+    \item Vis, at antallet af skæringspunkter afhænger af fortegnet af 
+        \[
+            b^2-4a(c-k) \,.
+        \]
+    \item Vis, at når $k$ er stor, så er der to skæringspunkter, og at
+        når $k$ er lille, så er der ikke nogen skæringspunkter.
+    \item Vis, at der er netop ét skæringspunkt, når
+        \[
+            k = \frac{-d}{4a} \,.
+        \]
+    \item Forklar, hvorfor dette skæringspunkt netop må være parablens toppunkt.
+\end{enumerate}
+
+\section*{Opgave 5 -- Parablens tangent}
+I denne opgave skal vi arbejde med tangenter. Tangenter behandles mere generelt
+i kapitlet om differentialregning, men her undersøges de specielt for parabler.
+Vi bruger derfor i denne opgave følgende definition.
+\begin{mydef}
+    Tangenten til en parabel i et givet punkt er en ret linje gennem punktet, som
+    ikke skærer parablen andre steder.
+\end{mydef}
+Geometrisk er en tangent en ret linje som er "parallel" med grafen i et bestemt punkt.
+
+Vi begynder med parablen givet ved funktionen $f(x)=x^2$. Vi vil udregne en ligning 
+for tangenten til parablen i punktet $(3,\, 9)$. Ligningen for en ret linje gennem
+et givet punkt er 
+\[
+    y-y_0 = a\cdot (x-x_0) \,,
+\]
+hvor $a$ er linjens hældning og punktet har koordinaterne $(x_0,\, y_0)$.
+
+\begin{enumerate}[label=(\alph*)]
+    \item Vis, at tangentens ligning kan skrives som 
+        \[
+            y-9 = a\cdot(x-3)\,,
+        \]
+    hvor $a$ er en endnu ukendt konstant.
+\end{enumerate}
+For at beregne værdien af hældnignen $a$, så benytter vi, at tangenten og parablen
+kun må have ét skæringspunkt.
+
+\begin{enumerate}[label=(\alph*), resume]
+    \item Vis, at skæringspunkterne mellem tangenten og parablen er givet
+        ved løsningerne til følgende ligning
+        \[
+            a\cdot(x-3) + 9 = x^2 \,.
+        \]
+    \item Vis, at dette er en andengradsligning, og at diskriminanten er givet ved
+        \[
+            d = a^2 - 12a + 36 \,.
+        \]
+    \item Vis, at diskriminanten kan omskrives til
+        \[
+            d = (a-6)^2 \,.
+        \]
+    \item Forklar, hvorfor tangentens hældning må være $a=6$.
+    \item Opskriv tangentens ligning på formen $y=ax+b$.
+\end{enumerate}
+
+Nu vælger vi et vilkårligt punkt på parablen, dvs punktet $(x_0,\, x_0^2)$, hvor
+$x_0$ er vilkårlig.
+\begin{enumerate}[label=(\alph*), resume]
+    \item Vis, at skæringspunkterne mellem tangenten og parablen er givet
+        ved løsningerne til følgende ligning
+        \[
+            a\cdot(x-x_0) + x_0^2 = x^2 \,.
+        \]
+    \item Vis, at dette er en andengradsligning, og at diskriminanten er givet ved
+        \[
+            d = a^2 - 4x_0a + 4x_0^2 \,.
+        \]
+    \item Vis, at diskriminanten kan omskrives til
+        \[
+            d = (a-2x_0)^2 \,.
+        \]
+    \item Forklar, hvorfor tangentens hældning må være $a=2x_0$.
+    \item Opskriv tangentens ligning på formen $y=ax+b$.
+\end{enumerate}
+
 \end{document}
 
