@@ -74,7 +74,7 @@ Der gælder endvidere følgende tilnærmede formel, som til tider kan være nytt
 \[
     \bar T_2 = \frac{70}{p} \,.
 \]
-Her er $\bar T_2$ en tilnærmerlse til fordoblingskonstanten $T_2$.
+Her er $\bar T_2$ en tilnærmelse til fordoblingskonstanten $T_2$.
 
 \begin{enumerate}[label=(\alph*), resume]
     \item Udfyld nedenstående tabel, og kommentér på resultatet.
@@ -96,7 +96,8 @@ Her er $\bar T_2$ en tilnærmerlse til fordoblingskonstanten $T_2$.
             \end{tabular}
         \end{center}
 
-    \item Tegn graferne for de to funktioner $T_2(p)$ og $\bar T_2(p)$ i samme koordinatsystem for $p$ mellem $1$ og $20$.
+    \item Tegn graferne for de to funktioner $T_2(p)$ og $\bar T_2(p)$ i samme
+        koordinatsystem for $p$ mellem $1$ og $20$.
 
 Det kan vises, at når $x$ er lille, så gælder der, at
         \[
@@ -116,7 +117,7 @@ $\sqrt{21}$.
 Vi starter med parablen $f(x) = x^2$. For at beregne kvadratroden $\sqrt{21}$,
 så er det netop det samme som at løse ligningen $f(x) = 21$, dvs at finde
 $x$-koordinaten for skæringspunktet mellem grafen for $f(x)$ og linjen $y=21$,
-se figuren.
+se figur 1.
 
 \begin{figure}[ht]
     \centering
@@ -142,7 +143,7 @@ ligger tæt på det ønskede punkt med $y$-koordinaten $23$.
 
 Idéen er nu, at vi kan nemt beregne, hvor denne tangent skærer linjen $y=21$. 
 Da tangenten er tæt på parablen, så vil dette skæringspunkt være tæt på 
-skæringspunktet med parablen, se figuren.
+skæringspunktet med parablen, se figur 2.
 
 \begin{figure}[ht]
     \centering
@@ -170,7 +171,6 @@ Igen beregner vi nemt, hvor denne nye tangent skærer linjen $y=21$.
 \end{enumerate}
 
 Vi er nu kommet frem til, at vores kvadratrod er tæt på $4,5828$.
-
 Det er nu klart, at denne proces kan gentages vilkårligt antal gange.
 Det viser sig, at hver gang kommer man tættere på det rigtige resultat, og
 at denne proces forløber forbavsende hurtigt.
@@ -232,9 +232,116 @@ kan skrives som en brøk. Således er f.eks.
 \]
 Denne metode er dog upraktisk til at beregne f.eks.
 \[
-    10^{1,7234} \,.
+    10^{1,72} \,.
 \]
 
+I stedet for bruger vi en anden metode, som giver en tilnærmelse til den
+rigtige værdi.  Betragt først heltallige potenser af $0,5$, dvs.
+$0,5$, $0,25$, $0,125$, osv. Disse udregnes nemt ved at multiplicere
+det foregående tal med $0,5$.
+\begin{enumerate}[label=(\alph*)]
+    \item Udfyld de tomme felter i nedenstående tabel med potenser af $0,5$:
+        \begin{center}
+            \begin{tabular}{|r|l|}
+\hline
+                $n$ & $0,5^n$ \\
+                \hline
+                $0$ & $1$ \\
+                \hline
+                $1$ & $0,5$ \\
+                \hline
+                $2$ & $0,25$ \\
+                \hline
+                $3$ & $0,125$ \\
+                \hline
+                $4$ & $0,0625$ \\
+                \hline
+                $5$ & $0,03125$ \\
+                \hline
+                $6$ &  \\
+                \hline
+                $7$ &  \\
+                \hline
+            \end{tabular}
+        \end{center}
+\end{enumerate}
+
+For at bruge denne metode skal man nu skrive potensen (i vort eksempel $1,72$)
+som en tilnærmet sum af potenser af $0,5$. I vort eksempel ser vi f.eks., at
+\[
+    1 + 0,5 + 0,125 + 0,0625 + 0,03125 = 1,71875 \,.
+\]
+Dette er meget tæt på eksponenten $1,72$. Med denne metode vil vi derfor kunne
+beregne $10^{1,71875}$ og dette vil så være tæt på det ønskede $10^{1,72}$.
+Således har vi
+\[
+    10^{1,71875} = 10^{1 + 0,5 + 0,125 + 0,0625 + 0,03125}
+\]
+\[
+    = 10^1 \cdot 10^{0,5} \cdot 10^{0,126} \cdot 10^{0,0625} \cdot 10^{0,03125} \,.
+\]
+
+Dernæst laves en tabel over gentagne
+kvadratrødder af tallet $10$. Denne tabel skal kun laves én gang, og kan
+eventuelt udarbejdes ved at bruge metoden angivet i projektet oven over.
+Således er:
+\[
+    \sqrt{10} = 10^{0,5} = 3,162278 \,,
+\]
+og
+\[
+    \sqrt{3,162278} = 10^{0,25} = 1,778279 \,.
+\]
+Således kan man halvere potensen ved at fortsætte med at tage kvadratroden af
+det foregående tal.
+
+\begin{enumerate}[label=(\alph*), resume]
+    \item Udfyld de tomme felter i nedenstående tabel ved at tage kvadratroden
+        af det foregående tal:
+        \begin{center}
+            \begin{tabular}{|l|l|}
+\hline
+                $x$ & $10^x$ \\
+                \hline
+                $1$ & $10,0$ \\
+                \hline
+                $0,5$ & $3,162278$ \\
+                \hline
+                $0,5^2 = 0,25$ & $1,778279$ \\
+                \hline
+                $0,5^3 = 0,125$ &  \\
+                \hline
+                $0,5^4$ & \\
+                \hline
+                $0,5^5$ & \\
+                \hline
+                $0,5^6$ & \\
+                \hline
+                $0,5^7$ & \\
+                \hline
+            \end{tabular}
+        \end{center}
+\end{enumerate}
+
+Med denne tabel kan man nemt beregne potenser af andre tal end de givne. F.eks. er 
+\[
+    10^{1,75} = 10^{1+0,5+0,25} = 10^1 \cdot 10^{0,5} \cdot 10^{0,25}
+    = 10 \cdot 3,162278 \cdot 1,778279 = 56,234126 \,.
+\]
+
+\begin{enumerate}[label=(\alph*), resume]
+    \item Brug nu denne tabel til på samme måde at udregnge potensen $10^{1,71875}$.
+\end{enumerate}
+
+\begin{enumerate}[label=(\alph*), resume]
+    \item Brug ovenstående metode til at finde en tilnærmelse til eksponenten som nu denne tabel til at udregnge potensen $10^{1,71875}$.
+    \item Brug ovenstående metode til at vise, at tallet $1,72$ kan tilnærmes som
+        \[
+            0,5^0 + 0,5^1 + 0,5^3 + 0,5^4 + 0,5^5 + 0,5^{10} = 1,719727 \,.
+        \]
+\item Brug ovenstående metode til at beregne $10^{1,719727}$ som en
+        tilnærmelse til $10^{1,72}$.
+\end{enumerate}
 
 \end{document}
 
