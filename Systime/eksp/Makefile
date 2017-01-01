@@ -8,6 +8,7 @@ pics  += eksp-d.asy
 pics  += eksp-e.asy
 pics  += eksp-f.asy
 pics  += eksp-g.asy
+pics  += eksp-h.asy
 asy_pdfs  += $(pics:.asy=.pdf)
 
 all: $(asy_pdfs) $(tex_pdfs)
