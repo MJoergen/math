@@ -2,9 +2,9 @@ import systime;
 
 size(12cm, 10cm, keepAspect=true);
 
-pen pena = rgb("feb464");
-pen penb = rgb("f3a045");
-pen penc = rgb("ec860a");
+pen pena = yellow_thin*0.6 + white*0.4;
+pen penb = yellow_thin*0.8 + white*0.2;
+pen penc = yellow_thin;
 
 /////////////////////////
 // Aksiom nr. 4
@@ -14,10 +14,10 @@ pair p42 = (9,0);
 pair p43 = (9,6);
 pair p44 = (-4,6);
 
-retvinkel(p41, p42, p44, pena+0.5);
-retvinkel(p42, p41, p43, pena+0.5);
-retvinkel(p43, p42, p44, pena+0.5);
-retvinkel(p44, p43, p41, pena+0.5);
+retvinkel(p41, p42, p44, penc+1.0);
+retvinkel(p42, p41, p43, penc+1.0);
+retvinkel(p43, p42, p44, penc+1.0);
+retvinkel(p44, p43, p41, penc+1.0);
 
 draw(p41--p42--p43--p44--cycle, black+1.0);
 
@@ -25,7 +25,7 @@ label("\scriptsize{$g$}", 0.5*(p41+p42), align=S);
 label("\scriptsize{$h$}", 0.5*(p42+p43), align=E);
 label("\scriptsize{$A=h\cdot g$}", 0.5*(p41+p43));
 
-label("Aksiom nr. 4", (2.2,-3));
+label("Aksiom nr 4", (2.2,-3));
 
 
 /////////////////////////
@@ -73,24 +73,24 @@ vinkelbue(p5C1, p5A1, p5B1, 0.9, pena);
 draw(p5A--p5B--p5C--cycle, black+1.0);
 draw(p5A1--p5B1--p5C1--cycle, black+1.0);
 
-label("Aksiom nr. 5", (24.5,-3));
+label("Aksiom nr 5", (24.5,-3));
 
 
 /////////////////////////
 // Aksiom nr. 1
 /////////////////////////
 
-draw((-4,17)--(5+1/3,17), black+1.0);
-dot((2/3-2,17), penc+5.0);
-dot((2/3+2,17), penc+5.0);
-label("Aksiom nr. 1", (0.5,13));
+draw((-4,13)--(5+1/3,13), black+1.0);
+dot((2/3-2,13), penc+5.0);
+dot((2/3+2,13), penc+5.0);
+label("Aksiom nr 1", (0.5,9));
 
 
 /////////////////////////
 // Aksiom nr. 2
 /////////////////////////
 
-pair p20 = (15, 17);
+pair p20 = (15, 13);
 pair p2u = (4+2/3, 2);
 pair p2d = (4+2/3, -2);
 
@@ -100,23 +100,23 @@ vinkelbue(p20, p20-p2u, p20-p2d, 1.5, penc);
 draw (p20-p2u -- p20+p2u, black+1.0);
 draw (p20-p2d -- p20+p2d, black+1.0);
 
-label("Aksiom nr. 2", (14.55,13));
+label("Aksiom nr 2", (14.55,9));
 
 
 /////////////////////////
 // Aksiom nr. 3
 /////////////////////////
 
-pair p30 = (421/15, 16);
-pair p31 = (449/15, 18);
+pair p30 = (421/15, 12);
+pair p31 = (449/15, 14);
 pair p3R = (1, 0);
 pair p3U = p31-p30;
 
 vinkelbue(p30, p30+p3R, p30+p3U, 1.5, penc);
 vinkelbue(p31, p31+p3R, p31+p3U, 1.5, penc);
 
-draw((24+2/3,18)--(34,18), black+1.0);
-draw((24+2/3,16)--(34,16), black+1.0);
-draw((27,104/7)--(31+2/3,139/7), black+1.0);
+draw((24+2/3,14)--(34,14), black+1.0);
+draw((24+2/3,12)--(34,12), black+1.0);
+draw((27,76/7)--(31+2/3,111/7), black+1.0);
 
-label("Aksiom nr. 3", (29.45,13));
+label("Aksiom nr 3", (29.45,9));

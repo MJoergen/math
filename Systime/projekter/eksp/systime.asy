@@ -94,6 +94,7 @@ void koord(string xlabel, real xmin, real xmax, real xstep,
 
 } // end of koord
 
+
 // Denne funktion tegner en ret vinkel i punktet p0,
 // hvor p1 og p2 er vilkårlige punkter på de to vinkelben.
 void retvinkel(pair p0, pair p1, pair p2, real size = 1.2, pen p = defaultpen)
@@ -106,6 +107,7 @@ void retvinkel(pair p0, pair p1, pair p2, real size = 1.2, pen p = defaultpen)
     pair npm = p0 + (dir1+dir2) * size;
     draw(np1 -- npm -- np2, p);
 } // end of retvinkel
+
 
 // Denne funktion tegner en vinkelbue i punktet p0,
 // hvor p1 og p2 er vilkårlige punkter på de to vinkelben.
