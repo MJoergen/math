@@ -9,7 +9,7 @@ real ystep = 2.0;
 
 koord("$x$", xmin, xmax, xstep,
       "$y$", ymin, ymax, ystep,
-      ternet = true);
+      gitter = true);
 
 pair pa = (5.64575, 5);
 pair pb = (0.35425, 5);

@@ -9,7 +9,7 @@ real ystep = 2.0;
 
 koord("$x$", xmin, xmax, xstep,
       "$y$", ymin, ymax, ystep,
-      ternet = true);
+      gitter = true);
 
 pair pc = (3, 9);
 

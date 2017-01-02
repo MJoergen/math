@@ -33,7 +33,7 @@ pen green_default  = green_thin  + 1.0;
 
 void koord(string xlabel, real xmin, real xmax, real xstep,
             string ylabel, real ymin, real ymax, real ystep,
-            bool ternet = false)
+            bool gitter = false)
 {
     int xsteps = round((xmax - xmin)/xstep);
     int ysteps = round((ymax - ymin)/ystep);
@@ -79,7 +79,7 @@ void koord(string xlabel, real xmin, real xmax, real xstep,
     label(xlabel, ( xmax,    yequals - (ymax-ymin)/40), align=SW);
     label(ylabel, (xequals - (xmax-xmin)/40, ymax),   align=SW);
 
-    if (ternet)
+    if (gitter)
     {
         for (int i=0; i<=xsteps; ++i)
         {
