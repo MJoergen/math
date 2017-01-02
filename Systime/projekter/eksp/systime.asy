@@ -28,6 +28,8 @@ pen purple_default = purple_thin + 1.0;
 pen yellow_default = yellow_thin + 1.0;
 pen green_default  = green_thin  + 1.0;
 
+arrowbar systime_arrow = Arrow(HookHead, size=3.5);
+
 // End preamble
 //////////////////////////////////////////////////////////////////
 
@@ -73,8 +75,8 @@ void koord(string xlabel, real xmin, real xmax, real xstep,
     ticks xticks = RightTicks(scale(0.6)*Label(align=right), xpoints, Size=2);
     ticks yticks = LeftTicks(scale(0.6)*Label(align=left), ypoints, Size=2);
 
-    xaxis(YEquals(yequals), xticks, Arrow(HookHead), xmin=xmin, xmax=xmax);
-    yaxis(XEquals(xequals), yticks, Arrow(HookHead), ymin=ymin, ymax=ymax);
+    xaxis(YEquals(yequals), xticks, systime_arrow, xmin=xmin, xmax=xmax);
+    yaxis(XEquals(xequals), yticks, systime_arrow, ymin=ymin, ymax=ymax);
 
     label(xlabel, ( xmax,    yequals - (ymax-ymin)/40), align=SW);
     label(ylabel, (xequals - (xmax-xmin)/40, ymax),   align=SW);
@@ -83,12 +85,12 @@ void koord(string xlabel, real xmin, real xmax, real xstep,
     {
         for (int i=0; i<=xsteps; ++i)
         {
-            xequals(xmin + xstep*i, dotted);
+            xequals(xmin + xstep*i, linetype(new real[] {0,2}, scale=false)+0.25);
         }
 
         for (int i=0; i<=ysteps; ++i)
         {
-            yequals(ymin + ystep*i, dotted);
+            yequals(ymin + ystep*i, linetype(new real[] {0,2}, scale=false)+0.25);
         }
     }
 

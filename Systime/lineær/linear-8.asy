@@ -1,59 +1,15 @@
-//////////////////////////////////////////////////////////////////
-// Begin preamble
+import "../projekter/eksp/systime" as systime;
 
-if(!settings.multipleView) settings.batchView=false;
-settings.tex="pdflatex";
-if(settings.render < 0) settings.render=4;
-settings.outformat="";
-settings.inlineimage=true;
-settings.embed=true;
-settings.toolbar=false;
-viewportmargin=(2,2);
+real xmin = -10.0;
+real xmax =  60.0;
+real xstep = 10.0;
+real ymin = -10.0;
+real ymax =  80.0;
+real ystep = 10.0;
 
-size(7cm);
-
-import graph;
-
-texpreamble("\usepackage{MyriadPro}");
-texpreamble("\usepackage{sfmath}");
-
-pen blue_thin   = rgb("77afc3");
-pen purple_thin = rgb("916fa2");
-pen yellow_thin = rgb("f49e42");
-pen green_thin  = rgb("6a9f7b");
-
-pen blue_default   = blue_thin   + 1.0;
-pen purple_default = purple_thin + 1.0;
-pen yellow_default = yellow_thin + 1.0;
-pen green_default  = green_thin  + 1.0;
-
-// End preamble
-//////////////////////////////////////////////////////////////////
-
-ticks xticks = RightTicks(scale(0.6)*Label(align=right), new real[]{10, 20, 30, 40}, Size=2);
-ticks yticks = LeftTicks(scale(0.6)*Label(align=left), new real[]{-10, 10, 20, 30, 40, 50, 60, 70}, Size=2);
-
-xaxis(xticks, Arrow(HookHead), xmin=-15, xmax=60);
-yaxis(yticks, Arrow(HookHead), ymin=-15, ymax=80);
-
-xequals(10, dotted);
-xequals(20, dotted);
-xequals(30, dotted);
-xequals(40, dotted);
-xequals(50, dotted);
-xequals(60, dotted);
-
-yequals(10, dotted);
-yequals(20, dotted);
-yequals(30, dotted);
-yequals(40, dotted);
-yequals(50, dotted);
-yequals(60, dotted);
-yequals(70, dotted);
-yequals(80, dotted);
-
-label("min", (60, -2), align=SW, filltype=Fill(white));
-label("kr",  (-2, 80), align=SW, filltype=Fill(white));
+koord("\scriptsize{min}", xmin, xmax, xstep,
+      "\scriptsize{kr}", ymin, ymax, ystep,
+      gitter = true);
 
 real f1(real x)
 {
