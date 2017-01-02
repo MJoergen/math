@@ -31,43 +31,66 @@ pen green_default  = green_thin  + 1.0;
 // End preamble
 //////////////////////////////////////////////////////////////////
 
-void ternet(string xlabel, real xmin, real xmax, real xstep,
-            string ylabel, real ymin, real ymax, real ystep)
+void koord(string xlabel, real xmin, real xmax, real xstep,
+            string ylabel, real ymin, real ymax, real ystep,
+            bool ternet = false)
 {
     int xsteps = round((xmax - xmin)/xstep);
     int ysteps = round((ymax - ymin)/ystep);
 
-    real xv(int n)
+    real[] xpoints;
+    real[] ypoints;
+
+    for (real x=xmin+xstep; x < xmax-1e-6; x += xstep)
     {
-        return xmin + xstep*n;
+        if (abs(x) >= xstep*1e-6)
+        {
+            xpoints.push(x);
+        }
     }
 
-    real yv(int n)
+    for (real y=ymin+ystep; y < ymax-1e-6; y += ystep)
     {
-        return ymin + ystep*n;
+        if (abs(y) >= ystep*1e-6)
+        {
+            ypoints.push(y);
+        }
     }
 
-    real[] xpoints = sequence(xv, xsteps);
-    real[] ypoints = sequence(yv, ysteps);
+    real xequals = xmin;
+    real yequals = ymin;
+    
+    if (xmin * xmax < 0.0)
+    {
+        xequals = 0.0;
+    }
+
+    if (ymin * ymax < 0.0)
+    {
+        yequals = 0.0;
+    }
 
     ticks xticks = RightTicks(scale(0.6)*Label(align=right), xpoints, Size=2);
     ticks yticks = LeftTicks(scale(0.6)*Label(align=left), ypoints, Size=2);
 
-    xaxis(YEquals(0), xticks, Arrow(HookHead), xmin=xmin, xmax=xmax);
-    yaxis(XEquals(0), yticks, Arrow(HookHead), ymin=ymin, ymax=ymax);
+    xaxis(YEquals(yequals), xticks, Arrow(HookHead), xmin=xmin, xmax=xmax);
+    yaxis(XEquals(xequals), yticks, Arrow(HookHead), ymin=ymin, ymax=ymax);
 
-    label(xlabel, ( xmax,    0 - (ymax-ymin)/40), align=SW);
-    label(ylabel, (0 - (xmax-xmin)/40, ymax),   align=SW);
+    label(xlabel, ( xmax,    yequals - (ymax-ymin)/40), align=SW);
+    label(ylabel, (xequals - (xmax-xmin)/40, ymax),   align=SW);
 
-    for (int i=0; i<=xsteps; ++i)
+    if (ternet)
     {
-        xequals(xmin + xstep*i, dotted);
+        for (int i=0; i<=xsteps; ++i)
+        {
+            xequals(xmin + xstep*i, dotted);
+        }
+
+        for (int i=0; i<=ysteps; ++i)
+        {
+            yequals(ymin + ystep*i, dotted);
+        }
     }
 
-    for (int i=0; i<=ysteps; ++i)
-    {
-        yequals(ymin + ystep*i, dotted);
-    }
-
-}
+} // end of koord
 

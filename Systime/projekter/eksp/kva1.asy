@@ -7,8 +7,9 @@ real ymin = -5.0;
 real ymax = 25;
 real ystep = 5.0;
 
-ternet("$x$", xmin, xmax, xstep,
-       "$y$", ymin, ymax, ystep);
+koord("$x$", xmin, xmax, xstep,
+      "$y$", ymin, ymax, ystep,
+      ternet = true);
 
 pair pc = (4.5826, 21);
 pair pd = (4.5826, 0);
