@@ -104,7 +104,7 @@ void retvinkel(pair p0, pair p1, pair p2, real size = 1.2, pen p = defaultpen)
     pair np1 = p0 + dir1 * size;
     pair np2 = p0 + dir2 * size;
     pair npm = p0 + (dir1+dir2) * size;
-    draw(np1--npm--np2, p);
+    draw(np1 -- npm -- np2, p);
 } // end of retvinkel
 
 // Denne funktion tegner en vinkelbue i punktet p0,
@@ -114,8 +114,21 @@ void vinkelbue(pair p0, pair p1, pair p2, real size = 1.2, pen p = defaultpen)
     real dir1 = atan2(p1.y-p0.y, p1.x-p0.x)/2pi*360;
     real dir2 = atan2(p2.y-p0.y, p2.x-p0.x)/2pi*360;
 
+    if (dir1 > dir2)
+    {
+        real temp = dir1;
+        dir1 = dir2;
+        dir2 = temp;
+    }
+
+    // Now dir1 < dir2
+    if (dir2-dir1 > 180.0)
+    {
+        dir1 += 360.0;
+    }
+
     path a = arc(p0, size, dir1, dir2);
-    fill(a--p0--cycle, p);
+    fill(a -- p0 -- cycle, p);
     draw(a);
 } // end of vinkelbue
 
