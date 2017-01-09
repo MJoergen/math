@@ -109,7 +109,128 @@ Det kan vises, at når $x$ er lille, så gælder der, at
 \end{enumerate}
 
 
-\section*{Projekt 2 -- Kvadratrødder uden lommeregner}
+\section*{Projekt 2 -- Parablens toppunkt}
+I kapitel 10 blev det vist, at grafen hørende til funktionen $f(x) = ax^2 + bx + c$
+er en parabel, og at denne parabel har et toppunkt givet ved koordinaterne:
+\[
+    T = \Big(\frac{-b}{2a}, \frac{-d}{4a}\Big) \,,
+\]
+hvor diskriminanten $d=b^2-4ac$. Her skal vi se på et alternativt bevis for dette
+resultat.
+
+Antag, at $a>0$, dvs parablens grene vender opad. Vi undersøger nu
+skæringspunkterne mellem grafen for $f(x)$ og vandrette linjer givet ved $y=k$,
+hvor $k$ er en endnu ukendt konstant.  Specielt er vi interesseret i, hvordan
+antallet af skæringspunkter afhænger af værdien af $k$.
+
+Som eksempel viser figur 1 grafen for funktionen $f(x) = x^2-6x+7$ samt tre linjer 
+af formen $y=k$. For $k=5$ er der to skæringspunkter, for $k=-2$ er der ét skæringspunkt,
+og for $k=-5$ er der ingen skæringspunkter.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\textwidth]{kva3}
+    \caption{}
+    \label{fig3}
+\end{figure}
+
+Vi ser nu igen på det generelle udtryk $f(x) = ax^2 + bx + c$.
+\begin{enumerate}[label=(\alph*)]
+    \item Vis, at ligningen $f(x) = k$ er en andengradsligning i $x$.
+\end{enumerate}
+
+\begin{enumerate}[label=(\alph*), resume]
+    \item Vis, at antallet af skæringspunkter afhænger af fortegnet af 
+        \[
+            b^2-4a(c-k) \,.
+        \]
+    \item Vis, at der er netop ét skæringspunkt, når
+        \[
+            k = \frac{-d}{4a} \,.
+        \]
+    \item Forklar, hvorfor dette skæringspunkt netop må være parablens toppunkt.
+\end{enumerate}
+
+
+\section*{Projekt 3 -- Parablens tangent}
+I dette projekt skal vi arbejde med tangenter. Tangenter behandles mere generelt
+i kapitlet om differentialregning, men her undersøges de specielt for parabler.
+Vi bruger derfor i dette projekt følgende definition.
+\begin{mydef}
+    Tangenten til en parabel i et givet punkt er en ikke lodret ret linje
+    gennem punktet, som ikke skærer parablen andre steder.
+\end{mydef}
+Geometrisk er en tangent en ret linje som er "parallel" med grafen i et punkt.
+
+Vi ser på parablen givet ved funktionen $f(x)=x^2$. Vi vil udregne en ligning 
+for tangenten til parablen i punktet $(3,\, 9)$. Ligningen for en ret linje gennem
+et givet punkt er 
+\[
+    y-y_0 = a\cdot (x-x_0) \,,
+\]
+hvor $a$ er linjens hældning og punktet har koordinaterne $(x_0,\, y_0)$.
+I figur 2 er tegnet parablen samt tangenten til denne i punktet $(3,\, 9)$.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\textwidth]{kva4}
+    \caption{}
+    \label{fig4}
+\end{figure}
+
+\begin{enumerate}[label=(\alph*)]
+    \item Vis, at tangentens ligning kan skrives som 
+        \[
+            y-9 = a\cdot(x-3)\,,
+        \]
+    hvor $a$ er en endnu ukendt konstant.
+\end{enumerate}
+For at beregne værdien af hældningen $a$ benytter vi, at tangenten og parablen
+kun må have ét skæringspunkt.
+
+\begin{enumerate}[label=(\alph*), resume]
+    \item Vis, at skæringspunkterne mellem tangenten og parablen er givet
+        ved løsningerne til følgende ligning
+        \[
+            a\cdot(x-3) + 9 = x^2 \,.
+        \]
+    \item Dette er en andengradsligning. Vis, at diskriminanten er givet ved
+        \[
+            d = a^2 - 12a + 36 \,.
+        \]
+    \item Vis, at diskriminanten kan omskrives til
+        \[
+            d = (a-6)^2 \,.
+        \]
+    \item Forklar, hvorfor tangentens hældning må være $a=6$.
+    \item Opskriv tangentens ligning på formen $y=ax+b$.
+\end{enumerate}
+
+Nu vælger vi et vilkårligt punkt $(x_0,\, x_0^2)$ på parablen.
+\begin{enumerate}[label=(\alph*), resume]
+    \item Vis, at skæringspunkter mellem tangenten og parablen er givet
+        ved løsningerne til følgende ligning
+        \[
+            a\cdot(x-x_0) + x_0^2 = x^2 \,.
+        \]
+    \item Dette er en andengradsligning i $x$. Vis, at diskriminanten er givet ved
+        \[
+            d = a^2 - 4x_0a + 4x_0^2 \,.
+        \]
+    \item Vis, at diskriminanten kan omskrives til
+        \[
+            d = (a-2x_0)^2 \,.
+        \]
+    \item Forklar, hvorfor tangentens hældning må være $a=2x_0$.
+    \item Vis, at tangentens ligning kan skrives på formen 
+        \[
+            y=2x_0x - x_0^2 \,.
+        \]
+
+\end{enumerate}
+
+
+\section*{Projekt 4 -- Kvadratrødder uden lommeregner}
 Vi har alle lært, at $\sqrt{9} = 3$, fordi $3^2 = 9$. I dette projekt skal vi
 arbejde med en metode til at beregne en tilnærmelse til kvadratroden af et
 vilkårligt tal, f.eks.
@@ -118,7 +239,7 @@ $\sqrt{21}$.
 Vi ser først på funktionen $f(x) = x^2$, hvis graf er en parabel.
 At beregne $\sqrt{21}$ svarer til at løse ligningen $f(x) = 21$, dvs at 
 bestemme $x$-koordinaten til skæringspunktet mellem grafen for $f(x)$
-og linjen med ligningen $y=21$, se figur 1.
+og linjen med ligningen $y=21$, se figur 3.
 
 \begin{figure}[ht]
     \centering
@@ -127,7 +248,7 @@ og linjen med ligningen $y=21$, se figur 1.
     \label{fig1}
 \end{figure}
 
-I kapitel XXX så vi, at parablen har en tangent i ethvert punkt $(x_0,\,
+I projekt 3 er det vist, at parablen har en tangent i ethvert punkt $(x_0,\,
 x_0^2)$, og at denne tangent har ligningen
 \[
     y=2x_0x - x_0^2 \,.
@@ -144,7 +265,7 @@ ligger tæt på det ønskede punkt med $y$-koordinaten $21$.
 
 Idéen er nu, at vi kan nemt beregne, hvor denne tangent skærer linjen $y=21$. 
 Da tangenten er tæt på parablen, så vil dette skæringspunkt være tæt på 
-skæringspunktet med parablen, se figur 2.
+skæringspunktet med parablen, se figur 4.
 
 \begin{figure}[ht]
     \centering
@@ -158,12 +279,12 @@ skæringspunktet med parablen, se figur 2.
 \end{enumerate}
 
 Det vil sige, at vores kvadratrod er tæt på $4,625$. Men vi kan komme tættere
-på resultatet ved at gentage processen. Dvs nu tager vi udgangspunkt i punktet
-$(4,625,\,4,625^2)$ på parablen. Vi beregner en ligning for tangenten i dette
+på resultatet ved at gentage processen. Dvs. nu tager vi udgangspunkt i punktet
+$(4,625;\,4,625^2)$ på parablen. Vi beregner en ligning for tangenten i dette
 punkt.
 
 \begin{enumerate}[label=(\alph*), resume]
-    \item Vis, at parablen i punktet $(4,625,\,4,625^2)$ har en tangent med
+    \item Vis, at parablen i punktet $(4,625;\,4,625^2)$ har en tangent med
         ligningen $y=9,25x-21,3906$.
 \end{enumerate}
 Vi beregner, hvor denne nye tangent skærer linjen $y=21$.
@@ -225,8 +346,8 @@ $k$ er et givet tal. Vi lader igen $x_0$ være vores startværdi.
 \end{enumerate}
 
 
-\section*{Projekt 3 -- Eksponentialfunktioner uden lommeregner}
-Vi har i kapitel XXX beskrevet, hvordan man opløfter et tal til en potens, som
+\section*{Projekt 5 -- Eksponentialfunktioner uden lommeregner}
+Vi har i kapitel 6 beskrevet, hvordan man opløfter et tal til en potens, som
 kan skrives som en brøk. Således er f.eks.
 \[
     16^{3/4} = (\sqrt[4]{16})^3 = 2^3 = 8 \,.
@@ -279,7 +400,7 @@ Således har vi
     10^{1,71875} = 10^{1 + 0,5 + 0,125 + 0,0625 + 0,03125}
 \]
 \[
-    = 10^1 \cdot 10^{0,5} \cdot 10^{0,126} \cdot 10^{0,0625} \cdot 10^{0,03125} \,.
+    = 10^1 \cdot 10^{0,5} \cdot 10^{0,125} \cdot 10^{0,0625} \cdot 10^{0,03125} \,.
 \]
 
 For at komme videre, laver vi nu en tabel over gentagne kvadratrødder af tallet
@@ -337,125 +458,10 @@ Med denne tabel kan man nemt beregne potenser af andre tal end de givne. F.eks. 
 \begin{enumerate}[label=(\alph*), resume]
     \item Brug ovenstående metode til at vise, at tallet $1,72$ kan tilnærmes som
         \[
-            0,5^0 + 0,5^1 + 0,5^3 + 0,5^4 + 0,5^5 + 0,5^{10} = 1,719727 \,.
+            0,5^0 + 0,5^1 + 0,5^3 + 0,5^4 + 0,5^5 + 0,5^{10} + 0,5^{12} + 0,5^{15} = 1,720001 \,.
         \]
-\item Brug ovenstående metode til at beregne $10^{1,719727}$ som en bedre
+\item Brug ovenstående metode til at beregne $10^{1,720001}$ som en bedre
         tilnærmelse til $10^{1,72}$.
-\end{enumerate}
-
-\section*{Projekt 4 -- Parablens toppunkt}
-Det er tidligere blevet vist, at grafen hørende til funktionen $f(x) = ax^2 + bx + c$
-er en parabel, og at denne parabel har et toppunkt givet ved koordinaterne:
-\[
-    T = \Big(\frac{-b}{2a}, \frac{-d}{4a}\Big) \,,
-\]
-hvor diskriminanten $d=b^2-4ac$. Her skal vi se på et alternativt bevis for dette
-resultat.
-
-Antag, at $a>0$, dvs parablens grene vender opad. Vi undersøger nu
-skæringspunkterne mellem grafen for $f(x)$ og vandrette linjer givet ved $y=k$,
-hvor $k$ er en endnu ukendt konstant.  Specielt er vi interesseret i, hvordan
-antallet af skæringspunkter afhænger af værdien af $k$.
-
-Som eksempel viser figur 3 grafen for funktionen $f(x) = x^2-6x+7$ samt tre linjer 
-af formen $y=k$. For $k=5$ er der to skæringspunkter, for $k=-2$ er der ét skæringspunkt,
-og for $k=-5$ er der ingen skæringspunkter.
-
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.5\textwidth]{kva3}
-    \caption{}
-    \label{fig3}
-\end{figure}
-
-Vi ser nu igen på det generelle udtryk $f(x) = ax^2 + bx + c$.
-\begin{enumerate}[label=(\alph*)]
-    \item Vis, at ligningen $f(x) = k$ er en andengradsligning i $x$.
-\end{enumerate}
-
-\begin{enumerate}[label=(\alph*), resume]
-    \item Vis, at antallet af skæringspunkter afhænger af fortegnet af 
-        \[
-            b^2-4a(c-k) \,.
-        \]
-    \item Vis, at der er netop ét skæringspunkt, når
-        \[
-            k = \frac{-d}{4a} \,.
-        \]
-    \item Forklar, hvorfor dette skæringspunkt netop må være parablens toppunkt.
-\end{enumerate}
-
-\section*{Projekt 5 -- Parablens tangent}
-I dette projekt skal vi arbejde med tangenter. Tangenter behandles mere generelt
-i kapitlet om differentialregning, men her undersøges de specielt for parabler.
-Vi bruger derfor i dette projekt følgende definition.
-\begin{mydef}
-    Tangenten til en parabel i et givet punkt er en ikke lodret ret linje
-    gennem punktet, som ikke skærer parablen andre steder.
-\end{mydef}
-Geometrisk er en tangent en ret linje som er "parallel" med grafen i et punkt.
-
-Vi ser på parablen givet ved funktionen $f(x)=x^2$. Vi vil udregne en ligning 
-for tangenten til parablen i punktet $(3,\, 9)$. Ligningen for en ret linje gennem
-et givet punkt er 
-\[
-    y-y_0 = a\cdot (x-x_0) \,,
-\]
-hvor $a$ er linjens hældning og punktet har koordinaterne $(x_0,\, y_0)$.
-I figur 4 er tegnet parablen samt tangenten til denne i punktet $(3,\, 9)$.
-
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.5\textwidth]{kva4}
-    \caption{}
-    \label{fig4}
-\end{figure}
-
-\begin{enumerate}[label=(\alph*)]
-    \item Vis, at tangentens ligning kan skrives som 
-        \[
-            y-9 = a\cdot(x-3)\,,
-        \]
-    hvor $a$ er en endnu ukendt konstant.
-\end{enumerate}
-For at beregne værdien af hældningen $a$ benytter vi, at tangenten og parablen
-kun må have ét skæringspunkt.
-
-\begin{enumerate}[label=(\alph*), resume]
-    \item Vis, at skæringspunkterne mellem tangenten og parablen er givet
-        ved løsningerne til følgende ligning
-        \[
-            a\cdot(x-3) + 9 = x^2 \,.
-        \]
-    \item Dette er en andengradsligning. Vis, at diskriminanten er givet ved
-        \[
-            d = a^2 - 12a + 36 \,.
-        \]
-    \item Vis, at diskriminanten kan omskrives til
-        \[
-            d = (a-6)^2 \,.
-        \]
-    \item Forklar, hvorfor tangentens hældning må være $a=6$.
-    \item Opskriv tangentens ligning på formen $y=ax+b$.
-\end{enumerate}
-
-Nu vælger vi et vilkårligt punkt $(x_0,\, x_0^2)$ på parablen.
-\begin{enumerate}[label=(\alph*), resume]
-    \item Vis, at skæringspunkter mellem tangenten og parablen er givet
-        ved løsningerne til følgende ligning
-        \[
-            a\cdot(x-x_0) + x_0^2 = x^2 \,.
-        \]
-    \item Dette er en andengradsligning i $x$. Vis, at diskriminanten er givet ved
-        \[
-            d = a^2 - 4x_0a + 4x_0^2 \,.
-        \]
-    \item Vis, at diskriminanten kan omskrives til
-        \[
-            d = (a-2x_0)^2 \,.
-        \]
-    \item Forklar, hvorfor tangentens hældning må være $a=2x_0$.
-    \item Opskriv tangentens ligning på formen $y=ax+b$.
 \end{enumerate}
 
 \end{document}
