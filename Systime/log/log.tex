@@ -7,6 +7,7 @@
 \usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
 % Abstract etc. (god at have).
 
+
 \usepackage{graphicx}
 \usepackage{amsfonts}
 \usepackage{amsthm}        % Theorems
@@ -261,36 +262,32 @@ Regnereglerne giver mulighed for at reducere udtryk med logaritmer:
 \end{eks}
 
 \subsection*{Ligninger med logaritmer}
-Forskellige typer af ligninger kan indeholde den ubekendte i logaritme- og
-eksponentialfunktioner. Vi ser på nogle af dem her.
+Ved hjælp af regnereglerne kan vi løse flere forskellige typer at ligninger.
+Vi ser på nogle af dem her.
 
 \begin{eks}
 Vi ser først på ligninger der indeholder eksponentialfunktioner
-
 \[
-e^x = 5
+e^x = 5\,.
 \]
-
 Vi benytter formlen (2) for den naturlige logaritmefunktion:
-
 \[
-e^x = 5 \iff \ln (e^x) = \ln 5 \iff x = \ln 5
+e^x = 5 \iff \ln (e^x) = \ln 5 \iff x = \ln 5\,.
 \]
 \end{eks}
 
 \begin{eks}
 \[
-    7^x = 83
+    7^x = 83\,.
 \]
-
 Benyt en regneregel for log:
-
 \[
-7^x = 83 \iff \log 7^x = \log 83 \iff
-x \cdot \log 7 = \log 83 \iff x = \frac{\log 83}{\log 7} = 2,2708
+7^x = 83 \iff \log 7^x = \log 83 \iff x \cdot \log 7 = \log 83 \iff 
+\]
+\[
+    x = \frac{\log 83}{\log 7} = 2,2708\,.
 \]
 \end{eks}
-
 
 \begin{eks}
 
@@ -326,7 +323,13 @@ en vækstrate på 13,2\% pr. år. Hvor længe varer det, inden denne størrelse 
 vokset til en værdi på 1200? Vi skal finde x, så
 
 \[
-375 \cdot 1,132^x = 1200 \iff x = 9,3813
+375 \cdot 1,132^x = 1200 \iff
+    1,132^x = \frac{1200}{375} = 3,2 \iff
+    \]
+\[
+    \log 1,132^x = \log 3,2 \iff
+    x \cdot \log 1,132 = \log 3,2 \iff
+    x = \frac{\log 3,2}{\log 1,132} = 9,3813\,.
 \]
 
 Efter 9,4 år er den pågældende størrelse altså vokset til en værdi på 1200.
@@ -345,17 +348,25 @@ hvor t angiver antallet af måneder efter begyndelsesværdien. Ved hjælp af en
 potensregneregel får vi
 
 \[
-    f(t) = 428 \cdot ({\rm e}^{0,08})^t = 428 \cdot 1,083^t \; .
+    f(t) = 428 \cdot ({\rm e}^{0,08})^t = 428 \cdot 1,083^t \, .
 \]
 Begyndelsesværdien er altså 428, fremskrivningsfaktoren 1,083 og vækstraten
 8,3\% pr. måned.
 \end{eks}
 
-Hvis vi på den anden side har den eksponentielle udvikling $g(t) = 1200 \cdot 0,94^t$,
+Hvis vi på den anden side har den eksponentielle udvikling 
+\[
+    g(t) = 1200 \cdot 0,94^t\,,
+    \]
 og ønsker at bruge skrivemåden med e, kan vi benytte, at  $a = e^{\ln a}$, så 
 
 \[
-0,94^t = (e^{\ln 0,94})^t = e^{-0,0619t} \; .
+0,94^t = (e^{\ln 0,94})^t = e^{-0,0619t} \, .
+\]
+
+Dermed kan vi altså omskrive:
+\[
+    g(t) = 1200 \cdot e^{-0,0619t} \, .
 \]
 
 
