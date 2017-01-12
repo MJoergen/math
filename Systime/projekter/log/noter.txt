@@ -1,0 +1,14 @@
+* Anvendelse af andengradsligninger i forbindelse med bremselængder.
+  - F.eks. kampagnen 10=44, eller selv lave nogle opgaver, hvor
+    reaktionstiden også kommer med. Byg den op ligesom Esben's
+    projektopgave med skatteberegning, dvs gradvis gøre modellen
+    mere og mere realistisk (og kompliceret).
+* Projekt om at beregne længden af en tråd i en spole, f.eks. en kabel-tromle.
+* Eventuelt noget om lyd og dB.
+* Noget om rationelle funktioner f(x) = (ax+b) / (cx+d).
+* Lav projekt om logaritmer.
+  - Undersøg herunder tilnærmelsen ln1(x) == (x-1) / sqrt(x).
+  - Hvad med tilnærmelsen ln2(x) == (x-1) / (1 + 1/2*(x-1))?
+  - En endnu bedre tilnærmele er (2*ln1(x) + ln2(x)) / 3. Den er korrekt til
+    femte orden i (x-1).
+* I projektet om kvadratrod, hvis x_0 = sqrt(A) + eps, hvad er så x - sqrt(A) ?

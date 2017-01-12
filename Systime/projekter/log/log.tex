@@ -1,0 +1,163 @@
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+\usepackage{graphicx}
+\usepackage{amsfonts}
+\usepackage{amsthm}        % Theorems
+\usepackage{amsmath}
+\usepackage{enumitem}
+%\usepackage{hyperref}
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+\newcommand{\be}{\begin{equation}}
+\newcommand{\ee}{\end{equation}}
+\newcommand{\bea}{\begin{eqnarray}}
+\newcommand{\eea}{\end{eqnarray}}
+
+\theoremstyle{plain}
+\newtheorem*{thm}{Sætning}
+\newtheorem*{mydef}{Definition}
+\newtheorem*{eks}{Eksempel}
+
+\DeclareMathSymbol{,}{\mathord}{letters}{"3B}
+
+\title{Projekter}
+\date{\vspace{-5ex}}
+
+\begin{document}
+
+\maketitle
+
+\section*{Projekt 1 -- Beregning af logaritmer uden CAS}
+I dette projekt vil vi finde frem til en metode til at beregne
+titals-logaritmer uden brug af CAS.
+
+Først ser vi på $\log x$ til tal tæt på $x=1$.
+
+\begin{enumerate}[label=(\alph*)]
+    \item Vis ved hjælp af differentialregning, at funktionen $f(x) = \log x$ i
+        punktet $(1, 0)$ har en tangent med ligningen $y = 0,4343 \cdot (x-1)$.
+\end{enumerate}
+Da tangenten er en god approksimation til funktionen tæt på røringspunktet,
+så har vi altså, at 
+\[
+    \tag{1}
+    \log x \approx 0,4343\cdot(x-1),\quad \mbox{for $x\approx 1$}\,.
+\]
+For eksempel har vi med denne formel, at $\log 1,01 \approx 0,4343\cdot 0,01 = 0,004343$.
+CAS giver værdien $\log 1,01 = 0,004321$. Den procentvise afvigelse er derfor:
+\[
+    \frac{0,004343-0,004321}{0,004321}\cdot 100 = 0,5 \% \,.
+\]
+
+\begin{enumerate}[label=(\alph*), resume]
+    \item Benyt formel (1) til at beregne en tilnærmelse til $\log
+        1,06$, og sammenlign med den korrekte værdi udregnet på CAS.
+    \item Hvor stor er den procentvise afvigelse?
+\end{enumerate}
+
+Vi kan finde en mere nøjagtig formel end (1) på følgende måde: Først erstat $x$ med
+$\frac1x$ i formel (1). Det giver
+\[
+    \tag{2}
+    \log\frac1x \approx 0,4343\cdot\Big(\frac1x-1\Big)\,.
+\]
+
+\begin{enumerate}[label=(\alph*), resume]
+    \item Vis, at $\log\frac1x = -\log x$.
+    \item Vis dernæst, ved at trække (2) fra (1), at 
+        \[
+            \tag{3}
+            \log x \approx \frac{0,4343}{2} \cdot \Big(x-\frac1x\Big),\quad
+            \mbox{for $x\approx 1$}\,.
+            \]
+    \item Benyt denne gang formel (3) til at beregne en tilnærmelse til $\log
+        1,06$, og sammenlign med den korrekte værdi udregnet på CAS.
+    \item Hvor stor er den procentvise afvigelse denne gang?
+\end{enumerate}
+
+Skal man beregne logaritmer til tal, som ikke er tæt på 1, så er der andre metoder.
+Vi ser først på situationen med tal tæt på $10$:
+
+\begin{enumerate}[label=(\alph*), resume]
+    \item Vis, at $\log x = \log\frac{x}{10} + 1$.
+    \item Vis tilsvarende, at 
+        \[
+            \tag{4}
+            \log x = \log\frac{x}{10^n} + n,\quad\mbox{ for alle $n$}\,.
+        \]
+
+\end{enumerate}
+Således kan vi kombinere (1) og (4) til at finde $\log 1003 = \log 1,003 + 3
+\approx 0,4343\cdot 0,003 + 3 = 3,0013$.
+\begin{enumerate}[label=(\alph*), resume]
+    \item Benyt ovenstående metode til at udregne $\log 102$.
+    \item Hvor stor er den procentvise afvigelse ?
+\end{enumerate}
+
+Vi ser dernæst på situationen med tal tæt på $\sqrt{10} = 3,1623$, Her kan man
+bruge en anden af regnereglerne for logaritmer:
+\begin{enumerate}[label=(\alph*), resume]
+    \item Vis, at $\log x = \frac12 \cdot \log x^2$.
+    \item Vis tilsvarende, at
+        \[
+            \tag{5}
+            \log x = \frac1n \cdot \log x^n,\quad \mbox{for alle $n$}\,.
+        \]
+\end{enumerate}
+Således kan vi finde $\log 3,2 = \frac12 \log 3,2^2 = \frac12 \log 10,24
+ = \frac12 (1 + \log 1,024) \approx \frac12 (1 + 0,4343\cdot 0,024)
+ = 0,5052$.
+\begin{enumerate}[label=(\alph*), resume]
+    \item Benyt ovenstående metode til at udregne $\log 3,3$.
+    \item Hvor stor er den procentvise afvigelse ?
+\end{enumerate}
+
+Skal man beregne logaritmer af andre tal, så opløfter man tallet i en passende
+potens, således at resultatet er tæt på en potens af ti. Som eksempel ser vi på
+$\log 7,2$. Ved at opløfte i forskellige potenser kan vi danne følgende tabel:
+
+\begin{tabular}{|c|c|}
+    \hline
+    $n$ & $7,2^n$ \\
+    \hline
+    1 & 7,2 \\
+    \hline
+    2 & 51,84 \\
+    \hline
+    3 & 373,248 \\
+    \hline
+    4 & 2687,39 \\
+    \hline
+    5 & 19349,2 \\
+    \hline
+    6 & 139314 \\
+    \hline
+    7 & 1003061 \\
+    \hline
+\end{tabular}
+
+Ved potensen syv fås altså et resultat, som kun er lidt større end en million.
+Det kan vi bruge i følgende udregning:
+\[
+    \log 7,2 = \frac17 \log 1003061 = \frac17(6+\log1,003061)
+    \approx \frac17(6+0,4343\cdot0,003061) = 0,8573 \,.
+\]
+
+\begin{enumerate}[label=(\alph*), resume]
+    \item Benyt ovenstående metode til at udregne $\log 1,47$.
+    \item Hvor stor er den procentvise afvigelse ?
+    \item Benyt ovenstående metode til at udregne $\log 6,3$.
+    \item Hvor stor er den procentvise afvigelse ?
+\end{enumerate}
+
+\end{document}
+
