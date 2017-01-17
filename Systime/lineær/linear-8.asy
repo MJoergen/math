@@ -1,4 +1,4 @@
-import "../projekter/eksp/systime" as systime;
+import "../systime" as systime;
 
 real xmin = -10.0;
 real xmax =  60.0;
