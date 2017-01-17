@@ -30,6 +30,11 @@ pen green_default  = green_thin  + 1.0;
 
 arrowbar systime_arrow = Arrow(HookHead, size=3.5);
 
+// Baggrundsfarven skal være helt hvid
+texpreamble("\usepackage{color}");
+texpreamble("\definecolor{background}{rgb}{1,1,1}");
+texpreamble("\pagecolor{background}");
+
 // End preamble
 //////////////////////////////////////////////////////////////////
 
