@@ -1,18 +1,18 @@
 names  = lineær.tex
 tex_pdfs   = $(names:.tex=.pdf)
 
-pics  += linear-1.asy
-pics  += linear-2.asy
-pics  += linear-3.asy
-pics  += linear-4.asy
-pics  += linear-5.asy
-pics  += linear-6.asy
-pics  += linear-7.asy
-pics  += linear-8.asy
-pics  += linear-9.asy
-pics  += linear-10.asy
-pics  += linear-11.asy
-pics  += linear-12.asy
+pics  += lin-1.asy
+pics  += lin-2.asy
+pics  += lin-3.asy
+pics  += lin-4.asy
+pics  += lin-5.asy
+pics  += lin-6.asy
+pics  += lin-7.asy
+pics  += lin-8.asy
+pics  += lin-9.asy
+pics  += lin-10.asy
+pics  += lin-11.asy
+pics  += lin-12.asy
 asy_pdfs  += $(pics:.asy=.pdf)
 
 all: $(asy_pdfs) $(tex_pdfs)
