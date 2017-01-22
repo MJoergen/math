@@ -11,6 +11,8 @@
 \usepackage{amsfonts}
 \usepackage{amsthm}        % Theorems
 \usepackage{amsmath}
+\usepackage{float}         % Så kan man bedre styre, hvor figurerne havner henne
+                           % vha [H].
 %\usepackage{hyperref}
 
 %\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
@@ -27,18 +29,20 @@
 
 \DeclareMathSymbol{,}{\mathord}{letters}{"3B}
 
-\title{Linearitet}
+\title{Lineære modeller}
 \date{\vspace{-5ex}}
 
 \begin{document}
 
 \maketitle
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \section{Indledning}
 Vi skal i dette afsnit beskæftige os med lineære sammenhænge mellem to variable
 størrelser, og begynder med at se på nogle eksempler.
 
-\subsection{Eksempel (kopi af eksempel 3.1 i Mat-C bogen)}
+\subsection{Eksempel}
 Et teleselskab har et simpelt takstsystem:
 \begin{itemize}
     \item Abonnement 20 kr. pr. måned, samt 0,50 kr. pr. talt minut.
@@ -59,7 +63,7 @@ af taletid og pris) udgøre en ret linje med hældning $0,50$, som skærer
 $y$-aksen i tallet $20$ (det koster 20 kroner at tale i 0 minutter), se figur
 3.5.
 
-\begin{figure}[ht]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{lin-1}
     \caption{Figur 2.1}
@@ -70,7 +74,7 @@ Hældningen $0,50$ angiver prisstigningen for hvert ekstra minut, der tales --
 den er 0,50 kroner.  Prisen for 20 minutters samtale er 30 kr., og for 21
 minutters samtale er den 30,50 kr.
 
-\subsection{Eksempel -- kopi af eksempel 3.2 i Mat-C bogen}
+\subsection{Eksempel}
 En prøvekørsel af en bil begynder ved 5-km stenen uden for en by. Bilen kører
 en længere strækning med 90 km/t. Efter 8 minutters kørsel befinder bilen sig
 ved 17-km-stenen (hvorfor?), og efter $x$ minutter er den ved $y$-km-stenen,
@@ -80,6 +84,9 @@ y = 5 + 1,5\cdot x
 $$
 Her er der tale om en lineær sammenhæng mellem tiden i minutter og tallet på
 kilometerstenen.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Lineære sammenhænge}
 \begin{mydef}
@@ -107,7 +114,7 @@ Eksempler på sådanne lineære sammenhænge er (se figur xx):
     $\bullet\quad y=3x$    & Her er $a=3$ og $b=0$.
 \end{tabular}
 
-\begin{figure}[ht]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{lin-2}
     \caption{Figur 2.2}
@@ -119,10 +126,9 @@ Eksempler på sådanne lineære sammenhænge er (se figur xx):
     $$
     y = a\cdot x + b
     $$
-    gælder, at grafen er en ret linje, hvor
-    $a$ er linjens hældning, dvs. linjen vokser med $a$ enheder, når
-    $x$ vokser med 1 enhed. Punktet $(0,\,b)$ er linjens skæringspunkt med
-    $y$-aksen.
+    gælder, at grafen er en ret linje, hvor $a$ er linjens {\em hældning}, dvs.
+    linjen vokser med $a$ enheder, når $x$ vokser med 1 enhed. Punktet
+    $(0,\,b)$ er linjens {\em skæringspunkt med $y$-aksen}.
 \end{thm}
 
 Vi kan opstille en tabel ("sildeben") over koordinater $(x,\,y)$, der passer i
@@ -136,9 +142,9 @@ $$
 $$
 Linjen går altså gennem punkterne $(0,\-5)$, $(1,\,-2)$ osv., se figur 3.2.
 
-\begin{figure}[ht]
+\begin{figure}[H]
     \centering
-    \includegraphics[width=0.2\textwidth]{lin-3}
+    \includegraphics[width=0.5\textwidth]{lin-3}
     \caption{Figur 2.3}
     \label{fig32}
 \end{figure}
@@ -147,7 +153,7 @@ Hældningen er illustreret på figur 3.3. Hvis $x$ vokser til $x+1$, så vokser
 $y$ fra $y_1$ til $y_2$ og forskellen $y_2-y_1$ er netop $a$. Bemærk, at $a$
 også kan være negativ, nemlig når $y$ falder i værdi, når $x$ vokser.
 
-\begin{figure}[ht]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{lin-4}
     \caption{Figur 2.4}
@@ -162,8 +168,191 @@ eller blot $y=b$.
 At tallet $b$ er linjens skæringspunkt med $y$-aksen følger af, at
 koordinatsættet $(0,\,b)$ passer i ligningen:
 $$
-b = 0\cdot x+b
+b = 0\cdot x+b \,.
 $$
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Lineær regression}
+På fig. 5.4 er afsat punkterne med koordinaterne $(1, 2)$, $(2, 5)$, $(3, 6)$ og $(4,
+7)$. De ligger ikke på ret linje, men med tilnærmelse ligger de på linjen med
+ligningen y = 1,6x + 1.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{lin-10}
+    \caption{Figur 2.10}
+    \label{fig54}
+\end{figure}
+
+Men er dette nu dén rette linje, der bedst bestemmer punkterne? Skulle vi måske
+hellere have valgt linjen y = 1,65x + 0,97 eller y = 1,58x + 1,04 eller ...?
+
+For at finde frem til dén linje, der bedst bestemmer punkterne, benytter man
+sædvanligvis en metode, der kaldes {\em mindste kvadraters metode}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{lin-11}
+    \caption{Figur 2.11}
+    \label{fig55}
+\end{figure}
+
+På fig. 2.11 er en række punkter afsat, og en vilkårlig linje $m$ er tegnet. Desuden er de
+lodrette afstande $d_1$, $d_2$, $d_3$, ..., $d_n$ fra målepunkterne til linjen afsat. Man
+kan så udregne summen $D$ af kvadraterne (kvadratsummen) på afstandene:
+
+\[
+D = {d_1}^2 + {d_2}^2 + {d_3}^2 + \ldots + {d_n}^2 \; . 
+\]
+
+Hvis man vælger en anden linje, får man selvfølgelig i reglen en anden kvadratsum.
+
+Man har vedtaget at den linje, der gør kvadratsummen $D$ mindst mulig, er den
+'bedste' linje. Metoden kaldes {\em de mindste kvadraters metode}, og den linje, der
+fremkommer, kaldes {\em regressionslinjen} svarende til punkterne. Vi går ikke ind
+på, hvordan linjen matematisk bestemmes. 
+
+Man har undersøgt højden af et stort antal piger og beregnet middel\-høj\-den for
+hver årgang. Pigernes højde ved forskellige aldre fremgår af skemaet.
+
+\[
+\begin{array}{|c|c|c|c|c|c|c|c|}
+    \hline
+    \mbox{Alder (år)},\, x &  2 &  3 &  4 &  5 &  6 &  7 &  8 \\
+    \hline
+    \mbox{Højde (cm)},\, y &  89,2 &   98,3 &   104,9 &  112,0 &  118,1 &  123,4 &  131,3 \\
+    \hline
+\end{array}
+\]
+
+\[
+\begin{array}{|c|c|c|c|c|c|c|}
+    \hline
+    \mbox{Alder (år)},\, x  & 9  & 10 & 11&  12 & 13 & 14 \\
+    \hline
+    \mbox{Højde (cm)},\, y  & 136,4 &  142,5 &  151,1 &  155,4 &  159,8 &  161,5 \\
+    \hline
+\end{array}
+\]
+
+Det ser ud til, at højden øges med ca. 6 cm, når alderen øges med 1 år, så det
+er rimeligt at forvente en lineær sammenhæng.
+
+Ved hjælp af CAS kan vi finde ligningen for regressionslinjen til
+
+\[
+y = 6,17x + 80,19 \; .
+\]
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{lin-12}
+    \caption{Figur 2.12}
+    \label{fig56}
+\end{figure}
+
+Den gennemsnitlige vækst i pigernes højde er altså 6,17 cm pr. år. På fig. 5.6
+ses pigernes højder med regressionslinjen indtegnet.
+
+\subsection{Korrelation}
+CAS giver foruden regressionslinjens ligning den såkaldte {\em
+korrelations\-koef\-fi\-cient} $r$. Vi kommer ikke her ind på teorien bag
+beregningen af dette tal, men nøjes med at bemærke, at
+korrelationskoefficienten er et mål for den lineære sammenhæng mellem
+punkterne.
+
+Vi bemærker følgende om korrelationskoefficienten $r$:
+
+\begin{itemize}
+    \item Hvis $r = 1$ ligger punkterne præcis på ret linje med positiv hældning.
+    \item Hvis $0 < r < 1$ har regressionslinjen positiv hældning. Jo tættere $r$
+        er på 1, desto tættere ligger punkterne på linjen.
+    \item Hvis $r = 0$ eller tæt ved 0, er der ingen eller kun svag lineær sammenhæng.
+    \item Hvis $-1 < r < 0$ har regressionslinjen negativ hældning. Jo tættere $r$
+        er på -1, desto tættere ligger punkterne på linjen.
+    \item Hvis $r = -1$ ligger punkterne præcis på ret linje med negativ hældning. 
+\end{itemize}
+På fig. 5.7 er disse forhold illustreret.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig57}
+    \caption{Figur 5.7}
+    \label{fig57}
+\end{figure}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Løsning af førstegradsligninger}
+En ligning er af første grad, hvis den er af typen
+$$
+ax + b = 0\; ,
+$$
+eller umiddelbart kan omskrives til en sådan ligning. Her er et par eksempler:
+$$
+3x - 4 = 8 + 2x \quad , \quad 5(x - 4) + 2x = 6x - 2(3 - 4x)\; .
+$$
+
+\subsection{Ensbetydende ligninger}
+Hvis man foretager en række omformninger af en ligning for at finde en løsning,
+bruger man symbolet $\Leftrightarrow$ , en dobbeltpil (eller en {\em biimplikation}), mellem
+ligninger, der har de samme løsninger. Fx har vi
+\bas
+&& 2(3x - 1) = x - 4(2 - x)\\
+&\Leftrightarrow& 6x - 2 = x - 8 + 4x\\
+&\Leftrightarrow& 6x - 2 = 5x - 8 \\
+&\Leftrightarrow& x = -6 
+\eas
+Hver af de fire ligninger har den samme løsning. Man siger, at sådanne
+ligninger er {\em ensbetydende}. Man kan også sige, at ensbetydende ligninger fremgår
+af hinanden ved ’lovlige’ omformninger.
+
+Vi anfører de vigtigste regler for løsning af ligninger.
+
+[ANIMATION OM REGNEREGLER 1--4]
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Skæring mellem linjer -- omskrevet fra tilsvarende afsnit i Mat-C bogen}
+Hvis to linjers ligninger er kendt, vil vi finde koordinaterne til linjernes
+skæringspunkt (hvis de ikke er parallelle).
+
+Linjerne $l$ og $m$ har f.eks. ligningerne (se figur 2.9)
+\[
+    l: y=0,5x-2\quad{\mbox{og}}\quad m: y=-3x+5
+\]
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{lin-9}
+    \caption{Figur 2.9}
+    \label{fig6}
+\end{figure}
+
+I skæringspunktet mellem linjerne skal $y$-værdien for de to linjer være den
+samme, så der må gælde, at
+\[
+0,5x-2 = -3x+5 \,,
+\]
+og denne ligning løses på følgende måde:
+\bas
+&& 0,5x+3x=5+2\\
+&\iff& 3,5x=7\\
+&\iff& x=2
+\eas
+Denne værdi af $x$ indsættes i en af ligningerne, ligegyldig hvilken:
+\[
+y=0,5\cdot2-2=-1 \,.
+\]
+Skæringspunktet har altså koordinaterne $(2,\,-1)$, hvilket ser ud til at
+stemme med figuren.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Ligefrem proportionalitet (kopi af afsnit i Mat-C bogen)}
 Man bruger den talemåde, at to variabler $x$ og $y$ er {\em ligefrem
@@ -172,18 +361,18 @@ samme takt". Vi skal se på, hvad denne lidt løse udtalelse dækker over.
 
 Hvis en bil kører med konstant hastighed, f.eks. 90 km/t, kan vi opstille en
 tabel over sammenhængen mellem tiden $x$ og den tilbagelagte afstand $y$:
-$$
+\[
 \begin{tabular}{c|c|c|c|c|c|c}
     x ({\rm min}) & 10 & 20 & 30 & 40 & 60 & 120 \\
     \hline
     y ({\rm km})  & 15 & 30 & 45 & 60 & 90 & 180  
 \end{tabular}
-$$
+\]
 Vi ser, at $y$ netop er $1,5$ gange så stor som $x$, så sammenhængen mellem $x$
 og $y$ kan udtrykkes som
-$$
+\[
 y = 1,5\cdot x
-$$
+\]
 Talemåden "$y$ ændrer sig i samme takt som $x$" betyder netop, at $x$ skal
 ganges med et fast tal (her $1,5$) for at give $y$. Man kan også udtrykke det
 sådan:
@@ -196,7 +385,7 @@ sådan:
 Hvis man med konstant hastighed kører dobbelt så lang tid, tilbagelægger man
 også dobbelt så lang afstand, se figur 3.6.
 
-\begin{figure}[ht]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{lin-5}
     \caption{Figur 2.5}
@@ -207,9 +396,9 @@ I dette tilfælde er tidsrummet $x$ og afstanden $y$ proportionale, og tallet
 $1,5$ kaldes {\em proportionalitetsfaktoren}, fordi det netop er en faktor foran $x$.
 
 Man kan også sige, at forholdet mellem $y$ og $x$ er konstant, fordi vi får:
-$$
+\[
 y = 1,5\cdot x \, \Leftrightarrow \, \frac{y}{x} = 1,5
-$$
+\]
 Forholdet mellem afstand og tid kaldes hastighed, og tallet angiver her netop
 hastigheden: bilen kører med en hastighed på $1,5$ km/min, svarende til $90$
 km/t.
@@ -231,19 +420,19 @@ Sammenhængen illustreres som en ret linje gennem $(0,\,0)$ med hældningen $1,5
 Et eksempel på ligefrem proportionalitet er sammenhængen mellem masse og rumfang af olie.
 Der gælder nemlig, at en liter olie vejer 0,8 kg. To liter olie vejer derfor 1,6 kg,
 og generelt vejer $x$ liter olie $y$ kg, hvor
-$$
-y = 0,8 \cdot x
-$$
+\[
+y = 0,8 \cdot x \,.
+\]
 Tallet $0,8$ er således vægten af én liter olie og det kaldes for oliens
 massefylde.  At olie flyder oven på vand skyldes netop, at oliens massefylde er
 mindre end vands.
 
-\subsection{Eksempel (kopi af eksempel 3.4)}
+\subsection{Eksempel}
 I eksempel 1.1 så vi på teleselskabet, hvor prisen $y$ (naturligvis) afhænger af
 taletiden $x$ i minutter:
-$$
-y=20+0,5x
-$$
+\[
+y=20+0,5x \,.
+\]
 Her er prisen ikke proportional med taletiden: Dobbelt så lang taletid koster ikke
 det dobbelte:
 \begin{itemize}
@@ -253,7 +442,10 @@ det dobbelte:
 I koordinatsystemet går linjen med ligningen $y=20+0,5x$ nemlig ikke gennem (0, 0),
 sådan som kravet til proportionalitet er.
 
-\section{Linje gennem to punkter -- omskrevet fra tilsvarende afsnit i Mat-C bogen}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Linje gennem to punkter}
 Vi vil bestemme hældningen for en linje, der går gennem
 to punkter med kendte koordinater, se figuren. Vi viser følgende sætning:
 \begin{thm}
@@ -264,9 +456,9 @@ to punkter med kendte koordinater, se figuren. Vi viser følgende sætning:
     $$
 \end{thm}
 
-\begin{figure}[ht]
+\begin{figure}[H]
     \centering
-    \includegraphics{lin-6}
+    \includegraphics[width=0.5\textwidth]{lin-6}
     \label{linear-1}
 \end{figure}
 
@@ -299,18 +491,18 @@ begge sider af lighedstegnet. Dette tal er nemlig ikke $0$, fordi $x_1$ og
 $x_2$ er forskellige tal -- vi har jo netop forudsat, at linjen ikke er lodret, se
 figuren.
 
-\begin{figure}[ht]
+\begin{figure}[H]
     \centering
-    \includegraphics{lin-7}
+    \includegraphics[width=0.5\textwidth]{lin-7}
     \label{linear-2}
 \end{figure}
 
 I formlen for hældningen $a$ angiver tælleren $y_2-y_1$ den lodrette afstand
 mellem punkterne $A$ og $B$, mens nævneren $x_2-x_1$ angiver den vandrette
 afstand. Vi kan derfor lidt populært sige, at
-$$
-a = \pm \frac{\mbox{lodret afstand}}{\mbox{vandret afstand}}
-$$
+\[
+a = \pm \frac{\mbox{lodret afstand}}{\mbox{vandret afstand}} \,.
+\]
 Her står $\pm$ for at minde om, at der skal anbringes et minus foran brøken,
 hvis hældningen er negativ.
 \begin{eks}
@@ -333,9 +525,9 @@ hvis hældningen er negativ.
     y = 0,4 \cdot x + 3,4 
     $$
 \end{eks}
-\begin{figure}[ht]
+\begin{figure}[H]
     \centering
-    \includegraphics{lin-8}
+    \includegraphics[width=0.5\textwidth]{lin-8}
     \label{linear-3}
 \end{figure}
 
@@ -397,247 +589,75 @@ hvis hældningen er negativ.
 \end{proof}
 
 
-\section{Løsning af førstegradsligninger (kopi af afsnittet ligninger fra Mat-A1 bogen)}
-En ligning er af første grad, hvis den er af typen
-$$
-ax + b = 0\; ,
-$$
-eller umiddelbart kan omskrives til en sådan ligning. Her er et par eksempler:
-$$
-3x - 4 = 8 + 2x \quad , \quad 5(x - 4) + 2x = 6x - 2(3 - 4x)\; .
-$$
-
-\subsection{Ensbetydende ligninger}
-Hvis man foretager en række omformninger af en ligning for at finde en løsning,
-bruger man symbolet $\Leftrightarrow$ , en dobbeltpil (eller en {\em biimplikation}), mellem
-ligninger, der har de samme løsninger. Fx har vi
-\bas
-&& 2(3x - 1) = x - 4(2 - x)\\
-&\Leftrightarrow& 6x - 2 = x - 8 + 4x\\
-&\Leftrightarrow& 6x - 2 = 5x - 8 \\
-&\Leftrightarrow& x = -6 
-\eas
-Hver af de fire ligninger har den samme løsning. Man siger, at sådanne
-ligninger er {\em ensbetydende}. Man kan også sige, at ensbetydende ligninger fremgår
-af hinanden ved ’lovlige’ omformninger.
-
-Vi anfører de vigtigste regler for løsning af ligninger.
-
-[ANIMATION OM REGNEREGLER 1--4]
-
-
-\section{Skæring mellem linjer -- omskrevet fra tilsvarende afsnit i Mat-C bogen}
-Hvis to linjers ligninger er kendt, vil vi finde koordinaterne til linjernes
-skæringspunkt (hvis de ikke er parallelle).
-
-Linjerne $l$ og $m$ har f.eks. ligningerne (se figur xx)
-$$
-l: y=0,5x-2\quad{\mbox{og}}\quad m: y=-3x+5
-$$
-
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.5\textwidth]{lin-9}
-    \caption{Figur 2.9}
-    \label{fig6}
-\end{figure}
-
-I skæringspunktet mellem linjerne skal $y$-værdien for de to linjer være den
-samme, så der må gælde, at
-$$
-0,5x-2 = -3x+5
-$$
-og denne ligning løses på følgende måde:
-\bas
-&& 0,5x+3x=5+2\\
-&\iff& 3,5x=7\\
-&\iff& x=2
-\eas
-Denne værdi af $x$ indsættes i en af ligningerne, ligegyldig hvilken:
-$$
-y=0,5\cdot2-2=-1
-$$
-Skæringspunktet har altså koordinaterne $(2,\,-1)$, hvilket ser ud til at
-stemme med figuren.
-
-\section{Lineær regression -- kopi af afsnit i Mat-A2 bogen}
-På fig. 5.4 er afsat punkterne med koordinaterne $(1, 2)$, $(2, 5)$, $(3, 6)$ og $(4,
-7)$. De ligger ikke på ret linje, men med tilnærmelse ligger de på linjen med
-ligningen y = 1,6x + 1.
-
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.5\textwidth]{lin-10}
-    \caption{Figur 2.10}
-    \label{fig54}
-\end{figure}
-
-Men er dette nu dén linje, der bedst bestemmer punkterne? Skulle vi måske
-hellere have valgt linjen y = 1,65x + 0,97 eller y = 1,58x + 1,04 eller ...?
-
-For at finde frem til dén linje, der bedst bestemmer punkterne, benytter man
-sædvanligvis en metode, der kaldes {\em mindste kvadraters metode}.
-
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.5\textwidth]{lin-11}
-    \caption{Figur 2.11}
-    \label{fig55}
-\end{figure}
-
-På fig. 5.5 er en række punkter afsat, og en vilkårlig linje $m$ er tegnet. Desuden er de
-lodrette afstande $d_1$, $d_2$, $d_3$, ..., $d_n$ fra målepunkterne til linjen afsat. Man
-kan så udregne summen $D$ af kvadraterne (kvadratsummen) på afstandene:
-
-$$
-D = {d_1}^2 + {d_2}^2 + {d_3}^2 + \ldots + {d_n}^2 \; . 
-$$
-
-Hvis man vælger en anden linje, får man selvfølgelig i reglen en anden kvadratsum.
-
-Man har vedtaget at den linje, der gør kvadratsummen $D$ mindst mulig, er den
-'bedste' linje. Metoden kaldes {\em de mindste kvadraters metode}, og den linje, der
-fremkommer, kaldes {\em regressionslinjen} svarende til punkterne. Vi går ikke ind
-på, hvordan linjen matematisk bestemmes. 
-
-
-Man har undersøgt højden af et stort antal piger og beregnet middel\-høj\-den for
-hver årgang. Pigernes højde ved forskellige aldre fremgår af skemaet.
-
-$$
-\begin{array}{|c|c|c|c|c|c|c|c|}
-    \hline
-    \mbox{Alder (år)},\, x &  2 &  3 &  4 &  5 &  6 &  7 &  8 \\
-    \hline
-    \mbox{Højde (cm)},\, y &  89,2 &   98,3 &   104,9 &  112,0 &  118,1 &  123,4 &  131,3 \\
-    \hline
-\end{array}
-$$
-
-$$
-\begin{array}{|c|c|c|c|c|c|c|}
-    \hline
-    \mbox{Alder (år)},\, x  & 9  & 10 & 11&  12 & 13 & 14 \\
-    \hline
-    \mbox{Højde (cm)},\, y  & 136,4 &  142,5 &  151,1 &  155,4 &  159,8 &  161,5 \\
-    \hline
-\end{array}
-$$
-
-Det ser ud til, at højden øges med ca. 6 cm, når alderen øges med 1 år, så det
-er rimeligt at forvente en lineær sammenhæng.
-
-Ved hjælp af CAS kan vi finde ligningen for regressionslinjen til
-
-$$
-y = 6,17x + 80,19 \; .
-$$
-
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.5\textwidth]{lin-12}
-    \caption{Figur 2.12}
-    \label{fig56}
-\end{figure}
-
-Den gennemsnitlige vækst i pigernes højde er altså 6,17 cm pr. år. På fig. 5.6
-ses pigernes højder med regressionslinjen indtegnet.
-
-\subsection{Korrelation}
-CAS giver foruden regressionslinjens ligning den såkaldte {\em
-korrelations\-koef\-fi\-cient} $r$. Vi kommer ikke her ind på teorien bag
-beregningen af dette tal, men nøjes med at bemærke, at
-korrelationskoefficienten er et mål for den lineære sammenhæng mellem
-punkterne.
-
-Vi bemærker følgende om korrelationskoefficienten $r$:
-
-\begin{itemize}
-    \item Hvis $r = 1$ ligger punkterne præcis på ret linje med positiv hældning.
-    \item Hvis $0 < r < 1$ har regressionslinjen positiv hældning. Jo tættere $r$
-        er på 1, desto tættere ligger punkterne på linjen.
-    \item Hvis $r = 0$ eller tæt ved 0, er der ingen eller kun svag lineær sammenhæng.
-    \item Hvis $-1 < r < 0$ har regressionslinjen negativ hældning. Jo tættere $r$
-        er på -1, desto tættere ligger punkterne på linjen.
-    \item Hvis $r = -1$ ligger punkterne præcis på ret linje med negativ hældning. 
-\end{itemize}
-På fig. 5.7 er disse forhold illustreret.
-
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.5\textwidth]{fig57}
-    \caption{Figur 5.7}
-    \label{fig57}
-\end{figure}
-
-
-\section{Intervaller -- kopi af afsnit fra Mat-A1 bogen}
-
-Vi kender den sædvanlige tallinje med begyndelsespunkt $O$ og det såkaldte
-enhedspunkt $E$, der svarer til tallet 1. Længden af linjestykket $OE$ er altså 1.
-
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.5\textwidth]{fig23}
-    \caption{Figur 2.3}
-    \label{fig23}
-\end{figure}
-
-Vi ser på visse dele af tallinjen, de såkaldte intervaller.
-
-\subsection{Begrænsede intervaller}
-Hvis $a$ og $b$ er to tal, hvor $a < b$, skriver vi (se fig. 2.3):
-\begin{itemize}
-    \item $[a;b]$ : alle tal mellem $a$ og $b$, $a$ og $b$ medregnet,
-    \item $[a;b[$ : alle tal fra og med $a$ til, men ikke med $b$,
-    \item $]a;b]$ : alle tal fra $a$ til $b$, men ikke med $a$,
-    \item $]a;b[$ : alle tal mellem $a$ og $b$, $a$ og $b$ ikke medregnet .
-\end{itemize}
-Disse afsnit af tallinjen kaldes {\em intervaller}, og $a$ og $b$ er deres {\em endepunkter}.
-
-Vi siger, at et interval er
-\begin{itemize}
-    \item lukket, hvis begge endepunkter er med i intervallet,
-    \item halvåbent, hvis det ene, men ikke det andet endepunkt er med i intervallet,
-    \item åbent, hvis ingen af endepunkterne er med i intervallet.
-\end{itemize}
-Intervaller af disse fire typer er alle begrænsede, og deres længde er $b-a$.
-
-\begin{eks}
-Intervallet $[3;7[$ består af alle tal på tallinjen mellem 3 og 7; 3 er
-medregnet og 7 er ikke medregnet. Intervallets længde er $7-3 = 4$ .
-
-Intervallet $[-5;8]$ består af alle tal mellem -5 og 8, og både -5 og 8
-tilhører intervallet. Dets længde er 13 fordi $8 - (-5) = 13$ .
-
-På tallinjen er et intervals længde altså afstanden mellem endepunkterne.
-\end{eks}
-[INDSÆT FIGUR HER]
-
-\subsection{Ubegrænsede intervaller}
-Vi får tit brug for at se på tal, der på tallinjen ligger til højre eller til
-venstre for et givet tal (fig. 2.4), fx alle tal der er større end 17, eller
-alle tal der er mindre end eller lig med 50.
-
-Det giver anledning til disse skrivemåder:
-
-\begin{itemize}
-    \item $[a;\infty[$  : alle tal større end eller lig med $a$
-    \item $]a;\infty[$  : alle tal større end $a$
-    \item $]-\infty;b]$ : alle tal mindre end eller lig med $b$
-    \item $]-\infty;b[$ : alle tal mindre end $b$
-\end{itemize}
-Tegnet $\infty$ læses ’uendelig’.
-
-Intervallerne af typerne $]a;\infty [$ og $]-\infty ;b[$ kaldes åbne, da $a$ og $b$
-ikke medregnes, og intervallerne af typerne $[a;\infty [$ og $]-\infty ;b]$
-kaldes lukkede, da $a$ og $b$ medregnes.
-
-Disse intervaller er ubegrænsede, fordi de ikke har nogen længde – det
-fortsætter ’i det uendelige’ i den ene ende af tallinjen.
-
-Endelig kan man også skrive intervallet $]-\infty ;\infty [$. Dette angiver
-alle tal på tallinjen.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%\section{Intervaller -- kopi af afsnit fra Mat-A1 bogen}
+%
+%Vi kender den sædvanlige tallinje med begyndelsespunkt $O$ og det såkaldte
+%enhedspunkt $E$, der svarer til tallet 1. Længden af linjestykket $OE$ er altså 1.
+%
+%\begin{figure}[ht]
+%    \centering
+%    \includegraphics[width=0.5\textwidth]{fig23}
+%    \caption{Figur 2.3}
+%    \label{fig23}
+%\end{figure}
+%
+%Vi ser på visse dele af tallinjen, de såkaldte intervaller.
+%
+%\subsection{Begrænsede intervaller}
+%Hvis $a$ og $b$ er to tal, hvor $a < b$, skriver vi (se fig. 2.3):
+%\begin{itemize}
+%    \item $[a;b]$ : alle tal mellem $a$ og $b$, $a$ og $b$ medregnet,
+%    \item $[a;b[$ : alle tal fra og med $a$ til, men ikke med $b$,
+%    \item $]a;b]$ : alle tal fra $a$ til $b$, men ikke med $a$,
+%    \item $]a;b[$ : alle tal mellem $a$ og $b$, $a$ og $b$ ikke medregnet .
+%\end{itemize}
+%Disse afsnit af tallinjen kaldes {\em intervaller}, og $a$ og $b$ er deres {\em endepunkter}.
+%
+%Vi siger, at et interval er
+%\begin{itemize}
+%    \item lukket, hvis begge endepunkter er med i intervallet,
+%    \item halvåbent, hvis det ene, men ikke det andet endepunkt er med i intervallet,
+%    \item åbent, hvis ingen af endepunkterne er med i intervallet.
+%\end{itemize}
+%Intervaller af disse fire typer er alle begrænsede, og deres længde er $b-a$.
+%
+%\begin{eks}
+%Intervallet $[3;7[$ består af alle tal på tallinjen mellem 3 og 7; 3 er
+%medregnet og 7 er ikke medregnet. Intervallets længde er $7-3 = 4$ .
+%
+%Intervallet $[-5;8]$ består af alle tal mellem -5 og 8, og både -5 og 8
+%tilhører intervallet. Dets længde er 13 fordi $8 - (-5) = 13$ .
+%
+%På tallinjen er et intervals længde altså afstanden mellem endepunkterne.
+%\end{eks}
+%[INDSÆT FIGUR HER]
+%
+%\subsection{Ubegrænsede intervaller}
+%Vi får tit brug for at se på tal, der på tallinjen ligger til højre eller til
+%venstre for et givet tal (fig. 2.4), fx alle tal der er større end 17, eller
+%alle tal der er mindre end eller lig med 50.
+%
+%Det giver anledning til disse skrivemåder:
+%
+%\begin{itemize}
+%    \item $[a;\infty[$  : alle tal større end eller lig med $a$
+%    \item $]a;\infty[$  : alle tal større end $a$
+%    \item $]-\infty;b]$ : alle tal mindre end eller lig med $b$
+%    \item $]-\infty;b[$ : alle tal mindre end $b$
+%\end{itemize}
+%Tegnet $\infty$ læses ’uendelig’.
+%
+%Intervallerne af typerne $]a;\infty [$ og $]-\infty ;b[$ kaldes åbne, da $a$ og $b$
+%ikke medregnes, og intervallerne af typerne $[a;\infty [$ og $]-\infty ;b]$
+%kaldes lukkede, da $a$ og $b$ medregnes.
+%
+%Disse intervaller er ubegrænsede, fordi de ikke har nogen længde – det
+%fortsætter ’i det uendelige’ i den ene ende af tallinjen.
+%
+%Endelig kan man også skrive intervallet $]-\infty ;\infty [$. Dette angiver
+%alle tal på tallinjen.
 
 %\section{Uligheder (kopi af Mat-B1 HTX)}
 %Vi har tidligere set på en række forskellige ligningstyper. Fælles for disse

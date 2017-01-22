@@ -2,22 +2,32 @@ Kapitel om "Lineære modeller"
 
 * Indledning
   - Nogle eksempler. Lidt motivation. Hvad skal kapitlet handle om? Noget om modellering.
-* Lineære funktioner:
+
+* Lineære sammenhænge:
   - Den teoretiske beskrivelse
   - Repræsentationsformer, herunder graf, forskrift, sproglig fremstilling og tabel
   - Masser af eksempler på anvendelse af lineære sammenhænge, og på oversættelse fra sprog til matematik, og fra matematik til sprog.
+
 * Lineær regression
   - Herunder forklaringsgrad / determinationskoefficient / r^2
   - Tendenslinje
   - Eksempler på anvendelser, herunder fortolkning
+
 * Løsning af førstegradsligninger
   - Flere eksempler
+
 * Skæring mellem to linjer
+
 * Ligefrem proportionalitet
+
 * Linje gennem to punkter
+
 * To ligninger med to ubekendte. To metoder:
   - "lige store koefficienters metode"
   - "substitutionsmetoden".
+
 * Areal under ret linje
+
 * Stykkevis lineære funktioner
+
 * Projekter
