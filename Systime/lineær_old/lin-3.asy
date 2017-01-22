@@ -36,3 +36,4 @@ label("$(3,  4)$", p3, 2E, black, filltype=Fill(white));
 fixedscaling((-0.5, -6), (4, 6));
 
 
+shipout(scale(5)*bbox(white));

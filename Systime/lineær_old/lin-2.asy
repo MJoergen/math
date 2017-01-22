@@ -42,3 +42,4 @@ label("$y=-2x+1$", (-1.5, f2(-1.5)), SW, purple_default*0.5, filltype=Fill(white
 label("$y=4-x$",   ( 4.0, f3( 4.0)), NE, yellow_default*0.5, filltype=Fill(white));
 label("$y=3x$",    (-1.0, f4(-1.0)), W,  green_default*0.5,  filltype=Fill(white));
 
+shipout(scale(5)*bbox(white));

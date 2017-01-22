@@ -40,3 +40,4 @@ dot(pb);
 xaxis("$x$", NoTicks, systime_arrow);
 yaxis("$y$", NoTicks, systime_arrow);
 
+shipout(scale(5)*bbox(white));

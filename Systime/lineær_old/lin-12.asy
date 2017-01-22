@@ -32,3 +32,4 @@ dot((14, 161.5));
 
 draw(graph(f1, 1, 14.5), blue_default);
 
+shipout(scale(5)*bbox(white));

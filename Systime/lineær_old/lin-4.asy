@@ -36,3 +36,5 @@ xaxis(systime_arrow);
 yaxis(systime_arrow);
 
 fixedscaling((-1, -1), (5, 5));
+shipout(scale(5)*bbox(white));
+

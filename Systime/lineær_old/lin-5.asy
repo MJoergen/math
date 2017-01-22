@@ -49,3 +49,4 @@ label("$12$", (p5+(44,54))/2, E, filltype=Fill(white));
 
 fixedscaling((-10, -10), (60, 80));
 
+shipout(scale(5)*bbox(white));

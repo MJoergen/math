@@ -34,3 +34,4 @@ draw(graph(f1, -2, 5), blue_default);
 dot(pa);
 dot(pb);
 
+shipout(scale(5)*bbox(white));

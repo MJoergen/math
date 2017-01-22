@@ -28,3 +28,4 @@ dot(p3);
 
 draw(graph(f1, -0.5, 5), blue_default);
 
+shipout(scale(5)*bbox(white));

@@ -35,3 +35,4 @@ label("m", F1(7), S*2, blue_default);
 xaxis(systime_arrow);
 yaxis(systime_arrow);
 
+shipout(scale(5)*bbox(white));

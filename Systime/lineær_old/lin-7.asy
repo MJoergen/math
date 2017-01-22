@@ -16,3 +16,4 @@ label("$(x_2,y_2)$", pb, E);
 xaxis("$x$", NoTicks, systime_arrow);
 yaxis("$y$", NoTicks, systime_arrow);
 
+shipout(scale(5)*bbox(white));

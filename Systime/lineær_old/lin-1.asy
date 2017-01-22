@@ -20,3 +20,4 @@ draw(graph(f1, 0, 20), blue_default);
 
 label("$y=5+0,5\,x$", (13, 7), blue_default*0.5 + black*0.5 , filltype=Fill(white));
 
+shipout(scale(5)*bbox(white));

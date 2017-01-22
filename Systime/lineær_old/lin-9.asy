@@ -27,3 +27,4 @@ draw(graph(f2, -1.3, 3.3), purple_default);
 label("$y=0.5x-2$",  ( 5, f1(5)), N*6, blue_default*0.5, filltype=Fill(white));
 label("$y=-3x+4$",   ( 3, f2(3)), E*2, purple_default*0.5, filltype=Fill(white));
 
+shipout(scale(5)*bbox(white));
