@@ -39,8 +39,10 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Indledning}
-Vi skal i dette afsnit beskæftige os med lineære sammenhænge mellem to variable
-størrelser, og begynder med at se på nogle eksempler.
+Lineære modeller bruges dels til at foretage eksakte omregninger, f.eks. mellem Fahrenheit
+Celsius, og dels til at lave prognoser ud fa kendte data.
+
+Vi begynder med at se på nogle eksempler.
 
 \subsection{Eksempel}
 Et teleselskab har et simpelt takstsystem:
@@ -61,13 +63,12 @@ Hvis vi afbilder sammenhængen i et koordinatsystem med antallet af minutter på
 $x$-aksen og prisen på $y$-aksen, vil sammenhørende værdier af $x$ og $y$ (dvs.
 af taletid og pris) udgøre en ret linje med hældning $0,50$, som skærer
 $y$-aksen i tallet $20$ (det koster 20 kroner at tale i 0 minutter), se figur
-3.5.
+1.1.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{lin-1}
-    \caption{Figur 2.1}
-    \label{fig35}
+    \caption{Figur 1.1}
 \end{figure}
 
 Hældningen $0,50$ angiver prisstigningen for hvert ekstra minut, der tales --
@@ -75,15 +76,27 @@ den er 0,50 kroner.  Prisen for 20 minutters samtale er 30 kr., og for 21
 minutters samtale er den 30,50 kr.
 
 \subsection{Eksempel}
-En prøvekørsel af en bil begynder ved 5-km stenen uden for en by. Bilen kører
-en længere strækning med 90 km/t. Efter 8 minutters kørsel befinder bilen sig
-ved 17-km-stenen (hvorfor?), og efter $x$ minutter er den ved $y$-km-stenen,
-hvor
-$$
-y = 5 + 1,5\cdot x
-$$
-Her er der tale om en lineær sammenhæng mellem tiden i minutter og tallet på
-kilometerstenen.
+I Europa bruger vi temperaturskalaen Celsius, hvor vand fryser ved 0 grader og
+koger ved 100 grader.  I USA bruger de derimod temperaturskalaen Fahrenheit,
+hvor vand fryser ved 32 F og koger ved 212 F.
+Man kan omregne mellem de to temperaturskalaer ved følgende formel:
+\[
+F = 1,8 C + 32 \,.
+\]
+Denne sammenhæng er vist grafisk i figuren:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{lin-1a}
+    \caption{Figur 1.1a}
+\end{figure}
+
+Ud fra ligningen er det muligt at omregne mellem temperaturer i Celsius og
+temperaturer i Fahrenheit. F.eks.  er kroppens normaltemperatur 37 grader C. I
+Fahrenheit vil den samme temperatur være
+\[
+    32 + 1,8\cdot 37 = 98,6 F \,.
+\]
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -94,10 +107,13 @@ kilometerstenen.
     kaldet $x$, og en afhængig variabel, ofte kaldet $y$.
 \end{mydef}
 
+En variabelsammenhæng er ofte beskrevet ved en ligning, men kan også tegnes grafisk i et
+koordinatsystem.
+
 \begin{mydef}
     En lineær sammenhæng er en variabelsammenhæng givet ved følgende ligning:
     $$
-    y = a\cdot x + b
+    y = a\cdot x + b \,,
     $$
     hvor $a$ og $b$ er tal.
 \end{mydef}
@@ -105,7 +121,7 @@ kilometerstenen.
 Vi interesserer os for de koordinatsæt $(x,\,y)$, der passer i en sådan ligning.
 Fra folkeskolen ved vi, at sådanne koordinatsæt udgør en ret linje.
 
-Eksempler på sådanne lineære sammenhænge er (se figur xx):
+Eksempler på sådanne lineære sammenhænge er (se figur 1.2):
 
 \begin{tabular}{ll}
     $\bullet\quad y=3x-5$  & Her er $a=3$ og $b=-5$. \\
@@ -117,8 +133,7 @@ Eksempler på sådanne lineære sammenhænge er (se figur xx):
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{lin-2}
-    \caption{Figur 2.2}
-    \label{fig-def-22}
+    \caption{Figur 1.2}
 \end{figure}
 
 \begin{thm}
@@ -126,9 +141,9 @@ Eksempler på sådanne lineære sammenhænge er (se figur xx):
     $$
     y = a\cdot x + b
     $$
-    gælder, at grafen er en ret linje, hvor $a$ er linjens {\em hældning}, dvs.
-    linjen vokser med $a$ enheder, når $x$ vokser med 1 enhed. Punktet
-    $(0,\,b)$ er linjens {\em skæringspunkt med $y$-aksen}.
+    gælder, at grafen er en ret linje, hvor $a$ er linjens {\em hældning}.  Det
+    betyder, at linjen vokser med $a$ enheder, når $x$ vokser med 1 enhed.
+    Punktet $(0,\,b)$ er linjens {\em skæringspunkt med $y$-aksen}.
 \end{thm}
 
 Vi kan opstille en tabel ("sildeben") over koordinater $(x,\,y)$, der passer i
@@ -140,24 +155,12 @@ $$
     y & -11 & -8 & -5 & -2 & 1 & 4
 \end{tabular}
 $$
-Linjen går altså gennem punkterne $(0,\-5)$, $(1,\,-2)$ osv., se figur 3.2.
+Linjen går altså gennem punkterne $(0,\-5)$, $(1,\,-2)$ osv., se figur 1.3.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{lin-3}
-    \caption{Figur 2.3}
-    \label{fig32}
-\end{figure}
-
-Hældningen er illustreret på figur 3.3. Hvis $x$ vokser til $x+1$, så vokser
-$y$ fra $y_1$ til $y_2$ og forskellen $y_2-y_1$ er netop $a$. Bemærk, at $a$
-også kan være negativ, nemlig når $y$ falder i værdi, når $x$ vokser.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.5\textwidth]{lin-4}
-    \caption{Figur 2.4}
-    \label{fig33}
+    \caption{Figur 1.3}
 \end{figure}
 
 Linjer med samme hældning er parallelle. Linjer med positiv hældning forløber
@@ -171,48 +174,56 @@ $$
 b = 0\cdot x+b \,.
 $$
 
+Hældningen bestemmes altså ud fra, hvor meget $y$ vokser for hver enhed af $x$. Det
+er derfor muligt at aflæse hældningen på grafen ved (fra et valgfrit startpunkt)
+at gå 1 til højre og se, hvor meget $y$ vokser.
+
+Hældningen er illustreret på figur 1.4. Hvis $x$ vokser til $x+1$, så vokser
+$y$ fra $y_1$ til $y_2$ og forskellen $y_2-y_1$ er netop $a$. Bemærk, at $a$
+også kan være negativ, nemlig når $y$ falder i værdi, når $x$ vokser.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{lin-4}
+    \caption{Figur 1.4}
+    \label{fig33}
+\end{figure}
+
+
+\subsection{Eksempel}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{lin-3a}
+    \caption{Figur 1.3a}
+\end{figure}
+
+På grafen ovenfor har vi valgt startpunktet $(1,\,1)$. Når vi bevæger
+1 til højre, så skal vi gå 2 op for at ramme grafen. Derfor er hældningen $a=2$.
+
+$b$ er en konstant, der afgør, hvor grafen skærer $y$-aksen. Hvis $b$ er positiv finder
+skæringen sted over $x$-aksen, og hvis $b$ er negativ er skæringen placeret under $x$-aksen.
+
+På figuren ovenfor kan vi se, at grafen skærer $y$-aksen i punktet $(0,\,-1)$. Derfor
+er $b=-1$.
+
+\subsection{Quiz}
+\begin{itemize}
+    \item Aflæs koordinater af punkter på grafen.
+    \item Afgør om et givet punkt ligger på grafen.
+    \item Udregn $y$ ud fra $x$ vha ligningen.
+    \item Afgør om et punkt opfylder ligningen.
+    \item Aflæs hældningen af en ret linje.
+    \item Aflæs skæringen med $y$-aksen.
+    \item Aflæs forskriften for en ret linje.
+    \item Opskriv ligningen for en linje ud fra en sproglig beskrivelse.
+\end{itemize}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Lineær regression}
-På fig. 5.4 er afsat punkterne med koordinaterne $(1, 2)$, $(2, 5)$, $(3, 6)$ og $(4,
-7)$. De ligger ikke på ret linje, men med tilnærmelse ligger de på linjen med
-ligningen y = 1,6x + 1.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.5\textwidth]{lin-10}
-    \caption{Figur 2.10}
-    \label{fig54}
-\end{figure}
-
-Men er dette nu dén rette linje, der bedst bestemmer punkterne? Skulle vi måske
-hellere have valgt linjen y = 1,65x + 0,97 eller y = 1,58x + 1,04 eller ...?
-
-For at finde frem til dén linje, der bedst bestemmer punkterne, benytter man
-sædvanligvis en metode, der kaldes {\em mindste kvadraters metode}.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.5\textwidth]{lin-11}
-    \caption{Figur 2.11}
-    \label{fig55}
-\end{figure}
-
-På fig. 2.11 er en række punkter afsat, og en vilkårlig linje $m$ er tegnet. Desuden er de
-lodrette afstande $d_1$, $d_2$, $d_3$, ..., $d_n$ fra målepunkterne til linjen afsat. Man
-kan så udregne summen $D$ af kvadraterne (kvadratsummen) på afstandene:
-
-\[
-D = {d_1}^2 + {d_2}^2 + {d_3}^2 + \ldots + {d_n}^2 \; . 
-\]
-
-Hvis man vælger en anden linje, får man selvfølgelig i reglen en anden kvadratsum.
-
-Man har vedtaget at den linje, der gør kvadratsummen $D$ mindst mulig, er den
-'bedste' linje. Metoden kaldes {\em de mindste kvadraters metode}, og den linje, der
-fremkommer, kaldes {\em regressionslinjen} svarende til punkterne. Vi går ikke ind
-på, hvordan linjen matematisk bestemmes. 
+Ofte, så har man givet en række datapunkter, som ikke ligger på en ret linje. Alligevel
+vil man ofte benytte en lineær model som tilnærmelse. Vi ser på et eksempel:
 
 Man har undersøgt højden af et stort antal piger og beregnet middel\-høj\-den for
 hver årgang. Pigernes højde ved forskellige aldre fremgår af skemaet.
@@ -230,31 +241,71 @@ hver årgang. Pigernes højde ved forskellige aldre fremgår af skemaet.
 \[
 \begin{array}{|c|c|c|c|c|c|c|}
     \hline
-    \mbox{Alder (år)},\, x  & 9  & 10 & 11&  12 & 13 & 14 \\
+    \mbox{Alder (år)},\, x  & 9  & 10 \\
     \hline
-    \mbox{Højde (cm)},\, y  & 136,4 &  142,5 &  151,1 &  155,4 &  159,8 &  161,5 \\
+    \mbox{Højde (cm)},\, y  & 136,4 &  142,5 \\
     \hline
 \end{array}
-\]
-
-Det ser ud til, at højden øges med ca. 6 cm, når alderen øges med 1 år, så det
-er rimeligt at forvente en lineær sammenhæng.
-
-Ved hjælp af CAS kan vi finde ligningen for regressionslinjen til
-
-\[
-y = 6,17x + 80,19 \; .
 \]
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{lin-12}
-    \caption{Figur 2.12}
+    \caption{Figur 1.12}
     \label{fig56}
 \end{figure}
 
-Den gennemsnitlige vækst i pigernes højde er altså 6,17 cm pr. år. På fig. 5.6
-ses pigernes højder med regressionslinjen indtegnet.
+På figuren ovenfor er punkterne indtegnet, og endvidere er tegnet en {\em tendenslinje} med ligningen:
+\[
+    y = 6,53 x + 78,2 \,,
+\]
+hvor $x$ er alderen i år, og $y$ er pigernes gennemsnitlige højde i cm.
+
+Det ses, at linjen følger punkterne med rimelighed. Det er derfor muligt at bruge ligningen
+for den rette linje til at foretage beregninger. F.eks. kan man beregne en piges gennemsnitlige højde ved alderen 12 år ved at indsætte $x=12$ i ligningen. Det giver
+\[
+    y=6,53\cdot 12 + 78,2 = 156,6 \mbox{ cm. }
+\]
+Altså forudsiger denne model, at piger i alderen 12 år har en gennemsnitlig
+højde på 156,6 cm.  Det skal understreges, at der en tale om en prognose som
+bygger på en række forudsætninger.  I dette tilfælde forudsætter modellen,
+fordi det er en lineær model, at piger vokser med det samme antal cm hvert år,
+i dette tilfælde 6,53 cm. Dette er selvsagt ikke længere gyldigt, når pigernes
+alder har passeret puberteten. Endvidre er der tale om et gennemsnit af alle
+danske piger.
+Alligevel bliver sådanne modeller brugt i stor udstrækning, og det er derfor vigtigt
+at kende modellenes forudsætningner. 
+\begin{thm}
+    I en lineær model forudsættes det, at væksthastigheden er konstant.
+\end{thm}
+
+\subsection{Mindste kvadraters metode}
+
+For at finde frem til tendenslinjen, som er den linje, der bedst bestemmer
+punkterne, benytter man sædvanligvis en metode, der kaldes {\em mindste
+kvadraters metode}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{lin-11}
+    \caption{Figur 1.11}
+    \label{fig55}
+\end{figure}
+
+På fig. 1.11 er en række punkter afsat, og en vilkårlig linje $m$ er tegnet. Desuden er de
+lodrette afstande $d_1$, $d_2$, $d_3$, ..., $d_n$ fra målepunkterne til linjen afsat. Man
+kan så udregne summen $D$ af kvadraterne (kvadratsummen) på afstandene:
+
+\[
+D = {d_1}^2 + {d_2}^2 + {d_3}^2 + \ldots + {d_n}^2 \; . 
+\]
+
+Hvis man vælger en anden linje, får man selvfølgelig i reglen en anden kvadratsum.
+
+Man har vedtaget at den linje, der gør kvadratsummen $D$ mindst mulig, er den
+'bedste' linje. Metoden kaldes {\em de mindste kvadraters metode}, og den linje, der
+fremkommer, kaldes {\em regressionslinjen} svarende til punkterne. Vi går ikke ind
+på, hvordan linjen matematisk bestemmes. 
 
 \subsection{Korrelation}
 CAS giver foruden regressionslinjens ligning den såkaldte {\em
