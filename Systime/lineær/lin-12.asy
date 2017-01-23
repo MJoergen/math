@@ -13,10 +13,9 @@ koord("{\aa}r", xmin, xmax, xstep,
 
 real f1(real x)
 {
-    return 6.53*x+78.2;
+    return 6.31*x+79.8;
 }
 
-dot(( 2,  89.2));
 dot(( 3,  98.3));
 dot(( 4, 104.9));
 dot(( 5, 112.0));
@@ -26,6 +25,6 @@ dot(( 8, 131.3));
 dot(( 9, 136.4));
 dot((10, 142.5));
 
-draw(graph(f1, 1, 14.5), blue_default);
+draw(graph(f1, 1, 12), blue_default);
 
 shipout(scale(5)*bbox(white));

@@ -6,6 +6,7 @@ pics  += lin-1a.asy
 pics  += lin-2.asy
 pics  += lin-3.asy
 pics  += lin-3a.asy
+pics  += lin-3b.asy
 pics  += lin-4.asy
 pics  += lin-5.asy
 pics  += lin-6.asy

@@ -1,5 +1,7 @@
 import "../systime" as systime;
 
+size(7cm);
+
 real f1(real x)
 {
     return 0.6*x+1;
@@ -8,6 +10,16 @@ real f1(real x)
 pair F1(real x)
 {
     return (x, f1(x));
+}
+
+void square(pair p1, pair p2)
+{
+    pair v1 = p2-p1;
+    pair v2 = (-v1.y, v1.x);
+    pair p3 = p1 - v2;
+    pair p4 = p3 + v1;
+
+    draw(p1--p2--p4--p3--p1);
 }
 
 pair p1 = F1(1) + (0, 0.5);
@@ -21,10 +33,11 @@ dot(p3);
 dot(p4);
 
 draw(graph(f1, -0.5, 7), blue_default);
-draw(F1(1)..p1);
-draw(F1(3)..p2);
-draw(F1(4)..p3);
-draw(F1(6)..p4);
+square(F1(1), p1);
+square(F1(3), p2);
+square(F1(4), p3);
+square(F1(6), p4);
+
 label("$d_1$", (F1(1)+p1)/2, W);
 label("$d_2$", (F1(3)+p2)/2, E);
 label("$d_3$", (F1(4)+p3)/2, W);
@@ -32,7 +45,8 @@ label("$d_4$", (F1(6)+p4)/2, E);
 
 label("m", F1(7), S*2, blue_default);
 
-xaxis(systime_arrow);
-yaxis(systime_arrow);
+xaxis("x", systime_arrow);
+yaxis("y", systime_arrow);
 
 shipout(scale(5)*bbox(white));
+

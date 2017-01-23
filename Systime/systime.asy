@@ -90,12 +90,12 @@ void koord(string xlabel, real xmin, real xmax, real xstep,
     {
         for (int i=0; i<=xsteps; ++i)
         {
-            xequals(xmin + xstep*i, linetype(new real[] {0,2}, scale=false)+0.25);
+            xequals(xmin + xstep*i, linetype(new real[] {0,2}, scale=false)+0.6);
         }
 
         for (int i=0; i<=ysteps; ++i)
         {
-            yequals(ymin + ystep*i, linetype(new real[] {0,2}, scale=false)+0.25);
+            yequals(ymin + ystep*i, linetype(new real[] {0,2}, scale=false)+0.6);
         }
     }
 
