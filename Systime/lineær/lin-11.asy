@@ -1,6 +1,6 @@
 import "../systime" as systime;
 
-size(7cm);
+size(7cm, 7cm, Aspect);
 
 real f1(real x)
 {
@@ -17,16 +17,21 @@ pair p2 = F1(3) - (0, 0.5);
 pair p3 = F1(4) + (0, 0.7);
 pair p4 = F1(6) - (0, 1.0);
 
-dot(p1);
-dot(p2);
-dot(p3);
-dot(p4);
-
 draw(graph(f1, -0.5, 7), blue_default);
 square(F1(1), p1);
 square(F1(3), p2);
 square(F1(4), p3);
 square(F1(6), p4);
+
+dot(p1);
+dot(p2);
+dot(p3);
+dot(p4);
+
+draw(F1(1)--p1);
+draw(F1(3)--p2);
+draw(F1(4)--p3);
+draw(F1(6)--p4);
 
 label("$d_1$", (F1(1)+p1)/2, E);
 label("$d_2$", (F1(3)+p2)/2, W);

@@ -1,8 +1,8 @@
 //////////////////////////////////////////////////////////////////
 // Begin preamble
 
-settings.outformat="pdf";
 size(7cm, 7cm, IgnoreAspect);
+settings.outformat="pdf";
 
 import graph;
 
@@ -85,7 +85,7 @@ void koord(string xlabel, real xmin, real xmax, real xstep,
         {
             if (abs(xmin + xstep*i) >= xstep*1e-6)
             {
-                xequals(xmin + xstep*i, grey_thin + 0.01);
+                xequals(xmin + xstep*i, grey_thin + 0.2);
             }
         }
 
@@ -93,7 +93,7 @@ void koord(string xlabel, real xmin, real xmax, real xstep,
         {
             if (abs(ymin + ystep*i) >= ystep*1e-6)
             {
-                yequals(ymin + ystep*i, grey_thin + 0.01);
+                yequals(ymin + ystep*i, grey_thin + 0.2);
             }
         }
     }
@@ -147,6 +147,6 @@ void square(pair p1, pair p2)
     pair p3 = p1 + v2;
     pair p4 = p3 + v1;
 
-    draw(p1--p2--p4--p3--p1);
+    fill(p1--p2--p4--p3--cycle, grey_thin);
 }
 
