@@ -1,14 +1,14 @@
 import "../systime" as systime;
 
-real xmin = -10.0;
+real xmin =   0.0;
 real xmax =  60.0;
 real xstep = 10.0;
-real ymin = -10.0;
+real ymin =   0.0;
 real ymax =  80.0;
 real ystep = 10.0;
 
-koord("\scriptsize{min}", xmin, xmax, xstep,
-      "\scriptsize{kr}", ymin, ymax, ystep,
+koord("\scriptsize{$x$}", xmin, xmax, xstep,
+      "\scriptsize{$y$}", ymin, ymax, ystep,
       gitter = true);
 
 real f1(real x)

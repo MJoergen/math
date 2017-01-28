@@ -30,8 +30,8 @@ draw(graph(f1, -5, 5), blue_default);
 draw(graph(f2, -5, 5), purple_default);
 draw(graph(f3, -4, 5), yellow_default);
 
-label("$a=0$", (3, 3), blue_default*0.5 + black*0.5 , filltype=Fill(white));
-label("$a>0$", (-3, -1.5), purple_default*0.5 + black*0.5 , filltype=Fill(white));
-label("$a<0$", (-2.5, 1.5), yellow_default*0.5 + black*0.5 , filltype=Fill(white));
+label("$a=0$", (3, 3), blue_default , filltype=Fill(white));
+label("$a>0$", (-3, -1.5), purple_default , filltype=Fill(white));
+label("$a<0$", (-2.5, 1.5), yellow_default , filltype=Fill(white));
 
 shipout(scale(5)*bbox(white));

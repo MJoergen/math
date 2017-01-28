@@ -14,6 +14,7 @@
 \usepackage{float}         % Så kan man bedre styre, hvor figurerne havner henne
                            % vha [H].
 %\usepackage{hyperref}
+\usepackage{tcolorbox}
 
 %\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
 \newcommand{\bas}{\begin{eqnarray*}}
@@ -44,6 +45,7 @@ Fahrenheit og Celsius, og dels til at lave prognoser ud fra kendte data.
 
 Vi begynder med at se på nogle eksempler.
 
+\begin{tcolorbox}
 \subsection{Eksempel}
 I Europa bruger vi temperaturskalaen Celsius, hvor vand fryser ved 0 grader og
 koger ved 100 grader.  I USA bruger de derimod temperaturskalaen Fah\-renheit,
@@ -58,6 +60,7 @@ Denne sammenhæng er vist grafisk i figuren:
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{lin-1a}
+    \caption{}
 \end{figure}
 
 Ud fra ligningen er det muligt at omregne mellem temperaturer i Celsius og
@@ -68,7 +71,9 @@ Fahrenheit vil den samme temperatur være
 \]
 På figuren er markeret punkter for kroppens normaltemperatur (37 C,\, 98,6 F) samt
 vands kogepunkt (100 C,\, 212 F).
+\end{tcolorbox}
 
+\begin{tcolorbox}
 \subsection{Eksempel}
 Et teleselskab har et simpelt takstsystem:
 \begin{itemize}
@@ -93,24 +98,29 @@ $y$-aksen i tallet $5$ (det koster 5 kroner at tale i 0 minutter), se figur
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{lin-1}
+    \caption{}
 \end{figure}
 
 Hældningen $0,50$ angiver prisstigningen for hvert ekstra minut, der tales --
 den er 0,50 kroner.  Prisen for 20 minutters samtale er 15 kr., og for 21
 minutters samtale er den 15,50 kr.
+\end{tcolorbox}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Lineære sammenhænge}
+\begin{tcolorbox}
 \begin{mydef}
     En {\em variabelsammenhæng} er en sammenhæng mellem en uafhængig variabel, ofte
     kaldet $x$, og en afhængig variabel, ofte kaldet $y$.
 \end{mydef}
+\end{tcolorbox}
 
 En variabelsammenhæng er ofte beskrevet ved en ligning, men kan også tegnes grafisk i et
 koordinatsystem.
 
+\begin{tcolorbox}
 \begin{mydef}
     En {\em lineær sammenhæng} er en variabelsammenhæng givet ved følgende ligning:
     $$
@@ -118,11 +128,12 @@ koordinatsystem.
     $$
     hvor $a$ og $b$ er tal.
 \end{mydef}
+\end{tcolorbox}
 
 Vi interesserer os for de koordinatsæt $(x,\,y)$, der passer i en sådan ligning.
 Fra folkeskolen ved vi, at sådanne koordinatsæt udgør en ret linje.
 
-Eksempler på sådanne lineære sammenhænge er (se figur 1.2):
+Eksempler på sådanne lineære sammenhænge er (se næste figur):
 
 \begin{tabular}{ll}
     $\bullet\quad y=3x-5$  & Her er $a=3$ og $b=-5$. \\
@@ -134,8 +145,10 @@ Eksempler på sådanne lineære sammenhænge er (se figur 1.2):
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{lin-2}
+    \caption{}
 \end{figure}
 
+\begin{tcolorbox}
 \begin{thm}
     For den lineære sammenhæng
     $$
@@ -146,6 +159,7 @@ Eksempler på sådanne lineære sammenhænge er (se figur 1.2):
     $x$ vokser med 1 enhed.  Punktet $(0,\,b)$ er linjens {\em skæringspunkt
     med $y$-aksen}.
 \end{thm}
+\end{tcolorbox}
 
 Vi kan opstille en tabel ("sildeben") over koordinater $(x,\,y)$, der passer i
 ligningen $y=3x-5$:
@@ -156,11 +170,12 @@ $$
     y & -11 & -8 & -5 & -2 & 1 & 4
 \end{tabular}
 $$
-Linjen går altså gennem punkterne $(0,\,-5)$, $(1,\,-2)$ osv., se figur 1.3.
+Linjen går altså gennem punkterne $(0,\,-5)$, $(1,\,-2)$ osv., se næste figur.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{lin-3}
+    \caption{}
 \end{figure}
 
 Linjer med samme hældning er parallelle. Linjer med positiv hældning ($a>0$) forløber
@@ -171,6 +186,7 @@ eller blot $y=b$, se figur.
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{lin-3b}
+    \caption{}
 \end{figure}
 
 Hældningen bestemmes altså ud fra, hvor meget $y$ vokser for hver enhed af $x$. Det
@@ -191,6 +207,7 @@ $$
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{lin-3a}
+    \caption{}
 \end{figure}
 
 På grafen ovenfor har vi valgt startpunktet $(1,\,1)$. Når vi bevæger
@@ -238,11 +255,11 @@ Man har undersøgt højden af et stort antal piger og beregnet middel\-høj\-den
 hver årgang. Pigernes højde ved forskellige aldre fremgår af skemaet.
 
 \[
-\begin{array}{|c|c|c|c|c|c|c|c|c|}
+\begin{array}{|c|c|c|c|c|c|c|c|c|c|}
     \hline
-    \mbox{Alder (år)},\, x &  3 &  4 &  5 &  6 &  7 &  8 & 9 & 10 \\
+    \mbox{Alder (år)}& x &  3 &  4 &  5 &  6 &  7 &  8 & 9 & 10 \\
     \hline
-    \mbox{Højde (cm)},\, y &  98,3 &   104,9 &  112,0 &  118,1 &  123,4 &  131,3 & 136,4 & 142,5\\
+    \mbox{Højde (cm)}& y &  98,3 &   104,9 &  112,0 &  118,1 &  123,4 &  131,3 & 136,4 & 142,5\\
     \hline
 \end{array}
 \]
@@ -250,6 +267,7 @@ hver årgang. Pigernes højde ved forskellige aldre fremgår af skemaet.
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{lin-12}
+    \caption{}
 \end{figure}
 
 På figuren ovenfor er punkterne indtegnet, og endvidere er tegnet en {\em
@@ -292,6 +310,7 @@ kvadraters metode}.
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{lin-11}
+    \caption{}
 \end{figure}
 
 På figuren er en række punkter afsat, og en vilkårlig linje $m$ er tegnet.
@@ -333,27 +352,34 @@ På næste figur er disse forhold illustreret.
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{fig57}
+    \caption{}
 \end{figure}
 
 \subsection{Eksempel}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\textwidth]{mini_9}
+    \caption{}
+\end{figure}
 I et fysikforsøg måles vægt og rumfang at et måleglas med sand. Det giver følgende værdier:
 
 \[
-\begin{array}{|c|c|c|c|c|c|}
+\begin{array}{|c|c|c|c|c|c|c|}
     \hline
-    \mbox{Rumfang (ml)},\, x &  50 &  100 &  150 &  200 &  250  \\
+    \mbox{Rumfang (ml)} & x &  50 &  100 &  150 &  200 &  250  \\
     \hline
-    \mbox{Vægt (g)},\, y &  225 &   305 &  380 &  465 &  540 \\
+    \mbox{Vægt (g)} & y &  225 &   305 &  380 &  465 &  540 \\
     \hline
 \end{array}
 \]
 hvor $x$ er rumfanget i ml, og $y$ er vægten i gram.
 
-Målinger er vist i den følgende figur:
+Målingerne er vist i den følgende figur:
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{lin-11a}
+    \caption{}
 \end{figure}
 
 På figuren er også indtegnet tendenslinjen givet ved ligningen
@@ -407,18 +433,19 @@ angivet i følgende tabel:
 \end{array}
 \]
 
-Generelt, når $x$-aksen består af årstal, så vælger man oftest at sætte $x=0$ ved det første årstal.
-Det vil sige, at
+Generelt, når $x$-aksen består af årstal, vælger man oftest at sætte $x=0$ ved
+det første årstal.  Det vil sige, at
 \[
     x = \mbox{årstal} - 2007\,.
 \]
 Dette er ligeledes angivet i tabellen oven over.
 
-På figuren er ovenstående punkter indsat, sammen med en ret linje.
+På figuren er ovenstående punkter indsat sammen med tendenslinjen.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{lin-11b}
+    \caption{}
 \end{figure}
 
 Tendenslinjen er udregnet på CAS værktøj til
@@ -427,30 +454,33 @@ Tendenslinjen er udregnet på CAS værktøj til
 \]
 
 Punkterne passer nogenlunde med linjen, og vi kan derfor med et vist forbehold
-sige, at der er en tilnærmelsesvis lineær sammanhæng mellem årstal og antal
+sige, at der er en tilnærmelsesvis lineær sammenhæng mellem årstal og antal
 tilskadekomne og dræbte i spiritusuheld i Danmark.
 
-Forklaringsgraden er $-0,9597$ er tæt på $-1$, og antyder en generel overensstemmelse mellem
-data og model.
+Forklaringsgraden er $-0,9597$, og er derfor tæt på $-1$. Dette antyder en
+god overensstemmelse mellem data og model.
 
 Konstanterne $-102,2$ og $1115$ i modellen kan fortolkes på følgende måde:
 \begin{itemize}
-    \item Konstanten $-102,2$ angiver, at for hvert år reduceres antallet
-        af tilskadekomne og dræbte i spiritusuheld i Danmark med ca. 102 personer.
-    \item Konstanten $1115$ fortæller, at der ved modellens begyndelse, dvs i år 2007,
-        var 1115 tilskadekomne og dræbte i spiritusuheld i Danmark. Det passer åbenlyst
-        ikke med det rigtige antal på 1261 personer i tabellen oven over. Forskellen er
-        et udtryk for, at modellen afviger fra de faktiske antal.
+    \item Konstanten $-102,2$ angiver, at hvert år reduceres antallet af
+        tilskadekomne og dræbte i spiritusuheld i Danmark med ca. 102 personer.
+    \item Konstanten $1115$ fortæller, at der ved modellens begyndelse, dvs i
+        år 2007, var 1115 tilskadekomne og dræbte i spiritusuheld i Danmark.
+        Dette passer åbenlyst ikke med det rigtige antal på 1261 personer i
+        tabellen oven over. Forskellen er et udtryk for, at modellen afviger
+        fra de faktiske antal.
 \end{itemize}
 
-Denne lineære model har dog en indbygget svaghed, nemlig at antal personer fortsætter med at falde.
-På et tidspunkt (efter ca. yderligere fire år) vil modellen angive et negativt antal personer, hvilket 
-er åbenlyst forkert. Så ligesome i det tidligere eksempel med pigers højde, så er modellens
-anvenlighed begrænset.
+Denne lineære model har dog en indbygget svaghed, nemlig at antal personer
+fortsætter med at falde.  På et tidspunkt (efter yderligere ca. fire år) vil
+modellen angive et negativt antal personer, hvilket er åbenlyst forkert. Så
+\mbox{ligesom} i det tidligere eksempel med pigers højde, er modellens
+anvendelighed begrænset.
 
 \subsection{Quiz}
 \begin{itemize}
-    \item Give en fornuftig fortolkning $a$, $b$ og $r$ ud fra en given model.
+    \item Give en fornuftig fortolkning af $a$, $b$ og $r$ ud fra en given
+        model.
     \item Forholde sig kritisk til en models gyldighedsområde.
 \end{itemize}
 
@@ -484,6 +514,7 @@ Vi anfører de vigtigste regler for løsning af ligninger.
 
 [ANIMATION OM REGNEREGLER 1--4]
 
+\begin{tcolorbox}
 \subsection{Eksempel}
 Førstegradsligninger optræder ofte i forbindelse med lineære modeller. F.eks. i
 eksemplet med dræbte og tilskadekomne kan man beregne, hvornår modellen
@@ -493,15 +524,16 @@ ligning:
 \[
 \begin{aligned}
     & -102,2x+1115 = 0  \\
-    \iff & -102,2x = -1115 \\
-    \iff & x = \frac{-1115}{-102,2} \\
-    \iff & x = 10,9
+    \Leftrightarrow\,\, & -102,2x = -1115 \\
+    \Leftrightarrow\,\, & x = \frac{-1115}{-102,2} \\
+    \Leftrightarrow\,\, & x = 10,9 \,.
 \end{aligned}
 \]
 Svaret $x=10,9$ skal forstås således, at i år $x + 2007 = 10,9 + 2007 = 2017,9$
-vil antallet af dræbte og tilskadekomne blive lig med nul. Modellen her derfor
-højst gyldighed frem til år 2017.
-
+vil antallet af dræbte og tilskadekomne ifølge modellen blive lig med nul, og
+derefter vil antallet være negativt.  Modellen her derfor højst gyldighed frem
+til år 2017.
+\end{tcolorbox}
 
 \subsection{Quiz}
 \begin{itemize}
@@ -516,7 +548,7 @@ højst gyldighed frem til år 2017.
 Hvis to linjers ligninger er kendt, vil vi finde koordinaterne til linjernes
 skæringspunkt (hvis de ikke er parallelle).
 
-Linjerne $l$ og $m$ har f.eks. ligningerne (se figur 2.9)
+Linjerne $l$ og $m$ har f.eks. ligningerne (se næste figur)
 \[
     l: y=0,5x-2\quad{\mbox{og}}\quad m: y=-3x+5 \,.
 \]
@@ -524,6 +556,7 @@ Linjerne $l$ og $m$ har f.eks. ligningerne (se figur 2.9)
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{lin-9}
+    \caption{}
 \end{figure}
 
 I skæringspunktet mellem linjerne skal $y$-værdien for de to linjer være den
@@ -549,7 +582,7 @@ Skæring mellem linjer optræder typisk, når man vil sammenligne to forskellige
 modeller.  I indledningen betragtede vi et teleselskab, hvor prisen pr. måned
 kunne beskrives ved følgende ligning
 \[
-    y = 5 + 0,50 \cdot x \quad \mbox{selskab A}\,,
+    y = 5 + 0,50 \cdot x \,, \quad \quad \mbox{selskab A}\,,
 \]
 hvor $x$ er den samlede samtaletid i løbet af måneden, og $y$ er den samlede
 pris. Her er konstanten $0,50$ prisen pr. minut, og konstanten $5$ er den faste
@@ -558,7 +591,7 @@ abonnementspris om måneden, uafhængig af samtaletiden.
 Nu vil vi sammenligne dette med et andet teleselskab, som godt nok har et højere abonnnement,
 men til gengæld en lavere minutpris. Vi ser således på
 \[
-    y = 10 + 0,20 \cdot x \quad \mbox{selskab B}\,.
+    y = 10 + 0,20 \cdot x \,, \quad \quad \mbox{selskab B}\,.
 \]
 Ved et lavt forbrug vil selskab B være for dyrt, men hvis forbruget er meget stort, så vil
 selskab B være billigst.
@@ -568,17 +601,19 @@ altså finde skæringspunktet mellem de to rette linjer, se figuren:
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{lin-9a}
+    \caption{}
 \end{figure}
-Af figuren fremgår det, at ved et forbrug på ca. 17 minutter om måneden er de to selskaber
-lige dyre. Vi kan beregne denne pris ved at løse følgende ligning:
+Af figuren fremgår det, at ved et forbrug på ca. 17 minutter om måneden er de
+to selskaber lige dyre. Vi kan beregne denne pris ved at løse følgende ligning:
 \[
 \begin{aligned}
     & 5 + 0,50 x = 10 + 0,20 x \\
     \iff & 0,30x = 5 \\
-    \iff & x = 16,67
+    \iff & x = 16,67 \,.
 \end{aligned}
 \]
-Så ved et forbrug over $16,67$ minutter vil selskab B være at foretrække.
+Så ved et forbrug større end $16,67$ minutter om måneden vil selskab B være at
+foretrække.
 
 \subsection{Quiz}
 \begin{itemize}
@@ -606,7 +641,7 @@ tabel over sammenhængen mellem tiden $x$ og den tilbagelagte afstand $y$:
 Vi ser, at $y$ netop er $1,5$ gange så stor som $x$, så sammenhængen mellem $x$
 og $y$ kan udtrykkes som
 \[
-y = 1,5\cdot x
+y = 1,5\cdot x \,.
 \]
 Talemåden "$y$ ændrer sig i samme takt som $x$" betyder netop, at $x$ skal
 ganges med et fast tal (her $1,5$) for at give $y$. Man kan også udtrykke det
@@ -618,13 +653,11 @@ sådan:
     \item osv.
 \end{itemize}
 Hvis man med konstant hastighed kører dobbelt så lang tid, tilbagelægger man
-også dobbelt så lang afstand, se figur 3.6.
+også dobbelt så lang afstand, se figuren.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{lin-5}
-    \caption{Figur 2.5}
-    \label{fig36}
 \end{figure}
 
 I dette tilfælde er tidsrummet $x$ og afstanden $y$ proportionale, og tallet
@@ -632,7 +665,7 @@ $1,5$ kaldes {\em proportionalitetsfaktoren}, fordi det netop er en faktor foran
 
 Man kan også sige, at forholdet mellem $y$ og $x$ er konstant, fordi vi får:
 \[
-y = 1,5\cdot x \, \Leftrightarrow \, \frac{y}{x} = 1,5
+y = 1,5\cdot x \, \Leftrightarrow \, \frac{y}{x} = 1,5 \,.
 \]
 Forholdet mellem afstand og tid kaldes hastighed, og tallet angiver her netop
 hastigheden: bilen kører med en hastighed på $1,5$ km/min, svarende til $90$
@@ -640,6 +673,7 @@ km/t.
 
 Sammenhængen illustreres som en ret linje gennem $(0,\,0)$ med hældningen $1,5$.
 
+\begin{tcolorbox}
 \begin{mydef}
     To variabler $x$ og $y$ kaldes proportionale, hvis der findes et tal $k$, så
     $$
@@ -649,6 +683,7 @@ Sammenhængen illustreres som en ret linje gennem $(0,\,0)$ med hældningen $1,5
     illustreres i koordinatsystemet af en ret linje gennem $(0,\,0)$ med 
     hældning $k$.
 \end{mydef}
+\end{tcolorbox}
 
 En proportional sammenhæng er således et specialtilfælde af en lineær sammenhæng, hvor
 skæringen med $y$-aksen er $b=0$.
@@ -677,7 +712,8 @@ det dobbelte:
     \item 15 minutter koster $20+0,5\cdot 15 = 27,50$ kroner.
     \item 30 minutter koster $20+0,5\cdot 30 = 35,00$ kroner.
 \end{itemize}
-I koordinatsystemet går linjen med ligningen $y=20+0,5x$ nemlig ikke gennem $(0, 0)$,
+I koordinatsystemet går linjen med ligningen $y=20+0,5x$ nemlig ikke gennem
+$(0,\, 0)$,
 sådan som kravet til proportionalitet er.
 
 \subsection{Quiz}
@@ -690,7 +726,15 @@ sådan som kravet til proportionalitet er.
 
 \section{Linje gennem to punkter}
 Vi vil bestemme hældningen for en linje, der går gennem
-to punkter med kendte koordinater, se figuren. Vi viser følgende sætning:
+to punkter med kendte koordinater, se figuren.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{lin-6}
+    \caption{}
+\end{figure}
+
+Vi viser følgende sætning:
+\begin{tcolorbox}
 \begin{thm}
     Hvis $A(x_1,\,y_1)$ og $B(x_2,\,y_2)$ er to punkter på en ret linje, der ikke
     er lodret, dvs $x_1\neq x_2$, er hældningen $a$ af linjen bestemt ved
@@ -698,33 +742,28 @@ to punkter med kendte koordinater, se figuren. Vi viser følgende sætning:
     a = \frac{y_2-y_1}{x_2-x_1}
     $$
 \end{thm}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.5\textwidth]{lin-6}
-    \label{linear-1}
-\end{figure}
+\end{tcolorbox}
 
 \begin{proof}
     Linjens ligning er
     $$
-    y = a\cdot x + b.
+    y = a\cdot x + b \,.
     $$
     De punkter, som ligger på linjen, har koordinater, der passer i
     ligningen.  Da $A$ og $B$ ligger på linjen, passer deres koordinater altså
     i ligningen, dvs.
     $$
-    y_1 = a\cdot x_1 + b \quad {\rm og} \quad y_2 = a\cdot x_2 + b 
+    y_1 = a\cdot x_1 + b \quad {\rm og} \quad y_2 = a\cdot x_2 + b \,.
     $$
     Vi trækker den første ligning fra den sidste og får
     \bas
     y_2 - y_1 &=& a\cdot x_2 + b - (a\cdot x_1 + b) \\
               &=& a\cdot x_2 - a\cdot x_1 \\
-              &=& a\cdot \left(x_2-x_1\right) 
+              &=& a\cdot \left(x_2-x_1\right)  \,.
     \eas
     altså $y_2-y_1 = a \cdot \left(x_2-x_1\right)$, hvoraf
     $$
-    a = \frac{y_2-y_1}{x_2-x_1}
+    a = \frac{y_2-y_1}{x_2-x_1} \,.
     $$
     og det var netop, hvad vi ville vise.
 \end{proof}
@@ -737,6 +776,7 @@ figuren.
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{lin-7}
+    \caption{}
     \label{linear-2}
 \end{figure}
 
@@ -748,6 +788,7 @@ a = \pm \frac{\mbox{lodret afstand}}{\mbox{vandret afstand}} \,.
 \]
 Her står $\pm$ for at minde om, at der skal anbringes et minus foran brøken,
 hvis hældningen er negativ.
+\begin{tcolorbox}
 \begin{eks}
     Vi ser på linjen $l$ gennem $A(-1,\,3)$ og $B(4,\,5)$.
     Linjens hældning er
@@ -767,14 +808,17 @@ hvis hældningen er negativ.
     $$
     y = 0,4 \cdot x + 3,4 
     $$
-\end{eks}
+    Linjen er vist på den følgende figur:
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{lin-8}
+    \caption{}
     \label{linear-3}
 \end{figure}
+\end{eks}
+\end{tcolorbox}
 
-
+\begin{tcolorbox}
 \begin{thm}
     Hvis $A(x_1,\,y_1)$ er et punkt på en ret linje, og linjen har hældningen
     $a$, så er linjens ligning givet ved
@@ -782,6 +826,7 @@ hvis hældningen er negativ.
     y = a\cdot (x-x_1) + y_1 
     $$
 \end{thm}
+\end{tcolorbox}
 \begin{proof}
     Vi har generelt, at 
     $$

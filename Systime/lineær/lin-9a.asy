@@ -24,7 +24,7 @@ real f2(real x)
 draw(graph(f1, 0, 20), blue_default);
 draw(graph(f2, 0, 20), purple_default);
 
-label("$y=5+0,5\,x$", (13, 7), blue_default*0.5 + black*0.5 , filltype=Fill(white));
-label("$y=10+0,2\,x$", (3, 7), blue_default*0.5 + black*0.5 , filltype=Fill(white));
+label("$y=5+0,5\,x$", (13, 8), blue_default, filltype=Fill(white));
+label("$y=10+0,2\,x$", (6, 13), purple_default, filltype=Fill(white));
 
 shipout(scale(5)*bbox(white));

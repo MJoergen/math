@@ -26,6 +26,8 @@ pair p7 = (6,  504);
 pair p8 = (7,  417);
 pair p9 = (9,  384);
 
+draw(graph(f1, 0, 9), blue_default);
+
 dot(p1);
 dot(p2);
 dot(p3);
@@ -36,9 +38,7 @@ dot(p7);
 dot(p8);
 dot(p9);
 
-draw(graph(f1, 0, 9), blue_default);
-
-label("$y=-102,2x+1115$", (4, 300), blue_default, filltype=Fill(white));
+//label("$y=-102,2x+1115$", (4, 300), blue_default, filltype=Fill(white));
 
 shipout(scale(5)*bbox(white));
 
