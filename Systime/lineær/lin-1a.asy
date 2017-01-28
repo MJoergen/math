@@ -1,9 +1,9 @@
 import "../systime" as systime;
 
-real xmin  = -20.0;
+real xmin  =   0.0;
 real xmax  =  120.0;
 real xstep =  10.0;
-real ymin  = -40.0;
+real ymin  =   0.0;
 real ymax  = 240.0;
 real ystep =  20.0;
 
@@ -16,7 +16,7 @@ real f1(real x)
     return 32.0 + 1.8*x;
 }
 
-draw(graph(f1, -10, 110), blue_default);
+draw(graph(f1, -3 , 115), blue_default);
 
 pair pa = (100, 212);
 pair pb = (37, 98.6);

@@ -85,7 +85,7 @@ void koord(string xlabel, real xmin, real xmax, real xstep,
         {
             if (abs(xmin + xstep*i) >= xstep*1e-6)
             {
-                xequals(xmin + xstep*i, grey_thin + 0.3);
+                xequals(xmin + xstep*i, grey_thin + 0.01);
             }
         }
 
@@ -93,7 +93,7 @@ void koord(string xlabel, real xmin, real xmax, real xstep,
         {
             if (abs(ymin + ystep*i) >= ystep*1e-6)
             {
-                yequals(ymin + ystep*i, grey_thin + 0.3);
+                yequals(ymin + ystep*i, grey_thin + 0.01);
             }
         }
     }
