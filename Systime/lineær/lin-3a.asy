@@ -27,7 +27,7 @@ dot(pb);
 draw(pa..(2,1), Dotted);
 draw(pb..(2,1), Dotted);
 
-label("$y=2x-1$", (1, 3.5), blue_default*0.5 + black*0.5 , filltype=Fill(white));
+//label("$y=2x-1$", (1, 3.5), blue_default*0.5 + black*0.5 , filltype=Fill(white));
 label("1", (1.5, 1), S, black, filltype=Fill(white));
 label("2", (2, 2), E, black, filltype=Fill(white));
 

@@ -7,8 +7,8 @@ real ymin  = -40.0;
 real ymax  = 240.0;
 real ystep =  20.0;
 
-koord("\scriptsize{C}", xmin, xmax, xstep,
-      "\scriptsize{F}",  ymin, ymax, ystep,
+koord("\scriptsize{$x$}", xmin, xmax, xstep,
+      "\scriptsize{$y$}",  ymin, ymax, ystep,
       gitter = true);
 
 real f1(real x)

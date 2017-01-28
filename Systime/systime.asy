@@ -1,15 +1,7 @@
 //////////////////////////////////////////////////////////////////
 // Begin preamble
 
-if(!settings.multipleView) settings.batchView=false;
-settings.tex="pdflatex";
-if(settings.render < 0) settings.render=4;
-settings.outformat="";
-settings.inlineimage=true;
-settings.embed=true;
-settings.toolbar=false;
-viewportmargin=(2,2);
-
+settings.outformat="pdf";
 size(7cm, 7cm, IgnoreAspect);
 
 import graph;
@@ -140,4 +132,14 @@ void vinkelbue(pair p0, pair p1, pair p2, real size = 1.2, pen p = defaultpen)
     fill(a -- p0 -- cycle, p);
     draw(a);
 } // end of vinkelbue
+
+void square(pair p1, pair p2)
+{
+    pair v1 = p2-p1;
+    pair v2 = (-v1.y, v1.x);
+    pair p3 = p1 + v2;
+    pair p4 = p3 + v1;
+
+    draw(p1--p2--p4--p3--p1);
+}
 

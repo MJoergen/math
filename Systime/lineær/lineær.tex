@@ -45,6 +45,31 @@ Fahrenheit og Celsius, og dels til at lave prognoser ud fra kendte data.
 Vi begynder med at se på nogle eksempler.
 
 \subsection{Eksempel}
+I Europa bruger vi temperaturskalaen Celsius, hvor vand fryser ved 0 grader og
+koger ved 100 grader.  I USA bruger de derimod temperaturskalaen Fahrenheit,
+hvor vand fryser ved 32 F og koger ved 212 F.
+Man kan omregne mellem de to temperaturskalaer ved følgende formel:
+\[
+    y = 1,8\cdot x  + 32 \,,
+\]
+hvor $x$ er temperaturen i grader Celsius og $y$ er temperaturen i Fahrenheit.
+Denne sammenhæng er vist grafisk i figuren:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{lin-1a}
+\end{figure}
+
+Ud fra ligningen er det muligt at omregne mellem temperaturer i Celsius og
+temperaturer i Fahrenheit. F.eks.  er kroppens normaltemperatur 37 grader. I
+Fahrenheit vil den samme temperatur være
+\[
+    32 + 1,8\cdot 37 = 98,6\, {\rm F} \,.
+\]
+På figuren er markeret punkter for kroppens normaltemperatur (37 C,\, 98,6 F) samt
+vands kogepunkt (100 C,\, 212 F).
+
+\subsection{Eksempel}
 Et teleselskab har et simpelt takstsystem:
 \begin{itemize}
     \item Abonnement 5 kr. pr. måned, samt 0,50 kr. pr. talt minut.
@@ -73,30 +98,6 @@ $y$-aksen i tallet $5$ (det koster 5 kroner at tale i 0 minutter), se figur
 Hældningen $0,50$ angiver prisstigningen for hvert ekstra minut, der tales --
 den er 0,50 kroner.  Prisen for 20 minutters samtale er 15 kr., og for 21
 minutters samtale er den 15,50 kr.
-
-\subsection{Eksempel}
-I Europa bruger vi temperaturskalaen Celsius, hvor vand fryser ved 0 grader og
-koger ved 100 grader.  I USA bruger de derimod temperaturskalaen Fahrenheit,
-hvor vand fryser ved 32 F og koger ved 212 F.
-Man kan omregne mellem de to temperaturskalaer ved følgende formel:
-\[
-    {\rm F} = 1,8\, {\rm C} + 32 \,.
-\]
-Denne sammenhæng er vist grafisk i figuren:
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.5\textwidth]{lin-1a}
-\end{figure}
-
-Ud fra ligningen er det muligt at omregne mellem temperaturer i Celsius og
-temperaturer i Fahrenheit. F.eks.  er kroppens normaltemperatur 37 grader. I
-Fahrenheit vil den samme temperatur være
-\[
-    32 + 1,8\cdot 37 = 98,6\, {\rm F} \,.
-\]
-På figuren er markeret punktet for kroppens normaltemperatur (37,\, 98,6) samt
-punktet for vands kogepunkt (100,\, 212).
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -140,9 +141,10 @@ Eksempler på sådanne lineære sammenhænge er (se figur 1.2):
     $$
     y = a\cdot x + b
     $$
-    gælder, at grafen er en ret linje, hvor $a$ er linjens {\em hældning}.  Det
-    betyder, at linjen vokser med $a$ enheder, når $x$ vokser med 1 enhed.
-    Punktet $(0,\,b)$ er linjens {\em skæringspunkt med $y$-aksen}.
+    gælder, at grafen er en ret linje, hvor $a$ er linjens {\em hældning} eller
+    {\em væksthastghed}.  Det betyder, at linjen vokser med $a$ enheder, når
+    $x$ vokser med 1 enhed.  Punktet $(0,\,b)$ er linjens {\em skæringspunkt
+    med $y$-aksen}.
 \end{thm}
 
 Vi kan opstille en tabel ("sildeben") over koordinater $(x,\,y)$, der passer i
@@ -175,7 +177,7 @@ Hældningen bestemmes altså ud fra, hvor meget $y$ vokser for hver enhed af $x$
 er derfor muligt at aflæse hældningen på grafen ved (fra et valgfrit startpunkt)
 at gå 1 til højre og se, hvor meget $y$ stiger eller falder.
 
-$b$ er en konstant, der afgør, hvor grafen skærer $y$-aksen. Hvis $b$ er positiv finder
+Konstanten $b$ afgør, hvor grafen skærer $y$-aksen. Hvis $b$ er positiv finder
 skæringen sted over $x$-aksen, og hvis $b$ er negativ er skæringen placeret under $x$-aksen.
 
 At tallet $b$ er linjens skæringspunkt med $y$-aksen følger af, at
@@ -195,6 +197,10 @@ På grafen ovenfor har vi valgt startpunktet $(1,\,1)$. Når vi bevæger
 1 til højre, så skal vi gå 2 op for at ramme grafen. Derfor er hældningen $a=2$.
 Ligeledes ser vi, at grafen skærer $y$-aksen i punktet $(0,\,-1)$. Derfor er
 $b=-1$.
+Linjen er derfor beskrevet ved ligningen
+\[
+    y=2x-1\,.
+\]
 
 
 %Hældningen er illustreret på figur 1.4. Hvis $x$ vokser til $x+1$, så vokser
@@ -210,7 +216,7 @@ $b=-1$.
 \subsection{Quiz}
 \begin{itemize}
     \item Aflæs koordinater af punkter på grafen.
-    \item Afgør om et givet punkt ligger på grafen.
+    \item Afgør ved aflæsning om et givet punkt ligger på grafen.
     \item Udregn $y$ ud fra $x$ vha ligningen.
     \item Afgør om et punkt opfylder ligningen.
     \item Aflæs hældningen af en ret linje.
@@ -224,8 +230,10 @@ $b=-1$.
 
 \section{Lineær regression}
 Ofte, så har man givet en række datapunkter, som ikke ligger på en ret linje. Alligevel
-vil man gerne benytte en lineær model som tilnærmelse. Vi ser på et eksempel:
+vil man gerne benytte en lineær model, for at kunne foretage prognoser. Vi ser
+på et eksempel:
 
+\subsection{Eksempel}
 Man har undersøgt højden af et stort antal piger og beregnet middel\-høj\-den for
 hver årgang. Pigernes højde ved forskellige aldre fremgår af skemaet.
 
@@ -244,22 +252,25 @@ hver årgang. Pigernes højde ved forskellige aldre fremgår af skemaet.
     \includegraphics[width=0.5\textwidth]{lin-12}
 \end{figure}
 
-På figuren ovenfor er punkterne indtegnet, og endvidere er tegnet en {\em tendenslinje} med ligningen:
+På figuren ovenfor er punkterne indtegnet, og endvidere er tegnet en {\em
+tendenslinje} med ligningen:
 \[
     y = 6,31 x + 79,8 \,,
 \]
 hvor $x$ er alderen i år, og $y$ er pigernes gennemsnitlige højde i cm.
 
-Det ses, at linjen følger punkterne med rimelighed. Det er derfor muligt at bruge ligningen
-for den rette linje til at foretage beregninger. F.eks. kan man beregne en piges gennemsnitlige højde ved alderen 12 år ved at indsætte $x=12$ i ligningen. Det giver
+Det ses, at linjen følger punkterne med rimelighed. Det er derfor muligt at
+bruge ligningen for den rette linje til at foretage pronoser. F.eks. kan man
+forudsige en piges gennemsnitlige højde ved alderen 12 år ved at indsætte $x=12$
+i ligningen. Det giver
 \[
     y=6,31\cdot 12 + 79,8 = 155,5 \mbox{ cm. }
 \]
 Altså forudsiger denne model, at piger i alderen 12 år har en gennemsnitlig
 højde på 155,5 cm.  Det skal understreges, at der en tale om en prognose, som
 bygger på en række forudsætninger.  I dette tilfælde forudsætter modellen,
-fordi det er en lineær model, at piger vokser med det samme antal cm hvert år,
-i dette tilfælde 6,31 cm.
+fordi det er en {\em lineær} model, at piger vokser med det samme antal cm
+hvert år, i dette tilfælde 6,31 cm.
 
 Denne forudsætning holder ikke, når pigernes alder passerer puberteten.
 Endvidere er der tale om et gennemsnit.  Alligevel bliver sådanne modeller brugt
@@ -272,7 +283,10 @@ forudsætninger.
 \subsection{Mindste kvadraters metode}
 
 For at finde frem til tendenslinjen, som er den linje, der bedst bestemmer
-punkterne, benytter man sædvanligvis en metode, der kaldes {\em mindste
+punkterne, benytter man som regel et CAS-værktøj. I dette afsnit forklares,
+hvordan tendenslinjen udvælges.
+
+CAS-værktøjer benytter sædvanligvis en metode, der kaldes {\em mindste
 kvadraters metode}.
 
 \begin{figure}[H]
@@ -280,9 +294,10 @@ kvadraters metode}.
     \includegraphics[width=0.5\textwidth]{lin-11}
 \end{figure}
 
-På fig. 1.11 er en række punkter afsat, og en vilkårlig linje $m$ er tegnet. Desuden er de
-lodrette afstande $d_1$, $d_2$, $d_3$, ..., $d_n$ fra målepunkterne til linjen afsat. Man
-kan så udregne summen $D$ af kvadraterne (kvadratsummen) på afstandene:
+På figuren er en række punkter afsat, og en vilkårlig linje $m$ er tegnet.
+Desuden er de lodrette afstande $d_1$, $d_2$, $d_3$, ..., $d_n$ fra
+målepunkterne til linjen afsat, samt de tilhørende kvadrater. Man kan så
+udregne summen $D$ af kvadraternes areal:
 
 \[
 D = {d_1}^2 + {d_2}^2 + {d_3}^2 + \ldots + {d_n}^2 \; . 
@@ -294,7 +309,6 @@ Man har vedtaget at den linje, der gør kvadratsummen $D$ mindst mulig, er den
 'bedste' linje. Metoden kaldes {\em de mindste kvadraters metode}, og den linje, der
 fremkommer, kaldes {\em regressionslinjen} eller {\em tendenslinjen} svarende
 til punkterne. Vi går ikke ind på, hvordan linjen matematisk bestemmes. 
-Oftest bruges et CAS-værktøj til at bestemme denne rette linje.
 
 \subsection{Korrelation}
 CAS giver foruden regressionslinjens ligning den såkaldte {\em
@@ -314,14 +328,55 @@ Vi bemærker følgende om korrelationskoefficienten $r$:
         er på -1, desto tættere ligger punkterne på linjen.
     \item Hvis $r = -1$ ligger punkterne præcis på ret linje med negativ hældning. 
 \end{itemize}
-På fig. 5.7 er disse forhold illustreret.
+På næste figur er disse forhold illustreret.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.5\textwidth]{fig57}
-    \caption{Figur 5.7}
-    \label{fig57}
+    \includegraphics[width=\textwidth]{fig57}
 \end{figure}
+
+\subsection{Eksempel}
+I et fysikforsøg måles vægt og rumfang at et måleglas med sand. Det giver følgende værdier:
+
+\[
+\begin{array}{|c|c|c|c|c|c|}
+    \hline
+    \mbox{Rumfang (ml)},\, x &  50 &  100 &  150 &  200 &  250  \\
+    \hline
+    \mbox{Vægt (g)},\, y &  225 &   305 &  380 &  465 &  540 \\
+    \hline
+\end{array}
+\]
+hvor $x$ er rumfanget i ml, og $y$ er vægten i gram.
+
+Målinger er vist i den følgende figur:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{lin-11a}
+\end{figure}
+
+På figuren er også indtegnet tendenslinjen givet ved ligningen
+\[
+    y=1,58 x + 146
+\]
+
+Punkterne passer overordentligt godt med linjen, og vi kan derfor sige, at linjen er en god model
+til at beskrive sammenhængen mellem vægt og rumfang i dette forsøg.
+
+Endvidere kan vi fortolke konstanterne $1,58$ og $146$ i modellen på følgende måde:
+\begin{itemize}
+    \item Konstanten $1,58$ angiver hvor meget vægten stiger, når rumfanget af
+        sandet øges med 1 ml. Dette er det samme som sandets densitet
+        (massefylde), som i dette forsøg er bestemt til $1,58$ g/ml.
+    \item Konstanten $146$ er vægten, når måleglasset er tomt. Det vil sige, at
+        i dette forsøg er vægten af det tomme måleglas bestemt til $146$ gram.
+\end{itemize}
+
+\subsection{Eksempel}
+
+
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

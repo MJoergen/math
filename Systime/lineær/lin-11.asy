@@ -12,16 +12,6 @@ pair F1(real x)
     return (x, f1(x));
 }
 
-void square(pair p1, pair p2)
-{
-    pair v1 = p2-p1;
-    pair v2 = (-v1.y, v1.x);
-    pair p3 = p1 - v2;
-    pair p4 = p3 + v1;
-
-    draw(p1--p2--p4--p3--p1);
-}
-
 pair p1 = F1(1) + (0, 0.5);
 pair p2 = F1(3) - (0, 0.5);
 pair p3 = F1(4) + (0, 0.7);
