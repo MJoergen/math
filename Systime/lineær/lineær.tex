@@ -46,7 +46,7 @@ Vi begynder med at se på nogle eksempler.
 
 \subsection{Eksempel}
 I Europa bruger vi temperaturskalaen Celsius, hvor vand fryser ved 0 grader og
-koger ved 100 grader.  I USA bruger de derimod temperaturskalaen Fahrenheit,
+koger ved 100 grader.  I USA bruger de derimod temperaturskalaen Fah\-renheit,
 hvor vand fryser ved 32 F og koger ved 212 F.
 Man kan omregne mellem de to temperaturskalaer ved følgende formel:
 \[
@@ -358,7 +358,7 @@ Målinger er vist i den følgende figur:
 
 På figuren er også indtegnet tendenslinjen givet ved ligningen
 \[
-    y=1,58 x + 146
+    y=1,58 x + 146 \,.
 \]
 
 Punkterne passer overordentligt godt med linjen, og vi kan derfor sige, at linjen er en god model
@@ -366,18 +366,93 @@ til at beskrive sammenhængen mellem vægt og rumfang i dette forsøg.
 
 Endvidere kan vi fortolke konstanterne $1,58$ og $146$ i modellen på følgende måde:
 \begin{itemize}
-    \item Konstanten $1,58$ angiver hvor meget vægten stiger, når rumfanget af
+    \item Konstanten $1,58$ angiver, hvor meget vægten stiger, når rumfanget af
         sandet øges med 1 ml. Dette er det samme som sandets densitet
         (massefylde), som i dette forsøg er bestemt til $1,58$ g/ml.
     \item Konstanten $146$ er vægten, når måleglasset er tomt. Det vil sige, at
         i dette forsøg er vægten af det tomme måleglas bestemt til $146$ gram.
 \end{itemize}
 
+Forklaringsgraden er af CAS-værktøjet angivet til at være $r=0,9998$, hvilket bekræfter, at modellen
+passer særdeles godt med målingerne. Derfor er det rimeligt at konkludere, at der er en 
+lineær sammenhæng mellem rumfang og vægt af sand, og at sandets densitet er konstant.
+
 \subsection{Eksempel}
+Fra statistikbanken.dk kan man finde data over "tilskadekomne og dræbte i spiritusuheld" i Danmark, som
+angivet i følgende tabel:
 
+\[
+\begin{array}{|c|c|c|}
+    \hline
+    $x$ & \mbox{årstal} & \mbox{antal} \\
+    \hline
+    0 & 2007 & 1261 \\
+    \hline
+    1 & 2008 & 1012 \\
+    \hline
+    2 & 2009 & 861 \\
+    \hline
+    3 & 2010 & 671 \\
+    \hline
+    4 & 2011 & 698 \\
+    \hline
+    5 & 2012 & 548 \\
+    \hline
+    6 & 2013 & 504 \\
+    \hline
+    7 & 2014 & 417 \\
+    \hline
+    8 & 2015 & 384 \\
+    \hline
+\end{array}
+\]
 
+Generelt, når $x$-aksen består af årstal, så vælger man oftest at sætte $x=0$ ved det første årstal.
+Det vil sige, at
+\[
+    x = \mbox{årstal} - 2007\,.
+\]
+Dette er ligeledes angivet i tabellen oven over.
 
+På figuren er ovenstående punkter indsat, sammen med en ret linje.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{lin-11b}
+\end{figure}
+
+Tendenslinjen er udregnet på CAS værktøj til
+\[
+    y=-102,2x+1115 \,.
+\]
+
+Punkterne passer nogenlunde med linjen, og vi kan derfor med et vist forbehold
+sige, at der er en tilnærmelsesvis lineær sammanhæng mellem årstal og antal
+tilskadekomne og dræbte i spiritusuheld i Danmark.
+
+Forklaringsgraden er $-0,9597$ er tæt på $-1$, og antyder en generel overensstemmelse mellem
+data og model.
+
+Konstanterne $-102,2$ og $1115$ i modellen kan fortolkes på følgende måde:
+\begin{itemize}
+    \item Konstanten $-102,2$ angiver, at for hvert år reduceres antallet
+        af tilskadekomne og dræbte i spiritusuheld i Danmark med ca. 102 personer.
+    \item Konstanten $1115$ fortæller, at der ved modellens begyndelse, dvs i år 2007,
+        var 1115 tilskadekomne og dræbte i spiritusuheld i Danmark. Det passer åbenlyst
+        ikke med det rigtige antal på 1261 personer i tabellen oven over. Forskellen er
+        et udtryk for, at modellen afviger fra de faktiske antal.
+\end{itemize}
+
+Denne lineære model har dog en indbygget svaghed, nemlig at antal personer fortsætter med at falde.
+På et tidspunkt (efter ca. yderligere fire år) vil modellen angive et negativt antal personer, hvilket 
+er åbenlyst forkert. Så ligesome i det tidligere eksempel med pigers højde, så er modellens
+anvenlighed begrænset.
+
+\subsection{Quiz}
+\begin{itemize}
+    \item Give en fornuftig fortolkning $a$, $b$ og $r$ ud fra en given model.
+    \item Forholde sig kritisk til en models gyldighedsområde.
+\end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -393,8 +468,8 @@ $$
 
 \subsection{Ensbetydende ligninger}
 Hvis man foretager en række omformninger af en ligning for at finde en løsning,
-bruger man symbolet $\Leftrightarrow$ , en dobbeltpil (eller en {\em biimplikation}), mellem
-ligninger, der har de samme løsninger. Fx har vi
+bruger man symbolet $\Leftrightarrow$ , en dobbeltpil (eller en {\em
+biimplikation}), mellem ligninger, der har de samme løsninger. Fx har vi
 \bas
 && 2(3x - 1) = x - 4(2 - x)\\
 &\Leftrightarrow& 6x - 2 = x - 8 + 4x\\
@@ -402,30 +477,53 @@ ligninger, der har de samme løsninger. Fx har vi
 &\Leftrightarrow& x = -6 
 \eas
 Hver af de fire ligninger har den samme løsning. Man siger, at sådanne
-ligninger er {\em ensbetydende}. Man kan også sige, at ensbetydende ligninger fremgår
-af hinanden ved ’lovlige’ omformninger.
+ligninger er {\em ensbetydende}. Man kan også sige, at ensbetydende ligninger
+fremgår af hinanden ved ’lovlige’ omformninger.
 
 Vi anfører de vigtigste regler for løsning af ligninger.
 
 [ANIMATION OM REGNEREGLER 1--4]
 
+\subsection{Eksempel}
+Førstegradsligninger optræder ofte i forbindelse med lineære modeller. F.eks. i
+eksemplet med dræbte og tilskadekomne kan man beregne, hvornår modellen
+forudsiger, at antallet er lig med 0.  Efter dette tidspunkt bliver antallet
+negativt, og så giver modellen ikke længere mening.  Vi skal da løse følgende
+ligning:
+\[
+\begin{aligned}
+    & -102,2x+1115 = 0  \\
+    \iff & -102,2x = -1115 \\
+    \iff & x = \frac{-1115}{-102,2} \\
+    \iff & x = 10,9
+\end{aligned}
+\]
+Svaret $x=10,9$ skal forstås således, at i år $x + 2007 = 10,9 + 2007 = 2017,9$
+vil antallet af dræbte og tilskadekomne blive lig med nul. Modellen her derfor
+højst gyldighed frem til år 2017.
+
+
+\subsection{Quiz}
+\begin{itemize}
+    \item Løse ligningen $5x+7 = 0$
+    \item Løse ligningen $-5x+7 = 0$
+\end{itemize}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Skæring mellem linjer -- omskrevet fra tilsvarende afsnit i Mat-C bogen}
+\section{Skæring mellem linjer}
 Hvis to linjers ligninger er kendt, vil vi finde koordinaterne til linjernes
 skæringspunkt (hvis de ikke er parallelle).
 
 Linjerne $l$ og $m$ har f.eks. ligningerne (se figur 2.9)
 \[
-    l: y=0,5x-2\quad{\mbox{og}}\quad m: y=-3x+5
+    l: y=0,5x-2\quad{\mbox{og}}\quad m: y=-3x+5 \,.
 \]
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{lin-9}
-    \caption{Figur 2.9}
-    \label{fig6}
 \end{figure}
 
 I skæringspunktet mellem linjerne skal $y$-værdien for de to linjer være den
@@ -446,10 +544,52 @@ y=0,5\cdot2-2=-1 \,.
 Skæringspunktet har altså koordinaterne $(2,\,-1)$, hvilket ser ud til at
 stemme med figuren.
 
+\subsection{Eksempel}
+Skæring mellem linjer optræder typisk, når man vil sammenligne to forskellige
+modeller.  I indledningen betragtede vi et teleselskab, hvor prisen pr. måned
+kunne beskrives ved følgende ligning
+\[
+    y = 5 + 0,50 \cdot x \quad \mbox{selskab A}\,,
+\]
+hvor $x$ er den samlede samtaletid i løbet af måneden, og $y$ er den samlede
+pris. Her er konstanten $0,50$ prisen pr. minut, og konstanten $5$ er den faste
+abonnementspris om måneden, uafhængig af samtaletiden.
+
+Nu vil vi sammenligne dette med et andet teleselskab, som godt nok har et højere abonnnement,
+men til gengæld en lavere minutpris. Vi ser således på
+\[
+    y = 10 + 0,20 \cdot x \quad \mbox{selskab B}\,.
+\]
+Ved et lavt forbrug vil selskab B være for dyrt, men hvis forbruget er meget stort, så vil
+selskab B være billigst.
+
+Vi kan nu undersøge, ved hvilket forbrug de to selskaber vil være lige dyre. Vi skal 
+altså finde skæringspunktet mellem de to rette linjer, se figuren:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{lin-9a}
+\end{figure}
+Af figuren fremgår det, at ved et forbrug på ca. 17 minutter om måneden er de to selskaber
+lige dyre. Vi kan beregne denne pris ved at løse følgende ligning:
+\[
+\begin{aligned}
+    & 5 + 0,50 x = 10 + 0,20 x \\
+    \iff & 0,30x = 5 \\
+    \iff & x = 16,67
+\end{aligned}
+\]
+Så ved et forbrug over $16,67$ minutter vil selskab B være at foretrække.
+
+\subsection{Quiz}
+\begin{itemize}
+    \item Løs ligningen $5x+7 = 2x+3$
+    \item Løs ligningen $-5x+7 = 2x+3$
+\end{itemize}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Ligefrem proportionalitet (kopi af afsnit i Mat-C bogen)}
+\section{Ligefrem proportionalitet}
 Man bruger den talemåde, at to variabler $x$ og $y$ er {\em ligefrem
 proportionale} (eller blot: {\em proportionale}), hvis de "stiger og falder i
 samme takt". Vi skal se på, hvad denne lidt løse udtalelse dækker over.
@@ -510,6 +650,9 @@ Sammenhængen illustreres som en ret linje gennem $(0,\,0)$ med hældningen $1,5
     hældning $k$.
 \end{mydef}
 
+En proportional sammenhæng er således et specialtilfælde af en lineær sammenhæng, hvor
+skæringen med $y$-aksen er $b=0$.
+
 \subsection{Eksempel (sammenhæng mellem masse og volumen)}
 
 Et eksempel på ligefrem proportionalitet er sammenhængen mellem masse og rumfang af olie.
@@ -534,9 +677,14 @@ det dobbelte:
     \item 15 minutter koster $20+0,5\cdot 15 = 27,50$ kroner.
     \item 30 minutter koster $20+0,5\cdot 30 = 35,00$ kroner.
 \end{itemize}
-I koordinatsystemet går linjen med ligningen $y=20+0,5x$ nemlig ikke gennem (0, 0),
+I koordinatsystemet går linjen med ligningen $y=20+0,5x$ nemlig ikke gennem $(0, 0)$,
 sådan som kravet til proportionalitet er.
 
+\subsection{Quiz}
+\begin{itemize}
+    \item Bestem forskrift ud fra sproglig fremstilling.
+    \item Bestem forskrift ud fra et givet punkt.
+\end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -627,33 +775,6 @@ hvis hældningen er negativ.
 \end{figure}
 
 
-%Når man har beregnet hældningen $a$ så vil man også gerne bestemme
-%skæringspunktet med $y$-aksen.
-%\begin{thm}
-%    Hvis $A(x_1,\,y_1)$ er et punkt på en ret linje, og linjen har hældningen
-%    $a$, så er skæringen $b$ bestemt ved
-%    $$
-%    b = y_1 - a\cdot x_1
-%    $$
-%\end{thm}
-%\begin{proof}
-%    Linjens ligning er 
-%    $$
-%    y = a\cdot x + b
-%    $$
-%    og netop de punkter, som ligger på linjen, har koordinater, der passer i
-%    ligningen.  Da $A$ ligger på linjen, passer dens koordinater altså i
-%    ligningen, dvs.
-%    $$
-%    y_1 = a\cdot x_1 + b 
-%    $$
-%    Heri isoleres $b$:
-%    $$
-%    b = y_1 - a\cdot x_1
-%    $$
-%Dermed har vi vist det ønskede.
-%\end{proof}
-
 \begin{thm}
     Hvis $A(x_1,\,y_1)$ er et punkt på en ret linje, og linjen har hældningen
     $a$, så er linjens ligning givet ved
@@ -683,209 +804,12 @@ hvis hældningen er negativ.
     Dermed har vi vist det ønskede.
 \end{proof}
 
+\subsection{Quiz}
+\begin{itemize}
+    \item Bestem hældning af linje gennem to givne punkter.
+    \item Bestem forskrift for linje gennem to givne punkter.
+    \item Kontrollere, at en given forskrift går gennem to givne punkter.
+\end{itemize}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-%\section{Intervaller -- kopi af afsnit fra Mat-A1 bogen}
-%
-%Vi kender den sædvanlige tallinje med begyndelsespunkt $O$ og det såkaldte
-%enhedspunkt $E$, der svarer til tallet 1. Længden af linjestykket $OE$ er altså 1.
-%
-%\begin{figure}[ht]
-%    \centering
-%    \includegraphics[width=0.5\textwidth]{fig23}
-%    \caption{Figur 2.3}
-%    \label{fig23}
-%\end{figure}
-%
-%Vi ser på visse dele af tallinjen, de såkaldte intervaller.
-%
-%\subsection{Begrænsede intervaller}
-%Hvis $a$ og $b$ er to tal, hvor $a < b$, skriver vi (se fig. 2.3):
-%\begin{itemize}
-%    \item $[a;b]$ : alle tal mellem $a$ og $b$, $a$ og $b$ medregnet,
-%    \item $[a;b[$ : alle tal fra og med $a$ til, men ikke med $b$,
-%    \item $]a;b]$ : alle tal fra $a$ til $b$, men ikke med $a$,
-%    \item $]a;b[$ : alle tal mellem $a$ og $b$, $a$ og $b$ ikke medregnet .
-%\end{itemize}
-%Disse afsnit af tallinjen kaldes {\em intervaller}, og $a$ og $b$ er deres {\em endepunkter}.
-%
-%Vi siger, at et interval er
-%\begin{itemize}
-%    \item lukket, hvis begge endepunkter er med i intervallet,
-%    \item halvåbent, hvis det ene, men ikke det andet endepunkt er med i intervallet,
-%    \item åbent, hvis ingen af endepunkterne er med i intervallet.
-%\end{itemize}
-%Intervaller af disse fire typer er alle begrænsede, og deres længde er $b-a$.
-%
-%\begin{eks}
-%Intervallet $[3;7[$ består af alle tal på tallinjen mellem 3 og 7; 3 er
-%medregnet og 7 er ikke medregnet. Intervallets længde er $7-3 = 4$ .
-%
-%Intervallet $[-5;8]$ består af alle tal mellem -5 og 8, og både -5 og 8
-%tilhører intervallet. Dets længde er 13 fordi $8 - (-5) = 13$ .
-%
-%På tallinjen er et intervals længde altså afstanden mellem endepunkterne.
-%\end{eks}
-%[INDSÆT FIGUR HER]
-%
-%\subsection{Ubegrænsede intervaller}
-%Vi får tit brug for at se på tal, der på tallinjen ligger til højre eller til
-%venstre for et givet tal (fig. 2.4), fx alle tal der er større end 17, eller
-%alle tal der er mindre end eller lig med 50.
-%
-%Det giver anledning til disse skrivemåder:
-%
-%\begin{itemize}
-%    \item $[a;\infty[$  : alle tal større end eller lig med $a$
-%    \item $]a;\infty[$  : alle tal større end $a$
-%    \item $]-\infty;b]$ : alle tal mindre end eller lig med $b$
-%    \item $]-\infty;b[$ : alle tal mindre end $b$
-%\end{itemize}
-%Tegnet $\infty$ læses ’uendelig’.
-%
-%Intervallerne af typerne $]a;\infty [$ og $]-\infty ;b[$ kaldes åbne, da $a$ og $b$
-%ikke medregnes, og intervallerne af typerne $[a;\infty [$ og $]-\infty ;b]$
-%kaldes lukkede, da $a$ og $b$ medregnes.
-%
-%Disse intervaller er ubegrænsede, fordi de ikke har nogen længde – det
-%fortsætter ’i det uendelige’ i den ene ende af tallinjen.
-%
-%Endelig kan man også skrive intervallet $]-\infty ;\infty [$. Dette angiver
-%alle tal på tallinjen.
-
-%\section{Uligheder (kopi af Mat-B1 HTX)}
-%Vi har tidligere set på en række forskellige ligningstyper. Fælles for disse
-%ligninger er, at de alle indeholder et lighedstegn. Vi skal nu se på et emne,
-%der under ét benævnes uligheder. Uligheder optræder også i teknikkens verden.
-%Skibe, der skal kunne besejle Panama-kanalen, må højest være 32,3 meter bredde.
-%
-%$$
-%B\leq 32,3 \, \text{m}
-%$$
-%Temperaturen skal være mindst $800^\circ$ i en given proces:
-%
-%
-%$$
-%T \geq 800 ^\circ C
-%$$
-%Som det ses, optræder der ulighedstegn. Dem findes der fire af, to skarpe og to svage:
-%
-%\begin{itemize}
-%    \item Mindre end, (skarp) $<$
-%    \item Større end, (skarp) $>$
-%    \item Mindre end eller lig med, (svag) $\leq$
-%    \item Større end eller lig med, (svag) $\geq$
-%\end{itemize}
-%
-%Et par eksempler på uligheder:
-%
-%$$
-%x-2>7 \;\;\; \text{og} \;\;\; 3\cdot x-12\geq 4
-%$$
-%
-%Når vi skal løse uligheder, er teknikken stort set den samme som ved ligninger, dog med en enkelt vigtig undtagelse.
-%
-%Et led kan flyttes fra den ene side af ulighedstegnet til den anden side ved at skifte fortegn:
-%$$
-%x+3<7 \Leftrightarrow x<7-3 \Leftrightarrow x<4
-%$$
-%$$
-%13-x>3 \Leftrightarrow 13>3+x \Leftrightarrow 10>x
-%$$
-%Bemærk, at en ulighed kan læses fra to sider:
-%$10 < x$ er det samme som $x > 10$
-%
-%Ved multiplikation og division skal vi være forsigtige. Det er tydeligt for enhver, at:
-%$$
-%2<7
-%$$
-%Vi ganger med et positivt tal på begge sider:
-%$$
-%3 \cdot 2 <3 \cdot 7 \Leftrightarrow 6<21
-%$$
-%Det gik fint.
-%
-%Vi prøver at nu at gange med et negativt tal, her -1, på begge sider af ulighedstegnet:
-%$$
-%(-1) \cdot 2 < (-1) \cdot 7 \Leftrightarrow -2<-7
-%$$
-%Det går ikke! -2 er jo større end -7. Vi er åbenbart nødt til at vende ulighedstegnet om:
-%$$
-%2<7 \Leftrightarrow (-1) \cdot 2 > (-1) \cdot 7 \Leftrightarrow -2>-7
-%$$
-%Ud fra eksemplerne kan vi opstille følgende regler:
-%\begin{enumerate}
-%    \item Et led flyttes fra den ene side af ulighedstegnet til den anden side ved at skifte fortegn på leddet.
-%    \item Man må gange og dividere med det samme positive tal, undtagen 0, på begge sider af ulighedstegnet.
-%    \item Man må gange og dividere med det samme negative tal på begge sider af ulighedstegnet, hvis man samtidig vender ulighedstegnet om.
-%\end{enumerate}
-%
-%\begin{eks}
-%Vi løser uligheden:
-%$$
-%3 \cdot x - 7 \geq 8
-%$$
-%Led kan flyttes som i ligninger:
-%$$
-%3 \cdot x \geq 8+7 \Leftrightarrow 3 \cdot x \geq 15
-%$$
-%Vi må gange og dividere med positive tal:
-%$$
-%3 \cdot x \geq 15 \Leftrightarrow x \geq 5
-%$$
-%\end{eks}
-%
-%\begin{eks}
-%Vi løser denne ulighed:
-%$$
-%-4 \cdot x + 1 \leq 21
-%$$
-%Et led flyttes:
-%$$
-%-4 \cdot x \leq 21 -1 \Leftrightarrow -4 \cdot x \leq 20
-%$$
-%Nu skal vi passe på! Vi isolerer x ved at dividere med -4 på begge sider og skal huske at vende ulighedstegnet:
-%$$
-%-4 \cdot x \leq 20 \Leftrightarrow x \geq-5
-%$$
-%
-%Vi kunne have grebet opgaven anderledes an:
-%$$
-%-4 \cdot x + 1 \leq 21
-%$$
-%$$
-%-4 \cdot x + 1 \leq 21 \Leftrightarrow 1 - 21 \leq 4 \cdot x
-%$$
-%Nu er koefficienten foran x positiv:
-%$$
-%1-21 \leq 4 \cdot x \Leftrightarrow -20 \leq 4 \cdot x \Leftrightarrow -5 \leq x
-%$$
-%Hvis vi læser løsningen ”baglæns” fås:
-%$$
-%x \geq -5
-%$$
-%Altså samme løsning som før. Heldigvis!
-%\end{eks}
-%
-%\subsection{Dobbeltuligheder}
-%En ulighed med to ulighedstegn, der vender samme vej (hvorfor skal de vende samme vej?) kaldes for en dobbeltulighed:
-%$$
-%x-1 < 2x + 3 < x+11
-%$$
-%
-%Den løses ved at opdele uligheden i to uligheder:
-%$$
-%x - 1 < 2x + 3 \;\;\; \text{og} \;\;\; 2x + 3 < x + 11
-%$$
-%der løses med den angivne metode, og hvor den endelige løsning skal opfylde begge kriterier. I det angivne tilfælde skal der gælde:
-%$$
-%x>-4 \;\;\; \text{og} \;\;\; x<8
-%$$
-%Og dermed skal der alt i alt gælde at
-%$$
-%-4 < x < 8
-%$$
-%%
 \end{document}
 

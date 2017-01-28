@@ -24,7 +24,7 @@ all: $(asy_pdfs) $(tex_pdfs)
 %.pdf : %.asy
 	asy $< 
 
-%.pdf : %.tex
+%.pdf : %.tex $(asy_pdfs)
 	latexmk -pdf $<
 
 clean:

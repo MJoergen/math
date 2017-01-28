@@ -28,9 +28,9 @@ dot(p3);
 dot(p4);
 dot(p5);
 
-draw(graph(f1, -0.5, 5), blue_default);
+draw(graph(f1, 0, 270), blue_default);
 
-label("$y=1,58x+146$", (200, 300), blue_default);
+label("$y=1,58x+146$", (200, 300), blue_default, filltype=Fill(white));
 
 shipout(scale(5)*bbox(white));
 

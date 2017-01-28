@@ -14,6 +14,7 @@ pen blue_thin   = rgb("77afc3");
 pen purple_thin = rgb("916fa2");
 pen yellow_thin = rgb("f49e42");
 pen green_thin  = rgb("6a9f7b");
+pen grey_thin   = rgb("808080");
 
 pen blue_default   = blue_thin   + 1.0;
 pen purple_default = purple_thin + 1.0;
@@ -58,7 +59,7 @@ void koord(string xlabel, real xmin, real xmax, real xstep,
 
     real xequals = xmin;
     real yequals = ymin;
-    
+
     if (xmin * xmax < 0.0)
     {
         xequals = 0.0;
@@ -82,12 +83,18 @@ void koord(string xlabel, real xmin, real xmax, real xstep,
     {
         for (int i=0; i<=xsteps; ++i)
         {
-            xequals(xmin + xstep*i, linetype(new real[] {0,2}, scale=false)+0.6);
+            if (abs(xmin + xstep*i) >= xstep*1e-6)
+            {
+                xequals(xmin + xstep*i, grey_thin + 0.3);
+            }
         }
 
         for (int i=0; i<=ysteps; ++i)
         {
-            yequals(ymin + ystep*i, linetype(new real[] {0,2}, scale=false)+0.6);
+            if (abs(ymin + ystep*i) >= ystep*1e-6)
+            {
+                yequals(ymin + ystep*i, grey_thin + 0.3);
+            }
         }
     }
 

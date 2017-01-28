@@ -28,10 +28,10 @@ square(F1(3), p2);
 square(F1(4), p3);
 square(F1(6), p4);
 
-label("$d_1$", (F1(1)+p1)/2, W);
-label("$d_2$", (F1(3)+p2)/2, E);
-label("$d_3$", (F1(4)+p3)/2, W);
-label("$d_4$", (F1(6)+p4)/2, E);
+label("$d_1$", (F1(1)+p1)/2, E);
+label("$d_2$", (F1(3)+p2)/2, W);
+label("$d_3$", (F1(4)+p3)/2, E);
+label("$d_4$", (F1(6)+p4)/2, W);
 
 label("m", F1(7), S*2, blue_default);
 
