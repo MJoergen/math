@@ -34,6 +34,9 @@ draw(graph(f1, 3.17, 5.0), blue_default);
 draw(graph(f2, 3.25, 5.125), purple_default);
 draw(graph(f3, xmin, xmax), yellow_default);
 
+draw(pa--(4,ymin));
+draw(pa--(xmin,16));
+
 label("$y=x^2$",  (4.5, 23.5), blue_default, filltype=Fill(white));
 label("$y=8x-16$",  (4.9, 19), purple_default, filltype=Fill(white));
 label("$y=21$",  (3.5, 20), yellow_default, filltype=Fill(white));

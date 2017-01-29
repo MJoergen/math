@@ -13,6 +13,8 @@
 \usepackage{amsmath}
 \usepackage{enumitem}
 %\usepackage{hyperref}
+\usepackage{float}
+\usepackage{tcolorbox}
 
 %\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
 \newcommand{\bas}{\begin{eqnarray*}}
@@ -111,7 +113,7 @@ Det kan vises, at når $x$ er lille, så gælder der, at
 
 \section*{Projekt 2 -- Parablens toppunkt}
 I kapitel 10 blev det vist, at grafen hørende til funktionen $f(x) = ax^2 + bx + c$
-er en parabel, og at denne parabel har et toppunkt givet ved koordinaterne:
+er en parabel, og at denne parabel har et toppunkt med koordinaterne:
 \[
     T = \Big(\frac{-b}{2a}, \frac{-d}{4a}\Big) \,,
 \]
@@ -158,7 +160,7 @@ i kapitlet om differentialregning, men her undersøges de specielt for parabler.
 Vi bruger derfor i dette projekt følgende definition.
 \begin{mydef}
     Tangenten til en parabel i et givet punkt er en ikke lodret ret linje
-    gennem punktet, som ikke skærer parablen andre steder.
+    gennem punktet, som kun har ét punkt fælles med parablen.
 \end{mydef}
 Geometrisk er en tangent en ret linje som er "parallel" med grafen i et punkt.
 
@@ -186,10 +188,10 @@ I figur 2 er tegnet parablen samt tangenten til denne i punktet $(3,\, 9)$.
     hvor $a$ er en endnu ukendt konstant.
 \end{enumerate}
 For at beregne værdien af hældningen $a$ benytter vi, at tangenten og parablen
-kun må have ét skæringspunkt.
+kun må have ét punkt fælles.
 
 \begin{enumerate}[label=(\alph*), resume]
-    \item Vis, at skæringspunkterne mellem tangenten og parablen er givet
+    \item Vis, at fællespunkterne mellem tangenten og parablen er givet
         ved løsningerne til følgende ligning
         \[
             a\cdot(x-3) + 9 = x^2 \,.
@@ -208,8 +210,8 @@ kun må have ét skæringspunkt.
 
 Nu vælger vi et vilkårligt punkt $(x_0,\, x_0^2)$ på parablen.
 \begin{enumerate}[label=(\alph*), resume]
-    \item Vis, at skæringspunkter mellem tangenten og parablen er givet
-        ved løsningerne til følgende ligning
+    \item Vis, at $x$-koordinaterne til fællespunkter mellem tangenten og
+        parablen er givet ved løsningerne til følgende ligning
         \[
             a\cdot(x-x_0) + x_0^2 = x^2 \,.
         \]
@@ -255,7 +257,7 @@ x_0^2)$, og at denne tangent har ligningen
 \]
 
 Vi tager nu udgangspunkt i punktet $(4,\,16)$ på parablen. Vi kunne have valgt
-et hvilket som helst andet punkt, men det er smart at vælge et punkt, som
+et hvilket som helst andet punkt, men det er praktisk at vælge et punkt, som
 ligger tæt på det ønskede punkt med $y$-koordinaten $21$.
 
 \begin{enumerate}[label=(\alph*)]
@@ -267,7 +269,7 @@ Idéen er nu, at vi kan nemt beregne, hvor denne tangent skærer linjen $y=21$.
 Da tangenten er tæt på parablen, så vil dette skæringspunkt være tæt på 
 skæringspunktet med parablen, se figur 4.
 
-\begin{figure}[ht]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{kva2}
     \caption{}
@@ -293,7 +295,7 @@ Vi beregner, hvor denne nye tangent skærer linjen $y=21$.
     \item Vis, at denne nye tangent skærer linjen $y=21$ når $x=4,5828$.
 \end{enumerate}
 
-Vi er nu kommet frem til, at vores kvadratrod er tæt på $4,5828$.
+Vi er nu kommet frem til, at $\sqrt{21}$ er tæt på $4,5828$.
 Det er nu klart, at denne proces kan gentages vilkårligt antal gange.
 Det viser sig, at hver gang kommer man tættere på det rigtige resultat, og
 at denne proces forløber forbavsende hurtigt.
@@ -320,7 +322,7 @@ at denne proces forløber forbavsende hurtigt.
 
 Nu søger vi at generalisere ovenstående proces til en vilkårlig 
 kvadratrod. Vi søger altså nu at bestemme værdien af $\sqrt{k}$, hvor
-$k$ er et givet tal. Vi lader igen $x_0$ være vores startværdi.
+$k$ er et givet tal. Vi lader igen $x_0$ være vores begyndelsesværdi.
 
 \begin{enumerate}[label=(\alph*), resume]
     \item Vis, at parablens tangent i punktet $(x_0,\,x_0^2)$ 
@@ -332,14 +334,14 @@ $k$ er et givet tal. Vi lader igen $x_0$ være vores startværdi.
         \[
             x = x_0 + \frac{k-x_0^2}{2x_0}\,.
         \]
-    På denne form er brøkens tæller netop, hvor stor afvigelsen er i $y$-værdien,
-        og hele brøken er justeringen i $x$-værdien.
+    På denne form angiver brøkens tæller netop, hvor stor afvigelsen er i $y$-værdien,
+        og hele brøken er ændringen i $x$-værdien.
     \item Vis, at udtrykket også kan omskrives til
         \[
             x = \frac12 \cdot \Big(\frac{k}{x_0} + x_0\Big) \,.
         \]
     Denne sidste form er velegnet til beregninger, fordi den indeholder færrest
-        mulige regneoperationer.
+        mulig regneoperationer.
 
     \item Brug dette sidste udtryk til at beregne kvadratroden $\sqrt{43}$ med
         mindst fem decimaler.
@@ -359,7 +361,7 @@ Denne metode er dog upraktisk til at beregne f.eks.
 
 I stedet for bruger vi en anden metode, som giver en tilnærmelse til den
 rigtige værdi.  Betragt først heltallige potenser af $0,5$, dvs.
-$0,5$, $0,25$, $0,125$ osv. Disse udregnes nemt ved at multiplicere
+$0,5$, $0,5^2 = 0,25$, $0,5^3 = 0,125$ osv. Disse udregnes nemt ved at multiplicere
 det foregående tal med $0,5$.
 \begin{enumerate}[label=(\alph*)]
     \item Udfyld de tomme felter i nedenstående tabel med potenser af $0,5$:
@@ -403,7 +405,7 @@ Således har vi
     = 10^1 \cdot 10^{0,5} \cdot 10^{0,125} \cdot 10^{0,0625} \cdot 10^{0,03125} \,.
 \]
 
-For at komme videre, laver vi nu en tabel over gentagne kvadratrødder af tallet
+For at komme videre, opstiller vi nu en tabel over gentagne kvadratrødder af tallet
 $10$. Denne tabel skal kun laves én gang, og kan eventuelt udarbejdes ved at
 bruge metoden angivet i projektet ovenover.  Således er:
 \[

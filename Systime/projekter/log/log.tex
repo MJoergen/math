@@ -13,6 +13,7 @@
 \usepackage{amsmath}
 \usepackage{enumitem}
 %\usepackage{hyperref}
+\usepackage{float}
 
 %\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
 \newcommand{\bas}{\begin{eqnarray*}}
@@ -46,22 +47,28 @@ Først ser vi på $\log x$ til tal tæt på $x=1$.
     \item Vis ved hjælp af differentialregning, at funktionen $f(x) = \log x$ i
         punktet $(1, 0)$ har en tangent med ligningen $y = 0,4343 \cdot (x-1)$.
 \end{enumerate}
-Da tangenten er en god approksimation til funktionen tæt på røringspunktet,
-så har vi altså, at 
+Da tangenten er en god approksimation (tilnærmelse) til funktionen tæt på
+røringspunktet, har vi, at 
 \[
     \tag{1}
     \log x \approx 0,4343\cdot(x-1),\quad \mbox{for $x\approx 1$}\,.
 \]
-\begin{figure}[ht]
+
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{log1}
-    \caption{$\log x$ sammen med tangenten i punktet $(1, 0)$. I intervallet $0,9\le x\le 1,1$ er der ingen visuel forskel mellem de to grafer.}
-    \label{log1}
 \end{figure}
-Figur 1 viser grafen for $\log x$ sammen med tangenten.
+På figuren ses grafen for $\log x$ sammen med tangenten i punktet $(1, 0)$. I
+intervallet $0,9\le x\le 1,1$ er der ingen visuel forskel mellem de to grafer.
+
+På næste figur ses en forstørrelse af området omkring tangentens røringspunkt.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{log1a}
+\end{figure}
 
 For eksempel har vi med formel (1), at $\log 1,01 \approx 0,4343\cdot 0,01 = 0,004343$.
-CAS giver værdien $\log 1,01 = 0,004321$. Den procentvise afvigelse er derfor:
+CAS giver værdien $\log 1,01 = 0,004321$. Den procentvise afvigelse er:
 \[
     \frac{0,004343-0,004321}{0,004321}\cdot 100 = 0,5 \% \,.
 \]
@@ -72,7 +79,7 @@ CAS giver værdien $\log 1,01 = 0,004321$. Den procentvise afvigelse er derfor:
     \item Hvor stor er den procentvise afvigelse?
 \end{enumerate}
 
-Vi kan finde en mere nøjagtig formel end (1) på følgende måde: Først erstat $x$ med
+Vi kan finde en mere nøjagtig formel end (1) på følgende måde: Erstat $x$ med
 $\frac1x$ i formel (1). Det giver
 \[
     \tag{2}
@@ -87,18 +94,18 @@ $\frac1x$ i formel (1). Det giver
             \log x \approx \frac{0,4343}{2} \cdot \Big(x-\frac1x\Big),\quad
             \mbox{for $x\approx 1$}\,.
             \]
-    \item Benyt denne gang formel (3) til at beregne en tilnærmelse til $\log
+    \item Benyt nu formel (3) til at beregne en tilnærmelse til $\log
         1,06$, og sammenlign med den korrekte værdi udregnet på CAS.
     \item Hvor stor er den procentvise afvigelse denne gang?
 \end{enumerate}
-\begin{figure}[ht]
+
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{log2}
-    \caption{$\log x$ sammen med formel (3). I intervallet $0,6\le x \le 1,4$ er der ingen
-    visuel forskel på de to grafer.}
     \label{log2}
 \end{figure}
-Figur 2 viser grafen for $\log x$ sammen med formel (3).
+Figur 2 viser grafen for $\log x$ sammen med grafen for højresiden i (3).  I
+intervallet $0,6\le x \le 1,4$ er der ingen visuel forskel på de to grafer.
 
 Skal man beregne logaritmer til tal, som ikke er tæt på 1, så er der andre metoder.
 Vi ser først på situationen med tal tæt på $10$:
@@ -112,7 +119,7 @@ Vi ser først på situationen med tal tæt på $10$:
         \]
 
 \end{enumerate}
-Således kan vi kombinere (1) og (4) til at finde $\log 1003 = \log 1,003 + 3
+Vi kan nu kombinere (1) og (4) til at finde $\log 1003 = \log 1,003 + 3
 \approx 0,4343\cdot 0,003 + 3 = 3,0013$.
 \begin{enumerate}[label=(\alph*), resume]
     \item Benyt ovenstående metode til at udregne $\log 102$.

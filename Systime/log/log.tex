@@ -13,6 +13,9 @@
 \usepackage{amsthm}        % Theorems
 \usepackage{amsmath}
 %\usepackage{hyperref}
+\usepackage{float}
+\usepackage{tcolorbox}
+
 
 \newcommand{\bas}{\begin{eqnarray*}}
 \newcommand{\eas}{\end{eqnarray*}}
@@ -57,10 +60,12 @@ efter hinanden).  Således er $g(9) = \sqrt{9} = 3$ netop fordi $f(3) = 3^2 = 9$
 På samme måde ser vi nu på eksponentialfunktionen $f(x) = 10^x$, som er
 defineret for alle reelle tal $x$.
 
+\begin{tcolorbox}
 \begin{mydef}
 Den omvendte funktion til eksponentialfunktionen $f(x) = 10^x$ kaldes {\em
 logaritmefunktionen med grundtal 10}, og den betegnes $g(x) = \log x$.
 \end{mydef}
+\end{tcolorbox}
 
 Vi kan skrive nogle værdier for de to funktioner op:
 
@@ -72,12 +77,15 @@ Vi kan skrive nogle værdier for de to funktioner op:
 \end{aligned}
 \]
 
-Da grafen for eksponentialfunktionen ligger over x-aksen, er det kun positive
+Da grafen for eksponentialfunktionen ligger over $x$-aksen, er det kun positive
 tal, der har logaritmer, så definitionsmængden for logaritmefunktionen er
 mængden af positive tal. Værdimængden er alle tal.
 
-Vi har, at logaritmen til et positivt tal er den eksponent, som 10 skal
-opløftes til for at give tallet.
+Vi har således følgende:
+\begin{tcolorbox}
+Logaritmen til et positivt tal er den eksponent, som 10 skal opløftes til for
+at give tallet.
+\end{tcolorbox}
 
 Ovenfor så vi, at $\log 100 = 2$ fordi 2 netop er den eksponent, 10 skal
 opløftes til for at give 100. På samme måde er log 5 = 0,6990, fordi 10 skal
@@ -94,26 +102,27 @@ jævnfør kapitel 5, at
 
 Logaritmefunktionen kaldes også 10-tals-logaritmen, og tallet 10 kaldes grundtallet.
 
-\begin{figure}[ht]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{log1}
     \caption{}
     \label{fig1}
 \end{figure}
 
-På figur 1 er tegnet graferne for funktionerne $f(x) = 10^x$ og $g(x) = \log x$. Da
-de er hinandens omvendte, ligger graferne symmetrisk omkring linjen y = x, dvs.
-de er hinandens spejlbilleder. Grundtallet for logaritmefunktionen findes som
-det tal, hvis funktionsværdi (på y-aksen) er 1, dvs. $\log 10 = 1$.
+På figuren oven over er tegnet graferne for funktionerne $f(x) = 10^x$ og $g(x)
+= \log x$. Da de er hinandens omvendte, ligger graferne symmetrisk omkring
+linjen $y = x$, dvs.  de er hinandens spejlbilleder. Grundtallet for
+logaritmefunktionen findes som det tal, hvis funktionsværdi (på y-aksen) er 1,
+dvs. $\log 10 = 1$. Grundtallet er altså 10.
 
-\begin{figure}[ht]
+På næste figur er tegnet et nærbillede af graferne omkring (0, 0).
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{log2}
     \caption{}
     \label{fig2}
 \end{figure}
 
-På figur 2 er tegnet et nærbillede af graferne omkring (0, 0).
 
 \section*{Den naturlige logaritmefunktionen $\ln$}
 Vi har defineret 10-tals-logaritmen $\log x$ som den omvendte funktion til
@@ -121,26 +130,27 @@ eksponentialfunktionen $10^x$ med grundtallet 10. På samme måde har den
 naturlige eksponentialfunktion ${\rm e}^x$ en omvendt funktion, der kaldes
 {\em den naturlige logaritmefunktion}. Den betegnes $\ln x$.
 
+\begin{tcolorbox}
 Som for 10-talslogaritmen kan vi sige, at den naturlige logaritme til et
 positivt tal er den eksponent, som grundtallet e skal opløftes til for at give
 tallet.
+\end{tcolorbox}
 
-Fx er (benyt cas)
-
+Fx er (benyt CAS):
 \[
 \ln 7 = 1,9459 \text{ , fordi } e^{1,9459} = 7 \; .
 \]
 
-\begin{figure}[ht]
+Graferne for den naturlige eksponentialfunktion og den naturlige
+logaritmefunktion ses på den næste figur. De er hinandens spejlbilleder i linjen $y =
+x$.
+
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{log3}
     \caption{}
     \label{fig3}
 \end{figure}
-
-Graferne for den naturlige eksponentialfunktion og den naturlige
-logaritmefunktion ses på figur 3. De er hinandens spejlbilleder i linjen y =
-x.
 
 Grafen for den naturlige eksponentialfunktion går gennem punktet (1, e), og
 grafen for den naturlige logaritmefunktion går gennem (e, 1). Tallet e er
@@ -173,6 +183,7 @@ Den helt centrale rolle som logaritmer spiller i matematikken skyldes nogle
 regneregler, som vi nedenfor viser for 10-tals-logaritmen. Reglerne er
 imidlertid også gyldige for den naturlige logaritmefunktion.
 
+\begin{tcolorbox}
 \begin{thm}
 
 For funktionerne $\log$ og $\ln$ gælder for alle positive tal a og b og alle tal x
@@ -186,6 +197,7 @@ følgende regler:
     \end{aligned}
 \]
 \end{thm}
+\end{tcolorbox}
 
 \begin{proof}
 
@@ -208,9 +220,9 @@ Den anden regel viser vi ved at foretage en række ensbetydende omskrivninger af
 \[
 \begin{aligned}
     &\log \frac{a}{b} = \log a - \log b &&\text{ Læg } \log b \text{ til på begge sider } \\ 
-    &\log \frac{a}{b} + \log b = \log a &&\text{ Benyt regel 1 ovenfor om sum af to logaritmer} \\ 
-    &\log \left( \frac{a}{b} \cdot b \right) = \log a &&\text{ Reducér venstre side } \\ 
-    &\log a = \log a \;
+    \Leftrightarrow\quad&\log \frac{a}{b} + \log b = \log a &&\text{ Benyt regel 1 ovenfor om sum af to logaritmer} \\ 
+    \Leftrightarrow\quad&\log \left( \frac{a}{b} \cdot b \right) = \log a &&\text{ Reducér venstre side } \\ 
+    \Leftrightarrow\quad&\log a = \log a \;
 . \end{aligned}
 \]
 Den sidste ligning er sand, og da den er ensbetydende med den første, er denne
@@ -265,7 +277,8 @@ Regnereglerne giver mulighed for at reducere udtryk med logaritmer:
 Ved hjælp af regnereglerne kan vi løse flere forskellige typer at ligninger.
 Vi ser på nogle af dem her.
 
-\begin{eks}
+\begin{tcolorbox}
+\subsubsection*{Eksempel}
 Vi ser først på ligninger der indeholder eksponentialfunktioner
 \[
 e^x = 5\,.
@@ -274,9 +287,10 @@ Vi benytter formlen (2) for den naturlige logaritmefunktion:
 \[
 e^x = 5 \iff \ln (e^x) = \ln 5 \iff x = \ln 5\,.
 \]
-\end{eks}
+\end{tcolorbox}
 
-\begin{eks}
+\begin{tcolorbox}
+\subsubsection*{Eksempel}
 \[
     7^x = 83\,.
 \]
@@ -287,9 +301,10 @@ Benyt en regneregel for log:
 \[
     x = \frac{\log 83}{\log 7} = 2,2708\,.
 \]
-\end{eks}
+\end{tcolorbox}
 
-\begin{eks}
+\begin{tcolorbox}
+\subsubsection*{Eksempel}
 
 Vi ser på ligninger, der indeholder logaritmefunktioner. 
 
@@ -302,9 +317,10 @@ Vi benytter, at $\log x$ og $10^x$ er hinandens omvendte, og får
 \[
 \log x = 2,95 \iff x = 10^{2,95} = 891,25 \; .
 \]
-\end{eks}
+\end{tcolorbox}
 
-\begin{eks}
+\begin{tcolorbox}
+\subsubsection*{Eksempel}
 \[
 \ln x = 1,49.
 \]
@@ -314,10 +330,11 @@ Tilsvarende finder vi her, at
 \[
 \ln x = 1,49 \iff x = e^{1,49} = 4,4371 \; .
 \]
-\end{eks}
+\end{tcolorbox}
 
 
-\begin{eks}
+\begin{tcolorbox}
+\subsubsection*{Eksempel}
 Den eksponentielle udvikling f udvikler sig fra en begyndelsesværdi på 375 med
 en vækstrate på 13,2\% pr. år. Hvor længe varer det, inden denne størrelse er
 vokset til en værdi på 1200? Vi skal finde x, så
@@ -333,10 +350,11 @@ vokset til en værdi på 1200? Vi skal finde x, så
 \]
 
 Efter 9,4 år er den pågældende størrelse altså vokset til en værdi på 1200.
-\end{eks}
+\end{tcolorbox}
 
 
-\begin{eks}
+\begin{tcolorbox}
+\subsubsection*{Eksempel}
 
     I nogle sammenhænge angives eksponentielle udviklinger ved hjælp af tallet {\rm e}.
 En størrelse udvikler sig efter forskriften
@@ -352,8 +370,10 @@ potensregneregel får vi
 \]
 Begyndelsesværdien er altså 428, fremskrivningsfaktoren 1,083 og vækstraten
 8,3\% pr. måned.
-\end{eks}
+\end{tcolorbox}
 
+\begin{tcolorbox}
+\subsubsection*{Eksempel}
 Hvis vi på den anden side har den eksponentielle udvikling 
 \[
     g(t) = 1200 \cdot 0,94^t\,,
@@ -368,6 +388,7 @@ Dermed kan vi altså omskrive:
 \[
     g(t) = 1200 \cdot e^{-0,0619t} \, .
 \]
+\end{tcolorbox}
 
 
 \end{document}
