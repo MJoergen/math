@@ -24,7 +24,7 @@ pair p5 = (4,  698);
 pair p6 = (5,  548);
 pair p7 = (6,  504);
 pair p8 = (7,  417);
-pair p9 = (9,  384);
+pair p9 = (8,  384);
 
 draw(graph(f1, 0, 9), blue_default);
 

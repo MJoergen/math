@@ -24,8 +24,8 @@ pair pb = (2, 3);
 dot(pa);
 dot(pb);
 
-draw(pa..(2,1), Dotted);
-draw(pb..(2,1), Dotted);
+draw(pa..(2,1), solid + 1);
+draw(pb..(2,1), solid + 1);
 
 //label("$y=2x-1$", (1, 3.5), blue_default*0.5 + black*0.5 , filltype=Fill(white));
 label("1", (1.5, 1), S, black, filltype=Fill(white));

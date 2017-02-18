@@ -40,15 +40,16 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Indledning}
-Lineære modeller bruges dels til at foretage eksakte omregninger, f.eks. mellem
-Fahrenheit og Celsius, og dels til at lave prognoser ud fra kendte data.
+Lineære modeller bruges bl.a. til at foretage eksakte omregninger, f.eks.
+mellem temperaturskalaerne Fahrenheit og Celsius, og til at lave prognoser ud
+fra kendte data.
 
 Vi begynder med at se på nogle eksempler.
 
 \begin{tcolorbox}
 \subsection{Eksempel}
 I Europa bruger vi temperaturskalaen Celsius, hvor vand fryser ved 0 grader og
-koger ved 100 grader.  I USA bruger de derimod temperaturskalaen Fah\-renheit,
+koger ved 100 grader.  I USA bruger man derimod temperaturskalaen Fah\-renheit,
 hvor vand fryser ved 32 F og koger ved 212 F.
 Man kan omregne mellem de to temperaturskalaer ved følgende formel:
 \[
@@ -67,10 +68,10 @@ Ud fra ligningen er det muligt at omregne mellem temperaturer i Celsius og
 temperaturer i Fahrenheit. F.eks.  er kroppens normaltemperatur 37 grader. I
 Fahrenheit vil den samme temperatur være
 \[
-    32 + 1,8\cdot 37 = 98,6\, {\rm F} \,.
+    1,8\cdot 37 + 32 = 98,6\, {\rm F} \,.
 \]
-På figuren er markeret punkter for kroppens normaltemperatur (37 C,\, 98,6 F) samt
-vands kogepunkt (100 C,\, 212 F).
+På figuren er markeret punkter for kroppens normaltemperatur (37 C,\, 98,6 F),
+vands kogepunkt (100 C,\, 212 F), samt vands frysepunkt (0 C,\, 32 F).
 \end{tcolorbox}
 
 \begin{tcolorbox}
@@ -80,13 +81,13 @@ Et teleselskab har et simpelt takstsystem:
     \item Abonnement 5 kr. pr. måned, samt 0,50 kr. pr. talt minut.
 \end{itemize}
 Hvis en abonnent på en måned taler 25 minutter, skal han betale:
-$$
-5 + 0,50\cdot25 = 17,50 \, {\rm kr}.
-$$
+\[
+0,50\cdot25 + 5 = 17,50 \, {\rm kr}.
+\]
 Hvis der tales $x$ minutter en bestemt måned, er prisen $y$ kroner bestemt ved:
-$$
-y = 5 + 0,50\cdot x \,.
-$$
+\[
+y = 0,50\cdot x + 5 \,.
+\]
 Man siger, at der er en {\em lineær sammenhæng} mellem samtaletiden $x$ og prisen $y$.
 
 Hvis vi afbilder sammenhængen i et koordinatsystem med antallet af minutter på
@@ -155,14 +156,14 @@ Eksempler på sådanne lineære sammenhænge er (se næste figur):
     y = a\cdot x + b
     $$
     gælder, at grafen er en ret linje, hvor $a$ er linjens {\em hældning} eller
-    {\em væksthastghed}.  Det betyder, at linjen vokser med $a$ enheder, når
+    {\em væksthastighed}.  Det betyder, at linjen vokser med $a$ enheder, når
     $x$ vokser med 1 enhed.  Punktet $(0,\,b)$ er linjens {\em skæringspunkt
     med $y$-aksen}.
 \end{thm}
 \end{tcolorbox}
 
-Vi kan opstille en tabel ("sildeben") over koordinater $(x,\,y)$, der passer i
-ligningen $y=3x-5$:
+Vi kan opstille en tabel over koordinater $(x,\,y)$, der passer i ligningen
+$y=3x-5$:
 $$
 \begin{tabular}{c|c|c|c|c|c|c}
     x &  -2 & -1 &  0 &  1 & 2 & 3 \\
@@ -178,10 +179,12 @@ Linjen går altså gennem punkterne $(0,\,-5)$, $(1,\,-2)$ osv., se næste figur
     \caption{}
 \end{figure}
 
-Linjer med samme hældning er parallelle. Linjer med positiv hældning ($a>0$) forløber
-opad mod højre, linjer med negativ hældning ($a<0$) nedad mod højre. Linjer med
-hældning $a=0$ er vandrette.  Sådanne linjer har en ligning af formen $y=0x+b$
-eller blot $y=b$, se figur.
+Linjer med samme hældning er parallelle. Linjer med positiv hældning ($a>0$)
+forløber opad mod højre, linjer med negativ hældning ($a<0$) nedad mod højre.
+Linjer med hældning $a=0$ er vandrette.  Sådanne linjer har en ligning af
+formen $y=0x+b$ eller blot $y=b$. Lodrette linjer kan ikke beskrives ved en
+lineær sammenhæng af ovenstående form, fordi en lodret linje har ikke nogen
+veldefineret hældning. Se figur.
 
 \begin{figure}[H]
     \centering
@@ -189,12 +192,13 @@ eller blot $y=b$, se figur.
     \caption{}
 \end{figure}
 
-Hældningen bestemmes altså ud fra, hvor meget $y$ vokser for hver enhed af $x$. Det
-er derfor muligt at aflæse hældningen på grafen ved (fra et valgfrit startpunkt)
-at gå 1 til højre og se, hvor meget $y$ stiger eller falder.
+Hældningen bestemmes altså ud fra, hvor meget $y$ vokser for hver enhed af $x$.
+Det er derfor muligt at aflæse hældningen på grafen ved (fra et valgfrit
+begyndelsespunkt) at gå 1 til højre og se, hvor meget $y$ stiger eller falder.
 
 Konstanten $b$ afgør, hvor grafen skærer $y$-aksen. Hvis $b$ er positiv finder
-skæringen sted over $x$-aksen, og hvis $b$ er negativ er skæringen placeret under $x$-aksen.
+skæringen sted over $x$-aksen, og hvis $b$ er negativ er skæringen placeret
+under $x$-aksen.
 
 At tallet $b$ er linjens skæringspunkt med $y$-aksen følger af, at
 koordinatsættet $(0,\,b)$ passer i ligningen:
@@ -210,11 +214,10 @@ $$
     \caption{}
 \end{figure}
 
-På grafen ovenfor har vi valgt startpunktet $(1,\,1)$. Når vi bevæger
-1 til højre, så skal vi gå 2 op for at ramme grafen. Derfor er hældningen $a=2$.
-Ligeledes ser vi, at grafen skærer $y$-aksen i punktet $(0,\,-1)$. Derfor er
-$b=-1$.
-Linjen er derfor beskrevet ved ligningen
+På grafen ovenfor har vi valgt begyndelsespunktet $(1,\,1)$. Når vi bevæger os
+1 enhed til højre, så skal vi gå 2 enheder op for at ramme grafen. Derfor er
+hældningen $a=2$.  Ligeledes ser vi, at grafen skærer $y$-aksen i punktet
+$(0,\,-1)$. Derfor er $b=-1$.  Linjen har derfor ligningen
 \[
     y=2x-1\,.
 \]
@@ -246,9 +249,9 @@ Linjen er derfor beskrevet ved ligningen
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Lineær regression}
-Ofte, så har man givet en række datapunkter, som ikke ligger på en ret linje. Alligevel
-vil man gerne benytte en lineær model, for at kunne foretage prognoser. Vi ser
-på et eksempel:
+Ofte har man givet en række datapunkter, som ikke ligger på en ret linje.
+Alligevel vil man gerne benytte en lineær model, for at kunne lave prognoser
+(forudsigelser).  Vi ser på et eksempel:
 
 \subsection{Eksempel}
 Man har undersøgt højden af et stort antal piger og beregnet middel\-høj\-den for
@@ -277,23 +280,27 @@ tendenslinje} med ligningen:
 \]
 hvor $x$ er alderen i år, og $y$ er pigernes gennemsnitlige højde i cm.
 
-Det ses, at linjen følger punkterne med rimelighed. Det er derfor muligt at
-bruge ligningen for den rette linje til at foretage pronoser. F.eks. kan man
-forudsige en piges gennemsnitlige højde ved alderen 12 år ved at indsætte $x=12$
-i ligningen. Det giver
+Det ses, at linjen følger punkterne med rimelighed.  Modellen er derfor gyldig
+i intervallet 3 år til 10 år. Det kan formodes, at modellen også er gyldig et
+par over ud over dette.
+
+Ligningen viser, at {\em væksthastigheden} for pigerne er på 6,31 cm om året.
+
+Det er muligt at bruge ligningen for den rette linje til at lave prognoser.
+F.eks. kan man skønne 12-årige pigers gennemsnitlige højde ved at indsætte
+$x=12$ i ligningen. Det giver
 \[
     y=6,31\cdot 12 + 79,8 = 155,5 \mbox{ cm. }
 \]
-Altså forudsiger denne model, at piger i alderen 12 år har en gennemsnitlig
+Altså forudsiger denne model, at piger på 12 år har en gennemsnitlig
 højde på 155,5 cm.  Det skal understreges, at der en tale om en prognose, som
 bygger på en række forudsætninger.  I dette tilfælde forudsætter modellen,
 fordi det er en {\em lineær} model, at piger vokser med det samme antal cm
 hvert år, i dette tilfælde 6,31 cm.
 
-Denne forudsætning holder ikke, når pigernes alder passerer puberteten.
-Endvidere er der tale om et gennemsnit.  Alligevel bliver sådanne modeller brugt
-i stor udstrækning, og det er derfor vigtigt at kende modellernes
-forudsætninger. 
+Denne forudsætning holder ikke, når pigerne passerer puberteten.  Endvidere er
+der tale om et gennemsnit.  Alligevel bliver sådanne modeller brugt i stor
+udstrækning, og det er derfor vigtigt at kende modellernes forudsætninger. 
 \begin{thm}
     I en lineær model forudsættes det, at væksthastigheden er konstant.
 \end{thm}
@@ -302,10 +309,9 @@ forudsætninger.
 
 For at finde frem til tendenslinjen, som er den linje, der bedst bestemmer
 punkterne, benytter man som regel et CAS-værktøj. I dette afsnit forklares,
-hvordan tendenslinjen udvælges.
+hvordan tendenslinjen findes.
 
-CAS-værktøjer benytter sædvanligvis en metode, der kaldes {\em mindste
-kvadraters metode}.
+CAS-værktøjer benytter en metode, der kaldes {\em mindste kvadraters metode}.
 
 \begin{figure}[H]
     \centering
@@ -315,19 +321,21 @@ kvadraters metode}.
 
 På figuren er en række punkter afsat, og en vilkårlig linje $m$ er tegnet.
 Desuden er de lodrette afstande $d_1$, $d_2$, $d_3$, ..., $d_n$ fra
-målepunkterne til linjen afsat, samt de tilhørende kvadrater. Man kan så
-udregne summen $D$ af kvadraternes areal:
+målepunkterne til linjen afsat, samt de kvadrater, som de lodrette afstande
+danner. Man kan så udregne summen $D$ af kvadraternes areal:
 
 \[
 D = {d_1}^2 + {d_2}^2 + {d_3}^2 + \ldots + {d_n}^2 \; . 
 \]
 
-Hvis man vælger en anden linje, får man selvfølgelig i reglen en anden kvadratsum.
+Hvis man vælger en anden linje, får man selvfølgelig i reglen en anden
+kvadratsum.
 
 Man har vedtaget at den linje, der gør kvadratsummen $D$ mindst mulig, er den
-'bedste' linje. Metoden kaldes {\em de mindste kvadraters metode}, og den linje, der
-fremkommer, kaldes {\em regressionslinjen} eller {\em tendenslinjen} svarende
-til punkterne. Vi går ikke ind på, hvordan linjen matematisk bestemmes. 
+'bedste' linje. Metoden kaldes {\em de mindste kvadraters metode}, og den
+linje, der fremkommer, kaldes {\em regressionslinjen} eller {\em tendenslinjen}
+svarende til punkterne. Vi går ikke ind på, hvordan linjen matematisk
+bestemmes. 
 
 \subsection{Korrelation}
 CAS giver foruden regressionslinjens ligning den såkaldte {\em
@@ -366,13 +374,13 @@ I et fysikforsøg måles vægt og rumfang at et måleglas med sand. Det giver f�
 \[
 \begin{array}{|c|c|c|c|c|c|c|}
     \hline
-    \mbox{Rumfang (ml)} & x &  50 &  100 &  150 &  200 &  250  \\
+    \mbox{Rumfang af sandet (ml)} & x &  50 &  100 &  150 &  200 &  250  \\
     \hline
     \mbox{Vægt (g)} & y &  225 &   305 &  380 &  465 &  540 \\
     \hline
 \end{array}
 \]
-hvor $x$ er rumfanget i ml, og $y$ er vægten i gram.
+hvor $x$ er rumfanget af sandet i ml, og $y$ er vægten i gram.
 
 Målingerne er vist i den følgende figur:
 
@@ -393,15 +401,15 @@ til at beskrive sammenhængen mellem vægt og rumfang i dette forsøg.
 Endvidere kan vi fortolke konstanterne $1,58$ og $146$ i modellen på følgende måde:
 \begin{itemize}
     \item Konstanten $1,58$ angiver, hvor meget vægten stiger, når rumfanget af
-        sandet øges med 1 ml. Dette er det samme som sandets densitet
+        sandet øges med 1 ml. Dette er det samme som sandets massefylde 
         (massefylde), som i dette forsøg er bestemt til $1,58$ g/ml.
     \item Konstanten $146$ er vægten, når måleglasset er tomt. Det vil sige, at
-        i dette forsøg er vægten af det tomme måleglas bestemt til $146$ gram.
+        i dette forsøg er vægten af det tomme måleglas $146$ gram.
 \end{itemize}
 
 Forklaringsgraden er af CAS-værktøjet angivet til at være $r=0,9998$, hvilket bekræfter, at modellen
 passer særdeles godt med målingerne. Derfor er det rimeligt at konkludere, at der er en 
-lineær sammenhæng mellem rumfang og vægt af sand, og at sandets densitet er konstant.
+lineær sammenhæng mellem rumfang og vægt af sand, og at sandets massefylde er konstant.
 
 \subsection{Eksempel}
 Fra statistikbanken.dk kan man finde data over "tilskadekomne og dræbte i spiritusuheld" i Danmark, som
@@ -410,7 +418,8 @@ angivet i følgende tabel:
 \[
 \begin{array}{|c|c|c|}
     \hline
-    $x$ & \mbox{årstal} & \mbox{antal} \\
+    \mbox{antal år} & \mbox{årstal} & \mbox{antal} \\
+    \mbox{efter 2007} & &  \\
     \hline
     0 & 2007 & 1261 \\
     \hline
@@ -433,7 +442,7 @@ angivet i følgende tabel:
 \end{array}
 \]
 
-Generelt, når $x$-aksen består af årstal, vælger man oftest at sætte $x=0$ ved
+Når $x$-aksen består af årstal, vælger man oftest at sætte $x=0$ ved
 det første årstal.  Det vil sige, at
 \[
     x = \mbox{årstal} - 2007\,.
@@ -454,11 +463,14 @@ Tendenslinjen er udregnet på CAS værktøj til
 \]
 
 Punkterne passer nogenlunde med linjen, og vi kan derfor med et vist forbehold
-sige, at der er en tilnærmelsesvis lineær sammenhæng mellem årstal og antal
-tilskadekomne og dræbte i spiritusuheld i Danmark.
+sige, at der er en tilnærmelsesvis lineær sammenhæng mellem antal år efter 2007
+og antal tilskadekomne og dræbte i spiritusuheld i Danmark, i hvert fald inden
+for intervallet nul til otte år efter 2007.  Dog ligger begge de yderste
+punkter (ved $x=0$ og $x=8$) markant over linjen, og modellen kan derfor næppe
+bruges udenfor dette interval.
 
-Forklaringsgraden er $-0,9597$, og er derfor tæt på $-1$. Dette antyder en
-god overensstemmelse mellem data og model.
+Korrelationskoefficienten er $-0,9597$, og er derfor tæt på $-1$. Dette antyder
+en god overensstemmelse mellem data og model.
 
 Konstanterne $-102,2$ og $1115$ i modellen kan fortolkes på følgende måde:
 \begin{itemize}
@@ -516,7 +528,7 @@ Vi anfører de vigtigste regler for løsning af ligninger.
 
 \begin{tcolorbox}
 \subsection{Eksempel}
-Førstegradsligninger optræder ofte i forbindelse med lineære modeller. F.eks. i
+Førstegradsligninger optræder ofte i forbindelse med lineære modeller. I
 eksemplet med dræbte og tilskadekomne kan man beregne, hvornår modellen
 forudsiger, at antallet er lig med 0.  Efter dette tidspunkt bliver antallet
 negativt, og så giver modellen ikke længere mening.  Vi skal da løse følgende
@@ -525,14 +537,13 @@ ligning:
 \begin{aligned}
     & -102,2x+1115 = 0  \\
     \Leftrightarrow\,\, & -102,2x = -1115 \\
-    \Leftrightarrow\,\, & x = \frac{-1115}{-102,2} \\
-    \Leftrightarrow\,\, & x = 10,9 \,.
+    \Leftrightarrow\,\, & x = \frac{-1115}{-102,2} = 10,9 \,.
 \end{aligned}
 \]
 Svaret $x=10,9$ skal forstås således, at i år $x + 2007 = 10,9 + 2007 = 2017,9$
 vil antallet af dræbte og tilskadekomne ifølge modellen blive lig med nul, og
-derefter vil antallet være negativt.  Modellen her derfor højst gyldighed frem
-til år 2017.
+derefter vil antallet være negativt.  Modellen har derfor højst gyldighed frem
+til år 2017, og måske ikke engang indtil da.
 \end{tcolorbox}
 
 \subsection{Quiz}
@@ -565,11 +576,9 @@ samme, så der må gælde, at
 0,5x-2 = -3x+5 \,,
 \]
 og denne ligning løses på følgende måde:
-\bas
-&& 0,5x+3x=5+2\\
-&\iff& 3,5x=7\\
-&\iff& x=2
-\eas
+\[
+0,5x+3x=5+2 \iff 3,5x=7 \iff x=2 \,.
+\]
 Denne værdi af $x$ indsættes i en af ligningerne, ligegyldig hvilken:
 \[
 y=0,5\cdot2-2=-1 \,.
@@ -582,16 +591,16 @@ Skæring mellem linjer optræder typisk, når man vil sammenligne to forskellige
 modeller.  I indledningen betragtede vi et teleselskab, hvor prisen pr. måned
 kunne beskrives ved følgende ligning
 \[
-    y = 5 + 0,50 \cdot x \,, \quad \quad \mbox{selskab A}\,,
+    y = 0,50 \cdot x + 5 \,,
 \]
 hvor $x$ er den samlede samtaletid i løbet af måneden, og $y$ er den samlede
 pris. Her er konstanten $0,50$ prisen pr. minut, og konstanten $5$ er den faste
 abonnementspris om måneden, uafhængig af samtaletiden.
 
-Nu vil vi sammenligne dette med et andet teleselskab, som godt nok har et højere abonnnement,
-men til gengæld en lavere minutpris. Vi ser således på
+Nu vil vi sammenligne dette med et andet teleselskab B, som godt nok har et
+højere abonnnement, men til gengæld en lavere minutpris. Vi ser således på
 \[
-    y = 10 + 0,20 \cdot x \,, \quad \quad \mbox{selskab B}\,.
+    y = 0,20 \cdot x + 10 \,.
 \]
 Ved et lavt forbrug vil selskab B være for dyrt, men hvis forbruget er meget stort, så vil
 selskab B være billigst.
@@ -606,11 +615,7 @@ altså finde skæringspunktet mellem de to rette linjer, se figuren:
 Af figuren fremgår det, at ved et forbrug på ca. 17 minutter om måneden er de
 to selskaber lige dyre. Vi kan beregne denne pris ved at løse følgende ligning:
 \[
-\begin{aligned}
-    & 5 + 0,50 x = 10 + 0,20 x \\
-    \iff & 0,30x = 5 \\
-    \iff & x = 16,67 \,.
-\end{aligned}
+5 + 0,50 x = 10 + 0,20 x \iff 0,30x = 5 \iff x = 16,67 \,.
 \]
 Så ved et forbrug større end $16,67$ minutter om måneden vil selskab B være at
 foretrække.
@@ -632,10 +637,12 @@ samme takt". Vi skal se på, hvad denne lidt løse udtalelse dækker over.
 Hvis en bil kører med konstant hastighed, f.eks. 90 km/t, kan vi opstille en
 tabel over sammenhængen mellem tiden $x$ og den tilbagelagte afstand $y$:
 \[
-\begin{tabular}{c|c|c|c|c|c|c}
+\begin{tabular}{|c|c|c|c|c|c|c|}
+    \hline
     x ({\rm min}) & 10 & 20 & 30 & 40 & 60 & 120 \\
     \hline
-    y ({\rm km})  & 15 & 30 & 45 & 60 & 90 & 180  
+    y ({\rm km})  & 15 & 30 & 45 & 60 & 90 & 180  \\
+    \hline
 \end{tabular}
 \]
 Vi ser, at $y$ netop er $1,5$ gange så stor som $x$, så sammenhængen mellem $x$
@@ -661,7 +668,8 @@ også dobbelt så lang afstand, se figuren.
 \end{figure}
 
 I dette tilfælde er tidsrummet $x$ og afstanden $y$ proportionale, og tallet
-$1,5$ kaldes {\em proportionalitetsfaktoren}, fordi det netop er en faktor foran $x$.
+$1,5$ kaldes {\em proportionalitetsfaktoren}, fordi det netop er en {\em
+faktor} foran $x$.
 
 Man kan også sige, at forholdet mellem $y$ og $x$ er konstant, fordi vi får:
 \[
@@ -675,7 +683,7 @@ Sammenhængen illustreres som en ret linje gennem $(0,\,0)$ med hældningen $1,5
 
 \begin{tcolorbox}
 \begin{mydef}
-    To variabler $x$ og $y$ kaldes proportionale, hvis der findes et tal $k$, så
+    To variable $x$ og $y$ kaldes proportionale, hvis der findes et tal $k$, så
     $$
     y = k\cdot x \,\, {\rm eller} \,\, \frac{y}{x} = k
     $$
@@ -704,17 +712,16 @@ mindre end vands.
 I eksempel 1.1 så vi på teleselskabet, hvor prisen $y$ (naturligvis) afhænger af
 taletiden $x$ i minutter:
 \[
-y=20+0,5x \,.
+y = 0,5x + 20 \,.
 \]
 Her er prisen ikke proportional med taletiden: Dobbelt så lang taletid koster ikke
 det dobbelte:
 \begin{itemize}
-    \item 15 minutter koster $20+0,5\cdot 15 = 27,50$ kroner.
-    \item 30 minutter koster $20+0,5\cdot 30 = 35,00$ kroner.
+    \item 15 minutter koster $0,5\cdot 15 + 20 = 27,50$ kroner.
+    \item 30 minutter koster $0,5\cdot 30 + 20 = 35,00$ kroner.
 \end{itemize}
-I koordinatsystemet går linjen med ligningen $y=20+0,5x$ nemlig ikke gennem
-$(0,\, 0)$,
-sådan som kravet til proportionalitet er.
+I koordinatsystemet går linjen med ligningen $y = 0,5x + 20$ nemlig ikke gennem
+$(0,\, 0)$, sådan som kravet til proportionalitet er.
 
 \subsection{Quiz}
 \begin{itemize}
@@ -738,33 +745,33 @@ Vi viser følgende sætning:
 \begin{thm}
     Hvis $A(x_1,\,y_1)$ og $B(x_2,\,y_2)$ er to punkter på en ret linje, der ikke
     er lodret, dvs $x_1\neq x_2$, er hældningen $a$ af linjen bestemt ved
-    $$
-    a = \frac{y_2-y_1}{x_2-x_1}
-    $$
+    \[
+    a = \frac{y_2-y_1}{x_2-x_1} \,.
+    \]
 \end{thm}
 \end{tcolorbox}
 
 \begin{proof}
     Linjens ligning er
-    $$
+    \[
     y = a\cdot x + b \,.
-    $$
+    \]
     De punkter, som ligger på linjen, har koordinater, der passer i
     ligningen.  Da $A$ og $B$ ligger på linjen, passer deres koordinater altså
     i ligningen, dvs.
-    $$
+    \[
     y_1 = a\cdot x_1 + b \quad {\rm og} \quad y_2 = a\cdot x_2 + b \,.
-    $$
+    \]
     Vi trækker den første ligning fra den sidste og får
-    \bas
-    y_2 - y_1 &=& a\cdot x_2 + b - (a\cdot x_1 + b) \\
-              &=& a\cdot x_2 - a\cdot x_1 \\
-              &=& a\cdot \left(x_2-x_1\right)  \,.
-    \eas
+    \[
+    y_2 - y_1 = a\cdot x_2 + b - (a\cdot x_1 + b) 
+              = a\cdot x_2 - a\cdot x_1 
+              = a\cdot \left(x_2-x_1\right)  \,.
+    \]
     altså $y_2-y_1 = a \cdot \left(x_2-x_1\right)$, hvoraf
-    $$
+    \[
     a = \frac{y_2-y_1}{x_2-x_1} \,.
-    $$
+    \]
     og det var netop, hvad vi ville vise.
 \end{proof}
 
@@ -792,22 +799,27 @@ hvis hældningen er negativ.
 \begin{eks}
     Vi ser på linjen $l$ gennem $A(-1,\,3)$ og $B(4,\,5)$.
     Linjens hældning er
-    $$
-    a = \frac{5-3}{4-(-1)} = \frac{2}{5} = 0,4.
-    $$
+    \[
+    a = \frac{5-3}{4-(-1)} = \frac{2}{5} = 0,4\,.
+    \]
     Skæringspunktet med $y$-aksen finder vi ved at indsætte det ene punkts
-    koordinater i ligningen:
-    $$
-    5 = 0,4\cdot 4 + b.
-    $$
+    koordinater i ligningen, f.eks. $(4,\, 5)$:
+    \[
+    5 = 0,4\cdot 4 + b\,.
+    \]
     Det giver
-    $$
-    b = 5 - 0,4\cdot 4 = 3,4.
-    $$
+    \[
+    b = 5 - 0,4\cdot 4 = 3,4\,.
+    \]
+    Man kunne ligesåvel have brugt det andet punkt $(-1,\,3)$, det giver samme
+    resultat:
+    \[
+        b=3 - 0,4\cdot -1 = 3,4\,.
+    \]
     Linjens ligning er dermed
-    $$
-    y = 0,4 \cdot x + 3,4 
-    $$
+    \[
+    y = 0,4 \cdot x + 3,4\,.
+    \]
     Linjen er vist på den følgende figur:
 \begin{figure}[H]
     \centering
@@ -822,30 +834,27 @@ hvis hældningen er negativ.
 \begin{thm}
     Hvis $A(x_1,\,y_1)$ er et punkt på en ret linje, og linjen har hældningen
     $a$, så er linjens ligning givet ved
-    $$
-    y = a\cdot (x-x_1) + y_1 
-    $$
+    \[
+    y - y_1 = a\cdot (x-x_1) \,.
+    \]
 \end{thm}
 \end{tcolorbox}
 \begin{proof}
     Vi har generelt, at 
-    $$
+    \[
     y = a\cdot x + b
-    $$
-    og i punnket $(x_1, y_1)$ gælder:
-    $$
+    \]
+    og i punket $(x_1, y_1)$ gælder:
+    \[
     y_1 = a\cdot x_1 + b
-    $$
+    \]
     Trækkes den nederste ligning fra den øverste får vi:
-    $$
+    \[
     y-y_1 = a \cdot x + b - (a \cdot x_1 + b)
-    $$
-    $$
-    \Leftrightarrow y-y_1 = a \cdot x - a \cdot x_1
-    $$
-    $$
-    \Leftrightarrow y-y_1 = a \cdot (x - x_1)
-    $$
+    \]
+    \[
+    \Leftrightarrow y-y_1 = a \cdot x - a \cdot x_1 = a\cdot (x - x_1) \,.
+    \]
     Dermed har vi vist det ønskede.
 \end{proof}
 

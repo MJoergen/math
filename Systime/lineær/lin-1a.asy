@@ -20,10 +20,12 @@ draw(graph(f1, -3 , 115), blue_default);
 
 pair pa = (100, 212);
 pair pb = (37, 98.6);
+pair pc = (0, 32);
 
 dot(pa);
 dot(pb);
+dot(pc);
 
-label("$y=32+1,8\,x$", (60, 40), blue_default*0.5 + black*0.5 , filltype=Fill(white));
+label("$y=1,8\cdot x+32$", (60, 40), blue_default*0.5 + black*0.5 , filltype=Fill(white));
 
 shipout(scale(5)*bbox(white));

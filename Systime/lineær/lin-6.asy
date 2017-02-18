@@ -17,10 +17,10 @@ pair pby = (0.0, 4.0);
 pair pax = (1.0, 0.0);
 pair pbx = (4.0, 0.0);
 
-draw(pay..pa, Dotted);
-draw(pby..pb, Dotted);
-draw(pax..pa, Dotted);
-draw(pbx..pb, Dotted);
+draw(pay..pa, Dotted+1.5);
+draw(pby..pb, Dotted+1.5);
+draw(pax..pa, Dotted+1.5);
+draw(pbx..pb, Dotted+1.5);
 
 label("\scriptsize{$y_1$}", pay, W);
 label("\scriptsize{$y_2$}", pby, W);
