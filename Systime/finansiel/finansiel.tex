@@ -40,9 +40,8 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Annuiteter}
-Vi skal i dette afsnit se på \emph{annuitetsopsparing} og \emph{annuitetslån}.
-En annuitetsopsparing er kendetegnet ved, at man hver termin (f.eks. hver
+\section{Annuitetsopsparing}
+En \emph{annuitetsopsparing} er kendetegnet ved, at man hver termin (f.eks. hver
 måned) foretager en fast indbetaling (også kaldet \emph{ydelse}). Efter hver
 termin tilskrives rente, som vi har set på tidligere, og ligesom før er
 rentefoden også her konstant. Et eksempel på en annuitetsopsparing er en
@@ -185,6 +184,108 @@ Af det samlede beløb udgør indbetalingerne $500\cdot 48 = 24000$ kr., og rente
 udgør resten, dvs. 2400,82 kr. Så en rente på 0,4 $\%$ om måneden udgør ca. 10 $\%$ efter 4 år.
 
 \end{tcolorbox}
+
+\section{Annuitetslån}
+Et \emph{annuitetslån} er (ligesom annuitetsopsparing) kendetegnet ved, at man
+hver termin (f.eks. hver måned) foretager en fast indbetaling (også kaldet
+\emph{ydelse}). Efter hver termin tilskrives rente, som vi har set på
+tidligere, og ligesom før er rentefoden også her konstant. Dog er der her tale
+om en gæld, således at den tilskrevne rente øger gælden, mens indbetalingerne
+mindsker gælden.  De mest almindelige lån er af denne type, f.eks. forbrugslån,
+billån, samt kreditforeningslån til huskøb.
+
+Vi ser på et eksempel først:
+\begin{tcolorbox}
+\subsection{Eksempel}
+En person låner 14000 kr til en rentefod af $1\%$ om måneden, og betaler en fast
+ydelse på 400 kr om måneden.
+
+I slutningen af hver måned øges gælden med renten, men nedskrives derefter med
+ydelsen. Renten beregnes ud fra gælden inden indbetalingen.  Det giver
+følgende udvikling:
+\\
+
+\begin{tabular}{|l|l|l|}
+    \hline
+    \textbf{Antal} & \textbf{Rente} & \textbf{Gæld} \\
+    \textbf{måneder} &  & \\
+    \hline
+    1 & $14000\cdot 0,01 = 140$ & 14000 + 140 - 400 = 13740 \\
+    \hline
+    2 & $13740\cdot 0,01 = 137$ & 13740 + 137 - 400 = 13477 \\
+    \hline
+    3 & $13477\cdot 0,01 = 135$ & 13477 + 135 - 400 = 13212 \\
+    \hline
+    4 & $13212\cdot 0,01 = 132$ & 13212 + 132 - 400 = 12944 \\
+    \hline
+    5 & $12944\cdot 0,01 = 129$ & 12944 + 129 - 400 = 12673 \\
+    \hline
+    6 & $12673\cdot 0,01 = 127$ & 12673 + 127 - 400 = 12400 \\
+    \hline
+\end{tabular}
+\\
+
+Vi ser her, at den månedlige rente falder efterhånde som gælden falder. Det
+beløb, som gælden falder med hver måned, kaldes \emph{afdrag}. Der gælder
+altså følgende sammenhæng:
+\[
+\mbox{rente + afdrag = ydelse}
+\]
+I begyndelsen af et annuitetslån vil renten være høj og afdragene vil være små.
+Gælden vil derfor falde meget langsomt i begyndelsen af lånets løbetid.
+Gælden vil først være faldet væsentligt, når der er betalt en hel del
+afdrag på lånet.  Efterhånden som gælden mindskes, så vil renten blive
+mindre, og afdragene blive større. Denne variation af rente og afdrag 
+hen over lånets løbetid er vist i følgende figur.
+
+BILLEDE
+
+\end{tcolorbox}
+
+Generelt har vi følgende sammenhæng:
+\begin{tcolorbox}
+\begin{thm}
+    Den månedlige ydelse $y$ kan beregens ud fra lånets størrelse 
+  (dvs gældens værdi i begyndelsen) $G$, rentefoden $r$ og antallet $n$ terminer
+\[
+    y = G\cdot\frac{r}{1-(1+r)^{-n}}\,.
+\]
+\end{thm}
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\subsection{Eksempel}
+Vi vil låne 5000 kr til en rente på $1 \%$ om måneden, og vil betale lånet tilbage over 
+4 år (dvs. 48 terminer).
+Vi skal dermed betale en månedlig ydelse givet ved
+\[
+    y = 5000\cdot\frac{0,01}{1-(1+0,01)^{-48}} = 132 \,\,\mbox {kr} \,. 
+\]
+I løbet af hele lånets løbetid har vi i alt betalt $132\cdot 48 = 6336$ kr. Af
+disse udgør renterne i alt $6336-5000 = 1336$ kr.
+\end{tcolorbox}
+
+Andre gange er man interesseret i at vide, hvor lang tid et lån skal løbe over, givet
+en maksimal ydelse. Dette løser vi ved at isolere $n$ i formlen, hvilket giver:
+\[
+    n = -\frac{\log\big(1-\frac{G\cdot r}{y}\big)}{\log(1+r)} \,.
+\]
+
+\begin{tcolorbox}
+\subsection{Eksempel}
+Vi ønsker at låne penge til en bil. Det samlede lån bliver på 120000 kr, og
+rentefoden er $0,8\%$ om måneden. Vi kan maksimalt 1800 kr om måneden, og
+vil gerne vide, hvor lang tid lånet varer.
+Vi indsætter i formlen:
+\[
+n = -\frac{\log\big(1-\frac{120000\cdot0,008}{1000}\big)}{\log(1+0,008)} = 96 \,,
+\]
+hvilket svarer til 8 år.
+I den periode er der i alt indbetalt $96\cdot 1800 = 172800$ kr, og det betyder,
+at renterne i alt udgør 172800-120000 = 52800 kr.
+\end{tcolorbox}
+
+
 
 \end{document}
 
