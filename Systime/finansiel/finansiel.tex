@@ -1,0 +1,176 @@
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+\usepackage{graphicx}
+\usepackage{amsfonts}
+\usepackage{amsthm}        % Theorems
+\usepackage{amsmath}
+\usepackage{float}         % Så kan man bedre styre, hvor figurerne havner henne
+                           % vha [H].
+%\usepackage{hyperref}
+\usepackage{tcolorbox}
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+\newcommand{\be}{\begin{equation}}
+\newcommand{\ee}{\end{equation}}
+\newcommand{\bea}{\begin{eqnarray}}
+\newcommand{\eea}{\end{eqnarray}}
+
+\newtheorem{thm}{Sætning}[section]
+\newtheorem{mydef}[thm]{Definition}
+\newtheorem{eks}[thm]{Eksempel}
+\newtheorem{bevis}[thm]{Bevis}
+
+\DeclareMathSymbol{,}{\mathord}{letters}{"3B}
+
+\title{Finansiel regning}
+\date{\vspace{-5ex}}
+
+\begin{document}
+
+\maketitle
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Annuiteter}
+Vi skal i dette afsnit se på to \emph{annuitetsopsparing} og
+\emph{annuitetslån}.  En annuitetsopsparing er kendetegnet ved, at man hver
+termin (f.eks. hver måned) indbetaler en fast ydelse. Efter hver termin
+tilskrives rente, som vi har set på tidligere, og ligesom før er rentefoden også her
+konstant. Et eksempel på en annuitetsopsparing er en børneopsparing, hvor forældrene
+indsætter et fast beløb hver måned, indtil barnet bliver 18 år. Til en børneopsparing
+hører der typisk en høj rentefod, fordi opsparingen ikke kan hæves før barnet fylder 18 år.
+
+\begin{tcolorbox}
+\subsection{Eksempel}
+Hver måned sætter vi 1000 kr. ind på en konto, og samtidig tilskrives en rente
+på 0,2 $\%$ hver måned. Renten beregnes ud fra opsparingen inden indbetalingen.
+Det giver følgende udvikling:
+\\
+
+\begin{tabular}{|l|l|l|l|}
+    \hline
+    \textbf{Antal} & \textbf{Primo} & \textbf{Rente} & \textbf{Ultimo} \\
+    \textbf{måneder} & \textbf{saldo} &  & \textbf{saldo} \\
+    \hline
+    1 & 0 & 0 & 0 + 0 + 1000 = 1000 \\
+    \hline
+    2 & 1000 & $1000\cdot 0,002 = 2$ & 1000 + 2 + 1000 = 2002 \\
+    \hline
+    3 & 2002 & $2002\cdot 0,002 = 4$ & 2002 + 4 + 1000 = 3006 \\
+    \hline
+    4 & 3006 & $3006\cdot 0,002 = 6$ & 3006 + 6 + 1000 = 4012 \\
+    \hline
+    5 & 4012 & $4012\cdot 0,002 = 8$ & 4012 + 8 + 1000 = 5020 \\
+    \hline
+    6 & 5020 & $5020\cdot 0,002 = 10$ & 5020 + 10 + 1000 = 6030 \\
+    \hline
+\end{tabular}
+\\
+
+Altså ser vi, at efter 6 måneder er der 6030 kr. på saldoen. De 6000 kr. er den samlede
+indbetaling, og de 30 kr. er den samlede rente.
+
+Vi ser nu på en alternativ måde at foretage denne beregning. Det vil lede os til en generel
+formel. Vi betragter hver indbetaling for sig, og bruger renteformlen til at beregne
+den samlede rente til denne ene indbetaling.
+\\
+
+\begin{tabular}{|l|l|l|}
+    \hline
+    \textbf{Antal måneder} & \textbf{Indbetaling} & \textbf{Værdi efter 6 måneder} \\
+    \hline
+    1 & 1000 & $1000 \cdot 1,002^5 = 1010$ \\
+    \hline
+    2 & 1000 & $1000 \cdot 1,002^4 = 1008$ \\
+    \hline
+    3 & 1000 & $1000 \cdot 1,002^3 = 1006$ \\
+    \hline
+    4 & 1000 & $1000 \cdot 1,002^2 = 1004$ \\
+    \hline
+    5 & 1000 & $1000 \cdot 1,002 = 1002$ \\
+    \hline
+    6 & 1000 & $1000 = 1000$ \\
+    \hline
+    \textbf{Samlet} & \textbf{6000} & \textbf{6030} \\
+    \hline
+\end{tabular}
+\\
+
+\end{tcolorbox}
+
+I praksis benytter man følgende sætning til at udregne saldoen:
+\begin{tcolorbox}
+\begin{thm}
+Saldoen $A_n$ efter $n$ terminer, hvor der til hver termin indbetales en fast ydelse $y$,
+samt tilskrives en rente $r$, er givet ved følgende formel:
+\[
+A_n = y\cdot\frac{(1+r)^n-1}{r}\,.
+\]
+\end{thm}
+\end{tcolorbox}
+
+Med denne formel kan vi beregne ovenstående saldo efter 5 terminer:
+\[
+A_5 = 1000\cdot\frac{(1+0,002)^6-1}{0,002} = 6030 \,.
+\]
+
+\begin{tcolorbox}
+\begin{proof}
+Beviset for denne sætning er temmelig langt, og vi deler det derfor op i to dele. For 
+det første skal vi indse, at 
+\[
+A_n = y\cdot(1+r)^{n-1} + \ldots + y\cdot(1+r) + y \,.
+\]
+Vi søger nu at reducere dette udtryk. Først indfører vi fremskrivningsfaktoren $a=1+r$:
+\[
+A_n = y\cdot a^{n-1} + \ldots + y\cdot a + y \,.
+\]
+Så sætter vi $y$ uden for en parentes:
+\[
+A_n = y\cdot\big(a^{n-1} + \ldots + a + 1\big) \,.
+\]
+Nu bruger vi et smart trick: Vi ganger og dividerer med $a-1$:
+\[
+A_n = y\cdot\frac{\big(a^{n-1} + \ldots + a + 1\big)\cdot(a-1)}{a-1} \,.
+\]
+I tælleren ganger vi parenteserne sammen:
+\[
+A_n = y\cdot\frac{a^{n} + \ldots + a^2 + a - a^{n-1} - \ldots - a - 1}{a-1} \,.
+\]
+Til sidst reduceres tælleren:
+\[
+A_n = y\cdot\frac{a^{n} - 1}{a-1} \,.
+\]
+Vi indsætter nu definitionen på fremskrivningsfaktoren $a=1+r$:
+\[
+A_n = y\cdot\frac{(1+r)^{n} - 1}{r} \,.
+\]
+Og vi har vist det ønskede.
+\end{proof}
+\end{tcolorbox}
+
+\begin{tcolorbox}
+\subsection{Eksempel}
+Vi ser på endnu et eksempel. Der indsættes 500 kr. hver måned på en højrente konto, som giver
+0,4 $\%$ om måneden. Hvad bliver saldoen efter 4 år?
+
+Vi udregner:
+\[
+A_{48} = 500\cdot\frac{1,004^{48}-1}{0,004} = 26400,82 \,.
+\]
+Af det samlede beløb udgør indbetalingerne $500\cdot 48 = 24000$ kr., og rentetilskrivningerne
+udgør resten, 2400,82 kr. Så en rente på 0,4 $\%$ om måneden udgør ca. 10 $\%$ efter 4 år.
+
+\end{tcolorbox}
+
+\end{document}
+
