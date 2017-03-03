@@ -41,47 +41,57 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Annuiteter}
-Vi skal i dette afsnit se på to \emph{annuitetsopsparing} og
-\emph{annuitetslån}.  En annuitetsopsparing er kendetegnet ved, at man hver
-termin (f.eks. hver måned) indbetaler en fast ydelse. Efter hver termin
-tilskrives rente, som vi har set på tidligere, og ligesom før er rentefoden også her
-konstant. Et eksempel på en annuitetsopsparing er en børneopsparing, hvor forældrene
-indsætter et fast beløb hver måned, indtil barnet bliver 18 år. Til en børneopsparing
-hører der typisk en høj rentefod, fordi opsparingen ikke kan hæves før barnet fylder 18 år.
+Vi skal i dette afsnit se på \emph{annuitetsopsparing} og \emph{annuitetslån}.
+En annuitetsopsparing er kendetegnet ved, at man hver termin (f.eks. hver
+måned) foretager en fast indbetaling (også kaldet \emph{ydelse}). Efter hver
+termin tilskrives rente, som vi har set på tidligere, og ligesom før er
+rentefoden også her konstant. Et eksempel på en annuitetsopsparing er en
+børneopsparing, hvor forældrene indbetaler et fast beløb hver måned, indtil
+barnet bliver 18 år. Til en børneopsparing hører der typisk en høj rentefod,
+fordi opsparingen ikke kan hæves før barnet fylder 18 år.
 
 \begin{tcolorbox}
 \subsection{Eksempel}
-Hver måned sætter vi 1000 kr. ind på en konto, og samtidig tilskrives en rente
-på 0,2 $\%$ hver måned. Renten beregnes ud fra opsparingen inden indbetalingen.
-Det giver følgende udvikling:
+I slutningen af hver måned sætter vi 1000 kr. ind på en konto, og samtidig
+tilskrives en rente på 0,2 $\%$ hver måned. Renten beregnes ud fra
+opsparingen inden indbetalingen.  Det giver følgende udvikling:
 \\
 
-\begin{tabular}{|l|l|l|l|}
+\begin{tabular}{|l|l|l|}
     \hline
-    \textbf{Antal} & \textbf{Primo} & \textbf{Rente} & \textbf{Ultimo} \\
-    \textbf{måneder} & \textbf{saldo} &  & \textbf{saldo} \\
+    \textbf{Antal} & \textbf{Rente} & \textbf{Opsparing} \\
+    \textbf{måneder} &  & \\
     \hline
-    1 & 0 & 0 & 0 + 0 + 1000 = 1000 \\
+    1 & 0 & 0 + 0 + 1000 = 1000 \\
     \hline
-    2 & 1000 & $1000\cdot 0,002 = 2$ & 1000 + 2 + 1000 = 2002 \\
+    2 & $1000\cdot 0,002 = 2$ & 1000 + 2 + 1000 = 2002 \\
     \hline
-    3 & 2002 & $2002\cdot 0,002 = 4$ & 2002 + 4 + 1000 = 3006 \\
+    3 & $2002\cdot 0,002 = 4$ & 2002 + 4 + 1000 = 3006 \\
     \hline
-    4 & 3006 & $3006\cdot 0,002 = 6$ & 3006 + 6 + 1000 = 4012 \\
+    4 & $3006\cdot 0,002 = 6$ & 3006 + 6 + 1000 = 4012 \\
     \hline
-    5 & 4012 & $4012\cdot 0,002 = 8$ & 4012 + 8 + 1000 = 5020 \\
+    5 & $4012\cdot 0,002 = 8$ & 4012 + 8 + 1000 = 5020 \\
     \hline
-    6 & 5020 & $5020\cdot 0,002 = 10$ & 5020 + 10 + 1000 = 6030 \\
+    6 & $5020\cdot 0,002 = 10$ & 5020 + 10 + 1000 = 6030 \\
     \hline
 \end{tabular}
 \\
 
-Altså ser vi, at efter 6 måneder er der 6030 kr. på saldoen. De 6000 kr. er den samlede
-indbetaling, og de 30 kr. er den samlede rente.
+Altså ser vi, at efter 6 måneder er der 6030 kr. på saldoen. De 6000 kr. er den
+samlede indbetaling, og de 30 kr. er den samlede rente.
+\end{tcolorbox}
 
-Vi ser nu på en alternativ måde at foretage denne beregning. Det vil lede os til en generel
-formel. Vi betragter hver indbetaling for sig, og bruger renteformlen til at beregne
-den samlede rente til denne ene indbetaling.
+Vi ser nu på en alternativ måde at foretage denne beregning. Det vil lede os
+til en generel formel. Vi betragter hver indbetaling for sig, og bruger
+renteformlen til at beregne den samlede rente til denne ene indbetaling.
+
+Den første indbetaling foregik efter 1 måned, og ved udgangen af de 6 måneder
+er der ialt blevet tilskrevet renter 5 gange.  Det giver en samlet værdi på:
+\[
+    1000\cdot 1,002^5 = 1010 {\,\,\rm kr.}
+\]
+Denne udregning gentager vi for alle de øvrige indbetalinger, og lægger alle
+værdierne sammen.  Dette er vist i den følgende tabel:
 \\
 
 \begin{tabular}{|l|l|l|}
@@ -105,28 +115,32 @@ den samlede rente til denne ene indbetaling.
 \end{tabular}
 \\
 
-\end{tcolorbox}
+Udregningen i den ovenstående tabel kan udtrykkes på følgende måde:
+\[
+A_n = y\cdot(1+r)^{n-1} + \ldots + y\cdot(1+r) + y \,,
+\]
+hvor $A_n$ er saldoen efter i alt $n$ terminer,  $y$ er den faste (månedlige)
+ydelse, $r$ er rentefoden, og $n$ er det samlede antal terminer.
 
 I praksis benytter man følgende sætning til at udregne saldoen:
 \begin{tcolorbox}
 \begin{thm}
 Saldoen $A_n$ efter $n$ terminer, hvor der til hver termin indbetales en fast ydelse $y$,
-samt tilskrives en rente $r$, er givet ved følgende formel:
+samt tilskrives rente med rentefoden $r$, er givet ved følgende formel:
 \[
 A_n = y\cdot\frac{(1+r)^n-1}{r}\,.
 \]
 \end{thm}
 \end{tcolorbox}
 
-Med denne formel kan vi beregne ovenstående saldo efter 5 terminer:
+Med denne formel kan vi beregne ovenstående saldo efter 6 terminer:
 \[
-A_5 = 1000\cdot\frac{(1+0,002)^6-1}{0,002} = 6030 \,.
+A_6 = 1000\cdot\frac{(1+0,002)^6-1}{0,002} = 6030 \,.
 \]
 
 \begin{tcolorbox}
 \begin{proof}
-Beviset for denne sætning er temmelig langt, og vi deler det derfor op i to dele. For 
-det første skal vi indse, at 
+Beviset for ovenstående sætning tager udgangspunkt i formlen fra før:
 \[
 A_n = y\cdot(1+r)^{n-1} + \ldots + y\cdot(1+r) + y \,.
 \]
@@ -163,12 +177,12 @@ Og vi har vist det ønskede.
 Vi ser på endnu et eksempel. Der indsættes 500 kr. hver måned på en højrente konto, som giver
 0,4 $\%$ om måneden. Hvad bliver saldoen efter 4 år?
 
-Vi udregner:
+Vi udregner $n=4\cdot12 = 48$ og dernæst:
 \[
 A_{48} = 500\cdot\frac{1,004^{48}-1}{0,004} = 26400,82 \,.
 \]
 Af det samlede beløb udgør indbetalingerne $500\cdot 48 = 24000$ kr., og rentetilskrivningerne
-udgør resten, 2400,82 kr. Så en rente på 0,4 $\%$ om måneden udgør ca. 10 $\%$ efter 4 år.
+udgør resten, dvs. 2400,82 kr. Så en rente på 0,4 $\%$ om måneden udgør ca. 10 $\%$ efter 4 år.
 
 \end{tcolorbox}
 
