@@ -150,3 +150,45 @@ void square(pair p1, pair p2)
     fill(p1--p2--p4--p3--cycle, grey_thin);
 }
 
+// Denne funktion laver et histogram
+void bars(real[] x, real[] y1, real[] y2, real[] y3 = {}, real width = 0.6)
+{
+    real width = 0.6;
+
+    pair prev_b;
+
+    for (int i=0; i<y1.length; ++i)
+    {
+        pair a = (i, 0.0);
+        pair b = (i+width, y1[i]);
+        fill(box(a,b), blue_default);
+        draw(box(a,b), defaultpen+0.3);
+
+/*
+        if (i>0)
+        {
+            pair c = (i, y1[i]);
+            draw(prev_b -- c, grey_thin+0.3);
+        }
+*/
+
+        label(scale(0.6)*("$"+(string)x[i]+"$"), a + (width/2, 0), align = S*1.5);
+
+        a = (i, b.y);
+        b = (i+width, a.y + y2[i]);
+        fill(box(a,b), purple_default);
+        draw(box(a,b), defaultpen+0.3);
+
+        if (y3.length > 0) 
+        {
+            a = (i, b.y);
+            b = (i+width, a.y + y3[i]);
+            fill(box(a,b), yellow_default);
+            draw(box(a,b), defaultpen+0.3);
+        }
+
+        prev_b = b;
+    }
+
+}
+
