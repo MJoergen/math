@@ -1,4 +1,4 @@
-import systime;
+import "../systime" as systime;
 
 real xmin =  0.0;
 real xmax =  9.0;
