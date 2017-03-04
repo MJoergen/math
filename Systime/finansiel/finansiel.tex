@@ -40,7 +40,7 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section*{Renteformlen}
+\section{Renteformlen}
 \begin{figure}[ht]
     \centering
     \includegraphics[width=10cm]{penge}
@@ -59,7 +59,7 @@ rentebeløbet det andet år (52,50 kroner) er større end rentebeløbet det før
 Hvis vi gerne vil beregne, hvad saldoen bliver efter 8 år, så kan vi fortsætte
 ovenstående beregninger. Det er praktisk at opstille beregningerne i et skema
 som vist her:
-$$
+\[
 \begin{array}{|r|c|l|}
     \hline
     \mbox{efter år} & \mbox{saldo} & \mbox{rentebeløb} \\
@@ -83,36 +83,39 @@ $$
 8 & 1477,47 & \\
 \hline
 \end{array}
-$$
-\begin{figure}[ht]
+\]
+
+Udviklingen i saldoen er vist i nedenstående figur, hvor saldo og rente er vist med hver sin farve.
+\begin{figure}[H]
     \centering
-    \includegraphics{eksp-f}
-    \label{eksp-f}
+    \includegraphics{fin-1}
 \end{figure}
-Det vil sige, at efter 8 år, så vil der stå 1477,47 kroner på saldoen.  Dette
+
+Vi har således beregnet, at efter 8 år, så vil der stå 1477,47 kroner på saldoen.  Dette
 er dog en temmelig besværlig metode, og der er en meget nemmere måde at nå frem
 til resultatet 1477,47 kroner, hvilket vi skal se i det følgende.
 
 For det første bemærker vi, at for hvert år der går, bliver saldoen ganget med
 1,05. Dette kan vi indse ved følgende udregning: Efter det første år bliver
 saldoen udregnet som:
-$$
+\[
 1050 = 1000 + 50 = 1\cdot 1000 + 0,05\cdot 1000 = 1,05 \cdot 1000.
-$$
+\]
 
 Saldoen efter 2 år kan så udregnes som
-$$
+\[
 1,05\cdot 1050 = 1,05 \cdot (1,05 \cdot 1000) = 1,05^2 \cdot 1000.
-$$
+\]
 Saldoen efter 3 år kan på samme måde udregnes som
-$$
+\[
 1,05\cdot1,05\cdot1,05\cdot 1000 = 1,05^3 \cdot 1000.
-$$
+\]
 Efter 8 år er saldoen
 derfor på $1,05^8\cdot 1000$. Hvis vi udregner dette på lommeregner, så giver
 det netop ca. 1477 kroner.
 
 Denne metode kan udtrykkes ved følgende formel:
+\begin{tcolorbox}
 \begin{thm}
     {\em Renteformlen} kan udregne saldoen på en opsparing, som begynder med
     værdien $K_0$ og som efter hver {\em termin} bliver forøget med en fast
@@ -123,11 +126,13 @@ Denne metode kan udtrykkes ved følgende formel:
     hvor $K_0$ er {\em begyndelseskapitalen}, $r$ er {\em vækstraten}, $n$ er antallet af
     terminer, og $K_n$ er {\em slutkapitalen} efter de $n$ terminer.
 \end{thm}
+\end{tcolorbox}
 En termin er typisk 1 år, men kan også være f.eks. en måned. Terminen er bestemt af,
 hvor tit der tilskrives et nyt rentebeløb. Vækstraten $r$ er renten udtrykt som
 decimaltal. Dvs. hvis renten er 5\%, så er vækstraten $r=\frac{5}{100}=0,05$.
 
 I det følgende gennemgår vi nogle eksempler på anvendelse af renteformlen.
+\begin{tcolorbox}
 \begin{eks}
     En arv på 20000 kroner indsættes på en opsparingskonto, som
     giver 4\% i rente om året. Hvad vil der stå på kontoen efter 7 år?
@@ -139,9 +144,11 @@ I det følgende gennemgår vi nogle eksempler på anvendelse af renteformlen.
     $$
     Altså efter syv år står der over 26000 kroner på saldoen.
 \end{proof}
+\end{tcolorbox}
 
 Renteformlen kan også bruges, når man låner penge, hvis man ikke betaler af
 (afdrager) på gælden undervejs.
+\begin{tcolorbox}
 \begin{eks}
     Hvis en kassekredit har et underskud på 17000 kroner, og der
     lægges 1,8 \% i rente hver måned, hvor meget er gælden så på efter 2 år?
@@ -156,8 +163,9 @@ Renteformlen kan også bruges, når man låner penge, hvis man ikke betaler af
     Den samlede gæld er derfor vokset til over 26000 kroner på de 2 år, dvs.
     der betales over 9000 kr. i rente.
 \end{proof}
+\end{tcolorbox}
 
-\subsection*{Effektiv rente}
+\subsection{Effektiv rente}
 Hvis renten ikke tilskrives årligt, så rejser sig spørgsmålet, om der er
 forskel på at få $12\%$ i rente om året, og at få $1\%$ i rente om måneden?  Vi
 ser på et eksempel med en startkapital på $1000$ kr, og spørger nu, hvilket
@@ -175,6 +183,7 @@ Så giver renteformlen, at slutkapitalen er
 \]
 Så den månedlige rentetilskrivning giver en samlet stigning på $126,83$ kr, dvs.
 $12,68\%$ efter 1 år. Dette kaldes også den {\em effektive rente}.
+\begin{tcolorbox}
 \begin{thm}
     Vi udregner den årlige effektive rente $r_{\rm eff}$ (som decimaltal) på
     følgende måde:
@@ -183,6 +192,8 @@ $12,68\%$ efter 1 år. Dette kaldes også den {\em effektive rente}.
     \]
 hvor $n$ er antallet af terminer på et år.
 \end{thm}
+\end{tcolorbox}
+\begin{tcolorbox}
 \begin{eks}
     En kassekredit tilskrives en rente på $1,2\%$ om måneden. Den årlige
     effektive rente er da
@@ -191,8 +202,9 @@ hvor $n$ er antallet af terminer på et år.
     \]
     Dette svarer altså til $15,39\%$.
 \end{eks}
+\end{tcolorbox}
 
-\subsection*{Gennemsnitlig rente}
+\subsection{Gennemsnitlig rente}
 Hvis renten ændrer sig fra år til år, så kan man definere den gennemsnitlige
 rente. Denne har den egenskab, at hvis renten var konstant lig med den
 gennemsnitlige rente, så ville saldoen være uændret.  Vi ser først på et
@@ -216,6 +228,7 @@ Den årlige gennemsnitlige rente findes da ved at løse ligningen
     r = 5,97\%\,.
 \]
 Ovenstående beregning kan formuleres i følgende sætning:
+\begin{tcolorbox}
 \begin{thm}
     Den gennemsnitlige rente knyttet til renterne $r_1$, $r_2$, \ldots, $r_n$
     er givet ved:
@@ -223,6 +236,8 @@ Ovenstående beregning kan formuleres i følgende sætning:
         r_g = \sqrt[n]{(1+r_1)\cdot(1+r_2)\cdots(1+r_n)}-1 \,.
     \]
 \end{thm}
+\end{tcolorbox}
+\begin{tcolorbox}
 \begin{eks}
     En bankkonto med variabel rente tilskrives det første år $5\%$, det andet
     år $10\%$, og det tredje år $15\%$ i rente. Den gennemsnitlige årlige rente
@@ -233,6 +248,7 @@ Ovenstående beregning kan formuleres i følgende sætning:
 Det vil sige, at på de tre år er kontoen blevet tilskrevet en gennemsnitlig
     årlig rente på $9,92\%$.
 \end{eks}
+\end{tcolorbox}
 
 
 \section{Annuitetsopsparing}
@@ -246,8 +262,8 @@ fordi opsparingen ikke kan hæves før barnet fylder 18 år.
 
 \begin{tcolorbox}
 \subsection{Eksempel}
-I slutningen af hver måned sætter vi 1000 kr. ind på en konto, og samtidig
-tilskrives en rente på 0,2 $\%$ hver måned. Renten beregnes ud fra
+I slutningen af hvert år sætter vi 1000kr. ind på en konto, og samtidig
+tilskrives en rente på 5 $\%$ hvert år. Renten beregnes ud fra
 opsparingen inden indbetalingen.  Det giver følgende udvikling:
 \\
 
@@ -256,33 +272,42 @@ opsparingen inden indbetalingen.  Det giver følgende udvikling:
     \textbf{Antal} & \textbf{Rente} & \textbf{Opsparing} \\
     \textbf{måneder} &  & \\
     \hline
-    1 & 0 & 0 + 0 + 1000 = 1000 \\
+    1 & 0 & 0 + 0 + 100 = 100 \\
     \hline
-    2 & $1000\cdot 0,002 = 2$ & 1000 + 2 + 1000 = 2002 \\
+    2 & $100\cdot 0,05 = 5$ & 100 + 5 + 100 = 205 \\
     \hline
-    3 & $2002\cdot 0,002 = 4$ & 2002 + 4 + 1000 = 3006 \\
+    3 & $205\cdot 0,05 = 10$ & 205 + 10 + 100 = 315 \\
     \hline
-    4 & $3006\cdot 0,002 = 6$ & 3006 + 6 + 1000 = 4012 \\
+    4 & $315\cdot 0,05 = 16$ & 315 + 16 + 100 = 431 \\
     \hline
-    5 & $4012\cdot 0,002 = 8$ & 4012 + 8 + 1000 = 5020 \\
+    5 & $431\cdot 0,05 = 22$ & 431 + 22 + 100 = 553 \\
     \hline
-    6 & $5020\cdot 0,002 = 10$ & 5020 + 10 + 1000 = 6030 \\
+    6 & $553\cdot 0,05 = 28$ & 553 + 27 + 100 = 680 \\
+    \hline
+    7 & $680\cdot 0,05 = 34$ & 680 + 34 + 100 = 814 \\
+    \hline
+    8 & $814\cdot 0,05 = 41$ & 814 + 41 + 100 = 955 \\
     \hline
 \end{tabular}
 \\
 
-Altså ser vi, at efter 6 måneder er der 6030 kr. på saldoen. De 6000 kr. er den
-samlede indbetaling, og de 30 kr. er den samlede rente.
+Altså ser vi, at efter 8 år er der 955 kr. på saldoen. De 800 kr. er den
+samlede indbetaling, og de resterende 155 kr. er den samlede rente.
+Denne udvikling er vist i den følgende figur, hvor saldo, rente og indbetaling er vist med hver sin farve.
+\begin{figure}[H]
+    \centering
+    \includegraphics{fin-2}
+\end{figure}
 \end{tcolorbox}
 
 Vi ser nu på en alternativ måde at foretage denne beregning. Det vil lede os
 til en generel formel. Vi betragter hver indbetaling for sig, og bruger
 renteformlen til at beregne den samlede rente til denne ene indbetaling.
 
-Den første indbetaling foregik efter 1 måned, og ved udgangen af de 6 måneder
-er der ialt blevet tilskrevet renter 5 gange.  Det giver en samlet værdi på:
+Den første indbetaling foregik efter 1 år, og ved udgangen af de 8 år
+er der ialt blevet tilskrevet renter 7 gange.  Det giver en samlet værdi på:
 \[
-    1000\cdot 1,002^5 = 1010 {\,\,\rm kr.}
+    100\cdot 1,05^7 = 141 {\,\,\rm kr.}
 \]
 Denne udregning gentager vi for alle de øvrige indbetalinger, og lægger alle
 værdierne sammen.  Dette er vist i den følgende tabel:
@@ -292,19 +317,23 @@ værdierne sammen.  Dette er vist i den følgende tabel:
     \hline
     \textbf{Antal måneder} & \textbf{Indbetaling} & \textbf{Værdi efter 6 måneder} \\
     \hline
-    1 & 1000 & $1000 \cdot 1,002^5 = 1010$ \\
+    1 & 100 & $100 \cdot 1,05^7 = 141$ \\
     \hline
-    2 & 1000 & $1000 \cdot 1,002^4 = 1008$ \\
+    1 & 100 & $100 \cdot 1,05^6 = 134$ \\
     \hline
-    3 & 1000 & $1000 \cdot 1,002^3 = 1006$ \\
+    1 & 100 & $100 \cdot 1,05^5 = 128$ \\
     \hline
-    4 & 1000 & $1000 \cdot 1,002^2 = 1004$ \\
+    2 & 100 & $100 \cdot 1,05^4 = 122$ \\
     \hline
-    5 & 1000 & $1000 \cdot 1,002 = 1002$ \\
+    3 & 100 & $100 \cdot 1,05^3 = 116$ \\
     \hline
-    6 & 1000 & $1000 = 1000$ \\
+    4 & 100 & $100 \cdot 1,05^2 = 110$ \\
     \hline
-    \textbf{Samlet} & \textbf{6000} & \textbf{6030} \\
+    5 & 100 & $100 \cdot 1,05 = 105$ \\
+    \hline
+    6 & 100 & $100 = 100$ \\
+    \hline
+    \textbf{Samlet} & \textbf{800} & \textbf{955} \\
     \hline
 \end{tabular}
 \\
@@ -329,7 +358,7 @@ A_n = y\cdot\frac{(1+r)^n-1}{r}\,.
 
 Med denne formel kan vi beregne ovenstående saldo efter 6 terminer:
 \[
-A_6 = 1000\cdot\frac{(1+0,002)^6-1}{0,002} = 6030 \,.
+A_8 = 100\cdot\frac{(1+0,05)^8-1}{0,05} = 955 \,.
 \]
 
 \begin{tcolorbox}

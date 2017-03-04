@@ -1,7 +1,8 @@
 names  = finansiel.tex
 tex_pdfs   = $(names:.tex=.pdf)
 
-pics += eksp-f.asy
+pics += fin-1.asy
+pics += fin-2.asy
 asy_pdfs  += $(pics:.asy=.pdf)
 
 all: $(asy_pdfs) $(tex_pdfs)
