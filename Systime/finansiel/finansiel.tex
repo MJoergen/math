@@ -46,41 +46,44 @@
     \includegraphics[width=10cm]{penge}
 \end{figure}
 
-Vi begynder med et eksempel. Vi har en opsparing på 1000 kroner, som vi
-indsætter på en opsparingskonto i banken, der giver 5 \% i rente om året. Dvs.
-efter 1 år bliver der indsat 5 \% af 1000 kroner på kontoen. Det
-udregner vi til $ \frac{5}{100} \cdot 1000 = 50 $ kroner. Så efter 1 år står
-der nu 1050 kroner på kontoen.  Efter det andet år bliver der nu indsat 5 \% af
-1050 kroner, dvs $ \frac{5}{100} \cdot 1050 = 52,50$ kroner.
-Det giver et samlet beløb efter 2 år på 1102,50 kroner. Læg mærke til, at
-rentebeløbet det andet år (52,50 kroner) er større end rentebeløbet det første
-år (50 kroner).
+Vi begynder med et eksempel. Vi har en opsparing på 2000 kroner, som vi
+indsætter på en opsparingskonto i banken, der giver en \emph{rentefod} på 5 \%
+om året. Dvs.  efter 1 år bliver der indsat 5 \% af 2000 kroner på kontoen. Det
+udregner vi til $ \frac{5}{100} \cdot 2000 = 100$ kroner. Så efter 1 år står
+der nu 2100 kroner på kontoen.  Efter det andet år bliver der nu indsat 5 \% af
+2100 kroner, dvs $ \frac{5}{100} \cdot 2100 = 105$ kroner.  Det giver et samlet
+beløb efter 2 år på 2205 kroner. Læg mærke til, at renten det andet år
+(105 kroner) er større end renten det første år (100 kroner).
 
-Hvis vi gerne vil beregne, hvad saldoen bliver efter 8 år, så kan vi fortsætte
+Hvis vi gerne vil beregne, hvad saldoen bliver efter 10 år, så kan vi fortsætte
 ovenstående beregninger. Det er praktisk at opstille beregningerne i et skema
 som vist her:
 \[
 \begin{array}{|r|c|l|}
     \hline
-    \mbox{efter år} & \mbox{saldo} & \mbox{rentebeløb} \\
+    \mbox{\textbf{Antal år}} & \mbox{\textbf{Saldo}} & \mbox{\textbf{Rente}} \\
     \hline
-0 & 1000 & 0,05\cdot 1000 = 50 \\
+0 & 2000 & 0,05\cdot 2000 = 100 \\
     \hline
-1 & 1050 & 0,05\cdot 1050 = 52,50 \\
+1 & 2000 + 100 = 2100 & 0,05\cdot 2100 = 105 \\
     \hline
-2 & 1102,50 & 0,05\cdot 1102,50 = 55,13 \\
+2 & 2100 + 105 = 2205 & 0,05\cdot 2205 = 110 \\
     \hline
-3 & 1157,63 & 0,05\cdot 1157,63 = 57,88 \\
+3 & 2205 + 110 = 2315 & 0,05\cdot 2315 = 116 \\
     \hline
-4 & 1215,51 & 0,05\cdot 1215,51 = 60,78 \\
+4 & 2315 + 116 = 2431 & 0,05\cdot 2431 = 122 \\
     \hline
-5 & 1276,29 & 0,05\cdot 1276,29 = 63,81 \\
+5 & 2431 + 122 = 2553 & 0,05\cdot 2553 = 128 \\
     \hline
-6 & 1340,10 & 0,05\cdot 1340,10 = 67,01 \\
+6 & 2553 + 128 = 2681 & 0,05\cdot 2681 = 134 \\
     \hline
-7 & 1407,11 & 0,05\cdot 1407,11 = 70,36 \\
+7 & 2681 + 134 = 2815 & 0,05\cdot 2815 = 141 \\
     \hline
-8 & 1477,47 & \\
+8 & 2815 + 141 = 2956 & 0,05\cdot 2956 = 148 \\
+    \hline
+9 & 2956 + 148 = 3104 & 0,05\cdot 3104 = 155 \\
+    \hline
+10 & 3104 + 155 = 3259 & \\
 \hline
 \end{array}
 \]
@@ -91,58 +94,61 @@ Udviklingen i saldoen er vist i nedenstående figur, hvor saldo og rente er vist
     \includegraphics{fin-1}
 \end{figure}
 
-Vi har således beregnet, at efter 8 år, så vil der stå 1477,47 kroner på saldoen.  Dette
+Vi har således beregnet, at efter 10 år vil der stå 3259 kroner på saldoen.  Dette
 er dog en temmelig besværlig metode, og der er en meget nemmere måde at nå frem
-til resultatet 1477,47 kroner, hvilket vi skal se i det følgende.
+til resultatet 3259 kroner, hvilket vi skal se i det følgende.
 
 For det første bemærker vi, at for hvert år der går, bliver saldoen ganget med
 1,05. Dette kan vi indse ved følgende udregning: Efter det første år bliver
 saldoen udregnet som:
 \[
-1050 = 1000 + 50 = 1\cdot 1000 + 0,05\cdot 1000 = 1,05 \cdot 1000.
+2100 = 2000 + 100 = 1\cdot 2000 + 0,05\cdot 2000 = 1,05 \cdot 2000.
 \]
 
 Saldoen efter 2 år kan så udregnes som
 \[
-1,05\cdot 1050 = 1,05 \cdot (1,05 \cdot 1000) = 1,05^2 \cdot 1000.
+1,05\cdot 2100 = 1,05 \cdot (1,05 \cdot 2000) = 1,05^2 \cdot 2000.
 \]
 Saldoen efter 3 år kan på samme måde udregnes som
 \[
-1,05\cdot1,05\cdot1,05\cdot 1000 = 1,05^3 \cdot 1000.
+1,05\cdot1,05\cdot1,05\cdot 2000 = 1,05^3 \cdot 2000.
 \]
-Efter 8 år er saldoen
-derfor på $1,05^8\cdot 1000$. Hvis vi udregner dette på lommeregner, så giver
-det netop ca. 1477 kroner.
+Efter 10 år er saldoen derfor på $1,05^{10}\cdot 2000$. Hvis vi udregner dette
+på lommeregner, så giver det netop ca. 3259 kroner.
 
 Denne metode kan udtrykkes ved følgende formel:
 \begin{tcolorbox}
 \begin{thm}
-    {\em Renteformlen} kan udregne saldoen på en opsparing, som begynder med
-    værdien $K_0$ og som efter hver {\em termin} bliver forøget med en fast
-    rente $r$. Saldoen efter $n$ terminer er givet ved følgende formel:
-    $$
-    K_n = K_0 \cdot (1+r)^n
-    $$
-    hvor $K_0$ er {\em begyndelseskapitalen}, $r$ er {\em vækstraten}, $n$ er antallet af
-    terminer, og $K_n$ er {\em slutkapitalen} efter de $n$ terminer.
+{\em Renteformlen} kan udregne saldoen på en opsparing, som begynder med
+værdien $K_0$ og som efter hver {\em termin} bliver forøget med en rente
+givet ved en fast rentefod $r$. Saldoen efter $n$ terminer er givet ved
+følgende formel:
+$$
+K_n = K_0 \cdot (1+r)^n
+$$
+hvor $K_0$ er {\em begyndelseskapitalen}, $r$ er rentefoden, $n$ er antallet af
+terminer, og $K_n$ er {\em slutkapitalen} efter de $n$ terminer.
 \end{thm}
 \end{tcolorbox}
-En termin er typisk 1 år, men kan også være f.eks. en måned. Terminen er bestemt af,
-hvor tit der tilskrives et nyt rentebeløb. Vækstraten $r$ er renten udtrykt som
-decimaltal. Dvs. hvis renten er 5\%, så er vækstraten $r=\frac{5}{100}=0,05$.
+En termin er typisk 1 år, men kan også være f.eks. en måned. Terminen er
+bestemt af, hvor tit der tilskrives rente. Rentefoden $r$ skal skrives som
+decimaltal.  Dvs. hvis rentefoden er 5\%, så er $r=\frac{5}{100}=0,05$.
 
 I det følgende gennemgår vi nogle eksempler på anvendelse af renteformlen.
 \begin{tcolorbox}
 \begin{eks}
-    En arv på 20000 kroner indsættes på en opsparingskonto, som
-    giver 4\% i rente om året. Hvad vil der stå på kontoen efter 7 år?
+En arv på 20000 kroner indsættes på en opsparingskonto, som tilskrives en
+årlig rentefod på 4\%. Hvad vil der stå på kontoen efter 7 år?
 \end{eks}
 \begin{proof}[Svar]
-    Først udregnes vækstraten $r=\frac{4}{100} = 0,04$. Så indsættes i renteformlen:
-    $$
-    K_7 = 20000 \cdot (1 + 0,04)^7 = 26318,64.
-    $$
-    Altså efter syv år står der over 26000 kroner på saldoen.
+Først skrives rentefoden som decimaltal: $r=\frac{4}{100} = 0,04$. Så
+indsættes i renteformlen:
+\[ 
+K_7 = 20000 \cdot (1 + 0,04)^7 = 26319\,.
+\]
+Altså efter syv år står der over 26000 kroner på saldoen.  Det vil sige, at
+kontoens værdi er steget med $26319 - 20000 = 6319$ kr, og dette skyldes
+renterne.
 \end{proof}
 \end{tcolorbox}
 
@@ -150,18 +156,19 @@ Renteformlen kan også bruges, når man låner penge, hvis man ikke betaler af
 (afdrager) på gælden undervejs.
 \begin{tcolorbox}
 \begin{eks}
-    Hvis en kassekredit har et underskud på 17000 kroner, og der
-    lægges 1,8 \% i rente hver måned, hvor meget er gælden så på efter 2 år?
+Hvis en kassekredit har et underskud på 17000 kroner, og der tilskrives en
+rentefod på 1,8 \% i rente hver måned, hvor meget er gælden så på efter 2
+år?
 \end{eks}
 \begin{proof}[Svar]
-    Når renten bliver tilskrevet hver måned, skal de 2 år omregnes til
-    måneder, dvs. 24 måneder. Dette er antallet af terminer. Vækstraten er $r =
-    \frac{1,8}{100} = 0,018$, og renteformlen giver derfor:
-    $$
-    K_{24} = 17000 \cdot (1 + 0,018)^{24} = 26085,29
-    $$
-    Den samlede gæld er derfor vokset til over 26000 kroner på de 2 år, dvs.
-    der betales over 9000 kr. i rente.
+Når renten bliver tilskrevet hver måned, skal de 2 år omregnes til
+måneder, dvs. 24 måneder. Dette er antallet af terminer. Rentefoden er $r =
+\frac{1,8}{100} = 0,018$, og renteformlen giver derfor:
+\[
+K_{24} = 17000 \cdot (1 + 0,018)^{24} = 26085 \,.
+\]
+Den samlede gæld er derfor vokset til 26085 kr. på de 2 år, dvs.  der betales
+over 9000 kr. i rente.
 \end{proof}
 \end{tcolorbox}
 
@@ -227,7 +234,8 @@ Den årlige gennemsnitlige rente findes da ved at løse ligningen
 \[
     r = 5,97\%\,.
 \]
-Ovenstående beregning kan formuleres i følgende sætning:
+Læg mærke til, at den gennemsnitlige rente er mindre end gennemsnittet af
+rentefoden hvert år.  Ovenstående beregning kan formuleres i følgende sætning:
 \begin{tcolorbox}
 \begin{thm}
     Den gennemsnitlige rente knyttet til renterne $r_1$, $r_2$, \ldots, $r_n$
@@ -260,6 +268,7 @@ børneopsparing, hvor forældrene indbetaler et fast beløb hver måned, indtil
 barnet bliver 18 år. Til en børneopsparing hører der typisk en høj rentefod,
 fordi opsparingen ikke kan hæves før barnet fylder 18 år.
 
+Vi begynder med at se på et eksempel:
 \begin{tcolorbox}
 \subsection*{Eksempel}
 I slutningen af hvert år sætter vi 1000kr. ind på en konto, og samtidig
@@ -300,9 +309,10 @@ Denne udvikling er vist i den følgende figur, hvor saldo, rente og indbetaling 
 \end{figure}
 \end{tcolorbox}
 
-Vi ser nu på en alternativ måde at foretage denne beregning. Det vil lede os
-til en generel formel. Vi betragter hver indbetaling for sig, og bruger
-renteformlen til at beregne den samlede rente til denne ene indbetaling.
+Vi ser nu på en alternativ måde at foretage denne beregning. Dette vil lede os
+til en generel formel for opsparingens værdi til et vilkårligt tidspunkt. Vi
+betragter hver indbetaling for sig, og bruger renteformlen til at beregne den
+samlede rente til hver indbetaling.
 
 Den første indbetaling foregik efter 1 år, og ved udgangen af de 8 år
 er der ialt blevet tilskrevet renter 7 gange.  Det giver en samlet værdi på:
@@ -315,23 +325,23 @@ værdierne sammen.  Dette er vist i den følgende tabel:
 
 \begin{tabular}{|l|l|l|}
     \hline
-    \textbf{Antal måneder} & \textbf{Indbetaling} & \textbf{Værdi efter 6 måneder} \\
+    \textbf{Antal år} & \textbf{Indbetaling} & \textbf{Værdi efter 8 år} \\
     \hline
     1 & 100 & $100 \cdot 1,05^7 = 141$ \\
     \hline
-    1 & 100 & $100 \cdot 1,05^6 = 134$ \\
+    2 & 100 & $100 \cdot 1,05^6 = 134$ \\
     \hline
-    1 & 100 & $100 \cdot 1,05^5 = 128$ \\
+    3 & 100 & $100 \cdot 1,05^5 = 128$ \\
     \hline
-    2 & 100 & $100 \cdot 1,05^4 = 122$ \\
+    4 & 100 & $100 \cdot 1,05^4 = 122$ \\
     \hline
-    3 & 100 & $100 \cdot 1,05^3 = 116$ \\
+    5 & 100 & $100 \cdot 1,05^3 = 116$ \\
     \hline
-    4 & 100 & $100 \cdot 1,05^2 = 110$ \\
+    6 & 100 & $100 \cdot 1,05^2 = 110$ \\
     \hline
-    5 & 100 & $100 \cdot 1,05 = 105$ \\
+    7 & 100 & $100 \cdot 1,05 = 105$ \\
     \hline
-    6 & 100 & $100 = 100$ \\
+    8 & 100 & $100 = 100$ \\
     \hline
     \textbf{Samlet} & \textbf{800} & \textbf{955} \\
     \hline
@@ -342,7 +352,7 @@ Udregningen i den ovenstående tabel kan udtrykkes på følgende måde:
 \[
 A_n = y\cdot(1+r)^{n-1} + \ldots + y\cdot(1+r) + y \,,
 \]
-hvor $A_n$ er saldoen efter i alt $n$ terminer,  $y$ er den faste (månedlige)
+hvor $A_n$ er saldoen efter i alt $n$ terminer,  $y$ er den faste
 ydelse, $r$ er rentefoden, og $n$ er det samlede antal terminer.
 
 I praksis benytter man følgende sætning til at udregne saldoen:
@@ -356,7 +366,7 @@ A_n = y\cdot\frac{(1+r)^n-1}{r}\,.
 \end{thm}
 \end{tcolorbox}
 
-Med denne formel kan vi beregne ovenstående saldo efter 6 terminer:
+Med denne formel kan vi beregne ovenstående saldo efter 8 terminer:
 \[
 A_8 = 100\cdot\frac{(1+0,05)^8-1}{0,05} = 955 \,.
 \]
@@ -402,10 +412,10 @@ Vi ser på endnu et eksempel. Der indsættes 500 kr. hver måned på en højrent
 
 Vi udregner $n=4\cdot12 = 48$ og dernæst:
 \[
-A_{48} = 500\cdot\frac{1,004^{48}-1}{0,004} = 26400,82 \,.
+A_{48} = 500\cdot\frac{1,004^{48}-1}{0,004} = 26401 \,.
 \]
 Af det samlede beløb udgør indbetalingerne $500\cdot 48 = 24000$ kr., og rentetilskrivningerne
-udgør resten, dvs. 2400,82 kr. Så en rente på 0,4 $\%$ om måneden udgør ca. 10 $\%$ efter 4 år.
+udgør resten, dvs. 2401 kr. Så en rente på 0,4 $\%$ om måneden udgør ca. 10 $\%$ efter 4 år.
 
 \end{tcolorbox}
 
@@ -469,9 +479,11 @@ Den samlede rente betalt må derfor være $1982 - 1400 = 582$ kr.
 Vi ser her, at den årlige rente falder efterhånden som gælden falder. Det
 beløb, som gælden falder med hvert år, kaldes \emph{afdrag}. Der gælder
 altså følgende sammenhæng:
+\begin{tcolorbox}
 \[
-\mbox{rente + afdrag = ydelse}
+\mbox{rente + afdrag = ydelse}\,.
 \]
+\end{tcolorbox}
 I begyndelsen af et annuitetslån vil renten være høj og afdragene være små.
 Gælden vil derfor falde meget langsomt i begyndelsen af lånets løbetid.  Gælden
 vil først være faldet væsentligt, når der er betalt en hel del afdrag på lånet.
@@ -487,7 +499,7 @@ ud fra oplysninger om lånets størrelse og rentefoden.  Generelt har vi følgen
 sammenhæng:
 \begin{tcolorbox}
 \begin{thm}
-Den månedlige ydelse $y$ kan beregnes ud fra lånets størrelse (dvs gældens
+Den faste ydelse $y$ kan beregnes ud fra lånets størrelse (dvs gældens
 værdi i begyndelsen) $G$, rentefoden $r$ og antallet $n$ terminer
 \[
     y = G\cdot\frac{r}{1-(1+r)^{-n}}\,.
@@ -501,7 +513,7 @@ lånets størrelse er 1400 kr. Det giver følgende ydelse:
 y = 1400\cdot\frac{0,1}{1-(1+0,1)^{-7}} = 288 \,\,\mbox{kr}\,.
 \]
 At vi ikke får den præcise værdi på 300 kr, hænger sammen med, at ydelsen det
-sidste år var mindre.
+sidste år var mindre end dette.
 
 Vi ser nu på endnu et eksempel:
 \begin{tcolorbox}
@@ -512,7 +524,7 @@ Vi skal dermed betale en månedlig ydelse givet ved
 \[
     y = 5000\cdot\frac{0,01}{1-(1+0,01)^{-48}} = 132 \,\,\mbox {kr} \,. 
 \]
-I løbet af hele lånets løbetid har vi i alt betalt $132\cdot 48 = 6336$ kr. Af
+I løbet af hele lånets løbetid vil vi i alt have betalt $132\cdot 48 = 6336$ kr. Af
 disse udgør renterne i alt $6336-5000 = 1336$ kr.
 \end{tcolorbox}
 
@@ -524,6 +536,29 @@ en maksimal ydelse. Dette løser vi ved at isolere $n$ i formlen, hvilket giver:
     n = -\frac{\log\big(1-\frac{G\cdot r}{y}\big)}{\log(1+r)} \,.
 \]
 \end{thm}
+\begin{proof}
+Vi begynder med formlen i sætningen:
+\[
+    y = G\cdot\frac{r}{1-(1+r)^{-n}}\,.
+\]
+Vi ganger først med nævneren og dividerer med $y$:
+\[
+1-(1+r)^{-n} = \frac{G\cdot r}{y}\,.
+\]
+Dette omskrives til
+\[
+1 - \frac{G\cdot r}{y} =(1+r)^{-n}\,.
+\]
+Nu tages logaritmen på begge sider:
+\[
+\log\big(1 - \frac{G\cdot r}{y}\big) =\log\big((1+r)^{-n}\big) = -n\log(1+r)\,.
+\]
+Til sidst divideres med $-\log(1+r)$ på begge sider:
+\[
+n = -\frac{\log\big(1-\frac{G\cdot r}{y}\big)}{\log(1+r)} \,.
+\]
+Og vi har vist det ønskede.
+\end{proof}
 \end{tcolorbox}
 
 \begin{tcolorbox}
