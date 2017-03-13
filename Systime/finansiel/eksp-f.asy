@@ -1,11 +1,11 @@
-import systime;
+import "../systime" as systime;
 
 real xmin =  0.0;
 real xmax =  9.0;
 real xstep = 1.0;
 real ymin =  0.0;
-real ymax =  1700;
-real ystep = 100.0;
+real ymax =  1600;
+real ystep = 200.0;
 
 koord("{\aa}r", xmin, xmax, xstep,
       "saldo", ymin, ymax, ystep,
