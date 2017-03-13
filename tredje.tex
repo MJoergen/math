@@ -1,0 +1,207 @@
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+%\usepackage{graphicx}
+\usepackage{amsfonts}
+\usepackage{amsthm}        % Theorems
+\usepackage{amsmath}
+%\usepackage{hyperref}
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+\newcommand{\be}{\begin{equation}}
+\newcommand{\ee}{\end{equation}}
+\newcommand{\bea}{\begin{eqnarray}}
+\newcommand{\eea}{\end{eqnarray}}
+
+\newtheorem{thm}{Sætning}[section]
+\newtheorem{mydef}[thm]{Definition}
+\newtheorem{eks}[thm]{Eksempel}
+
+\title{Løsning af trediegradsligninger}
+\date{Marts 2017}
+\author{Michael Jørgensen}
+
+\begin{document}
+
+\maketitle
+\section*{Opgave 1}
+Lad os først kigge på en speciel type af trediegradsligning, nemlig
+hvor leddet $x^2$ ikke findes. Det vil sige, vil vi løse ligningen:
+\begin{equation}
+    x^3 + px +q = 0,
+    \label{eq1}
+\end{equation}
+hvor $p$ og $q$ er givne tal. 
+
+For at løse ligning~(\ref{eq1}), så indfører vi to nye endnu ukendte tal $u$ og
+$v$, og postulerer, at $x=u+v$. Dvs vi søger nogle ligninger, som $u$ og $v$
+skal opfylde.
+
+For det første skal $x$ være en løsning til den givne
+trediegradsligning~(\ref{eq1}).
+\begin{itemize}
+    \item Udregn først $x^3 = (u+v)^3$ ved at ophæve parenteserne.
+    \item Vis dernæst ved indsættelse i ligning~(\ref{eq1}), at ligningen kan
+        skrives som
+        \begin{equation}
+            u^3+v^3 + (3uv+p)x + q=0
+            \label{eq2}
+        \end{equation}
+\end{itemize}
+
+Ligning~(\ref{eq2}) er én ligning, som $u$ og $v$ skal opfylde. Men da vi har
+to variabler, så kan vi frit finde på endnu en ligning, som de skal opfylde, og
+stadig håbe på, at der er løsningner.
+
+Den ekstra betingelse vi kræver er, at det midterste led i ligning~(\ref{eq2}) er nul, dvs.
+\begin{equation}
+    3uv+p = 0
+    \label{eq3}
+\end{equation}
+\begin{itemize}
+    \item Gør rede for, at ligning~(\ref{eq2}) og~(\ref{eq3}) tilsammen kan skrives som følgende ligningssystem:
+        \begin{eqnarray}
+            3uv+p = 0 \label{eq4}\\
+            u^3+v^3+q = 0 \label{eq5}
+        \end{eqnarray}
+\end{itemize}
+
+        I ligning~(\ref{eq4}) skal du nu isolere $v$, og derefter indsætte dette
+        i ligning~(\ref{eq5}).
+\begin{itemize}
+    \item Vis, at den fremkomne ligning i $u$ kan skrives som
+        \begin{equation}
+            u^6 + qu^3-\Big(\frac{p}{3}\Big)^3 = 0 \;.
+            \label{eq6}
+        \end{equation}
+\end{itemize}
+
+Dette ligner en sjettegradsligning, men ved at substituere $z=u^3$ bliver
+det til en andengradsligning.
+
+
+\begin{itemize}
+    \item Løs denne, og vis at ligning~(\ref{eq6}) har to løsninger:
+
+        \begin{equation}
+            u =
+            \sqrt[3]{-\frac{q}{2}\pm\sqrt{\Big(\frac{q}{2}\Big)^2+\Big(\frac{p}{3}\Big)^3}} \;.
+            \label{eq7}
+        \end{equation}
+    \item Gør rede for, at hvis de to løsninger~(\ref{eq7}) kaldes henholdsvis $u$ og $v$, så opfylder de både ligning~(\ref{eq4}) og ligning~(\ref{eq5}).
+    \item Skriv den fulde løsning til trediegradsligningen~(\ref{eq1}).
+    \item Hvad skal gælde om sammenhængen mellem $p$ og $q$ for at denne metode
+        kan bruges (uden at bruge komplekse tal)?
+\end{itemize}
+
+\section*{Opgave 2}
+Ovenstående metode giver én løsning, men en trediegradsligning kan godt have
+tre løsninger. Den næste metode benytter trigonometriske funktioner. For at
+bruge denne metode skal vi først have bevist nogle regneregler. Vi tager som
+givet følgende additionsformler:
+\begin{eqnarray}
+    \sin(A+B) = \sin(A)\cos(B) + \cos(A)\sin(B) \\
+    \cos(A+B) = \cos(A)\cos(B) - \sin(A)\sin(B)
+\end{eqnarray}
+
+Ovenstående formler gælder for alle værdier af $A$ og $B$.
+\begin{itemize}
+    \item Benyt ovenstående formler til at vise, at 
+        \begin{eqnarray}
+            \sin(2A) = 2\sin(A)\cos(A) \\
+            \cos(2A) = \cos^2(A) - \sin^2(A)
+        \end{eqnarray}
+    \item Benyt ovenstående resultater til at vise, at
+        \begin{equation}
+            \sin(3A) = 3\sin(A)\cos^2(A) - \sin^3(A)
+            \label{eq12}
+        \end{equation}
+\end{itemize}
+
+For at komme videre får vi brug for endnu en formel (også kendt som
+"idiotformlen"):
+\begin{equation}
+    \cos^2(A) + \sin^2(A) = 1 \;.
+    \label{eq11}
+\end{equation}
+
+\begin{itemize}
+    \item Benyt idiotformlen~(\ref{eq11}) og vis, at ligning~(\ref{eq12}) kan 
+        omskrives til:
+        \begin{equation}
+            \sin(3A) = 3\sin(A) - 4\sin^3(A) \;.
+            \label{eq13}
+        \end{equation}
+    \item Nu isoleres $\sin^3(A)$. Vis, at det giver:
+        \begin{equation}
+            \sin^3(A) = \frac{3}{4} \sin(A) - \frac{1}{4}\sin(3A)\;.
+        \end{equation}
+\end{itemize}
+
+Nu er vi klar til at indsætte $x=u\sin(v)$ i ligning~(\ref{eq1}).
+
+\begin{itemize}
+    \item Vis, at ligning~(\ref{eq1}) kan omskrives til
+        \begin{equation}
+            -\frac{u^3}{4}\sin(3v) + \Big(\frac{3}{4}u^2+p\Big)u\sin(v)+q=0\;.
+            \label{eq14}
+        \end{equation}
+\end{itemize}
+
+Igen har vi én ligning med to ubekendte, og igen vælger vi at sætte
+det midterste led lig med nul, dvs.
+        \begin{equation}
+            \frac{3}{4}u^2+p = 0\;.
+            \label{eq15}
+        \end{equation}
+
+\begin{itemize}
+    \item Vis, at ligning~(\ref{eq14}) nu reduceres til:
+        \begin{equation}
+            \sin(3v) = \frac{4q}{u^3} \;.
+            \label{eq16}
+        \end{equation}
+    \item Isolér $u$ i ligning~(\ref{eq15}) og indsæt i ligning~(\ref{eq16}).
+         Vis, at løsnigen kan skrives om:
+         \begin{equation}
+             3v = \sin^{-1}\Bigg(\frac{q/2}{\sqrt{-(p/3)^3}}\Bigg) + n\cdot 2\pi\;,
+             \label{eq17}
+         \end{equation}
+         hvor $n$ er et vilkårligt heltal.
+     \item Forklar, hvorfor $n=0$, $n=1$, og $n=2$ giver tre forskellige værdier for $v$, som alle ligger i intervallet $[0, 2\pi[$.
+     \item Opskriv den fulde formel for de tre løsninger til den oprindelige trediegradsligning~(\ref{eq1}).
+    \item Hvad skal gælde om sammenhængen mellem $p$ og $q$ for at denne metode
+        kan bruges (uden at bruge komplekse tal)?
+\end{itemize}
+
+\section*{Opgave 3}
+Til slut kigger vi på den generelle trediegradsligning:
+\begin{equation}
+    x^3 + ax^2 + bx + c = 0 \,,
+    \label{eq21}
+\end{equation}
+hvor $a$, $b$ og $c$ er givne tal.
+
+Nu indføres substitutionen
+\begin{equation}
+    x = u - \frac{a}{3}
+    \label{eq22}
+\end{equation}
+
+\begin{itemize}
+    \item Indsæt ligning~(\ref{eq22}) i ligning~(\ref{eq21}) og vis, at svaret
+        kan skrives på formen~(\ref{eq1}).
+    \item Udtryk $p$ og $q$ ved de givne tal $a$, $b$ og $c$.
+\end{itemize}
+
+
+\end{document}
+
