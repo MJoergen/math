@@ -19,6 +19,7 @@ pics  += lin-11.asy
 pics  += lin-11a.asy
 pics  += lin-11b.asy
 pics  += lin-12.asy
+pics  += lin-13.asy
 asy_pdfs  += $(pics:.asy=.pdf)
 
 all: $(asy_pdfs) $(tex_pdfs)
