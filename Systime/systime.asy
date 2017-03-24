@@ -15,11 +15,15 @@ pen purple_thin = rgb("916fa2");
 pen yellow_thin = rgb("f49e42");
 pen green_thin  = rgb("6a9f7b");
 pen grey_thin   = rgb("808080");
+pen black_thin  = rgb("000000");
+pen white_thin  = rgb("ffffff");
 
 pen blue_default   = blue_thin   + 1.0;
 pen purple_default = purple_thin + 1.0;
 pen yellow_default = yellow_thin + 1.0;
 pen green_default  = green_thin  + 1.0;
+pen grey_default   = grey_thin   + 1.0;
+pen black_default  = black_thin  + 1.0;
 
 arrowbar systime_arrow = Arrow(HookHead, size=3.5);
 
@@ -190,5 +194,19 @@ void bars(real[] x, real[] y1, real[] y2, real[] y3 = {}, real width = 0.6)
         prev_b = b;
     }
 
+}
+
+// Skalar-produkt
+real dot(pair va, pair vb)
+{
+    return va.x*vb.x + va.y*vb.y;
+}
+
+// Projektion af va på vb
+pair proj(pair va, pair vb)
+{
+    real t = dot(va, vb) / dot(vb, vb);
+    pair res = (vb.x*t, vb.y*t);
+    return res;
 }
 
