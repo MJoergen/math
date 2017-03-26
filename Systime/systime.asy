@@ -210,3 +210,10 @@ pair proj(pair va, pair vb)
     return res;
 }
 
+// Polær til rektangulær
+pair pol_rekt(real l, real v)
+{
+    pair res = (l*cos(v), l*sin(v));
+    return res;
+}
+
