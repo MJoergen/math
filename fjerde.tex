@@ -11,6 +11,7 @@
 \usepackage{amsfonts}
 \usepackage{amsthm}        % Theorems
 \usepackage{amsmath}
+\usepackage{tcolorbox}
 %\usepackage{hyperref}
 
 %\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
@@ -36,7 +37,8 @@
 \maketitle
 Vi betragter det generelle fjerdegradspolynonium
 \begin{equation}
-    x^4 + ax^3 + bx^2 + cx + d\;,
+x^4 + ax^3 + bx^2 + cx + d\;,
+\label{eq_4}
 \end{equation}
 og kalder rødderne for $x_1$, $x_2$, $x_3$ og $x_4$.
 Opgaven i det følgende er at bestemme rødderne ud fra kendskabet til
@@ -95,7 +97,7 @@ Dette viser, at
 Venstresiden er tydeligvis invariant over for permutationer af rødderne, og
 kan derfor, som det ses, udtrykkes ved koefficienterne $a$, $b$, $c$ og $d$.
 
-På tilsvarende møde udregner vi
+På tilsvarende måde udregner vi
 \bas
  && -ab \\
  &=& -3c + x_1^2(x_2+x_3+x_4) + x_2^2(x_1+x_3+x_4) \\
@@ -124,17 +126,19 @@ Hver af de tre nye variabler udgør, sammen med ligning~(\ref{koef_a}), et
 system af fire lineære ligninger med fire ubekendte.  Med andre ord, det er
 muligt at udtrykke rødderne ud fra kendskab til $T_1$, $T_2$ og $T_3$.
 Udregning på CAS giver følgende svar:
+\begin{tcolorbox}
 \bea
     4x_1 &=& -a + T_1 + T_2 + T_3 \label{x1} \\
     4x_2 &=& -a + T_1 - T_2 - T_3 \label{x2} \\
     4x_3 &=& -a - T_1 + T_2 - T_3 \label{x3} \\
     4x_4 &=& -a - T_1 - T_2 + T_3 \label{x4} \;.
 \eea
+\end{tcolorbox}
 I det følgende vil vi beskrive, hvorledes vi kan bestemme værdierne af de nye
 variable $T_1$, $T_2$ og $T_3$, og således med ovenstående formler bestemme
 rødderne.
 
-\section{Resultat af perutationer af rødderne}
+\section{Resultat af permutationer af rødderne}
 Vi undersøger, hvorledes permutationer af rødderne påvirker de nye variable
 $T_1$, $T_2$ og $T_3$.
 
@@ -182,21 +186,21 @@ rødderne kommer vi frem til følgende skema:
     \hline
 \end{tabular}
 
-Vi ser således, at det hver gang fører til permutationer af de nye
-variabler, samt eventuelle fortegnsskift. Endvidere ser vi, at produktet
-$T_1 T_2 T_3$ er invariant over for alle permutationer. Det er derfor
+Vi ser således, at enhver permutation af de fire rødder fører til permutationer
+af de nye variabler, med eventuelle fortegnsskift. Endvidere ser vi, at
+produktet $T_1 T_2 T_3$ er invariant over for alle permutationer. Det er derfor
 muligt at udtrykke dette produkt udelukkende ved de oprindelige koefficienter.
 Vi udregner derfor:
 \bas
 && T_1 T_2 \\
 &=& (x_1-x_4+x_2-x_3)(x_1-x_4-x_2+x_3) \\
-&=& (x_1-x_4)^2 - (x_2-x_3)^2
+&=& (x_1-x_4)^2 - (x_2-x_3)^2 \;.
 \eas
 Dernæst udregner vi:
 \bas
 && T_1T_2T_3 \\
 &=& (x_1+x_4-x_2-x_3)((x_1-x_4)^2 - (x_2-x_3)^2) \\
-&=& (x_1-x-4)(x_1^2-x_4^2) + (x_2-x_3)(x_2^2-x_3^2) \\
+&=& (x_1-x_4)(x_1^2-x_4^2) + (x_2-x_3)(x_2^2-x_3^2) \\
 && \quad - (x_1+x_4)(x_2-x_3)^2 - (x_2+x_3)(x_1-x_4)^2 \\
 &=& x_1^3 - x_1^2x_4 - x_1x_4^2 + x_4^3 + x_2^3 - x_2^2x_3 - x_2x_3^2 + x_3^3 \\
 && \quad - x_1x_2^2 + 2x_1x_2x_3 - x_1x_3^2 - x_4x_2^2 + 2x_2x_3x_4 - x_4x_3^2 \\
@@ -210,10 +214,12 @@ Dernæst udregner vi:
 &=& -a^3 + 4ab - 8c \;.
 \eas
 Hermed har vi vist, at
+\begin{tcolorbox}
 \begin{equation}
 T_1T_2T_3 = -a^3 + 4ab - 8c \;.
 \label{t123}
 \end{equation}
+\end{tcolorbox}
 
 \section{Endnu en substitution}
 Vi kan eliminere fortegnsskiftene ved at kvadrere de nye variable. Dermed
@@ -225,7 +231,7 @@ af rødderne:
     \{T_1^2,\, T_2^2,\, T_3^2\}\;.
     \label{n_set}
 \end{equation}
-Vi foretager nu følgende udregning:
+Vi foretager derfor følgende udregning:
 \bas
 && T_1^2 \\
 &=& (x_1+x_2-x_3-x_4)^2 \\
@@ -235,16 +241,18 @@ Vi foretager nu følgende udregning:
 \eas
 hvor $u_1 = x_1x_2+x_3x_4$.
 På tilsvarende måde får vi følgende resultat
+\begin{tcolorbox}
 \bea
 T_1^2 &=& a^2-4b + 4u_1 \label{eq_t1}\\
 T_2^2 &=& a^2-4b + 4u_2 \label{eq_t2}\\
 T_3^2 &=& a^2-4b + 4u_3 \label{eq_t3}\;,
 \eea
+\end{tcolorbox}
 hvor vi har indført de nye variabler
 \bea
-u_1 &=& x_1x_2 + x_3x_4 \label{eq_u1}\\
-u_2 &=& x_1x_3 + x_2x_4 \label{eq_u2}\\
-u_3 &=& x_1x_4 + x_2x_3 \label{eq_u3}\;.
+u_1 &=& x_1x_2 + x_3x_4 \label{eq_u1_def}\\
+u_2 &=& x_1x_3 + x_2x_4 \label{eq_u2_def}\\
+u_3 &=& x_1x_4 + x_2x_3 \label{eq_u3_def}\;.
 \eea
 
 I det følgende vil vi udlede en ligning til at bestemme værdierne af $u_1$,
@@ -254,8 +262,7 @@ $x_2$, $x_3$ og $x_4$.
 
 Dog er der ved løsning af ligningerne~(\ref{eq_t1})-(\ref{eq_t3}) tre fortegn,
 der ikke er bestemt, og dermed i alt otte kombinationer af fortegn.
-For at undgå tvetydighed er det nødvendigt med en ekstra betingelse på 
-værdierne af $T_1$, $T_2$ og $T_3$. Denne betingelse er netop ligning~(\ref{t123}).
+For at undgå tvetydighed er det nødvendigt at benytte ligning~(\ref{t123}).
 
 \section{Diskriminanten}
 For at komme videre med diskriminanten udregner vi faktorerne parvis.
@@ -292,15 +299,15 @@ Ved at gange parenteserne ud kan vi også skrive det på følgende måde:
 \end{equation}
 hvor koefficienterne $p$, $q$ og $r$ kan udtrykkes ved rødderne $u_1$, $u_2$ og $u_3$ på følgende måde:
 \bea
--p &=& u_1 + u_2 + u_3 \\
- q &=& u_1u_2 + u_1u_3 + u_2u_3 \\
--r &=& u_1u_2u_3 \,.
+-p &=& u_1 + u_2 + u_3 \label{equ_p}\\
+ q &=& u_1u_2 + u_1u_3 + u_2u_3 \label{equ_q}\\
+-r &=& u_1u_2u_3 \label{equ_r}\,.
 \eea
 Nu ser vi, at koefficienterne $p$, $q$ og $r$ er invariante over for
 permutationer af $u_1$, $u_2$ og $u_3$. Dermed er de også invariante over for
-permutaioner af $x_1$, $x_2$, $x_3$ og $x_4$.  Så må der gælde, at de kan
-udtrykkes ved de oprindelige koefficienter. Og derfor er substitutionen i
-afsnit~\ref{sec_subst} smart!
+permutaioner af $x_1$, $x_2$, $x_3$ og $x_4$, og der må derfor gælde, at $p$,
+$q$ og $r$ kan udtrykkes ved de oprindelige koefficienter. Og derfor er
+substitutionen i afsnit~\ref{sec_subst} smart!
 
 Vi foretager nu følgende beregninger:
 \bas
@@ -330,17 +337,189 @@ Vi foretager nu følgende beregninger:
 &=& a^2d - 4bd + c^2 \;.
 \eas
 Vi har således vist, at
+\begin{tcolorbox}
 \bea
--p &=& b \label{eq_p}\\
- q &=& ac-4d \label{eq_q}\\
--r &=& a^2d-4bd+c^2 \label{eq_r}\;.
+p &=& -b \label{eq_p}\\
+q &=& ac-4d \label{eq_q}\\
+r &=& -a^2d+4bd-c^2 \label{eq_r}\;.
 \eea
+\end{tcolorbox}
 
 På denne måde kan man, ved at løse en tredjegradsligningen~(\ref{tredje_2}),
 bestemme værdierne for $u_1$, $u_2$ og $u_3$. Ved at tage kvadratroden af disse
 tal bliver der i alt otte kombinationer af fortegn for $T_1$, $T_2$ og $T_3$,
 som dog også skal opfylde~(\ref{t123}).
 
+\section{Diskriminanten af tredjegradsligningen}
+Inden vi løser ligning~(\ref{tredje_2}), så ser vi først på
+diskriminanten~(\ref{eq_dis3}). Vi udregner derfor
+\bas
+&& (u_1-u_2)(u_1-u_3)(u_2-u_3) \\
+&=& (u_1^2-u_1u_2-u_1u_3+u_2u_3)(u_2-u_3) \\
+&=& u_1^2u_2+u_2^2u_3+u_3^2u_1 - (u_1u_2^2+u_2u_3^2+u_3u_1^2) \\
+&=& B_1 - B_2  \;,
+\eas
+hvor jeg har indført to hjælpevariable:
+\bas
+B_1 &=& u_1^2u_2 + u_2^2u_3 + u_3^2u_1 \\
+B_2 &=& u_1u_2^2 + u_2u_3^2 + u_3u_1^2 \;.
+\eas
+Vi har derfor
+\begin{equation}
+D = (B_1-B_2)^2 \;.
+\end{equation}
+
+Nu udregner vi
+\bas
+&& -pq \\
+&=& (u_1+u_2+u_3)(u_1u_2 + u_1u_3 + u_2u_3) \\
+&=& u_1^2u_2 + u_1^2u_3 + u_1u_2u_3 + u_1u_2^2 + u_1u_2u_3 + u_2^2u_3 \\
+&& \quad + u_1u_2u_3 + u_1u_3^2 + u_2u_3^2 \\
+&=& B_1 + B_2 - 3r \;.
+\eas
+Derfor har vi, at
+\begin{equation}
+B_1 + B_2 = 3r - pq \;.
+\end{equation}
+En meget længere udregning giver
+\begin{equation}
+B_1 B_2 = q^3 + rp^3 - 6pqr + 9r^2 \;.
+\end{equation}
+
+Så kan vi udregne diskriminanten:
+\bas
+D &=& (B_1+B_2)^2 - 4B_1B_2 \\
+&=& (3r-pq)^2 - 4(q^3 + rp^3 - 6pqr + 9r^2) 
+\eas
+En kort reducering giver:
+\begin{equation}
+D = -4p^3r + p^2q^2 + 18pqr - 4q^3 - 27r^2 \;.
+\label{eq_dis2}
+\end{equation}
+
+\section{Løsning af tredjegradsligningen}
+For at løse ligning~(\ref{tredje_2}) indfører vi endnu en substitution:
+\bea
+A_1 &=& u_1 + \alpha u_2 + \alpha^2 u_3 \label{eq_a1}\\
+A_2 &=& u_1 + \alpha^2 u_2 + \alpha u_3  \label{eq_a2}\;,
+\eea
+hvor $\alpha$ er et komplekst tal, som opfylder:
+\begin{equation}
+\alpha^2 = -1 - \alpha \;.
+\end{equation}
+Sammen med ligning~(\ref{equ_p}) udgør ligning~(\ref{eq_a1}) og
+ligning~(\ref{eq_a2}) et system af tre lineære ligninger i tre ubekendte.
+De kan derfor løses, og svaret er:
+\bea
+3u_1 &=& -p + A_1 + A_2 \label{eq_u1}\\
+3u_2 &=& -p + \alpha^2 A_1 + \alpha A_2 \label{eq_u2}\\
+3u_3 &=& -p + \alpha A_1 + \alpha^2 A_2 \label{eq_u3}\;.
+\eea
+Når vi kender $A_1$ og $A_2$ kan ovenstående ligninger altså give rødderne
+$u_1$, $u_2$ og $u_3$.
+
+\section{Permutationer af $u_1$, $u_2$ og $u_3$}
+Vi undersøger nu, hvorledes variablene $A_1$ og $A_2$ påvirkes af de seks
+mulige permutationer af rødderne $u_1$, $u_2$ og $u_3$. Resultatet er
+
+\begin{tabular}{|c|r|r|}
+    \hline 
+    -    & $A_1$ & $ A_2$ \\
+    \hline 
+    (12) & $\alpha A_2$ & $\alpha^2 A_1$ \\
+    (13) & $\alpha^2 A_2$ & $\alpha A_1$ \\
+    (23) & $A_2$ & $A_1$ \\
+    \hline 
+    (123) & $\alpha^2 A_1$ & $\alpha A_2$ \\
+    (132) & $\alpha A_1$ & $\alpha^2 A_2$ \\
+    \hline
+\end{tabular}
+
+Idet $\alpha^3 = 1$ så ser vi, at såvel $A_1A_2$ som $A_1^3 + A_2^3$ er
+uændret efter enhver permutation. Derfor må disse kunne udtrykkes 
+ved koefficienterne $p$, $q$ og $r$.
+
+Ved direkte udregning får vi
+\bea
+A_1A_2 &=& p^2 - 3q \label{eq_a1a2}\\
+A_1^3 + A_2^3 &=& -2p^3 + 9pq - 27r \;.
+\eea
+
+For at løse ligninger indfører vi endnu en substitution
+\bea
+y_1 &=& A_1^3 \label{eq_y1}\\
+y_2 &=& A_2^3 \label{eq_y2}
+\eea
+Ovenstående overvejelser viser, at permutationer af $u_1$, $u_2$ og $u_3$
+fører til permutationer af $y_1$ og $y_2$. Derfor kan vi nu 
+opskrive en andengradsligning
+\begin{equation}
+y^2 + sy + t = 0,
+\label{eq_y}
+\end{equation}
+hvor $s$ og $t$ er endnu ukendte koefficienter. Idet rødderne skal være $y_1$
+og $y_2$ må der gælde:
+\bas
+-s &=& y_1 + y_2 \\
+&=& A_1^3 + A_2^3 \;,
+\eas
+og
+\bas
+t &=& y_1 y_2 \\
+&=& (A_1 A_2)^3 \;.
+\eas
+
+Dermed har vi
+\bea
+s &=& 2p^3 - 9pq + 27r \label{eq_s}\\
+t &=& (p^2-3q)^3 \label{eq_t}  \;.
+\eea
+
+\section{Endelig løsning}
+Vi er nu klar til at stykke alle stumperne sammen.
+Ud fra koefficienterne i den oprindelige fjerdegradsligning~(\ref{eq_4}) danner
+vi nogle nye koefficienter $p$, $q$ og $r$ givet ved
+ligningerne~(\ref{eq_p}), (\ref{eq_q}) og~(\ref{eq_r}).
+Derefter dannes endnu nogle nye kofficienter $s$ og $t$ givet ved
+ligningerne~(\ref{eq_s}) og~(\ref{eq_t}).
+
+Andengradsligningen~(\ref{eq_y}) løses, og ud fra rødderne $y_1$ og $y_2$
+dannes de to nye variable $A_1$ og $A_2$ ud fra ligningerne~(\ref{eq_y1})
+og~(\ref{eq_y2}), idet de skal opfylde~(\ref{eq_a1a2}).
+
+Dernæst vil ligningerne~(\ref{eq_u1}), (\ref{eq_u2}) og~(\ref{eq_u3}) give de
+tre rødder $u_1$, $u_2$ og $u_3$. Disse indsættes i ligningerne~(\ref{eq_t1}),
+(\ref{eq_t2}) og~(\ref{eq_t3}) og giver værdier for $T_1$, $T_2$ og $T_3$, hvor
+man skal huske ligning~(\ref{t123}).
+
+Til sidst benyttes ligningerne~(\ref{eq_t1})-~(\ref{eq_t3}), til at give de
+endelige rødder $x_1$, $x_2$, $x_3$ og $x_4$.
+
+\section{Blandede noter}
+\bas
+A_1^3 &=& u_1^3 + u_2^3 + u_3^3 + 6u_1u_2u_3 + 3\alpha B_1 + 3\alpha^2 B_2 \\
+&=& -p^3 + \frac92 pq - \frac{27}{2}r + \frac{3}{2} \sqrt{-3D} \,.
+\eas
+Tilsvarende finder vi
+\bas
+A_2^3 &=& -p^3 + \frac92 pq - \frac{27}{2}r - \frac{3}{2} \sqrt{-3D} \,.
+\eas
+Til sidst udregner vi
+\bas
+A_1A_2 &=& u_1^2 + u_2^2 + u_3^2 - (u_1u_2 + u_1u_3 + u_2u_3) \\
+&=& p^2 - 3q \;.
+\eas
+Ved at kombinere ovenstående ligninger finder vi:
+\bas
+(A_1A_2)^3 &=& A_1^3 A_2^3 \\
+(p^2-3q)^3 &=& \left(-p^3 + \frac92 pq - \frac{27}{2}r\right)^2 - \frac94(-3D) \;.
+\eas
+Ved at omskrive den sidste ligning får vi:
+\bas
+-27D &=& (-2p^3+9pq-27r)^2 - 4(p^2-3q)^3 \;.
+\eas
+Ved at reducere højresiden ses det, at denne ligning er ækvivalent med
+ligning~(\ref{eq_dis2}).
 
 \section{Eksempel}
 Som eksempel på anvendelsen af denne teori, bliver følgende
@@ -348,35 +527,30 @@ ligning gennemregnet:
 \begin{equation}
     x^4 - 3,3 x^3 - 4,21 x^2 + 12,633 x - 4,914 = 0 \;.
 \end{equation}
+Vi har altså de fire koefficienter
+\bas
+a &=& -3,3 \\
+b &=& -4,21 \\
+c &=& 12,633 \\
+d &=& -4,914 \;.
+\eas
 
-I vort eksempel giver ligningerne~(\ref{eq_p})-(\ref{eq_r}) følgende:
-\bea
--p &=& 66,35 \\
- q &=& 1020,3859 \\
--r &=& 91,298025\;,
-\eea
-og vi skal derfor løse følgende tredjegradsligning:
-\[
-    u^3 - 66,35 u^2 + 1020,3859 u - 91,298025 = 0\;.
-\]
-Her finder vi rødderne
-\bea
-u_1 &=& 0,09 \\
-u_2 &=& 24,01 \\
-u_3 &=& 42,25
-\eea
-Endvidere har vi fra ligning~(\ref{t123}), at
-\begin{equation}
-T_1 T_2 T_3 = -9,555\;.
-\label {t123_e}
-\end{equation}
-Som kontrol har vi, at 
-\begin{equation}
-    u_1u_2u_3 = 91,298025 = (-9,555)^2
-\end{equation}
-Vi vælger den positive kvadratrod for $T_1$ og $T_2$ og må derfor, på grund af
-ligning~(\ref{t123_e}) vælge den negative rod for $T_3$.
-Det giver:
+Først udregner vi
+\bas
+p &=& 4,21 \\
+q &=& -3,3\cdot 12,633 + 4\cdot 4,914 = -22,0329 \\
+r &=& 3,3^2\cdot 4,914 + 4\cdot 4,21 \cdot 4,914 - 12,633^2 = -23,327469 \;.
+\eas
+Dernæst udregner vi
+\bas
+s &=& 2\cdot 4,21^3 + 9\cdot 4,21 \cdot 22,0329 - 27\cdot 23,327469 = 279,603379\\
+t &=&  (4,21^2 + 3\cdot 22,0329)^3 = 83,8228^3 = 588960,937595628
+\eas
+Vi udregner nu diskriminanten 
+\bas
+D &=& s^2-4t = 276,603379^2 - 4\cdot 588960,937595628 = -2279334,321108296 
+\eas
+
 \bea
 T_1 &=& 0,3 \\
 T_2 &=& 4,9 \\
