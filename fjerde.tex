@@ -36,13 +36,21 @@
 \maketitle
 Vi betragter det generelle fjerdegradspolynonium
 \begin{equation}
-    x^4 + ax^3 + bx^2 + cx + d = 0\;,
+    x^4 + ax^3 + bx^2 + cx + d\;,
 \end{equation}
 og kalder rødderne for $x_1$, $x_2$, $x_3$ og $x_4$.
 Opgaven i det følgende er at bestemme rødderne ud fra kendskabet til
 koefficienterne $a$, $b$, $c$ og $d$.
 For at gøre dette, gør vi brug af gruppe-teori, teori om
 symmetriske polynomier, samt flittig brug af CAS.
+Endvidere vil vi også beregne diskriminanten $D$ af polynomiet, som 
+er defineret ved
+\begin{equation}
+    D =
+    \left[(x_1-x_2)(x_1-x_3)(x_1-x_4)(x_2-x_3)(x_2-x_4)(x_3-x_4)\right]^2\;.
+    \label{eq_dis4}
+\end{equation}
+Vi slutter af med at gennemregne et eksempel.
 
 \section{Sammenhæng mellem rødder og koefficienter}
 Til at begynde med løser vi den modsatte opgave, nemlig at bestemme
@@ -66,40 +74,56 @@ Faktoriseringen~(\ref{fakt}) er tydeligvis invariant over for permutationer af
 rødderne. Dvs hvis f.eks. $x_1$ og $x_2$ bytter plads, så vil faktorisering være
 uændret, fordi faktorernes orden ikke betyder noget.
 Heraf følger, at de fire koefficienter $a$, $b$, $c$ og $d$ således også er
-invariante over for alle permutationer af rødderne. Ved inspektion af
+invariante over for alle 24 permutationer af rødderne. Ved inspektion af
 ligningerne~(\ref{koef_a})-(\ref{koef_d}) ser vi således, at vilkårlige
 ombytninger af rødderne ikke ændrer værdierne af $a$, $b$, $c$ eller $d$.
 
 Omvendt gælder der, at ethvert udtryk, som er invariant over for vilkårlige
 permutationer af rødderne, vil kunne omskrives til et algebraisk udtryk i 
-koefficienterne $a$, $b$, $c$ og $d$, og dette endda på en éntydig måde. Vi ser
-på et eksempel:
-Udtrykket
+koefficienterne $a$, $b$, $c$ og $d$, og dette endda på en éntydig måde.
+Vi kan f.eks. foretage følgende beregning:
+\bas
+ && a^2 \\
+ &=& (x_1+x_2+x_3+x_4)^2  \\
+ &=& x_1^2+x_2^2+x_3^2+x_4^2 + 2(x_1x_2+x_1x_3+x_1x_4 +x_2x_3+x_2x_4+x_3x_4)\\
+ &=& x_1^2+x_2^2+x_3^2+x_4^2 + 2b
+\eas
+Dette viser, at 
 \begin{equation}
-    x_1^2 + x_2^2 + x_3^2 + x_4^2\;,
+    x_1^2 + x_2^2 + x_3^2 + x_4^2 = a^2 - 2b\;.
 \end{equation}
-er tydeligvis invariant over for alle permutationer af rødderne. Det kan derfor
-omskrives til et algebraisk udtryk i $a$, $b$, $c$ og $d$.
-Ved hjælp af CAS kan vi verificere følgende identiteter:
-\bea
-    x_1^2 + x_2^2 + x_3^2 + x_4^2 &=& a^2 - 2b \\
-    x_1^3 + x_2^3 + x_3^3 + x_4^3 &=& -a^3 + 3ab - 3c \\
-    x_1^4 + x_2^4 + x_3^4 + x_4^4 &=& a^4 - 4a^2b + 4ac + 2b^2 - 4d \;.
-\eea
-Ovenstående formler skal ikke bruges til noget i det følgende, men er 
-udelukkende ment som eksempler.
+Venstresiden er tydeligvis invariant over for permutationer af rødderne, og
+kan derfor, som det ses, udtrykkes ved koefficienterne $a$, $b$, $c$ og $d$.
 
-\section{Substitution}
-For at komme videre, indfører en smart substitution:
+På tilsvarende møde udregner vi
+\bas
+ && -ab \\
+ &=& -3c + x_1^2(x_2+x_3+x_4) + x_2^2(x_1+x_3+x_4) \\
+ && \quad + x_3^2(x_1+x_2+x_4) + x_4^2(x_1+x_2+x_3) \\
+ &=& -3c + x_1^2(-a-x_1) + x_2^2(-a-x_2) + x_3^2(-a-x_3) + x_4^2(-a-x_4) \\
+ &=& -3c - a(x_1^2+x_2^2+x_3^2+x_4^2) - (x_1^3+x_2^3+x_3^3+x_4^3) \\
+ &=& -3c - a(a^2-2b) - (x_1^3+x_2^3+x_3^3+x_4^3) \;.
+\eas
+Heraf følger, at 
+\begin{equation}
+x_1^3+x_2^3+x_3^3+x_4^3 = -a^3 + 3ab - 3c \;.
+\end{equation}
+
+\section{Substitution} \label{sec_subst}
+For at komme videre, indfører vi en smart substitution:
 \bea
     T_1 &=& x_1 + x_2 - x_3 - x_4 \label{subst_t1}\\
     T_2 &=& x_1 - x_2 + x_3 - x_4 \label{subst_t2}\\
-    T_3 &=& x_1 - x_2 - x_3 + x_4 \label{subst_t3}.
+    T_3 &=& x_1 - x_2 - x_3 + x_4 \label{subst_t3}\;.
 \eea
-Hver af de tre nye variabler udgør, sammen med~(\ref{koef_a}), et system af
-fire lineære ligninger med fire ubekendte.  Med andre ord, det er muligt at
-udtrykke rødderne ud fra kendskab til $T_1$, $T_2$ og $T_3$.  Udregning på CAS
-giver følgende svar:
+At dette skulle være en smart substitution bliver først klart i
+afsnit~\ref{sec_omskriv}.  Det afgørende er, at hvert udtryk består af fire
+led; to negative og to positive.
+
+Hver af de tre nye variabler udgør, sammen med ligning~(\ref{koef_a}), et
+system af fire lineære ligninger med fire ubekendte.  Med andre ord, det er
+muligt at udtrykke rødderne ud fra kendskab til $T_1$, $T_2$ og $T_3$.
+Udregning på CAS giver følgende svar:
 \bea
     4x_1 &=& -a + T_1 + T_2 + T_3 \label{x1} \\
     4x_2 &=& -a + T_1 - T_2 - T_3 \label{x2} \\
@@ -107,16 +131,15 @@ giver følgende svar:
     4x_4 &=& -a - T_1 - T_2 + T_3 \label{x4} \;.
 \eea
 I det følgende vil vi beskrive, hvorledes vi kan bestemme værdierne af de nye
-variabler $T_1$, $T_2$ og $T_3$, og således med ovenstående formler bestemme
-    rødderne.
+variable $T_1$, $T_2$ og $T_3$, og således med ovenstående formler bestemme
+rødderne.
 
-\section{Egenskaber ved substitutionen}
-Vi undersøger nu, hvorledes permutationer af rødderne påvirker de nye variabler
+\section{Resultat af perutationer af rødderne}
+Vi undersøger, hvorledes permutationer af rødderne påvirker de nye variable
 $T_1$, $T_2$ og $T_3$.
 
 Vi ser først på den simple ombytning $x_1 \leftrightarrow x_2$. Det ses
-umiddelbart ud fra ligningerne~(\ref{subst_t1})-(\ref{subst_t3}), at $T_1$ er
-uændret, mens $T_2$ og $T_3$ skifter fortegn.
+umiddelbart ud fra ligningerne~(\ref{subst_t1})-(\ref{subst_t3}), at $T_1$ er uændret, mens $T_2 \rightarrow -T_3$ og $T_3 \rightarrow -T_2$.
 
 Dernæst undersøger vi den cykliske ombytning af de første tre rødder $x_1$,
 $x_2$ og $x_3$, givet ved: $x_1 \rightarrow x_2 \rightarrow x_3 \rightarrow
@@ -124,24 +147,142 @@ x_1$.  Ved inspektion ser vi, at $T_1 \rightarrow -T_3$, $T_2 \rightarrow T_1$
 og $T_3 \rightarrow -T_2$.
 
 Ved at fortsætte på samme måde og undersøge samtlige 24 permutationer af
-rødderne, så ser vi, at det hver gang fører til permutationer af de nye
-variabler, samt eventuelle fortegnsskift.
+rødderne kommer vi frem til følgende skema:
 
+\begin{tabular}{|c|r|r|r|}
+    \hline 
+    -    & $ T_1$ & $ T_2$ & $ T_3$ \\
+    \hline 
+    (12) & $ T_1$ & $-T_3$ & $-T_2$ \\
+    (13) & $-T_3$ & $ T_2$ & $-T_1$ \\
+    (14) & $-T_2$ & $-T_1$ & $ T_3$ \\
+    (23) & $ T_2$ & $ T_1$ & $ T_3$ \\
+    (24) & $ T_3$ & $ T_2$ & $ T_1$ \\
+    (34) & $ T_1$ & $ T_3$ & $ T_2$ \\
+    \hline 
+    (12)(34) & $ T_1$ & $-T_2$ & $-T_3$ \\
+    (13)(24) & $-T_1$ & $ T_2$ & $-T_3$ \\
+    (14)(23) & $-T_1$ & $-T_2$ & $ T_3$ \\
+    \hline 
+    (123) & $-T_3$ & $ T_1$ & $-T_2$ \\
+    (124) & $ T_3$ & $-T_1$ & $-T_2$ \\
+    (134) & $-T_2$ & $ T_3$ & $-T_1$ \\
+    (234) & $ T_3$ & $ T_1$ & $ T_2$ \\
+    (321) & $ T_2$ & $-T_3$ & $-T_1$ \\
+    (421) & $ T_3$ & $-T_1$ & $-T_2$ \\
+    (431) & $-T_2$ & $ T_3$ & $-T_1$ \\
+    (432) & $ T_3$ & $ T_1$ & $ T_2$ \\
+    \hline 
+    (1234) & $-T_3$ & $-T_2$ & $ T_1$ \\
+    (1243) & $-T_2$ & $ T_1$ & $-T_3$ \\
+    (1324) & $-T_1$ & $-T_3$ & $ T_2$ \\
+    (1342) & $ T_2$ & $-T_1$ & $-T_3$ \\
+    (1423) & $-T_1$ & $ T_3$ & $-T_2$ \\
+    (1432) & $ T_3$ & $-T_2$ & $-T_1$ \\
+    \hline
+\end{tabular}
+
+Vi ser således, at det hver gang fører til permutationer af de nye
+variabler, samt eventuelle fortegnsskift. Endvidere ser vi, at produktet
+$T_1 T_2 T_3$ er invariant over for alle permutationer. Det er derfor
+muligt at udtrykke dette produkt udelukkende ved de oprindelige koefficienter.
+Vi udregner derfor:
+\bas
+&& T_1 T_2 \\
+&=& (x_1-x_4+x_2-x_3)(x_1-x_4-x_2+x_3) \\
+&=& (x_1-x_4)^2 - (x_2-x_3)^2
+\eas
+Dernæst udregner vi:
+\bas
+&& T_1T_2T_3 \\
+&=& (x_1+x_4-x_2-x_3)((x_1-x_4)^2 - (x_2-x_3)^2) \\
+&=& (x_1-x-4)(x_1^2-x_4^2) + (x_2-x_3)(x_2^2-x_3^2) \\
+&& \quad - (x_1+x_4)(x_2-x_3)^2 - (x_2+x_3)(x_1-x_4)^2 \\
+&=& x_1^3 - x_1^2x_4 - x_1x_4^2 + x_4^3 + x_2^3 - x_2^2x_3 - x_2x_3^2 + x_3^3 \\
+&& \quad - x_1x_2^2 + 2x_1x_2x_3 - x_1x_3^2 - x_4x_2^2 + 2x_2x_3x_4 - x_4x_3^2 \\
+&& \quad - x_2x_1^2 + 2x_1x_2x_4 - x_2x_4^2 - x_3x_1^2 + 2x_1x_3x_4 - x_3x_4^2 \\
+&=& -a^3 + 3ab - 3c - 2c - x_1^2(x_2+x_3+x_4) - x_2^2(x_1+x_3+x_4) \\
+&& \quad - x_3^2(x_1+x_2+x_4) - x_4^2(x_1+x_2+x_3) \\
+&=& -a^3 + 3ab - 5c - x_1^2(-a-x_1) - x_2^2(-a-x_2) \\
+&& \quad - x_3^2(-a-x_3) - x_4^2(-a-x_4) \\
+&=& -a^3 + 3ab - 5c + a(x_1^2+x_2^2+x_3^2+x_4^2) + x_1^3+x_2^3+x_3^3+x_4^3 \\
+&=& -a^3 + 3ab - 5c + a(a^2-2b) - a^3 + 3ab - 3c \\
+&=& -a^3 + 4ab - 8c \;.
+\eas
+Hermed har vi vist, at
+\begin{equation}
+T_1T_2T_3 = -a^3 + 4ab - 8c \;.
+\label{t123}
+\end{equation}
+
+\section{Endnu en substitution}
 Vi kan eliminere fortegnsskiftene ved at kvadrere de nye variable. Dermed
 kommer vi frem til resultatet, at permutationer af rødderne fører til
-permutationer er tallene $T_1^2$, $T_2^2$ og $T_3^2$. Det kan udtrykkes på den
+permutationer af tallene $T_1^2$, $T_2^2$ og $T_3^2$. Det kan udtrykkes på den
 måde, at følgende mængde af tal er invariant over for vilkårlige permutationer
 af rødderne:
 \begin{equation}
     \{T_1^2,\, T_2^2,\, T_3^2\}\;.
     \label{n_set}
 \end{equation}
+Vi foretager nu følgende udregning:
+\bas
+&& T_1^2 \\
+&=& (x_1+x_2-x_3-x_4)^2 \\
+&=& x_1^2+x_2^2+x_3^2+x_4^2 + 2(x_1x_2+x_3x_4-x_1x_3-x_1x_4-x_2x_3-x_2x_4) \\
+&=& a^2-2b + 4(x_1x_2+x_3x_4) - 2b \\
+&=& a^2-4b + 4u_1 \;.
+\eas
+hvor $u_1 = x_1x_2+x_3x_4$.
+På tilsvarende måde får vi følgende resultat
+\bea
+T_1^2 &=& a^2-4b + 4u_1 \label{eq_t1}\\
+T_2^2 &=& a^2-4b + 4u_2 \label{eq_t2}\\
+T_3^2 &=& a^2-4b + 4u_3 \label{eq_t3}\;,
+\eea
+hvor vi har indført de nye variabler
+\bea
+u_1 &=& x_1x_2 + x_3x_4 \label{eq_u1}\\
+u_2 &=& x_1x_3 + x_2x_4 \label{eq_u2}\\
+u_3 &=& x_1x_4 + x_2x_3 \label{eq_u3}\;.
+\eea
 
-\section{Omskrivning til tredjegradsligning}
-Vi opskriver nu en ny tredjegradsligning i $u$, hvor elementerne
-i~(\ref{n_set}) er rødder. Dette gøres ved simpel faktorisering:
+I det følgende vil vi udlede en ligning til at bestemme værdierne af $u_1$,
+$u_2$ og $u_3$. Ved hjælp af ligningerne~(\ref{eq_t1})-(\ref{eq_t3}) kan vi 
+så bestemme værdierne af $T_1$, $T_2$ og $T_3$ og derefter rødderne $x_1$, 
+$x_2$, $x_3$ og $x_4$.
+
+Dog er der ved løsning af ligningerne~(\ref{eq_t1})-(\ref{eq_t3}) tre fortegn,
+der ikke er bestemt, og dermed i alt otte kombinationer af fortegn.
+For at undgå tvetydighed er det nødvendigt med en ekstra betingelse på 
+værdierne af $T_1$, $T_2$ og $T_3$. Denne betingelse er netop ligning~(\ref{t123}).
+
+\section{Diskriminanten}
+For at komme videre med diskriminanten udregner vi faktorerne parvis.
+Først regner vi:
+\bea
+&& (x_1-x_2)(x_3-x_4) \\
+&=& x_1x_3-x_1x_4-x_2x_3+x_2x_4 \\
+&=& u_2 - u_3\;.
+\eea
+På tilsvarende vis finder vi, at 
+\bea
+(x_1-x_3)(x_2-x_4) &=& u_1 - u_3 \\
+(x_1-x_4)(x_2-x_3) &=& u_1 - u_2 \;.
+\eea
+
+Dette giver følgende formel for diskriminanten
 \begin{equation}
-    (u-T_1^2)(u-T_2^2)(u-T_3^2)=0 \;.
+    D = \left[(u_1-u_2)(u_1-u_3)(u_2-u_3)\right]^2 \;.
+    \label{eq_dis3}
+\end{equation}
+
+
+\section{Omskrivning til tredjegradsligning} \label{sec_omskriv}
+Vi opskriver nu en tredjegradsligning i $u$, som har rødderne $u_1$, $u_2$ og 
+$u_3$.
+\begin{equation}
+    (u-u_1)(u-u_2)(u-u_3)=0 \;.
     \label{tredje_1}
 \end{equation}
 Ved at gange parenteserne ud kan vi også skrive det på følgende måde:
@@ -149,36 +290,56 @@ Ved at gange parenteserne ud kan vi også skrive det på følgende måde:
     u^3 + pu^2+ qu + r = 0 \;,
     \label{tredje_2}
 \end{equation}
-hvor koefficienterne $p$, $q$ og $r$ kan udtrykkes med de nye rødder $T_1^2$, $T_2^2$ og $T_3^2$.
-
-Vi vil i det følgende vise, at de nye koefficienter $p$, $q$ og $r$ også kan
-udtrykkes ved de oprindelige koefficienter $a$, $b$, $c$ og $d$ på følgende
-måde:
+hvor koefficienterne $p$, $q$ og $r$ kan udtrykkes ved rødderne $u_1$, $u_2$ og $u_3$ på følgende måde:
 \bea
--p &=& 3a^2 - 8b \label{eq_p}\\
- q &=& 3a^4 - 16a^2b^2 + 16b^2 + 16ac - 64d \label{eq_q}\\
--r &=& a^6 - 8a^4b + 16a^2b^2 + 16a^3c - 64abc + 64c^2 \label{eq_r}
+-p &=& u_1 + u_2 + u_3 \\
+ q &=& u_1u_2 + u_1u_3 + u_2u_3 \\
+-r &=& u_1u_2u_3 \,.
+\eea
+Nu ser vi, at koefficienterne $p$, $q$ og $r$ er invariante over for
+permutationer af $u_1$, $u_2$ og $u_3$. Dermed er de også invariante over for
+permutaioner af $x_1$, $x_2$, $x_3$ og $x_4$.  Så må der gælde, at de kan
+udtrykkes ved de oprindelige koefficienter. Og derfor er substitutionen i
+afsnit~\ref{sec_subst} smart!
+
+Vi foretager nu følgende beregninger:
+\bas
+&& -p \\
+&=& u_1+u_2+u_3 \\
+&=& x_1x_2+x_3x_4 + x_1x_3+x_2x_4 + x_1x_4+x_2x_3 \\
+&=& b\;.
+\eas
+\bas
+&& q \\
+&=& u_1u_2 + u_1u_3 + u_2u_3 \\
+&=& x_1^2x_2x_3 + x_2^2x_1x_4 + x_3^2x_1x_4 + x_4^2x_2x_3 \\
+&& \quad +x_1^2x_2x_4 + x_2^2x_1x_3 + x_3^2x_2x_4 + x_4^2x_1x_3 \\
+&& \quad +x_1^2x_3x_4 + x_2^2x_3x_4 + x_3^2x_1x_2 + x_4^2x_1x_2 \\
+&=& x_1(-c-x_2x_3x_4) + x_2(-c-x_1x_3x_4) \\
+&& \quad + x_3(-c-x_1x_2x_4) + x_4(-c-x_1x_2x_3) \\
+&=& ac-4d \;.
+\eas
+\bas
+&& -r \\
+&=& u_1u_2u_3 \\
+&=& x_1^3x_2x_3x_4 + x_1^2x_2^2x_4^2 + x_1^2x_3^2x_4^2 + x_1x_2x_3x_4^3 \\
+&& \quad + x_1^2x_2^2x_3^2 + x_2^3x_1x_3x_4 + x_3^3x_1x_2x_4 + x_2^2x_3^2x_4^2 \\
+&=& d(x_1^2+x_2^2+x_3^2+x_4^2) + c^2 - 2\left(x_1^2x_2^2x_3x_4 + x_1^2x_3^2x_2x_4 \right.\\
+&& \quad \left. + x_2^2x_3^2x_1x_4 + x_1^2x_4^2x_2x_3 + x_2^2x_4^2x_1x_3 + x_3^2x_4^2x_1x_2\right) \\
+&=& d(a^2-2b) + c^2 - 2db \\
+&=& a^2d - 4bd + c^2 \;.
+\eas
+Vi har således vist, at
+\bea
+-p &=& b \label{eq_p}\\
+ q &=& ac-4d \label{eq_q}\\
+-r &=& a^2d-4bd+c^2 \label{eq_r}\;.
 \eea
 
-For at vise det, skal vi først gange ud i ligning~(\ref{tredje_1}) og
-sammenligne led for led med ligning~(\ref{tredje_2}). Det giver
-\bea
--p &=& T_1^2 + T_2^2 + T_3^2 \\
- q &=& T_1^2T_2^2 + T_1^2T_3^2 + T_2^2T_3^2 \\
--r &=& T_1^2T_2^2T_3^2 \;.
-\eea
-Derefter er det en simpel opgave på CAS at indsætte
-udtrykkene~(\ref{subst_t1})-(\ref{subst_t3}) i ovenstående og bede CAS om at
-reducere.
-
-På denne måde kan man - ved at løse en tredjegradsligning - bestemme værdierne
-for $T_1^2$, $T_2^2$ og $T_3^2$. Ved at tage kvadratroden af disse tal bliver
-der i alt otte kombinationer af fortegn for $T_1$, $T_2$ og $T_3$. Disse kan dog ikke variere vilkårligt, idet der gælder følgende:
-\begin{equation}
-    T_1 T_2 T_3 = -a^3 + 4ab - 8c \;,
-    \label{t123}
-\end{equation}
-som igen vises på CAS.
+På denne måde kan man, ved at løse en tredjegradsligningen~(\ref{tredje_2}),
+bestemme værdierne for $u_1$, $u_2$ og $u_3$. Ved at tage kvadratroden af disse
+tal bliver der i alt otte kombinationer af fortegn for $T_1$, $T_2$ og $T_3$,
+som dog også skal opfylde~(\ref{t123}).
 
 
 \section{Eksempel}
