@@ -264,27 +264,6 @@ Dog er der ved løsning af ligningerne~(\ref{eq_t1})-(\ref{eq_t3}) tre fortegn,
 der ikke er bestemt, og dermed i alt otte kombinationer af fortegn.
 For at undgå tvetydighed er det nødvendigt at benytte ligning~(\ref{t123}).
 
-\section{Diskriminanten}
-For at komme videre med diskriminanten udregner vi faktorerne parvis.
-Først regner vi:
-\bea
-&& (x_1-x_2)(x_3-x_4) \\
-&=& x_1x_3-x_1x_4-x_2x_3+x_2x_4 \\
-&=& u_2 - u_3\;.
-\eea
-På tilsvarende vis finder vi, at 
-\bea
-(x_1-x_3)(x_2-x_4) &=& u_1 - u_3 \\
-(x_1-x_4)(x_2-x_3) &=& u_1 - u_2 \;.
-\eea
-
-Dette giver følgende formel for diskriminanten
-\begin{equation}
-    D = \left[(u_1-u_2)(u_1-u_3)(u_2-u_3)\right]^2 \;.
-    \label{eq_dis3}
-\end{equation}
-
-
 \section{Omskrivning til tredjegradsligning} \label{sec_omskriv}
 Vi opskriver nu en tredjegradsligning i $u$, som har rødderne $u_1$, $u_2$ og 
 $u_3$.
@@ -350,51 +329,40 @@ bestemme værdierne for $u_1$, $u_2$ og $u_3$. Ved at tage kvadratroden af disse
 tal bliver der i alt otte kombinationer af fortegn for $T_1$, $T_2$ og $T_3$,
 som dog også skal opfylde~(\ref{t123}).
 
-\section{Diskriminanten af tredjegradsligningen}
-Inden vi løser ligning~(\ref{tredje_2}), så ser vi først på
-diskriminanten~(\ref{eq_dis3}). Vi udregner derfor
+Til senere brug udregner vi nu også:
 \bas
-&& (u_1-u_2)(u_1-u_3)(u_2-u_3) \\
-&=& (u_1^2-u_1u_2-u_1u_3+u_2u_3)(u_2-u_3) \\
-&=& u_1^2u_2+u_2^2u_3+u_3^2u_1 - (u_1u_2^2+u_2u_3^2+u_3u_1^2) \\
-&=& B_1 - B_2  \;,
+p^2 &=& (u_1 + u_2 + u_3)^2 \\
+&=& u_1^2 + u_2^2 + u_3^2 + 2(u_1u_2 + u_1u_3 + u_2u_3) \\
+&=& u_1^2 + u_2^2 + u_3^2 + 2q \;.
 \eas
-hvor jeg har indført to hjælpevariable:
-\bas
-B_1 &=& u_1^2u_2 + u_2^2u_3 + u_3^2u_1 \\
-B_2 &=& u_1u_2^2 + u_2u_3^2 + u_3u_1^2 \;.
-\eas
-Vi har derfor
+Heraf fåes:
 \begin{equation}
-D = (B_1-B_2)^2 \;.
+u_1^2 + u_2^2 + u_3^2 = p^2 - 2q\;.
 \end{equation}
 
-Nu udregner vi
 \bas
-&& -pq \\
-&=& (u_1+u_2+u_3)(u_1u_2 + u_1u_3 + u_2u_3) \\
-&=& u_1^2u_2 + u_1^2u_3 + u_1u_2u_3 + u_1u_2^2 + u_1u_2u_3 + u_2^2u_3 \\
-&& \quad + u_1u_2u_3 + u_1u_3^2 + u_2u_3^2 \\
-&=& B_1 + B_2 - 3r \;.
+&& u_1u_2^2 + u_2u_3^2 + u_3u_1^2 + u_1^2u_2 + u_2^2u_3 + u_3^2u_1 \\
+&=& u_1u_2(u_1+u_2) + u_1u_3(u_1+u_3) + u_2u_3(u_2+u_3) \\
+&=& -u_1u_2(p+u_3) - u_1u_3(p+u_2) - u_2u_3(p+u_1) \\
+&=& -p(u_1u_2 + u_1u_3 + u_2u_3) - 3u_1u_2u_3 \\
+&=& -pq + 3r \;.
 \eas
-Derfor har vi, at
+Dvs vi har altså
 \begin{equation}
-B_1 + B_2 = 3r - pq \;.
-\end{equation}
-En meget længere udregning giver
-\begin{equation}
-B_1 B_2 = q^3 + rp^3 - 6pqr + 9r^2 \;.
+u_1u_2^2 + u_2u_3^2 + u_3u_1^2 + u_1^2u_2 + u_2^2u_3 + u_3^2u_1 
+= -pq + 3r \;.
+\label{eq_u1_u22}
 \end{equation}
 
-Så kan vi udregne diskriminanten:
 \bas
-D &=& (B_1+B_2)^2 - 4B_1B_2 \\
-&=& (3r-pq)^2 - 4(q^3 + rp^3 - 6pqr + 9r^2) 
+-p^3 &=& (u_1+u_2+u_3)(u_1^2+u_2^2+u_3^2 + 2q) \\
+&=& u_1^3 + u_2^3 + u_3^3 + u_1^2u_2 + u_2^2u_3 + u_3^2u_1 \\
+&& \quad + u_1u_2^2 + u_2u_3^2 + u_3u_1^2 - 2pq \\
+&=& u_1^3 + u_2^3 + u_3^3 - pq+3r - 2pq \;.
 \eas
-En kort reducering giver:
+Heraf fåes:
 \begin{equation}
-D = -4p^3r + p^2q^2 + 18pqr - 4q^3 - 27r^2 \;.
-\label{eq_dis2}
+u_1^3 + u_2^3 + u_3^3 = -p^3 + 3pq - 3r \;.
 \end{equation}
 
 \section{Løsning af tredjegradsligningen}
@@ -410,11 +378,13 @@ hvor $\alpha$ er et komplekst tal, som opfylder:
 Sammen med ligning~(\ref{equ_p}) udgør ligning~(\ref{eq_a1}) og
 ligning~(\ref{eq_a2}) et system af tre lineære ligninger i tre ubekendte.
 De kan derfor løses, og svaret er:
+\begin{tcolorbox}
 \bea
 3u_1 &=& -p + A_1 + A_2 \label{eq_u1}\\
 3u_2 &=& -p + \alpha^2 A_1 + \alpha A_2 \label{eq_u2}\\
 3u_3 &=& -p + \alpha A_1 + \alpha^2 A_2 \label{eq_u3}\;.
 \eea
+\end{tcolorbox}
 Når vi kender $A_1$ og $A_2$ kan ovenstående ligninger altså give rødderne
 $u_1$, $u_2$ og $u_3$.
 
@@ -439,13 +409,30 @@ Idet $\alpha^3 = 1$ så ser vi, at såvel $A_1A_2$ som $A_1^3 + A_2^3$ er
 uændret efter enhver permutation. Derfor må disse kunne udtrykkes 
 ved koefficienterne $p$, $q$ og $r$.
 
-Ved direkte udregning får vi
+Ved brug af CAS udregner vi følgende:
+\bas
+A_1 A_2 &=& (u_1+\alpha u_2 +\alpha^2 u_3)(u_1 +\alpha^2 u_2 + \alpha u_3) \\
+&=& u_1^2 + u_2^2 + u_3^2 - (u_1u_2 + u_1u_3 + u_2u_3) \\
+&=& p^2 - 2q - q \\
+&=& p^2 - 3q \;.
+\eas
+
+Og igen ved CAS finder vi
+\bas
+A_1^3 + A_2^3 &=& 2(u_1^3 + u_2^3 + u_3^3) + 12 u_1u_2u_3 \\
+&& \quad -3(u_1^2u_2 + u_2^2u_3 + u_3^2u_1 + u_1u_2^2 +u_2u_3^2 + u_3u_1^2) \\
+&=& 2(-p^3+3pq-3r) - 12r - 3(-pq+3r) \\
+&=& -2p^3 + 9pq - 27r \;.
+\eas
+
+Vi har altså ved direkte udregning vist følgende:
 \bea
 A_1A_2 &=& p^2 - 3q \label{eq_a1a2}\\
 A_1^3 + A_2^3 &=& -2p^3 + 9pq - 27r \;.
 \eea
 
-For at løse ligninger indfører vi endnu en substitution
+\section{Endnu en ny substitution}
+For at bestemme $A_1$ og $A_2$ indfører vi endnu en substitution
 \bea
 y_1 &=& A_1^3 \label{eq_y1}\\
 y_2 &=& A_2^3 \label{eq_y2}
@@ -457,8 +444,8 @@ opskrive en andengradsligning
 y^2 + sy + t = 0,
 \label{eq_y}
 \end{equation}
-hvor $s$ og $t$ er endnu ukendte koefficienter. Idet rødderne skal være $y_1$
-og $y_2$ må der gælde:
+hvor $s$ og $t$ er endnu ukendte koefficienter.
+Idet vi faktoriserer ligningen som $(y-y_1)(y-y_2) = 0$ må der gælde:
 \bas
 -s &=& y_1 + y_2 \\
 &=& A_1^3 + A_2^3 \;,
@@ -475,51 +462,178 @@ s &=& 2p^3 - 9pq + 27r \label{eq_s}\\
 t &=& (p^2-3q)^3 \label{eq_t}  \;.
 \eea
 
+Andengradsligningen~(\ref{eq_y}) har diskriminanten
+\bas
+D &=& (y_1-y_2)^2 \\
+&=& (y_1+y_2)^2 - 4y_1y_2 \\
+&=& s^2 - 4t \;.
+\eas
+Vi har altså:
+\begin{equation}
+    D = s^2 - 4t \;.
+\label{eq_dis}
+\end{equation}
+
+Nu udregner vi
+\bas
+y_1-y_2 &=& A_1^3 - A_2^3 \\
+&=& 3(\alpha-\alpha^2)(u_1^2u_2 + u_2^2u_3 + u_3^2u_1 - u_1u_2^2 - u_2u_3^2 - u_3u_1^2) \\
+&=& \sqrt{-27}(u_1-u_2)(u_1-u_3)(u_2-u_3) \;.
+\eas
+Vi har således vist, at
+\begin{equation}
+    D = -27[(u_1-u_2)(u_1-u_3)(u_2-u_3)]^2 \;.
+    \label{eq_dis3}
+\end{equation}
+Heraf ser vi nu, at hvis alle fire rødder $x_1$, $x_2$, $x_3$ og $x_4$ er 
+reelle, så vil rødderne $u_1$, $u_2$ og $u_3$ også være reelle, og
+dermed vil $D$ være negativ.
+
+Det viser sig derfor nemmest at  indføre komplekse tal. Løsningerne til
+andengradsligningen~(\ref{eq_y}) er derfor
+\begin{equation}
+y = \frac{-s \pm i \sqrt{-D}}{2} \;.
+\end{equation}
+Af hensyn til senere udregninger, omskriver vi til polær form
+\[
+y = |y| (\cos v \pm i \sin v) \;,
+\]
+hvor 
+\begin{tcolorbox}
+\bea
+|y| &=& \sqrt{y_1y_2} = \sqrt{t} \label{eq_y_abs}\\
+v &=& \arctan\left(\frac{\sqrt{-D}}{-s}\right)
+= \arctan\left(\frac{s}{\sqrt{-D}}\right) + \frac{\pi}{2} \;.
+\label{eq_v}
+\eea
+\end{tcolorbox}
+
 \section{Endelig løsning}
 Vi er nu klar til at stykke alle stumperne sammen.
-Ud fra koefficienterne i den oprindelige fjerdegradsligning~(\ref{eq_4}) danner
-vi nogle nye koefficienter $p$, $q$ og $r$ givet ved
-ligningerne~(\ref{eq_p}), (\ref{eq_q}) og~(\ref{eq_r}).
+Ud fra koefficienterne i den oprindelige fjerdegradsligning~(\ref{eq_4}) 
+\[
+    x^4 + ax^3 + bx^2 + cx + d = 0\;,
+\]
+danner vi nogle nye koefficienter $p$, $q$ og $r$ givet ved
+ligningerne~(\ref{eq_p}), (\ref{eq_q}) og~(\ref{eq_r}):
+\bas
+p &=& -b \\
+q &=& ac-4d \\
+r &=& -a^2d+4bd-c^2 \;.
+\eas
 Derefter dannes endnu nogle nye kofficienter $s$ og $t$ givet ved
-ligningerne~(\ref{eq_s}) og~(\ref{eq_t}).
+ligningerne~(\ref{eq_s}) og~(\ref{eq_t}):
+\bas
+s &=& 2p^3 - 9pq + 27r \\
+t &=& (p^2-3q)^3 \;.
+\eas
+Til sidste udregner vi diskriminanten $D$ ud fra ligning~(\ref{eq_dis}):
+\[
+D = s^2 - 4t \;.
+\]
 
-Andengradsligningen~(\ref{eq_y}) løses, og ud fra rødderne $y_1$ og $y_2$
-dannes de to nye variable $A_1$ og $A_2$ ud fra ligningerne~(\ref{eq_y1})
-og~(\ref{eq_y2}), idet de skal opfylde~(\ref{eq_a1a2}).
+Nu benyttes ligningerne~(\ref{eq_y_abs}) og~(\ref{eq_v}):
+\bas
+|y| &=& \sqrt{t} \\
+v &=& \arctan\left(\frac{s}{\sqrt{-D}}\right) + \frac{\pi}{2} \;.
+\eas
+Dernæst finder vi værdierne af $A_1$ og $A_2$ ud fra ligningerne~(\ref{eq_y1})
+og~(\ref{eq_y2}):
+\bas
+A_1 &=& \sqrt{t^{1/3}} \left(\cos\frac{v}{3} + i\sin\frac{v}{3}\right) \\
+A_2 &=& \sqrt{t^{1/3}} \left(\cos\frac{v}{3} - i\sin\frac{v}{3}\right)  \;.
+\eas
+Summen af disse er:
+\[
+    A_1 + A_2 = 2\sqrt{p^2-3q} \cos\frac{v}{3} \;,
+\]
+og herefter finder vi $u_1$ ved ligning~(\ref{eq_u1}):
+\[
+    u_1 = \frac{1}{3} \left(-p + 2\sqrt{p^2-3q} \cos\frac{v}{3} \right) \;.
+\]
+De øvrige to værdier $u_2$ og $u_3$ findes ved:
+\bas
+u_2 &=& \frac{1}{3} \left(-p + 2\sqrt{p^2-3q} \cos\frac{v+2\pi}{3} \right) \\
+u_3 &=& \frac{1}{3} \left(-p + 2\sqrt{p^2-3q} \cos\frac{v+4\pi}{3} \right) \;.
+\eas
 
-Dernæst vil ligningerne~(\ref{eq_u1}), (\ref{eq_u2}) og~(\ref{eq_u3}) give de
-tre rødder $u_1$, $u_2$ og $u_3$. Disse indsættes i ligningerne~(\ref{eq_t1}),
-(\ref{eq_t2}) og~(\ref{eq_t3}) og giver værdier for $T_1$, $T_2$ og $T_3$, hvor
-man skal huske ligning~(\ref{t123}).
+Disse indsættes i ligningerne~(\ref{eq_t1}), (\ref{eq_t2}) og~(\ref{eq_t3})
+\bas
+T_1 &=& \sqrt{a^2-4b + 4u_1} \\
+T_2 &=& \sqrt{a^2-4b + 4u_2} \\
+T_3 &=& \frac{-a^3 + 4ab - 8c}{T_1T_2} \;,
+\eas
+hvor vi har benyttet ligning~(\ref{t123}).
 
-Til sidst benyttes ligningerne~(\ref{eq_t1})-~(\ref{eq_t3}), til at give de
+Til sidst benyttes ligningerne~(\ref{x1})-~(\ref{x4}), til at give de
 endelige rødder $x_1$, $x_2$, $x_3$ og $x_4$.
+\bas
+x_1 &=& \frac{-a + T_1 + T_2 + T_3}4 \\
+x_2 &=& \frac{-a + T_1 - T_2 - T_3}4 \\
+x_3 &=& \frac{-a - T_1 + T_2 - T_3}4 \\
+x_4 &=& \frac{-a - T_1 - T_2 + T_3}4 \;.
+\eas
 
-\section{Blandede noter}
+\section{Diskriminanten}
+For at komme videre med diskriminanten udregner vi faktorerne parvis.
+Først regner vi:
+\bea
+&& (x_1-x_2)(x_3-x_4) \\
+&=& x_1x_3-x_1x_4-x_2x_3+x_2x_4 \\
+&=& u_2 - u_3\;.
+\eea
+På tilsvarende vis finder vi, at 
+\bea
+(x_1-x_3)(x_2-x_4) &=& u_1 - u_3 \\
+(x_1-x_4)(x_2-x_3) &=& u_1 - u_2 \;.
+\eea
+
+Dette giver følgende formel for diskriminanten
+\[
+D_4 = \left[(u_1-u_2)(u_1-u_3)(u_2-u_3)\right]^2 \;.
+\]
+Ved at kombinere ligningerne~(\ref{eq_dis3}) med~(\ref{eq_dis}) får vi:
 \bas
-A_1^3 &=& u_1^3 + u_2^3 + u_3^3 + 6u_1u_2u_3 + 3\alpha B_1 + 3\alpha^2 B_2 \\
-&=& -p^3 + \frac92 pq - \frac{27}{2}r + \frac{3}{2} \sqrt{-3D} \,.
+    -27 D_4 &=& s^2 - 4t \\
+    &=& (2p^3-9pq+27r)^2 - 4(p^2-3q)^3 \\
+    &=& -27(-4p^3r + p^2q^2 + 18pqr - 4q^3 - 27r^2)\;.
 \eas
-Tilsvarende finder vi
+Heraf fås:
+\begin{equation}
+D_4 = \frac{s^2-4t}{-27} = -4p^3r + p^2q^2 + 18pqr - 4q^3 - 27r^2\;.
+\end{equation}
+
+Vi kan finde et andet udtryk for diskriminanten ved
+at indføre følgende to hjælpevariable:
 \bas
-A_2^3 &=& -p^3 + \frac92 pq - \frac{27}{2}r - \frac{3}{2} \sqrt{-3D} \,.
+B_1 &=& u_1^2u_2 + u_2^2u_3 + u_3^2u_1 \\
+B_2 &=& u_1u_2^2 + u_2u_3^2 + u_3u_1^2 \;.
 \eas
-Til sidst udregner vi
+Vi har derfor
+\begin{equation}
+D_4 = (B_1-B_2)^2 = (B_1+B_2)^2 - 4B_1B_2\;.
+\end{equation}
+
+Vi har i ligning~(\ref{eq_u1_u22}) vist, at
+\[
+B_1 + B_2 = -pq + 3r\;.
+\]
+Indsættes dette i ovenstående giver det:
 \bas
-A_1A_2 &=& u_1^2 + u_2^2 + u_3^2 - (u_1u_2 + u_1u_3 + u_2u_3) \\
-&=& p^2 - 3q \;.
+4B_1B_2 &=& (B_1+B_2)^2 - D_4 \\
+&=& (-pq+3r)^2 - (-4p^3r + p^2q^2 + 18pqr - 4q^3 - 27r^2) \\
+&=& 4p^3r - 24pqr + 4q^3 + 36r^2 \;.
 \eas
-Ved at kombinere ovenstående ligninger finder vi:
+Dermed er
+\begin{equation}
+B_1B_2 = p^3r - 6pqr + q^3 + 9r^2\;.
+\end{equation}
+Så kan diskriminanten også skrives som:
 \bas
-(A_1A_2)^3 &=& A_1^3 A_2^3 \\
-(p^2-3q)^3 &=& \left(-p^3 + \frac92 pq - \frac{27}{2}r\right)^2 - \frac94(-3D) \;.
+D_4 &=& (B_1+B_2)^2 - 4B_1B_2 \\
+&=& (3r-pq)^2 - 4(q^3 + rp^3 - 6pqr + 9r^2) 
 \eas
-Ved at omskrive den sidste ligning får vi:
-\bas
--27D &=& (-2p^3+9pq-27r)^2 - 4(p^2-3q)^3 \;.
-\eas
-Ved at reducere højresiden ses det, at denne ligning er ækvivalent med
-ligning~(\ref{eq_dis2}).
+
 
 \section{Eksempel}
 Som eksempel på anvendelsen af denne teori, bliver følgende
@@ -543,28 +657,51 @@ r &=& 3,3^2\cdot 4,914 + 4\cdot 4,21 \cdot 4,914 - 12,633^2 = -23,327469 \;.
 \eas
 Dernæst udregner vi
 \bas
-s &=& 2\cdot 4,21^3 + 9\cdot 4,21 \cdot 22,0329 - 27\cdot 23,327469 = 279,603379\\
-t &=&  (4,21^2 + 3\cdot 22,0329)^3 = 83,8228^3 = 588960,937595628
+s &=& 2\cdot 4,21^3 + 9\cdot 4,21 \cdot 22,0329 - 27\cdot 23,327469
+    = 354,22184\\
+t &=&  (4,21^2 + 3\cdot 22,0329)^3 = 83,8228^3
+    = 588960,1937596 \;.
 \eas
 Vi udregner nu diskriminanten 
 \bas
-D &=& s^2-4t = 276,603379^2 - 4\cdot 588960,937595628 = -2279334,321108296 
+D &=& s^2-4t = 276,603379^2 - 4\cdot 588960,937595628 = -2230370,63845 \;.
 \eas
 
-\bea
-T_1 &=& 0,3 \\
-T_2 &=& 4,9 \\
-T_3 &=& -6,5
-\eea
+Nu udregner vi
+\bas
+v &=& \arctan\left(\frac{354,22184}{\sqrt{223370,63845}}\right) + \frac{\pi}{2} \\
+&=& 1,80367771621 \;.
+\eas
+
+Det giver:
+\bas
+u_1 &=& \frac13 \left(-4,21 + 2\sqrt{83,8228} \cos\left(\frac{1,80367771621}{3}\right)\right) \\
+ &=& 3,63 \\
+u_2 &=& \frac13 \left(-4,21 + 2\sqrt{83,8228} \cos\left(\frac{1,80367771621+2\pi}{3}\right)\right) \\
+ &=& -6,91 \\
+u_3 &=& \frac13 \left(-4,21 + 2\sqrt{83,8228} \cos\left(\frac{1,80367771621+4\pi}{3}\right)\right) \\
+ &=& -0,93 \;.
+\eas
+
+Dernæst udregner vi
+\bas
+    a^2-4b &=& 27,73 \\
+    T_1T_2T_3 &=& -a^3 + 4ab - 8c = -9,555 \;,
+\eas
+og derefter
+\bas
+T_1 &=& \sqrt{27,73 + 4\cdot 3,63} = 6,5 \\
+T_2 &=& \sqrt{27,73 - 4\cdot 6,91} = 0,3 \\
+T_3 &=& \frac{-9,555}{6,5\cdot 0,3} = -4,9 \;.
+\eas
 Dermed bliver rødderne ifølge~(\ref{x1})-(\ref{x4}):
 \bea
-x_1 &=& \frac14(3,3+0,3+4,9-6,5) = 0,5 \\
-x_2 &=& \frac14(3,3+0,3-4,9+6,5) = 1,3 \\
-x_3 &=& \frac14(3,3-0,3+4,9+6,5) = 3,6 \\
-x_4 &=& \frac14(3,3-0,3-4,9-6,5) = -2,1
+x_1 &=& \frac14(3,3+6,5+0,3-4,9) = 1,3 \\
+x_2 &=& \frac14(3,3+6,5-0,3+4,9) = 3,6 \\
+x_3 &=& \frac14(3,3-6,5+0,3+4,9) = 0,5 \\
+x_4 &=& \frac14(3,3-6,5-0,3-4,9) = -2,1 \;.
 \eea
 Ved indsættelse ses disse tal at passe.
-
 
 \end{document}
 
