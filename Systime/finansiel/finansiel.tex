@@ -399,15 +399,11 @@ Så sætter vi $y$ uden for en parentes:
 \[
 A_n = y\cdot\big(a^{n-1} + \ldots + a + 1\big) \,.
 \]
-Nu bruger vi et smart trick: Vi ganger og dividerer med $a-1$:
+Vi får nu brug for følgende formel, som vi beviser om lidt:
 \[
-A_n = y\cdot\frac{\big(a^{n-1} + \ldots + a + 1\big)\cdot(a-1)}{a-1} \,.
+    a^{n-1} + \ldots + a + 1 = \frac{a^{n} - 1}{a-1} \,.
 \]
-I tælleren ganger vi parenteserne sammen:
-\[
-A_n = y\cdot\frac{a^{n} + \ldots + a^2 + a - a^{n-1} - \ldots - a - 1}{a-1} \,.
-\]
-Til sidst reduceres tælleren:
+Med denne formel får vi:
 \[
 A_n = y\cdot\frac{a^{n} - 1}{a-1} \,.
 \]
@@ -416,6 +412,61 @@ Vi indsætter nu definitionen på fremskrivningsfaktoren $a=1+r$:
 A_n = y\cdot\frac{(1+r)^{n} - 1}{r} \,.
 \]
 Dermed er det ønskede blevet vist.
+\end{proof}
+\end{tcolorbox}
+
+I beviset oven for benyttede vi følgende formel.
+
+\begin{tcolorbox}
+\begin{thm}
+\[
+    a^{n-1} + \ldots + a + 1 = \frac{a^{n} - 1}{a-1} \,.
+\]
+\end{thm}
+\end{tcolorbox}
+
+Hvis vi for eksempel indsætter $a = 1,05$ og $n = 8$ så bliver venstresiden:
+\[
+    1,05^7 + 1,05^6 + 1,05^5 + \ldots + 1,05 + 1 \,.
+\]
+Dette udregner vi til $9,55$.
+
+Tilsvarende, så udregnes højresiden til:
+\[
+    \frac{1,05^8-1}{1,05-1} \,,
+\]
+hvilket ligeledes udrenges til $9,55$. Begge sider vil altid give samme værdi,
+ligesom de gjorde her.
+
+Vi bringer her et bevis for denne formel.
+
+\begin{tcolorbox}
+\begin{proof}
+For at udregne
+\[
+    a^{n-1} + \ldots + a + 1 \,,
+\]
+så bruger vi et smart trick: Vi ganger og dividerer med $a-1$:
+\[
+    a^{n-1} + \ldots + a + 1  = 
+\frac{\big(a^{n-1} + \ldots + a + 1\big)\cdot(a-1)}{a-1} \,.
+\]
+I tælleren ganger vi parenteserne sammen:
+\[
+ = \frac{a^{n} + \ldots + a^2 + a - a^{n-1} - \ldots - a - 1}{a-1} \,.
+\]
+
+For at forstå dette udtryk, så ser vi her på tilfældet med $n=4$. I tælleren
+står der $a^4 + a^3 + a^2 + a - a^3 - a^2 - a - 1$, hvilket reducerer til $a^4 - 1$.
+I almindelighed vil udtrykket $a^{n} + \ldots + a^2 + a - a^{n-1} - \ldots - a - 1$ 
+reducere til $a^n - 1$.
+
+Dermed reduceres brøken til:
+\[
+ = \frac{a^{n} - 1}{a-1} \,,
+\]
+og vi har vist det ønskede.
+
 \end{proof}
 \end{tcolorbox}
 
@@ -507,6 +558,44 @@ større. Dette er illustreret på følgende figur, som viser afdrag og rente.
     \includegraphics{fin-4}
 \end{figure}
 
+Ligesom med annuitetsopsparing, så kan det være nyttigt at betragte en
+alternativ måde at foretage beregningerne på.  Vi kan således betragte
+restgælden som den oprindelige gæld (inklusive rentetilskrivninger) fratrukket
+en almindelig annuitetsopsparing af ydelserne.  
+Det giver følgende tabel:
+\\
+
+\noindent
+\begin{tabular}{|l|l|p{4.5cm}|l|}
+    \hline
+    \textbf{Antal år} & \textbf{Oprindelig gæld} & \textbf{Samlet ydelse} & \textbf{Restgæld}\\
+    \hline
+    1 & $1400\cdot 1,1 = 1540$ & 300 & $1540 - 300 = 1240$ \\
+    \hline
+    2 & $1400\cdot 1,1^2 = 1694$ & $300\cdot 1,1 + 300 = 630$ & $1694 - 630 = 1064$ \\
+    \hline
+    3 & $1400\cdot 1,1^3 = 1863$ & $300\cdot 1,1^2 + 300\cdot 1,1 + 300$ \newline $= 993$ & $1863 - 993 = 870$ \\
+    \hline
+\end{tabular}
+\\
+
+Den oprindelige gæld på 1400 kr er på de 7 år vokset til 
+\[
+    1400 \cdot 1,1^7 = 2728 \,.
+\]
+Ydelserne danner tilsammen en annuitetsopsparing på 6 år, dvs. i alt
+\[
+    300 \cdot 1,1^6 + 300 \cdot 1,1^5 + \ldots + 300 \cdot 1,1 + 300 \,,
+\]
+hvilket ifølge formlen for annuitetsopsparing kan skrives som:
+\[
+    300 \cdot \frac{1,1^7 - 1}{0,1} = 2846 \,.
+\]
+Her skal den sidste ydelse på 300 kr erstattes med 182 kr. Dermed bliver den samlede værdi af
+ydelserne til $2846 - 300 + 182 = 2728$.
+Vi ser således, at ydelsernes værdi (betragtet som en annuitetsopsparing) har samme værdi
+som den oprindelige gæld inklusive rentetilskrivninger.
+
 Det er hensigtsmæssigt at have formler til at beregne ydelse og/eller løbetiden
 ud fra oplysninger om lånets størrelse og rentefoden.  Generelt har vi følgende
 sammenhæng:
@@ -529,74 +618,35 @@ y = 1400\cdot\frac{0,1}{1-(1+0,1)^{-7}} = 288 \,\,\mbox{kr}\,.
 Ydelsen på de 300 kr. i eksemplet er større end 288 kr., og derfor bliver den
 (eller de) sidste ydelse mindre.
 
+\begin{tcolorbox}
 \begin{proof}
-Vi lader $G_n$ være gældens størrelse efter $n$ terminer. Vi undersøger nu gældens størrelse
-efter de tre første terminer.
-I begyndelsen er gældens størrelse
+Som antydet oven for, så bliver værdien af den oprindelige gæld efter $n$ terminer givet ved:
 \[
-G_0 = G \,.
+G \cdot (1+r)^n \,.
 \]
-Efter den første termin er gælden vokset med de tilskrevne renter $(r\cdot G_0)$, men faldet
-med den indbetalte ydelse $(y)$.  Dvs efter den føste termin er gældens størrelse
+Omvendt, så kan ydelserne betragtes som en annuitetsopsparing, og
+den samlede værdi heraf efter $n$ terminer er givet ved:
 \[
-G_1 = G_0 + r\cdot G_0 - y = G_0\cdot (1+r) - y \,.
+y \cdot \frac{(1+r)^n-1}{r} \,.
 \]
-Af nemhedsgrunde sætter vi $1+r = a$:
+
+Efter $n$ terminer er restgælden nul, dvs ydelsernes samlede værdi opvejer
+netop gældens værdi,  og derfor må ovenstående to udtryk være lig med
+hinanden.  Det giver følgende ligning:
 \[
-G_1 = G_0\cdot a - y \,.
-\]
-Dvs efter hver termin bliver restgælden multipliceret med $a$ og derefter reduceret med $y$.
-Efter to terminer er restgælden nu:
-\[
-G_2 = G_1 \cdot a - y \,.
-\]
-Heri indsættes resultatet for $G_1$:
-\[
-G_2 = \Big( G_0 \cdot a - y \Big) \cdot a - y = G_0 \cdot a^2 - y \cdot a - y \,.
-\]
-Efter tre terminer er restgælden:
-\[
-G_3 = G_2 \cdot a - y \,.
-\]
-Heri indsættes resultatet for $G_2$:
-\[
-G_3 = \Big( G_0 \cdot a^2 - y\cdot a - y \Big) \cdot a - y 
-= G_0 \cdot a^3 - y \cdot a^2 - y \cdot a - y \,.
-\]
-Dette kan også skrives som:
-\[
-G_3 = G_0 \cdot a^3 - y \cdot \Big( a^2 + a + 1 \Big) \,.
-\]
-Dette system fortsætter åbenbart, og efter $n$ terminer bliver restgælden:
-\[
-G_n = G_0 \cdot a^n - y \cdot \Big( a^{n-1} + \ldots + \cdot a + 1 \Big) \,.
-\]
-Vi har tidligere vist, at
-\[
-a^{n-1} + \ldots + \cdot a + 1  = \frac{a^n - 1}{a-1} \,.
-\]
-Dermed kan restgælden efter $n$ terminer skrives som:
-\[
-G_n = G_0 \cdot a^n - y \cdot \frac{a^n - 1}{a-1} \,.
-\]
-Da restgælden efter $n$ terminer er $0$, så har vi:
-\[
-0 = G_0 \cdot a^n - y \cdot \frac{a^n - 1}{a-1} \,.
+G \cdot (1+r)^n = y \cdot \frac{(1+r)^n-1}{r} \,.
 \]
 Heri isoleres $y$:
 \[
-y = G_0 \cdot \frac{a^n \cdot (a-1)}{a^n - 1} \,.
+y = G \cdot \frac{(1+r)^n \cdot r}{(1+r)^n - 1} \,.
 \]
-Til sidst forlænger vi brøken med $a^{-n}$:
+Til sidst forlænger vi brøken med $(1+r)^{-n}$:
 \[
-y = G_0 \cdot \frac{a-1}{1 - a^{-n}} \,.
-\]
-Vi indsætter nu $a = 1+r$:
-\[
-    y = G_0 \cdot \frac{r}{1 - (1+r)^{-n}} \,.
+y = G \cdot \frac{r}{1 - (1+r)^{-n}} \,.
 \]
 
 \end{proof}
+\end{tcolorbox}
 
 Vi ser nu på endnu et eksempel:
 \begin{tcolorbox}
