@@ -196,6 +196,33 @@ void bars(real[] x, real[] y1, real[] y2, real[] y3 = {}, real width = 0.6)
 
 }
 
+// Denne funktion laver en signaturforklaring
+void legend(string legend1, string legend2, string legend3 = "", pair pos, real size)
+{
+    picture pic1;
+    size(pic1, size);
+
+    label(pic1, Label(legend1, Scale), (9, 3), E);
+    fill(pic1, box((0, 0),(6, 6)), blue_default);
+    draw(pic1, box((0, 0),(6, 6)), defaultpen+0.3);
+
+    label(pic1, Label(legend2, Scale), (9, 12), E);
+    fill(pic1, box((0, 9),(6, 15)), purple_default);
+    draw(pic1, box((0, 9),(6, 15)), defaultpen+0.3);
+
+    if (length(legend3) > 0)
+    {
+        label(pic1, Label(legend3, Scale), (9, 21), E);
+        fill(pic1, box((0, 18),(6, 24)), yellow_default);
+        draw(pic1, box((0, 18),(6, 24)), defaultpen+0.3);
+    }
+
+    add(pic1.fit(), pos);
+}
+
+
+
+
 // Skalar-produkt
 real dot(pair va, pair vb)
 {
