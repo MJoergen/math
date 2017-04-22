@@ -301,7 +301,7 @@ opsparingen inden indbetalingen.  Det giver følgende udvikling:
     \hline
     6 & $553\cdot 0,05 = 28$ & 553 + 28 + 100 = 681 \\
     \hline
-    7 & $68l\cdot 0,05 = 34$ & 681 + 34 + 100 = 815 \\
+    7 & $681\cdot 0,05 = 34$ & 681 + 34 + 100 = 815 \\
     \hline
     8 & $815\cdot 0,05 = 41$ & 815 + 41 + 100 = 956 \\
     \hline
@@ -382,7 +382,7 @@ Med denne formel kan vi beregne ovenstående saldo efter 8 terminer:
 \[
 A_8 = 100\cdot\frac{(1+0,05)^8-1}{0,05} = 954,91 \,.
 \]
-Forskellen skyldes, at vi i tabellen har afrundet til helt antal kr.
+Forskellen skyldes, at vi i tabellen har foretaget afrundinger undervejs.
 
 
 \begin{tcolorbox}
@@ -529,6 +529,75 @@ y = 1400\cdot\frac{0,1}{1-(1+0,1)^{-7}} = 288 \,\,\mbox{kr}\,.
 Ydelsen på de 300 kr. i eksemplet er større end 288 kr., og derfor bliver den
 (eller de) sidste ydelse mindre.
 
+\begin{proof}
+Vi lader $G_n$ være gældens størrelse efter $n$ terminer. Vi undersøger nu gældens størrelse
+efter de tre første terminer.
+I begyndelsen er gældens størrelse
+\[
+G_0 = G \,.
+\]
+Efter den første termin er gælden vokset med de tilskrevne renter $(r\cdot G_0)$, men faldet
+med den indbetalte ydelse $(y)$.  Dvs efter den føste termin er gældens størrelse
+\[
+G_1 = G_0 + r\cdot G_0 - y = G_0\cdot (1+r) - y \,.
+\]
+Af nemhedsgrunde sætter vi $1+r = a$:
+\[
+G_1 = G_0\cdot a - y \,.
+\]
+Dvs efter hver termin bliver restgælden multipliceret med $a$ og derefter reduceret med $y$.
+Efter to terminer er restgælden nu:
+\[
+G_2 = G_1 \cdot a - y \,.
+\]
+Heri indsættes resultatet for $G_1$:
+\[
+G_2 = \Big( G_0 \cdot a - y \Big) \cdot a - y = G_0 \cdot a^2 - y \cdot a - y \,.
+\]
+Efter tre terminer er restgælden:
+\[
+G_3 = G_2 \cdot a - y \,.
+\]
+Heri indsættes resultatet for $G_2$:
+\[
+G_3 = \Big( G_0 \cdot a^2 - y\cdot a - y \Big) \cdot a - y 
+= G_0 \cdot a^3 - y \cdot a^2 - y \cdot a - y \,.
+\]
+Dette kan også skrives som:
+\[
+G_3 = G_0 \cdot a^3 - y \cdot \Big( a^2 + a + 1 \Big) \,.
+\]
+Dette system fortsætter åbenbart, og efter $n$ terminer bliver restgælden:
+\[
+G_n = G_0 \cdot a^n - y \cdot \Big( a^{n-1} + \ldots + \cdot a + 1 \Big) \,.
+\]
+Vi har tidligere vist, at
+\[
+a^{n-1} + \ldots + \cdot a + 1  = \frac{a^n - 1}{a-1} \,.
+\]
+Dermed kan restgælden efter $n$ terminer skrives som:
+\[
+G_n = G_0 \cdot a^n - y \cdot \frac{a^n - 1}{a-1} \,.
+\]
+Da restgælden efter $n$ terminer er $0$, så har vi:
+\[
+0 = G_0 \cdot a^n - y \cdot \frac{a^n - 1}{a-1} \,.
+\]
+Heri isoleres $y$:
+\[
+y = G_0 \cdot \frac{a^n \cdot (a-1)}{a^n - 1} \,.
+\]
+Til sidst forlænger vi brøken med $a^{-n}$:
+\[
+y = G_0 \cdot \frac{a-1}{1 - a^{-n}} \,.
+\]
+Vi indsætter nu $a = 1+r$:
+\[
+    y = G_0 \cdot \frac{r}{1 - (1+r)^{-n}} \,.
+\]
+
+\end{proof}
+
 Vi ser nu på endnu et eksempel:
 \begin{tcolorbox}
 \subsection*{Eksempel}
@@ -559,7 +628,7 @@ Vi ganger først med nævneren og dividerer med $y$:
 \[
 1-(1+r)^{-n} = \frac{G\cdot r}{y}\,.
 \]
-Ved at flytte ledene fås
+Ved at flytte leddene fås
 \[
 1 - \frac{G\cdot r}{y} =(1+r)^{-n}\,.
 \]
@@ -579,7 +648,7 @@ Vi har således vist det ønskede.
 \subsection*{Eksempel}
 Vi ønsker at låne penge til en bil. Det samlede lån bliver på 120000 kr, og
 rentefoden er $0,8\%$ om måneden. Vi kan maksimalt betale 1800 kr om
-måneden, og vill finde løbetiden.  Vi indsætter i formlen:
+måneden, og vil finde løbetiden.  Vi indsætter i formlen:
 \[
 n = -\frac{\log\big(1-\frac{120000\cdot0,008}{1000}\big)}{\log(1+0,008)} = 96 \,,
 \]
