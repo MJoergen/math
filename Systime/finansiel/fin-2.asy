@@ -18,4 +18,4 @@ real rente[]     = {  0,   5,  10,  16,  22,  28,  34,  41};
 real indskud[]   = {100, 100, 100, 100, 100, 100, 100, 100};
 
 bars(label, opsparing, rente, indskud);
-
+legend("Saldo", "Rente", "Indskud", (1, 700), 58);

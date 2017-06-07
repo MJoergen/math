@@ -18,4 +18,5 @@ real afdrag[]    = {    0,  160,  176, 194, 213, 234, 258, 165};
 real rente[]     = {    0,  140,  124, 106,  87,  66,  42,  17};
 
 bars(label, gaeld, afdrag, rente);
+legend("G{\ae}ld", "Afdrag", "Rente", (4.5, 1100), 53);
 

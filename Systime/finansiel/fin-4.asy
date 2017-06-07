@@ -17,4 +17,5 @@ real afdrag[]    = { 160,  176,  194, 213, 234, 258};
 real rente[]     = { 140,  124,  106,  87,  66,  42};
 
 bars(label, afdrag, rente);
+legend("Afdrag", "Rente", (7, 150), 52);
 
