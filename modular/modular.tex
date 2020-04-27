@@ -1,0 +1,91 @@
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+% Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+%\usepackage{graphicx}
+\usepackage{amsfonts}
+\usepackage{amsthm}        % Theorems
+\usepackage{amsmath}
+%\usepackage{hyperref}
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+\newcommand{\be}{\begin{equation}}
+\newcommand{\ee}{\end{equation}}
+\newcommand{\bea}{\begin{eqnarray}}
+\newcommand{\eea}{\end{eqnarray}}
+
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{mydef}[thm]{Definition}
+\newtheorem{eks}[thm]{Example}
+
+\title{Modular Forms}
+\date{April 2020}
+\author{Michael Jørgensen}
+
+\begin{document}
+
+\maketitle
+\section{Jacobi Theta function}
+We start by defining the Jacobi Theta function:
+
+\begin{mydef}
+$$
+\Theta(z, \tau) = \sum_{n=-\infty}^{\infty} \exp(2\pi inz + \pi i n^2 \tau),
+$$
+where $z$ is any complex number and $\tau$ is confined to the upper
+half-plane.
+\end{mydef}
+
+\subsection{Periodicity}
+
+Obvious properties of this function is that it is periodic in $z$ with period 1, i.e.
+$$
+\Theta(z+1, \tau) = \Theta(z, \tau).
+$$
+
+Furthermore, it is quasi-periodic in $z$ with period $\tau$, i.e.
+$$
+\Theta(z+\tau, \tau) = \exp[-\pi i (\tau + 2z)] \Theta(z, \tau).
+$$
+
+\subsection{More properties}
+$$
+\Theta\left(\frac{z}{\tau}, -\frac{1}{\tau}\right) = (-i\tau)^{1/2} \exp(\frac{\pi}{\tau}iz^2) \Theta(z, \tau).
+$$
+
+\section{$j$-invariant}
+The $j$-invariant is a function $j(\tau)$ defined on the upper half-plane as follows:
+$$
+j(\tau) = 12^3 \frac{g_2(\tau)^3}{g_2(\tau)^3 - 27 g_3(\tau)^2}
+$$
+where
+$$
+g_2(\tau) = 60 \sum_{(m,n)\neq(0,0)} (m+n\tau)^{-4}
+$$
+$$
+g_3(\tau) = 140 \sum_{(m,n)\neq(0,0)} (m+n\tau)^{-6}
+$$
+
+The function satisfies
+$$
+j(\exp(2\pi i/3) = 0
+$$
+and
+$$
+j(i) = 12^3.
+$$
+
+The function is clearly periodic with period $1$. We may therefore substitute
+$q=\exp(2\pi i \tau)$ and this leads to the Laurent series:
+
+$$
+j(\tau) = q^{-1} + 744 + 196884q + \ldots
+$$
+
+\end{document}
+
