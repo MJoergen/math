@@ -24,7 +24,7 @@ assert calc_equation(  1,  -4, -11) == 4
 assert calc_equation(  1, -11,  -4) == 4
 
 # Since this is homogenous in x,y,z, we can set z=1. Re-arranging gives:
-# x(x+1)(x+y) + y(y+1)(x+y) + (x+1)(y+1) = y(x+1)(y+1)(x+y)
+# x(x+1)(x+y) + y(y+1)(x+y) + (x+1)(y+1) = 4(x+1)(y+1)(x+y)
 # Here we want positive rational solutions.
 # A new solution (1, -1) appears.
 # Multiplying out the above we get:
@@ -69,9 +69,11 @@ class Curve:
     # This function applies the rational root theorem
     # and returns all rational solutions to the cubic equation (2)
     def rational_solutions(self) -> Fraction:
-        assert self.a == 1 # Simplifies the implementation
-        for n in factors(abs(self.d.numerator)):
-            for d in factors(abs(self.d.denominator)):
+        assert self.a == 1 # We only handle this special case
+        list_n = factors(abs(self.d.numerator))
+        list_d = factors(abs(self.d.denominator))
+        for n in list_n:
+            for d in list_d:
                 if self.eval(Fraction(n,d)) == 0:
                     yield Fraction(n,d)
                 if self.eval(-Fraction(n,d)) == 0:
@@ -173,6 +175,7 @@ def calc_sequence(p: Point) -> Point:
         yield p
 
 # We now have all the ingredients to calculate a sequence of points starting from (-11, -4).
+print("Searching for solutions using method A:")
 for p in calc_sequence(Point(Fraction(-11), Fraction(-4))):
     print_solution(p)
     if p.x > 0 and p.y > 0:
@@ -192,9 +195,33 @@ def farey_sequence(n: int) -> Fraction:
         yield -Fraction(a,b)
 
 # For each y-value we search for any rational solutions to equation (2)
+print("Searching for solutions using method B:")
 for y in farey_sequence(9):
     curve = Curve(y)
     for x in curve.rational_solutions():
         p = Point(x,y)
+        print_solution(p)
+
+# An alternate solution approach is to substitute x=u+v and y=u-v into equation (2)
+# This gives after some algebra:
+# 4u^3 + 11u^2 + 6(1-2v^2)u + v^2-1 = 0
+# which can be re-arranged to:
+# v^2 = (u+1)*(4*u*u+7*u-1)/(12u-1)
+# So we just search various values for u, and determine whether v is a pure square
+
+import gmpy2
+def is_square(f: Fraction) -> bool:
+    return gmpy2.is_square(f.numerator) and gmpy2.is_square(f.denominator)
+def isqrt(f: Fraction) -> bool:
+    return Fraction(int(gmpy2.isqrt(f.numerator)), int(gmpy2.isqrt(f.denominator)))
+
+print("Searching for solutions using method C:")
+for u in farey_sequence(90):
+    if 12*u-1 == 0:
+        continue
+    v2 = (u+1)*(4*u*u+7*u-1)/(12*u-1)
+    if v2 >=0 and is_square(v2):
+        v = isqrt(v2)
+        p = Point(u+v, u-v)
         print_solution(p)
 
