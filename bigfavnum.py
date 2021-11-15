@@ -3,6 +3,7 @@
 
 # This little program attempts to solve the equation
 # (1) : x/(y+z) + y/(x+z) + z/(x+y) = 4
+# We want positive integer solutions.
 # This equation is invariant for all permutations of (x,y,z)
 
 # Since we'll be working with fractions let's import the module
@@ -12,7 +13,6 @@ from fractions import Fraction
 def calc_equation(x: int, y: int, z: int) -> Fraction:
     return Fraction(x,y+z) + Fraction(y,x+z) + Fraction(z,x+y)
 
-# We want positive integer solutions.
 # One such solution is (-11, -4, 1).
 
 # Verify the solution (all permutations)
@@ -40,6 +40,13 @@ class Point:
     x: Fraction
     y: Fraction
 
+# We start with a helper function to return a list of factors of any integer
+def factors(n):
+    return set(
+        factor for i in range(1, int(n**0.5) + 1) if n % i == 0
+        for factor in (i, n//i)
+    )
+
 # This is a general cubic polynomial
 @dataclass
 class Curve:
@@ -59,11 +66,17 @@ class Curve:
     def eval(self, x: Fraction) -> Fraction:
         return (((self.a*x+self.b)*x+self.c)*x+self.d)
 
-    # https://en.wikipedia.org/wiki/Cubic_equation#General_cubic_formula
-    def discriminant(self) -> Fraction:
-        delta0 = self.b*self.b-3*self.a*self.c
-        delta1 = 2*self.b*self.b*self.b-9*self.a*self.b*self.c+27*self.a*self.a*self.d
-        return delta1*delta1 - 4*delta0*delta0*delta0
+    # This function applies the rational root theorem
+    # and returns all rational solutions to the cubic equation (2)
+    def rational_solutions(self) -> Fraction:
+        assert self.a == 1 # Simplifies the implementation
+        for n in factors(abs(self.d.numerator)):
+            for d in factors(abs(self.d.denominator)):
+                if self.eval(Fraction(n,d)) == 0:
+                    yield Fraction(n,d)
+                if self.eval(-Fraction(n,d)) == 0:
+                    yield -Fraction(n,d)
+
 
 # This function calculates the value of the left hand side of equation (2)
 def calc_curve(p: Point) -> Fraction:
@@ -144,19 +157,44 @@ def print_solution(p: Point):
     assert p.x.denominator == p.y.denominator
     assert calc_curve(p) == 0 # Verify equation (2) is satisfied
     (x,y,z) = (Fraction(p.x.numerator), Fraction(p.y.numerator), Fraction(p.x.denominator))
-    assert calc_equation(x,y,z) == 4 # Verify equation (1) is satisfied
-    print("x=%d\ny=%d\nz=%d" % (x, y, z))
-    print()
+    if x+y != 0 and x+z != 0 and y+z != 0:
+        assert calc_equation(x,y,z) == 4 # Verify equation (1) is satisfied
+        print("x=%d\ny=%d\nz=%d" % (x, y, z))
+        print()
+
+# This is the main algorithm, stepping through the points indefinitely
+def calc_sequence(p: Point) -> Point:
+    first_point = p
+    yield p
+    p = new_point_tangent(first_point)
+    yield p
+    while True:
+        p = new_point_secant(first_point, p)
+        yield p
 
 # We now have all the ingredients to calculate a sequence of points starting from (-11, -4).
-p1 = Point(Fraction(-11), Fraction(-4))
-print_solution(p1)
-p2 = new_point_tangent(p1)
-print_solution(p2)
-pn = p2
-for n in range(3, 20):
-    pn = new_point_secant(p1, pn)
-    print_solution(pn)
-    if pn.x > 0 and pn.y > 0: # We've finally found a posive solution
+for p in calc_sequence(Point(Fraction(-11), Fraction(-4))):
+    print_solution(p)
+    if p.x > 0 and p.y > 0:
         break
+
+# This second part searches for (other) small solutions
+
+# We start by generating a sequence of fractions in [-1, 1] using a Farey sequence
+# https://en.wikipedia.org/wiki/Farey_sequence
+def farey_sequence(n: int) -> Fraction:
+    (a, b, c, d) = (0, 1, 1, n)
+    yield Fraction(a,b)
+    while c <= n:
+        k = (n+b) // d
+        (a, b, c, d) = (c, d, k*c-a, k*d-b)
+        yield Fraction(a,b)
+        yield -Fraction(a,b)
+
+# For each y-value we search for any rational solutions to equation (2)
+for y in farey_sequence(9):
+    curve = Curve(y)
+    for x in curve.rational_solutions():
+        p = Point(x,y)
+        print_solution(p)
 
