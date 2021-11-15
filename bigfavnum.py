@@ -225,3 +225,35 @@ for u in farey_sequence(90):
         p = Point(u+v, u-v)
         print_solution(p)
 
+def get_solution_from_ab(a: Fraction, b: Fraction) -> Point:
+    (u,v) = ((a-56)/(12*a+56), -b/(12*a+56))
+    p=Point(u+v, u-v)
+    return p
+
+# Yet another substitution simplifies further.
+# Setting A = -56(u+1)/(12u-1) and B = 728v/(12u-1) gives
+# B^2 = A^3+109A^2+224A
+# Then u = (A-56)/(12A+56) and v = -B/(12A+56).
+print("Searching for solutions using method D:")
+for a1 in farey_sequence(90):
+    a = a1*56
+    b2 = ((a+109)*a+224)*a
+    if b2 >=0 and is_square(b2):
+        b = isqrt(b2)
+        p = get_solution_from_ab(a,b)
+        print_solution(p)
+
+# The solution (A,B) = (0, 0) corresponds to (u,v) = (-1, 0), i.e.
+# the point (x,y) = (-1, -1)
+# The solution (A,B) = (4, 52) corresponds to (u,v) = (-1/2, -1/2), i.e.
+# the point (x,y) = (-1, 0)
+# The solution (A,B) = (56, 728) corresponds to (u,v) = (0, -1), i.e.
+# the point (x,y) = (-1, 1)
+# The solution (A,B) = (-4, 28) corresponds to (u,v) = (-15/2, -7/2), i.e.
+# the point (x,y) = (-11, -4)
+
+assert calc_curve(get_solution_from_ab(Fraction(0), Fraction(0))) == 0
+assert calc_curve(get_solution_from_ab(Fraction(4), Fraction(52))) == 0
+assert calc_curve(get_solution_from_ab(Fraction(56), Fraction(56*13))) == 0
+assert calc_curve(get_solution_from_ab(Fraction(-4), Fraction(28))) == 0
+
