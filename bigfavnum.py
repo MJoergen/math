@@ -1,8 +1,9 @@
-#!/bin/python3
+#!/usr/bin/env python3
 # https://www.youtube.com/watch?v=Ct3lCfgJV_A
 
 # This little program attempts to solve the equation
 # (1) : x/(y+z) + y/(x+z) + z/(x+y) = 4
+# This equation is invariant for all permutations of (x,y,z)
 
 # Since we'll be working with fractions let's import the module
 from fractions import Fraction
@@ -14,17 +15,23 @@ def calc_equation(x: int, y: int, z: int) -> Fraction:
 # We want positive integer solutions.
 # One such solution is (-11, -4, 1).
 
-# Verify the solution
-assert calc_equation(-11, -4, 1) == 4
+# Verify the solution (all permutations)
+assert calc_equation(-11,  -4,   1) == 4
+assert calc_equation(-11,   1,  -4) == 4
+assert calc_equation( -4, -11,   1) == 4
+assert calc_equation( -4,   1, -11) == 4
+assert calc_equation(  1,  -4, -11) == 4
+assert calc_equation(  1, -11,  -4) == 4
 
 # Since this is homogenous in x,y,z, we can set z=1. Re-arranging gives:
 # x(x+1)(x+y) + y(y+1)(x+y) + (x+1)(y+1) = y(x+1)(y+1)(x+y)
 # Here we want positive rational solutions.
 # A new solution (1, -1) appears.
-# Swapping x and y is a solution as well.
 # Multiplying out the above we get:
 # (2) : x^3 - 3(y+1)x^2 - x(3y^2+5y+3) + y^3-3y^2-3y+1 = 0
 # With the solutions (-11, -4) and (1, -1) as mentioned before.
+# With the permutations, a solution (x,y) implies the following
+# other solutions: (y,x), (1/x, y/x), (y/x, 1/x), (1/y, x/y), and (x/y, 1/y).
 
 # From now on we work with rational points (x,y)
 from dataclasses import dataclass
@@ -33,16 +40,45 @@ class Point:
     x: Fraction
     y: Fraction
 
+# This is a general cubic polynomial
+@dataclass
+class Curve:
+    a: Fraction
+    b: Fraction
+    c: Fraction
+    d: Fraction
+
+    # Initialize using equation (2) above
+    def __init__(self, y: Fraction):
+        self.a = 1
+        self.b = -3*(y+1)
+        self.c = -(3*y*y+5*y+3)
+        self.d = y*y*y-3*y*y-3*y+1
+
+    # Evaluate at an arbitrary x value
+    def eval(self, x: Fraction) -> Fraction:
+        return (((self.a*x+self.b)*x+self.c)*x+self.d)
+
+    # https://en.wikipedia.org/wiki/Cubic_equation#General_cubic_formula
+    def discriminant(self) -> Fraction:
+        delta0 = self.b*self.b-3*self.a*self.c
+        delta1 = 2*self.b*self.b*self.b-9*self.a*self.b*self.c+27*self.a*self.a*self.d
+        return delta1*delta1 - 4*delta0*delta0*delta0
+
 # This function calculates the value of the left hand side of equation (2)
 def calc_curve(p: Point) -> Fraction:
-    return p.x*p.x*p.x - \
-           3*(p.y+1)*p.x*p.x - \
-           (3*p.y*p.y+5*p.y+3)*p.x + \
-           p.y*p.y*p.y-3*p.y*p.y-3*p.y+1
+    return Curve(p.y).eval(p.x)
 
 # Verify the known solutions
 assert calc_curve(Point(-11, -4)) == 0
+assert calc_curve(Point(-4, -11)) == 0
+assert calc_curve(Point(Fraction(4,11), -Fraction(1,11))) == 0
+assert calc_curve(Point(-Fraction(1,11), Fraction(4,11))) == 0
+assert calc_curve(Point(Fraction(11,4), -Fraction(1,4))) == 0
+assert calc_curve(Point(-Fraction(1,4),  Fraction(11,4))) == 0
+
 assert calc_curve(Point(1, -1)) == 0
+assert calc_curve(Point(-1, 1)) == 0
 
 # If we have a solution (x1,y1) to equation (2) then
 # the slope of the curve can be calculated as follows
