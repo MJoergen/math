@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# vim: tabstop=4 shiftwidth=4 expandtab
 # https://www.youtube.com/watch?v=Ct3lCfgJV_A
 
 # This little program attempts to solve the equation
