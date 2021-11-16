@@ -387,12 +387,12 @@ def find_smallest_positive_solution(p: Point, n: int, depth: int) -> (int, int, 
                 m_best = m
     return (n, m_best, d_best)
 
-
+import time
 for n in range(4,201,2):
     # Find a small solution
     sols = sorted(find_small_solutions(n, depth=800))
     if len(sols) > 0:
-        print("n=%2d"%(n),end='',flush=True)
+        print("t=%7.1f, n=%2d"%(time.process_time(),n),end='',flush=True)
         (n,m,d) = find_smallest_positive_solution(sols[0], n, depth=140)
         if d:
             print(", m=%3d, d=%7d"%(m,d))
