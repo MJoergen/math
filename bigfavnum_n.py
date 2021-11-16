@@ -335,41 +335,68 @@ def new_point_secant(p1: Point, p2: Point, n: int) -> Point:
     t3 = secant.eval(s3)
     return Point(s3,-t3) # Invert t
 
+# This is the general point addition algorithm
+def add_point(p1: Point, p2: Point, n: int) -> Point:
+    if p1==p2:
+        return new_point_tangent(p1, n)
+    else:
+        return new_point_secant(p1, p2, n)
+
+
 # This is the main algorithm, stepping through the points indefinitely
-def calc_sequence(p: Point, n: int) -> Point:
-    first_point = p
-    yield (1,p)
-    p = new_point_tangent(first_point, n)
-    yield (2,p)
-    m=2
+# This calculates the sequence m*p+t, for m=0,1,2,...
+def calc_sequence(p: Point, t: Point, n: int) -> Point:
+    point = t
+    m=0
     while True:
-        p = new_point_secant(first_point, p, n)
+        assert Equation4(n).eval(point.s) == point.t**2
+        yield (m,point)
+        point = add_point(point, p, n)
         m += 1
-        yield (m,p)
 
 # This finds the first positive solution to equation (1)
-def find_positive_solution(p: Point, n: int, depth: int) -> (int, int, int):
-    for (m,p) in calc_sequence(p, n):
-        #if k%10 == 0:
-        #    print("  n=%d, k=%d, digits=%d"%(n,k,len(str(p.s.numerator))))
+def find_positive_solution(p: Point, t: Point, n: int, depth: int) -> (int, int, int, int, int):
+    for (m,p) in calc_sequence(p, t, n):
         (x,y,z) = calc_xyz(*calc_xy(*calc_uv(p.s, p.t, n)))
-        assert Equation1(x,y,z).eval() == n
         if m>=depth:
             return (n,0,0,0,0)
         if x>0 and y>0:
+            assert Equation1(x,y,z).eval() == n
             return (n,m,x,y,z)
 
+def find_smallest_positive_solution(p: Point, n: int, depth: int) -> (int, int, int):
+    # Define the torsion points
+    t2  = Point(Fraction(0), Fraction(0))
+    t3p = Point(Fraction(4), Fraction(4*(2*n+5)))
+    t3n = Point(Fraction(4), Fraction(-4*(2*n+5)))
+    t6p = Point(Fraction(8*(n+3)), Fraction(8*(n+3)*(2*n+5)))
+    t6n = Point(Fraction(8*(n+3)), Fraction(-8*(n+3)*(2*n+5)))
 
-for n in range(4,200,2):
-    sols = sorted(find_small_solutions(n, depth=800))
-    if len(sols) > 0:
-        print("n=%d"%(n),end='',flush=True)
-        (n,m,x,y,z) = find_positive_solution(sols[0], n, depth=40)
+    d_best = None
+    m_best = None
+    # Search through each torsion point
+    for t in (t2,t3p,t3n,t6p,t6n):
+        # Verify the torsion points satisfy equation (4)
+        assert Equation4(n).eval(t.s) == t.t**2
+        (n,m,x,y,z) = find_positive_solution(p, t, n, depth)
         if m>0:
             assert Equation1(x,y,z).eval() == n
             digits = max(len(str(x)), len(str(y)), len(str(z)))
-            print(", m=%d, digits=%d"%(m,digits))
-            #print(n,k,x,y,z)
+            if d_best == None or digits < d_best:
+                d_best = digits
+                m_best = m
+    return (n, m_best, d_best)
+
+
+for n in range(4,201,2):
+    # Find a small solution
+    sols = sorted(find_small_solutions(n, depth=800))
+    if len(sols) > 0:
+        print("n=%2d"%(n),end='',flush=True)
+        (n,m,d) = find_smallest_positive_solution(sols[0], n, depth=140)
+        if d:
+            print(", m=%3d, d=%7d"%(m,d))
         else:
             print()
+
 
