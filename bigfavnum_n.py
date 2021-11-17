@@ -6,6 +6,31 @@
 # https://www.quora.com/How-do-you-find-the-positive-integer-solutions-to-frac-x-y+z-+-frac-y-z+x-+-frac-z-x+y-4
 # https://ami.uni-eszterhazy.hu/uploads/papers/finalpdf/AMI_43_from29to41.pdf
 
+# Output generated:
+# t=    2.0, n=  4, m=  9, d=     81
+# t=    4.0, n=  6, m= 11, d=    134
+# t=    8.1, n= 10, m= 13, d=    190
+# t=   27.3, n= 12, m= 35, d=   2707
+# t=   29.7, n= 14, m= 47, d=   1876
+# t=   33.2, n= 16, m= 11, d=    414
+# t=   44.6, n= 18, m= 49, d=  10323
+# t=  114.5, n= 24, m=107, d=  33644
+# t=  270.5, n= 28, m=121, d=  81853
+# t=  928.6, n= 32, m= 65, d=  14836
+# t= 1161.9, n= 34, m= 11, d=    302
+# t= 1244.0, n= 38
+# t= 1674.5, n= 60, m= 61, d=   9188
+# t= 1776.0, n= 82
+# t= 2156.0, n= 92
+# t= 2355.7, n=102
+# t= 2743.8, n=114, m=  7, d=    136
+# t= 2869.5, n=144
+# t= 3119.3, n=146
+# t= 3369.7, n=160
+# t= 3646.4, n=162
+# t= 3883.8, n=182
+
+
 ## PART 1 - INTRODUCTION
 
 # This little program attempts to solve the equation
