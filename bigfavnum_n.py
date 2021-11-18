@@ -494,6 +494,7 @@ def find_positive_solution(start: Optional[Point], inc: Point, n: int, maxdigits
     for (m,p) in calc_sequence(start, inc, n):
         (x,y,z) = calc_xyz(*calc_xy(*calc_uv(p.s, p.t, n)))
         digits = max(len(str(x)), len(str(y)), len(str(z)))
+        print(", m=%3d, d=%7d\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b"%(m,digits),end='',flush=True)
         if digits>maxdigits:
             break
         if x>0 and y>0:
