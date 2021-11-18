@@ -400,6 +400,12 @@ def add_point(p1: Optional[Point], p2: Point, n: int) -> Point:
 # Equation (4) is positive when s is larger than -(4n^2+12n-3). Since n+3 is a common
 # factor in the above equations, I choose to consider the interval from -4n(n+3) to 0.
 
+import gmpy2
+def is_square(f: Fraction) -> bool:
+    return gmpy2.is_square(f.numerator) and gmpy2.is_square(f.denominator)
+def isqrt(f: Fraction) -> Fraction:
+    return Fraction(int(gmpy2.isqrt(f.numerator)), int(gmpy2.isqrt(f.denominator)))
+
 # This generates a sorted list of candidate values for s in the range ]-4n(n+3),0[.
 # The first values are all integers.
 # The remaining values are fractions ordered with the smallest denominator first.
@@ -408,20 +414,16 @@ def gen_candidates(end: int, depth: int) -> Iterator[Fraction]:
     for denominator in range(1,depth):
         for numerator in range(1,denominator*end):
             if math.gcd(denominator,numerator) == 1:
-                yield Fraction(-numerator,denominator)
+                f = Fraction(-numerator,denominator)
+                if gmpy2.is_square(f.denominator):
+                    yield f
 
-assert [f for f in gen_candidates(6, 4)] == \
-        [Fraction(-1, 1), Fraction(-2, 1), Fraction(-3, 1), Fraction(-4, 1), Fraction(-5, 1), \
-        Fraction(-1, 2), Fraction(-3, 2), Fraction(-5, 2), Fraction(-7, 2), Fraction(-9, 2), Fraction(-11, 2), \
-        Fraction(-1, 3), Fraction(-2, 3), Fraction(-4, 3), Fraction(-5, 3), \
-        Fraction(-7, 3), Fraction(-8, 3), Fraction(-10, 3), Fraction(-11, 3), \
-        Fraction(-13, 3), Fraction(-14, 3), Fraction(-16, 3), Fraction(-17, 3)]
-
-import gmpy2
-def is_square(f: Fraction) -> bool:
-    return gmpy2.is_square(f.numerator) and gmpy2.is_square(f.denominator)
-def isqrt(f: Fraction) -> Fraction:
-    return Fraction(int(gmpy2.isqrt(f.numerator)), int(gmpy2.isqrt(f.denominator)))
+assert [f for f in gen_candidates(6, 5)] == \
+        [Fraction(-1, 1), Fraction(-2, 1), Fraction(-3, 1), Fraction(-4, 1), \
+        Fraction(-5, 1), Fraction(-1, 4), Fraction(-3, 4), Fraction(-5, 4), \
+        Fraction(-7, 4), Fraction(-9, 4), Fraction(-11, 4), Fraction(-13, 4), \
+        Fraction(-15, 4), Fraction(-17, 4), Fraction(-19, 4), Fraction(-21, 4), \
+        Fraction(-23, 4)]
 
 # This simply searches all the "simple" rational numbers s between
 # -4n(n+3) and 0, inserts into equation (4), and checks whether the
@@ -434,8 +436,6 @@ def find_a_small_solution(n: int, depth: int) -> Optional[Point]:
             t = isqrt(t2)
             if s != 0 and s != 4 and s != 8*(n+3):
                 return Point(s,t)
-            else:
-                print(s,t)
     return None
 
 assert find_a_small_solution(4, 10) == Point(-4, 28)
@@ -490,16 +490,19 @@ def calc_sequence(start: Optional[Point], inc: Point, n: int) -> Iterator[Tuple[
         m += 1
 
 # This finds the first positive solution to equation (1)
+import logging
 def find_positive_solution(start: Optional[Point], inc: Point, n: int, maxdigits: int) -> Tuple[int, int]:
     for (m,p) in calc_sequence(start, inc, n):
         (x,y,z) = calc_xyz(*calc_xy(*calc_uv(p.s, p.t, n)))
         digits = max(len(str(x)), len(str(y)), len(str(z)))
-        print(", m=%3d, d=%7d\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b"%(m,digits),end='',flush=True)
         if digits>maxdigits:
             break
         if x>0 and y>0:
             assert Equation1(x,y,z).eval() == n
+            logging.info(f"n={n:2d}, m={m:4d}, d={digits:7d}, t={str(start):20s}")
             return (m,digits)
+        else:
+            logging.info(f"NOT YET n={n:2d}, m={m:4d}, d={digits:7d}.")
     return (0,0)
 
 def find_smallest_positive_solution(p: Point, n: int, maxdigits: int) -> Tuple[int, int]:
@@ -507,6 +510,7 @@ def find_smallest_positive_solution(p: Point, n: int, maxdigits: int) -> Tuple[i
     m_best = 0
     # Search through each torsion point
     for t in torsions_points(n):
+        logging.info(f"n={n:2d}, p={str(p):20s}, t={str(t):20s}")
         (m,digits) = find_positive_solution(t, p, n, d_best)
         if m>0:
             if digits <= d_best:
@@ -516,32 +520,48 @@ def find_smallest_positive_solution(p: Point, n: int, maxdigits: int) -> Tuple[i
         return (0, 0)
     return (m_best, d_best)
 
+import ray
+@ray.remote
+def run_n(n: int, depth: int, maxdigits: int) -> Tuple[int, Optional[Point], int, int]:
+    logging.basicConfig(filename='output.log', level=logging.DEBUG)
+
+    # Verify the torsion points satisfy equation (4)
+    for p in torsions_points(n):
+        if p is not None:
+            assert Equation4(n).eval(p.s) == p.t**2
+
+    # Find a small solution to start from
+    p = find_a_small_solution(n, depth)
+    if p is None:
+        return (n,None,0,0)
+
+    (m,d) = find_smallest_positive_solution(p, n, maxdigits)
+    return (n,p,m,d)
+
 import time
 def run(nmax: int, depth: int, maxdigits: int) -> None:
-    print("nmax=%d, depth=%d, maxdigits=%d"%(nmax, depth, maxdigits))
+    print(f"nmax={nmax}, depth={depth}, maxdigits={maxdigits}")
+    tstart = time.perf_counter()
+    results = ray.get([run_n.remote(n,depth,maxdigits) for n in range(4,nmax+1,2)])
+    tend = time.perf_counter()
+
     attempt = 0
     found = 0
-    for n in range(4,nmax+1,2):
-        # Verify the torsion points satisfy equation (4)
-        for p in torsions_points(n):
-            if p is not None:
-                assert Equation4(n).eval(p.s) == p.t**2
-
-        # Find a small solution to start from
-        p = find_a_small_solution(n, depth)
-        if p:
-            attempt += 1
+    for (n,p,m,d) in results:
+        if p is not None:
             (x,y,z) = sort_xyz(*calc_xyz(*calc_xy(*calc_uv(p.s, p.t, n))))
-            print("t=%5d, n=%3d, s=%14s, t=%14s, x=%7d, y=%7d, z=%7d"%
-                    (int(time.process_time()),n,p.s,p.t,x,y,z),end='',flush=True)
-            (m,d) = find_smallest_positive_solution(p, n, maxdigits)
+            print(f"n={n:2d}, s={str(p.s):12s}, t={str(p.t):12s}, x={x:9d}, y={y:9d}, z={z:9d}",end='')
+            attempt += 1
             if m:
-                print(", m=%3d, d=%7d"%(m,d),flush=True)
                 found += 1
+                print(f", m={m:4d}, d={d:6d}")
             else:
-                print(flush=True)
-    print("Found non-torsion points on %d curves"%(attempt))
-    print("Found positive solutions on %d curves"%(found))
+                print()
 
-run(nmax=50, depth=50, maxdigits=2000)
+    print()
+    print(f"Time taken: {(tend-tstart)/60:7.1f} minutes.")
+    print(f"Found non-torsion points on {attempt} curves.")
+    print(f"Found positive solutions on {found} curves.")
+
+run(nmax=200, depth=123, maxdigits=420000)
 
