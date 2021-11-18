@@ -340,7 +340,9 @@ class Point:
         self.t = t
 
     def __lt__(self, other):
-        return max(abs(self.s.denominator), abs(self.t.denominator)) < max(abs(other.s.denominator), abs(other.t.denominator))
+        return abs(self.s.denominator)  < abs(other.s.denominator) or \
+              (abs(self.s.denominator) == abs(other.s.denominator) and \
+               abs(self.s.numerator)    < abs(other.s.numerator))
 
 # This simply searches all the "simple" rational numbers s between
 # -4n(n+3) and 0, inserts into equation (4), and checks whether the
@@ -462,7 +464,7 @@ def find_smallest_positive_solution(p: Point, n: int, maxdigits: int) -> Tuple[i
     t6n = Point(Fraction(8*(n+3)), Fraction(-8*(n+3)*(2*n+5)))
 
     d_best = maxdigits
-    m_best = None
+    m_best = 0
     # Search through each torsion point
     for t in (t2,t3p,t3n,t6p,t6n):
         # Verify the torsion points satisfy equation (4)
@@ -475,7 +477,7 @@ def find_smallest_positive_solution(p: Point, n: int, maxdigits: int) -> Tuple[i
                 d_best = digits
                 m_best = m
     if d_best == maxdigits:
-        return (n, None, None)
+        return (n, 0, 0)
     return (n, m_best, d_best)
 
 import time
