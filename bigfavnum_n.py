@@ -400,7 +400,7 @@ def add_point(p1: Optional[Point], p2: Point, n: int) -> Point:
 # Equation (4) is positive when s is larger than -(4n^2+12n-3). Since n+3 is a common
 # factor in the above equations, I choose to consider the interval from -4n(n+3) to 0.
 
-import gmpy2
+import gmpy2 # type: ignore
 def is_square(f: Fraction) -> bool:
     return gmpy2.is_square(f.numerator) and gmpy2.is_square(f.denominator)
 def isqrt(f: Fraction) -> Fraction:
@@ -520,7 +520,7 @@ def find_smallest_positive_solution(p: Point, n: int, maxdigits: int) -> Tuple[i
         return (0, 0)
     return (m_best, d_best)
 
-import ray
+import ray # type: ignore
 @ray.remote
 def run_n(n: int, depth: int, maxdigits: int) -> Tuple[int, Optional[Point], int, int]:
     logging.basicConfig(filename='output.log', level=logging.DEBUG)
