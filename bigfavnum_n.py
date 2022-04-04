@@ -515,7 +515,7 @@ def find_smallest_positive_solution(p: Point, n: int, maxdigits: int) -> Tuple[i
         return (0, 0)
     return (m_best, d_best)
 
-import ray
+import ray # type: ignore
 @ray.remote
 def run_n(n: int, depth: int, maxdigits: int) -> Tuple[int, Optional[Point], int, int]:
     logging.basicConfig(filename='output.log', level=logging.DEBUG)

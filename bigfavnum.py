@@ -9,6 +9,7 @@
 
 # Since we'll be working with fractions let's import the module
 from fractions import Fraction
+from typing import Iterator
 
 # This function calculates the left-hand-side of equation (1)
 def calc_equation(x: int, y: int, z: int) -> Fraction:
@@ -35,11 +36,13 @@ assert calc_equation(  1, -11,  -4) == 4
 # other solutions: (y,x), (1/x, y/x), (y/x, 1/x), (1/y, x/y), and (x/y, 1/y).
 
 # From now on we work with rational points (x,y)
-from dataclasses import dataclass
-@dataclass
 class Point:
     x: Fraction
     y: Fraction
+
+    def __init__(self, x: Fraction, y: Fraction) -> None:
+        self.x = x
+        self.y = y
 
 # We start with a helper function to return a list of factors of any integer
 def factors(n):
@@ -49,7 +52,6 @@ def factors(n):
     )
 
 # This is a general cubic polynomial
-@dataclass
 class Curve:
     a: Fraction
     b: Fraction
@@ -57,8 +59,8 @@ class Curve:
     d: Fraction
 
     # Initialize using equation (2) above
-    def __init__(self, y: Fraction):
-        self.a = 1
+    def __init__(self, y: Fraction) -> None:
+        self.a = Fraction(1)
         self.b = -3*(y+1)
         self.c = -(3*y*y+5*y+3)
         self.d = y*y*y-3*y*y-3*y+1
@@ -69,7 +71,7 @@ class Curve:
 
     # This function applies the rational root theorem
     # and returns all rational solutions to the cubic equation (2)
-    def rational_solutions(self) -> Fraction:
+    def rational_solutions(self) -> Iterator[Fraction]:
         assert self.a == 1 # We only handle this special case
         list_n = factors(abs(self.d.numerator))
         list_d = factors(abs(self.d.denominator))
@@ -86,15 +88,15 @@ def calc_curve(p: Point) -> Fraction:
     return Curve(p.y).eval(p.x)
 
 # Verify the known solutions
-assert calc_curve(Point(-11, -4)) == 0
-assert calc_curve(Point(-4, -11)) == 0
+assert calc_curve(Point(-Fraction(11),  -Fraction(4))) == 0
+assert calc_curve(Point(-Fraction(4),   -Fraction(11))) == 0
 assert calc_curve(Point(Fraction(4,11), -Fraction(1,11))) == 0
 assert calc_curve(Point(-Fraction(1,11), Fraction(4,11))) == 0
 assert calc_curve(Point(Fraction(11,4), -Fraction(1,4))) == 0
 assert calc_curve(Point(-Fraction(1,4),  Fraction(11,4))) == 0
 
-assert calc_curve(Point(1, -1)) == 0
-assert calc_curve(Point(-1, 1)) == 0
+assert calc_curve(Point(Fraction(1), Fraction(-1))) == 0
+assert calc_curve(Point(Fraction(-1), Fraction(1))) == 0
 
 # If we have a solution (x1,y1) to equation (2) then
 # the slope of the curve can be calculated as follows
@@ -108,10 +110,13 @@ def calc_slope(p: Point) -> Fraction:
 # Intersection with a line y=ax+b leads to a cubic equation.
 
 # Since we're working with lines, let's introduce a class for that.
-@dataclass
 class Line:
     a: Fraction
     b: Fraction
+
+    def __init__(self, a: Fraction, b: Fraction) -> None:
+        self.a = a
+        self.b = b
 
 # Inserting the line equation y=ax+b into equation (2) leads
 # to a cubic equation in x, where the sum of roots becomes
@@ -159,14 +164,14 @@ def new_point_secant(p1: Point, p2: Point) -> Point:
 def print_solution(p: Point):
     assert p.x.denominator == p.y.denominator
     assert calc_curve(p) == 0 # Verify equation (2) is satisfied
-    (x,y,z) = (Fraction(p.x.numerator), Fraction(p.y.numerator), Fraction(p.x.denominator))
+    (x,y,z) = (p.x.numerator, p.y.numerator, p.x.denominator)
     if x+y != 0 and x+z != 0 and y+z != 0:
         assert calc_equation(x,y,z) == 4 # Verify equation (1) is satisfied
         print("x=%d\ny=%d\nz=%d" % (x, y, z))
         print()
 
 # This is the main algorithm, stepping through the points indefinitely
-def calc_sequence(p: Point) -> Point:
+def calc_sequence(p: Point) -> Iterator[Point]:
     first_point = p
     yield p
     p = new_point_tangent(first_point)
@@ -186,7 +191,7 @@ for p in calc_sequence(Point(Fraction(-11), Fraction(-4))):
 
 # We start by generating a sequence of fractions in [-1, 1] using a Farey sequence
 # https://en.wikipedia.org/wiki/Farey_sequence
-def farey_sequence(n: int) -> Fraction:
+def farey_sequence(n: int) -> Iterator[Fraction]:
     (a, b, c, d) = (0, 1, 1, n)
     yield Fraction(a,b)
     while c <= n:
@@ -210,10 +215,10 @@ for y in farey_sequence(9):
 # v^2 = (u+1)*(4*u*u+7*u-1)/(12u-1)
 # So we just search various values for u, and determine whether v is a pure square
 
-import gmpy2
+import gmpy2 # type: ignore
 def is_square(f: Fraction) -> bool:
     return gmpy2.is_square(f.numerator) and gmpy2.is_square(f.denominator)
-def isqrt(f: Fraction) -> bool:
+def isqrt(f: Fraction) -> Fraction:
     return Fraction(int(gmpy2.isqrt(f.numerator)), int(gmpy2.isqrt(f.denominator)))
 
 print("Searching for solutions using method C:")
