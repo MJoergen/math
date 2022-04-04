@@ -392,7 +392,7 @@ def add_point(p1: Optional[Point], p2: Point, n: int) -> Point:
 # Equation (4) is positive when s is larger than -(4n^2+12n-3). Since n+3 is a common
 # factor in the above equations, I choose to consider the interval from -4n(n+3) to 0.
 
-import gmpy2
+import gmpy2 # type: ignore
 def is_square(f: Fraction) -> bool:
     return gmpy2.is_square(f.numerator) and gmpy2.is_square(f.denominator)
 def isqrt(f: Fraction) -> Fraction:
@@ -484,17 +484,20 @@ def calc_sequence(start: Optional[Point], inc: Point, n: int) -> Iterator[Tuple[
 # This finds the first positive solution to equation (1)
 import logging
 def find_positive_solution(start: Optional[Point], inc: Point, n: int, maxdigits: int) -> Tuple[int, int]:
+    tstart = time.perf_counter()
     for (m,p) in calc_sequence(start, inc, n):
         (x,y,z) = calc_xyz(*calc_xy(*calc_uv(p.s, p.t, n)))
         digits = max(len(str(x)), len(str(y)), len(str(z)))
-        if digits>maxdigits:
-            break
+        tend = time.perf_counter()
         if x>0 and y>0:
             assert Equation1(x,y,z).eval() == n
-            logging.info(f"n={n:2d}, m={m:4d}, d={digits:7d}, t={str(start):20s}")
+            logging.info(f"n={n:2d}, m={m:4d}, d={digits:7d}, time={tend-tstart:6.1f}, t={str(start):20s}, FOUND!!!")
             return (m,digits)
-        else:
-            logging.info(f"NOT YET n={n:2d}, m={m:4d}, d={digits:7d}.")
+        elif digits>maxdigits:
+            logging.info(f"n={n:2d}, m={m:4d}, d={digits:7d}, time={tend-tstart:6.1f}, t={str(start):20s}, TOO BIG!!")
+            break
+        logging.info(f"n={n:2d}, m={m:4d}, d={digits:7d}, time={tend-tstart:6.1f}, t={str(start):20s}.")
+        tstart = time.perf_counter()
     return (0,0)
 
 def find_smallest_positive_solution(p: Point, n: int, maxdigits: int) -> Tuple[int, int]:
@@ -523,7 +526,10 @@ def run_n(n: int, depth: int, maxdigits: int) -> Tuple[int, Optional[Point], int
             assert Equation4(n).eval(p.s) == p.t**2
 
     # Find a small solution to start from
+    tstart = time.perf_counter()
     p = find_a_small_solution(n, depth)
+    tend = time.perf_counter()
+    logging.info(f"n={n:2d}, p={str(p):20s}, time={tend-tstart:6.1f}")
     if p is None:
         return (n,None,0,0)
 
@@ -556,6 +562,6 @@ def run(nmax: int, depth: int, maxdigits: int) -> None:
     print(f"Found positive solutions on {found} curves.")
 
 ray.init()
-run(nmax=200, depth=123, maxdigits=420000)
+run(nmax=200, depth=170, maxdigits=420000)
 ray.shutdown()
 
