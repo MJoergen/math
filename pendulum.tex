@@ -33,6 +33,8 @@
 
 \maketitle
 
+\section{One way}
+
 We start with the pendulum equation
 \be
 \ddot y + \sin y = 0,
@@ -66,6 +68,66 @@ Finally we apply the substitution $z=\dot y$ to get:
 \be
 \ddot z + \frac12 z^3 - Kz = 0.
 \ee
+
+
+\section{The other way}
+Here we start with the equation
+\be
+\ddot x = x - \frac12 x^3.
+\label{eq11}
+\ee
+We let $x = \dot y$ with $y(0) = 0$. The goal is to find an equation
+for $y$. We do this by trying the following {\em Ansatz}:
+\be
+\ddot y = f(y),
+\label{eq12}
+\ee
+for some to-de-determined function $f$.
+
+First we differentiate equation~(\ref{eq12}) with respect to $t$.
+This gives
+\be
+\dddot y = f'(y) \,\dot y.
+\label{eq13}
+\ee
+Then we insert $x = \dot y$ into equation~(\ref{eq11}) to get
+\be
+\dddot y = \dot y - \frac12 (\dot y)^3.
+\label{eq14}
+\ee
+Equating the last two equations gives:
+\be
+f'(y) \,\dot y = \dot y - \frac12 (\dot y)^3,
+\ee
+which simplifies to:
+\be
+f'(y) = 1 - \frac12 (\dot y)^2.
+\label{eq15}
+\ee
+
+Now calculate the time derivate of equation~(\ref{eq15}) to get:
+\be
+f''(y) \,\dot y = -\dot y \,\ddot y,
+\ee
+i.e.
+\be
+f''(y) = - \ddot y.
+\ee
+Finally, using the {\em Ansatz}~(\ref{eq12}) gives
+\be
+f''(y) = -f(y).
+\ee
+From this we conclude that
+\be
+f(y) = A\sin(y-y_0),
+\ee
+where $A$ and $y_0$ are integration constants.
+
+We have thus transformed equation~(\ref{eq11}) into
+\be
+\ddot y = A\sin(y-y_0).
+\ee
+
 
 
 \end{document}
