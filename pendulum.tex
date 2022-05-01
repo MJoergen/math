@@ -1,0 +1,73 @@
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+%\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+%\usepackage{graphicx}
+\usepackage{amsfonts}
+\usepackage{amsthm}        % Theorems
+\usepackage{amsmath}
+%\usepackage{hyperref}
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+\newcommand{\be}{\begin{equation}}
+\newcommand{\ee}{\end{equation}}
+\newcommand{\bea}{\begin{eqnarray}}
+\newcommand{\eea}{\end{eqnarray}}
+
+%\newtheorem{thm}{Sætning}[section]
+%\newtheorem{mydef}[thm]{Definition}
+%\newtheorem{eks}[thm]{Eksempel}
+
+\title{The Pendulum Equation}
+\date{May 2022}
+\author{Michael Jørgensen}
+
+\begin{document}
+
+\maketitle
+
+We start with the pendulum equation
+\be
+\ddot y + \sin y = 0,
+\label{eq1}
+\ee
+where $y=y(t)$ is a real function of time, and $\dot y = \frac{dy}{dt}$
+indicates derivative with respect to $t$.
+
+We transform this equation by first noting that we can reduce the order of the
+equation. This is done by multiplying with $\dot y$ and then integrating.
+This gives
+\be
+\frac12 (\dot y)^2 - \cos y = K,
+\label{eq2}
+\ee
+where $K$ is an integrating factor.
+
+To proceed we apply another trick, which is to differentiate
+equation~(\ref{eq1}).  This gives:
+\be
+\dddot y + \cos y \,\dot y = 0.
+\label{eq3}
+\ee
+We may now eliminate $\cos y$ by multiplying equation~(\ref{eq2}) by $\dot y$
+and adding equation~(\ref{eq3}). This gives:
+\be
+\dddot y + \frac12 (\dot y)^3 = K\dot y.
+\ee
+
+Finally we apply the substitution $z=\dot y$ to get:
+\be
+\ddot z + \frac12 z^3 - Kz = 0.
+\ee
+
+
+\end{document}
+
+
