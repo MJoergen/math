@@ -98,5 +98,59 @@ Taking now the limit $n\rightarrow\infty$ on both sides gives the final result:
     \lim_{n\rightarrow\infty} \frac{x_n}{y_n} = \frac{\sqrt{x_0^2-1}}{y_0}.
 \end{equation*}
 
+\section{Pell's equation}
+Let $x_1$, $y_1$, and $d$ be positive integers satisfying
+\begin{equation*}
+    x_1^2 - d y_1^2 = 1
+\end{equation*}
+Now define $x_n$ and $y_n$ through the relation
+\begin{equation*}
+    x_n + \sqrt{d} y_n = \left(x_1 + \sqrt{d} y_1\right)^n.
+\end{equation*}
+Then we have
+\begin{itemize}
+    \item $$ x_n^2 - d y_n^2 = 1 $$
+    \item $$ 
+        \left( \begin{array}{c}
+            x_{n+1} \\
+            y_{n+1}
+        \end{array} \right)
+        = \left( \begin{array}{c c}
+            x_1 & d y_1 \\
+            y_1 & x_1
+        \end{array} \right)
+        \left( \begin{array}{c}
+            x_{n} \\
+            y_{n}
+        \end{array} \right) $$
+    \item 
+        \begin{eqnarray*}
+            x_{2n} &=& 2x_n^2 - 1 \\
+            y_{2n} &=& 2x_ny_n
+        \end{eqnarray*}
+    \item $$ \lim_{n\rightarrow\infty} \frac{x_n}{y_n} = \sqrt{d} $$
+    \item 
+        \begin{eqnarray*}
+            x_n &=& \frac12 \left(\lambda_1^n + \lambda_2^n\right) \\
+            y_n &=& \frac1{2\sqrt{d}} \left(\lambda_1^n - \lambda_2^n\right) \\
+            \lambda_1 &=& x_1 + \sqrt{d} y_1 = x_1 + \sqrt{x_1^2-1} \\
+            \lambda_2 &=& x_1 - \sqrt{d} y_1 = x_1 - \sqrt{x_1^2-1} \\
+            \lambda_1 \lambda_2 &=& 1
+        \end{eqnarray*}
+    \item
+        \begin{eqnarray*}
+            x_{n+1} &=& 2x_1x_n - x_{n-1} \\
+            y_{n+1} &=& 2x_1y_n - y_{n-1}
+        \end{eqnarray*}
+    \item
+        \begin{eqnarray*}
+            x_n &=& T_n(x_1) \\
+            y_n &=& U_{n-1}(x_1) y_1
+        \end{eqnarray*}
+    \item $$ \frac{x_n}{y_n} - \sqrt{d} \approx \frac{1}{2x_ny_n} $$
+
+\end{itemize}
+
+
 \end{document}
 
