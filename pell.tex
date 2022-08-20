@@ -1,0 +1,102 @@
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+\usepackage{amsfonts}
+\usepackage{amsthm}        % Theorems
+\usepackage{amsmath}
+
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+\newcommand{\be}{\begin{equation}}
+\newcommand{\ee}{\end{equation}}
+\newcommand{\bea}{\begin{eqnarray}}
+\newcommand{\eea}{\end{eqnarray}}
+
+\title{Pell's Equation}
+\date{August 2022}
+\author{Michael Jørgensen}
+
+\begin{document}
+
+\maketitle
+
+\section{A problem}
+
+Consider the sequence $(x_n, y_n)$ for $n=1, 2, 3, \ldots$ of positive integers $x_n$ and $y_n$.
+They are required to satisfy the following recurrence relation:
+%
+\begin{eqnarray*}
+    x_{n+1} &=& 2 x_n^2 - 1 \\
+    y_{n+1} &=& 2 x_n y_n.
+\end{eqnarray*}
+%
+The initial values $x_0$ and $y_0$ are required to satisfy
+%
+\begin{eqnarray*}
+    x_0 &\ge& 2 \\
+    y_0 &\ge& 1.
+\end{eqnarray*}
+%
+These limitations guarantee that each of $x_n$ and $y_n$ diverge to infinity.
+
+The task is to determine the following limit:
+%
+\begin{equation*}
+    \lim_{n \rightarrow \infty} \frac{x_n}{y_n},
+\end{equation*}
+%
+expressed in terms of the initial values $x_0$ and $y_0$.
+
+\section{Examples}
+
+With the initial values $(x_0, y_0) = (2, 1)$ we get the following table
+%
+\begin{equation*}
+\begin{array}{c r r l}
+    n &   x_n &    y_n & x_n/y_n \\
+    0 &     2 &      1 & 2.0000 \\
+    1 &     7 &      4 & 1.7500 \\
+    2 &    97 &     56 & 1.7321 \\
+    3 & 18817 & 100864 & 1.7321
+\end{array}
+\end{equation*}
+%
+This limit seems to converge to $\sqrt{3}$.
+
+With the initial values $(x_0, y_0) = (3, 2)$ we get the following table
+%
+\begin{equation*}
+\begin{array}{c r r l}
+    n &    x_n &    y_n & x_n/y_n \\
+    0 &      3 &      2 & 1.5000 \\
+    1 &     17 &     12 & 1.4167 \\
+    2 &    577 &    408 & 1.4142 \\
+    3 & 665857 & 470832 & 1.4142
+\end{array}
+\end{equation*}
+%
+This limit seems to converge to $\sqrt{2}$.
+
+\section{Solution outline}
+Define
+\begin{equation*}
+    z_n = \frac{x_n^2-1}{y_n^2}.
+\end{equation*}
+Then determine a recurrence relation for $z_n$, which turns out to be simply
+$z_{n+1} = z_n$.
+%
+We therefore have $z_n = z_0$, i.e.
+\begin{equation*}
+    \left(\frac{x_n}{y_n}\right)^2 - \frac{1}{y_n^2} = \frac{x_0^2-1}{y_0^2}.
+\end{equation*}
+%
+Taking now the limit $n\rightarrow\infty$ on both sides gives the final result:
+\begin{equation*}
+    \lim_{n\rightarrow\infty} \frac{x_n}{y_n} = \frac{\sqrt{x_0^2-1}}{y_0}.
+\end{equation*}
+
+\end{document}
+
