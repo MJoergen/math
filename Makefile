@@ -1,4 +1,9 @@
-names  = elliptic.tex
+names += elliptic.tex
+names += fjerde.tex
+names += pell.tex
+names += pendulum.tex
+names += tredje.tex
+
 tex_pdfs   = $(names:.tex=.pdf)
 
 %pics   = fig1.asy
