@@ -129,31 +129,35 @@ def get_stat(v):
     # Return: count, max, min, mean, stddev, and range.
     return (vlen, vmax, vmin, vavg, math.sqrt(vm2/vlen), vmax-vmin)
 
-xstart = 1024*1024 # Choose a large circle
-a = 1/4 # Start with a large step size
-while a >= 1/65536:
-    res = calc_circle(xstart, a)
-    v = 2*math.asin(a/2)
+def main():
+    xstart = 1024*1024 # Choose a large circle
+    a = 1/4 # Start with a large step size
+    while a >= 1/65536:
+        res = calc_circle(xstart, a)
+        v = 2*math.asin(a/2)
 
-    rvec = []
-    pvec = []
+        rvec = []
+        pvec = []
 
-    # Iterate over all points
-    for i,(x,y) in enumerate(res):
-        r,w = calc_rw(x,y,a)
-        p = (w+i*v)%(2*math.pi) # Calculate phase difference between real and truncated case
-        # Accumulate statistics on r_n and p_n.
-        rvec.append(r)
-        pvec.append(p)
-        #print("%7.1f, %7.1f, %5.1f, %8.5f, %8.5f" % (x,y,r,w,p))
+        # Iterate over all points
+        for i,(x,y) in enumerate(res):
+            r,w = calc_rw(x,y,a)
+            p = (w+i*v)%(2*math.pi) # Calculate phase difference between real and truncated case
+            # Accumulate statistics on r_n and p_n.
+            rvec.append(r)
+            pvec.append(p)
+            #print("%7.1f, %7.1f, %5.1f, %8.5f, %8.5f" % (x,y,r,w,p))
 
-    rstat = get_stat(rvec)
-    pstat = get_stat(pvec)
-    alpha = pstat[5]*a*xstart # Here pstat[5] is the range (max-min) of p_n.
-    pstat += (alpha,) # Append to list
-    print("a=%9.7f, v=%9.7f, period=%8.1f, expected=%8.1f" % (a,v,2*math.pi/v,(2*math.pi + 4/(xstart*a))/a))
-    print("rvec: len=%6d, max=%12.1f, min=%12.1f, avg=%12.1f, stddev=%7.1f, range=%12.1f" % (rstat))
-    print("pvec: len=%6d, max=%12.5f, min=%12.5f, avg=%12.5f, stddev=%7.5f, range=%12.5f, alpha=%6.2f" % (pstat))
-    print()
-    a /= 2 # Repeat with smaller step size
+        rstat = get_stat(rvec)
+        pstat = get_stat(pvec)
+        alpha = pstat[5]*a*xstart # Here pstat[5] is the range (max-min) of p_n.
+        pstat += (alpha,) # Append to list
+        print("a=%9.7f, v=%9.7f, period=%8.1f, expected=%8.1f" % (a,v,2*math.pi/v,(2*math.pi + 4/(xstart*a))/a))
+        print("rvec: len=%6d, max=%12.1f, min=%12.1f, avg=%12.1f, stddev=%7.1f, range=%12.1f" % (rstat))
+        print("pvec: len=%6d, max=%12.5f, min=%12.5f, avg=%12.5f, stddev=%7.5f, range=%12.5f, alpha=%6.2f" % (pstat))
+        print()
+        a /= 2 # Repeat with smaller step size
+
+if __name__ == '__main__':
+    main()
 

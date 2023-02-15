@@ -47,13 +47,17 @@ def calc_lim_pow(a):
         print("%8.5f"%(e), end='')
     print()
 
-seq0 = [2+3*math.exp(-n) for n in range(10)]
-seq1 = [3+4/(n+1) for n in range(10)]
-seq2 = [1+2*math.exp(-n)-4*math.exp(-2*n) for n in range(10)]
-seq3 = [3+4*math.atan(n)/math.pi for n in range(10)]
+def main():
+    seq0 = [2+3*math.exp(-n) for n in range(10)]
+    seq1 = [3+4/(n+1) for n in range(10)]
+    seq2 = [1+2*math.exp(-n)-4*math.exp(-2*n) for n in range(10)]
+    seq3 = [3+4*math.atan(n)/math.pi for n in range(10)]
 
-test("An exact exponential", 2, seq0)
-test("An exact power", 3, seq1)
-test("An approximate exponential", 1, seq2)
-test("An approximate power", 5, seq3)
+    test("An exact exponential", 2, seq0)
+    test("An exact power", 3, seq1)
+    test("An approximate exponential", 1, seq2)
+    test("An approximate power", 5, seq3)
+
+if __name__ == '__main__':
+    main()
 
