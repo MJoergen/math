@@ -52,30 +52,32 @@ def steiner(n         : int,
             r         : int             = None,
             cols      : List[List[int]] = None,
             col_index : int             = 0,
-            all_cols  : List[List[int]] = None) -> List[List[int]]:
+            all_cols  : List[List[int]] = None) -> Iterator[List[List[int]]]:
     if b == None:
-        b = binom(n,t) / binom(k,t)
+        b = calc_b(n,k,t)
+    assert b is not None
     if r == None:
-        r = binom(n-1,t-1) / binom(k-1,t-1)
+        r = calc_r(n,k,t)
+    assert r is not None
     if all_cols == None:
-        if int(b) != b or int(r) != r:
-            print("No solution")
-            return
-        else:
-            print(f"n={n}, k={k}, t={t}, b={int(b)}, r={int(r)}")
+        print(f"n={n}, k={k}, t={t}, b={b}, r={r}")
         all_cols = []
         for c in place(n, k):
             all_cols.append(list(c))
+    assert all_cols is not None
 
     if cols == None:
         cols=[]
     else:
+        assert cols is not None
         res = [sum(i) for i in zip(*cols)]
         if max(res) > r:
             print("Illegal")
             return
+
     if len(cols) >= binom(n,t) // binom(k,t):
         yield cols
+
     for i in range(col_index, len(all_cols)):
         c = all_cols[i]
         if valid(cols,c,t):
