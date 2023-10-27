@@ -8,8 +8,8 @@ end entity tb_pipeline_sqrt;
 architecture sim of tb_pipeline_sqrt is
 
   signal clk      : std_logic := '0';
-  signal data_in  : std_logic_vector(28 downto 0); -- Fixed point 2.27
-  signal data_out : std_logic_vector(28 downto 0); -- Fixed point 0.29
+  signal data_in  : std_logic_vector(21 downto 0); -- Fixed point 2.20
+  signal data_out : std_logic_vector(21 downto 0); -- Fixed point 0.22
 
 begin
 
