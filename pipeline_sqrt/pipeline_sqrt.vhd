@@ -46,26 +46,46 @@ architecture rtl of pipeline_sqrt is
   type bram_t is array (natural range 0 to 2**C_BRAM_ADDR_BITS-1) of
                  std_logic_vector(C_BRAM_DATA_BITS-1 downto 0);
 
+  constant C_EXTRA_BITS     : natural := 3;
+
   -- This calculates an approximation to the square root
   -- The output format is fixed point 0.18.
   -- This stores the lookup table for the function f(a) = sqrt(a) - 1.
-  pure function sqrt_rom_initial return bram_t is
+  pure function sqrt_rom_low_initial return bram_t is
     constant SCALE_IN   : natural := (2**C_BRAM_ADDR_BITS)/4;
-    constant SCALE_OUT  : natural := 2**C_BRAM_DATA_BITS;
+    constant SCALE_OUT  : natural := (2**C_BRAM_DATA_BITS)*(2**C_EXTRA_BITS);
     variable a_v        : real;
     variable f_v        : real;
     variable scaled_f_v : natural range 0 to SCALE_OUT-1;
+    variable sqrt_v     : std_logic_vector(17+C_EXTRA_BITS downto 0);
     variable res_v      : bram_t := (others => (others => '0'));
   begin
     for i in SCALE_IN to 4*SCALE_IN-1 loop
       a_v := real(i) / real(SCALE_IN); --   a  is in the range [1, 4[
       f_v := sqrt(a_v)-1.0;            -- f(a) is in the range [0, 1[
       scaled_f_v := integer(floor(f_v*real(SCALE_OUT)));
-      res_v(i) := std_logic_vector(to_unsigned(scaled_f_v, 18));
+      sqrt_v := std_logic_vector(to_unsigned(scaled_f_v, 18 + C_EXTRA_BITS));
+      res_v(i) := sqrt_v(17 downto 0);
 --      report "i="&to_string(i)&", sqrt="&to_hstring(res_v(i));
     end loop;
     return res_v;
-  end function sqrt_rom_initial;
+  end function sqrt_rom_low_initial;
+
+  pure function sqrt_rom_high_initial return bram_t is
+    constant SCALE_IN   : natural := (2**C_BRAM_ADDR_BITS)/4;
+    constant K          : natural := 2**C_EXTRA_BITS;
+    constant L          : natural := SCALE_IN/(K*K);
+    variable res_v      : bram_t := (others => (others => '0'));
+  begin
+    for i in SCALE_IN to 4*SCALE_IN-1 loop
+      for j in 0 to K-1 loop
+        if i >= L*(K+j)*(K+j) then
+          res_v(i)(C_BRAM_DATA_BITS-1 downto C_BRAM_DATA_BITS-C_EXTRA_BITS) := std_logic_vector(to_unsigned(j,C_EXTRA_BITS));
+        end if;
+      end loop;
+    end loop;
+    return res_v;
+  end function sqrt_rom_high_initial;
 
   -- This calculates an approximation to the inverse square root
   -- The output format is fixed point 0.18
@@ -89,18 +109,20 @@ architecture rtl of pipeline_sqrt is
     return res_v;
   end function inv_sqrt_rom_initial;
 
-  constant C_SQRT_ROM     : bram_t := sqrt_rom_initial;
-  constant C_INV_SQRT_ROM : bram_t := inv_sqrt_rom_initial;
+  constant C_SQRT_ROM_LOW  : bram_t := sqrt_rom_low_initial;
+  constant C_SQRT_ROM_HIGH : bram_t := sqrt_rom_high_initial;
+  constant C_INV_SQRT_ROM  : bram_t := inv_sqrt_rom_initial;
 
-  signal stage1_sqrt     : std_logic_vector(17 downto 0);
-  signal stage1_inv_sqrt : std_logic_vector(17 downto 0);
-  signal stage1_data_lsb : std_logic_vector(10 downto 0);
-  signal stage1_b        : signed(11 downto 0);
-  signal stage1_g        : signed(19 downto 0);
-  signal stage1_f        : signed(41 downto 0);
-  signal stage1_abc      : signed(41 downto 0);
+  signal stage1_sqrt_low  : std_logic_vector(17 downto 0);
+  signal stage1_sqrt_high : std_logic_vector(C_EXTRA_BITS-1 downto 0);
+  signal stage1_inv_sqrt  : std_logic_vector(17 downto 0);
+  signal stage1_data_lsb  : std_logic_vector(10 downto 0);
+  signal stage1_b         : signed(11 downto 0);
+  signal stage1_g         : signed(19 downto 0);
+  signal stage1_f         : signed(40 downto 0) := (others => '0');
+  signal stage1_abc       : signed(40 downto 0);
 
-  signal stage2_data     : std_logic_vector(21 downto 0);
+  signal stage2_data      : std_logic_vector(21 downto 0);
 
 begin
 
@@ -108,15 +130,16 @@ begin
   begin
     if rising_edge(clk_i) then
       assert data_i(21 downto 20) /= "00"; -- Integer part must be nonzero
-      stage1_sqrt     <= C_SQRT_ROM(    to_integer(unsigned(data_i(21 downto 11))));
-      stage1_inv_sqrt <= C_INV_SQRT_ROM(to_integer(unsigned(data_i(21 downto 11))));
-      stage1_data_lsb <= data_i(10 downto 0);
+      stage1_sqrt_low  <= C_SQRT_ROM_LOW( to_integer(unsigned(data_i(21 downto 11))));
+      stage1_sqrt_high <= C_SQRT_ROM_HIGH(to_integer(unsigned(data_i(21 downto 11)))) (C_BRAM_DATA_BITS-1 downto C_BRAM_DATA_BITS-C_EXTRA_BITS);
+      stage1_inv_sqrt  <= C_INV_SQRT_ROM( to_integer(unsigned(data_i(21 downto 11))));
+      stage1_data_lsb  <= data_i(10 downto 0);
     end if;
   end process stage1_proc;
 
   -- The DSP only works with signed numbers, so we need to prepend
   -- a zero bit, to make sure all values are interpreted as positive.
-  stage1_f <= signed("01" & unsigned(stage1_sqrt) & "0000000000000000000000");
+  stage1_f(40-C_EXTRA_BITS downto 22-C_EXTRA_BITS) <= signed("0" & unsigned(stage1_sqrt_low));
   stage1_g <= signed("01" & unsigned(stage1_inv_sqrt));
   stage1_b <= signed("0"  & unsigned(stage1_data_lsb));
   -- Now we calculate: sqrt(a) + (2/sqrt(a))*b*(eps/4)
@@ -125,7 +148,7 @@ begin
   stage2_proc : process (clk_i)
   begin
     if rising_edge(clk_i) then
-      stage2_data <= std_logic_vector(stage1_abc(39 downto 18));
+      stage2_data <= stage1_sqrt_high & std_logic_vector(stage1_abc(39-C_EXTRA_BITS downto 18));
     end if;
   end process stage2_proc;
 
