@@ -77,15 +77,11 @@ architecture rtl of pipeline_sqrt is
     variable g_v        : real;
     variable scaled_g_v : natural range 0 to SCALE_OUT-1;
     variable res_v      : bram_t := (others => (others => '0'));
-    variable i          : integer;
+    variable j          : integer;
   begin
-    i := SCALE_IN;
-    res_v(i) := (others => '1');
-    report "i="&to_string(i)&", inv_sqrt="&to_hstring(res_v(i));
-
-    for i in SCALE_IN + 1 to 4*SCALE_IN-1 loop
-      a_v := real(i) / real(SCALE_IN);  --   a  is in the range ]1, 4[
-      g_v := 2.0/sqrt(a_v) - 1.0;       -- g(a) is in the range ]0, 1[
+    for i in SCALE_IN to 4*SCALE_IN-1 loop
+      a_v := (real(i) + 0.5) / real(SCALE_IN);  --   a  is in the range ]1, 4[
+      g_v := 2.0/sqrt(a_v) - 1.0;               -- g(a) is in the range ]0, 1[
       scaled_g_v := integer(floor(g_v*real(SCALE_OUT)));
       res_v(i) := std_logic_vector(to_unsigned(scaled_g_v, 18));
 --      report "i="&to_string(i)&", inv_sqrt="&to_hstring(res_v(i));
@@ -99,6 +95,11 @@ architecture rtl of pipeline_sqrt is
   signal stage1_sqrt     : std_logic_vector(17 downto 0);
   signal stage1_inv_sqrt : std_logic_vector(17 downto 0);
   signal stage1_data_lsb : std_logic_vector(10 downto 0);
+  signal stage1_b        : signed(11 downto 0);
+  signal stage1_g        : signed(19 downto 0);
+  signal stage1_f        : signed(41 downto 0);
+  signal stage1_abc      : signed(41 downto 0);
+
   signal stage2_data     : std_logic_vector(21 downto 0);
 
 begin
@@ -113,21 +114,18 @@ begin
     end if;
   end process stage1_proc;
 
+  -- The DSP only works with signed numbers, so we need to prepend
+  -- a zero bit, to make sure all values are interpreted as positive.
+  stage1_f <= signed("01" & unsigned(stage1_sqrt) & "0000000000000000000000");
+  stage1_g <= signed("01" & unsigned(stage1_inv_sqrt));
+  stage1_b <= signed("0"  & unsigned(stage1_data_lsb));
+  -- Now we calculate: sqrt(a) + (2/sqrt(a))*b*(eps/4)
+  stage1_abc <= stage1_f + stage1_b * stage1_g;
+
   stage2_proc : process (clk_i)
-    variable b_v   : signed(11 downto 0);
-    variable g_v   : signed(19 downto 0);
-    variable f_v   : signed(32 downto 0);
-    variable abc_v : signed(32 downto 0);
   begin
     if rising_edge(clk_i) then
-      -- The DSP only works with signed numbers, so we need to prepend
-      -- a zero bit, to make sure all values are interpreted as positive.
-      f_v := signed("01" & unsigned(stage1_sqrt) & "0000000000000");
-      g_v := signed("01" & unsigned(stage1_inv_sqrt));
-      b_v := signed("0"  & unsigned(stage1_data_lsb));
-      -- Now we calculate: sqrt(a) + (2/sqrt(a))*b*(eps/4)
-      abc_v := f_v + b_v * g_v;
-      stage2_data <= std_logic_vector(abc_v(32 downto 11));
+      stage2_data <= std_logic_vector(stage1_abc(39 downto 18));
     end if;
   end process stage2_proc;
 

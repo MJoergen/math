@@ -1,6 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std_unsigned.all;
+use ieee.math_real.all;
 
 entity tb_pipeline_sqrt is
 end entity tb_pipeline_sqrt;
@@ -37,11 +38,16 @@ begin
   end process data_proc;
 
   validate_proc : process (clk)
+     variable y_v : real;
+     variable x_v : real;
   begin
      if rising_edge(clk) then
         data_in_d <= data_in;
         data_in_dd <= data_in_d;
-        report "data_in:" & to_hstring(data_in_dd) & ", data_out:" & to_hstring(data_out);
+        y_v := real(to_integer(data_in_dd)) / (2.0**20);
+        x_v := real(to_integer("1" & data_out)) / (2.0**22);
+        --report "data_in:" & to_hstring(data_in_dd) & ", data_out:" & to_hstring(data_out);
+        report "data_in:" & to_string(y_v,6) & ", data_out:" & to_string(x_v,6) & ", exp_out:" & to_string(sqrt(y_v),6);
      end if;
   end process validate_proc;
 
