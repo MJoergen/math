@@ -1,11 +1,12 @@
 # Pipelined Square Root calculation
 
-This calculates the square root of a number.
-Input: The range of values is [1, 4[, and the value
-       is encoded as fixed point 2.20.
+This calculates the square root of a number with 21 bits of accuracy.
+
+Input: The range of values is [1, 4[, and the value is encoded as fixed point 2.20.
        The integer part (upper two bits) must be nonzero.
-Output: The range of values is [1, 2[, and the
-        fractional part is encoded as fixed point 0.22 (the integer part is constant 1).
+
+Output: The range of values is [1, 2[, and the fractional part is encoded as fixed point
+        0.22 (the integer part is constant 1).
 
 ## FPGA Reources
 This implementation uses two BRAMs and one DSP, and a small amount of extra logic.
@@ -27,17 +28,32 @@ The second gives g(a) = (2/sqrt(a))-1 represented as fixed point 0.18
 
 3. The formula for calculating x = sqrt(y) is based on a Taylor
 expansion to first order in eps:
+
 In general we have f(a+b*eps) == f(a) + f'(a)*b*eps
 where "==" means approximately equal to.
+
 Here we use f(y) = sqrt(y), and we thus get
 sqrt(y) == sqrt(a) + (2/sqrt(a))*b*(eps/4)
 
+4. The above scheme only gives 18 bits of accuracy, and this limitation
+is mainly from the first lookup table for f(a). So, to improve accuracy, the
+function f(a) is calculated to 22 bits accuracy, and only the lower 18 bits are stored in
+BRAM. The upper 4 bits are calculated combinatorially. This is controlled by the generic
+G_EXTRA_BITS.
+
 # Test results
 
-It takes approx 3 minutes to run the entire simulation.
+To verify the implementation in simulation, there is a testbench that cycles through all
+2^22 values of the input, and compares with the expected output.
+
+It takes approx 3 minutes to run the entire simulation for each value of G_EXTRA_BITS.
+
+The shell script ghdl.sh runs the simulation five times for different values of
+G_EXTRA_BITS.
+
 The main results are:
 
-## C_EXTRA_BITS = 0:
+## G_EXTRA_BITS = 0:
 
 | data_in | data_out | exp_out |
 | ------- | -------- | ------- |
@@ -47,7 +63,7 @@ The main results are:
 |  1039E4 |  007350  |  007360 |
 |  10AA35 |  0150E2  |  0150F3 |
 
-Maximal error is 000011, i.e. approx 2^4, so the accuracy
+Maximal error is 0x000011, i.e. approx 2^4, so the accuracy
 is 22-4 = 18 bits.
 
 Analysis of the final row:
@@ -68,7 +84,7 @@ Synthesis report
 * REG  = 0
 
 
-## C_EXTRA_BITS = 1:
+## G_EXTRA_BITS = 1:
 
 | data_in | data_out | exp_out |
 | ------- | -------- | ------- |
@@ -78,7 +94,7 @@ Synthesis report
 |  1039E4 |  007358  |  007360 |
 |  1080DF |  00FFB6  |  00FFBF |
 
-Maximal error is 000009, i.e. approx 2^3, so the accuracy
+Maximal error is 0x000009, i.e. approx 2^3, so the accuracy
 is 22-3 = 19 bits.
 
 Analysis of the final row:
@@ -100,7 +116,7 @@ Synthesis report
 * DSP  = 1
 
 
-## C_EXTRA_BITS = 2:
+## G_EXTRA_BITS = 2:
 
 | data_in | data_out | exp_out |
 | ------- | -------- | ------- |
@@ -110,7 +126,7 @@ Synthesis report
 |  1039E4 |  00735C  |  007360 |
 |  1080DF |  00FFBA  |  00FFBF |
 
-Maximal error is 000005, i.e. approx 2^2, so the accuracy
+Maximal error is 0x000005, i.e. approx 2^2, so the accuracy
 is 22-2 = 20 bits.
 
 Analysis of the final row:
@@ -132,7 +148,7 @@ Synthesis report
 * DSP  = 1
 
 
-## C_EXTRA_BITS = 3:
+## G_EXTRA_BITS = 3:
 
 | data_in | data_out | exp_out |
 | ------- | -------- | ------- |
@@ -140,7 +156,7 @@ Synthesis report
 |  1039E4 |  00735E  |  007360 |
 |  105064 |  009FFD  |  00A000 |
 
-Maximal error is 000003, i.e. approx 2^1, so the accuracy
+Maximal error is 0x000003, i.e. approx 2^1, so the accuracy
 is 22-1 = 21 bits.
 
 Analysis of the final row:
@@ -162,14 +178,14 @@ Synthesis report
 * DSP  = 1
 
 
-## C_EXTRA_BITS = 4:
+## G_EXTRA_BITS = 4:
 
 | data_in | data_out | exp_out |
 | ------- | -------- | ------- |
 |  100401 |  000800  |  000801 |
 |  1039E4 |  00735E  |  007360 |
 
-Maximal error is 000002, i.e. approx 2^1, so the accuracy
+Maximal error is 0x000002, i.e. approx 2^1, so the accuracy
 is 22-1 = 21 bits.
 
 Analysis of the final row:
