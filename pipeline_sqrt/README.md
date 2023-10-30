@@ -17,23 +17,23 @@ real output number.
 The input number y is required to be in the range [1, 4[.
 
 1. First the input number y is decomposed into two parts:
-y = a + b*eps
+`y = a + b*eps`
 where a is in the range [1, 4[, b is in the range [0, 1[, and eps = 2^(-9).
 In this way, the value a can be
 represented in fixed point 2.9 and the number b in fixed point 0.11
 
 2. Second the number a is used as index into two lookup tables (BRAMs)
-The first gives f(a) = sqrt(a)-1 represented as fixed point 0.18
-The second gives g(a) = (2/sqrt(a))-1 represented as fixed point 0.18
+The first gives `f(a) = sqrt(a)-1` represented as fixed point 0.18
+The second gives `g(a) = (2/sqrt(a))-1` represented as fixed point 0.18
 
 3. The formula for calculating x = sqrt(y) is based on a Taylor
 expansion to first order in eps:
 
-In general we have f(a+b*eps) == f(a) + f'(a)*b*eps
+In general we have `f(a+b*eps) == f(a) + f'(a)*b*eps`
 where "==" means approximately equal to.
 
 Here we use f(y) = sqrt(y), and we thus get
-sqrt(y) == sqrt(a) + (2/sqrt(a))*b*(eps/4)
+`sqrt(y) == sqrt(a) + (2/sqrt(a))*b*(eps/4)`
 
 4. The above scheme only gives 18 bits of accuracy, and this limitation
 is mainly from the first lookup table for f(a). So, to improve accuracy, the
