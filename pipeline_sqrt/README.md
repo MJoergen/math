@@ -1,3 +1,37 @@
+# Pipelined Square Root calculation
+
+This calculates the square root of a number.
+Input: The range of values is [1, 4[, and the value
+       is encoded as fixed point 2.20.
+       The integer part (upper two bits) must be nonzero.
+Output: The range of values is [1, 2[, and the
+        fractional part is encoded as fixed point 0.22 (the integer part is constant 1).
+
+## FPGA Reources
+This implementation uses two BRAMs and one DSP, and a small amount of extra logic.
+
+## Theory of operation
+The calculation performed is x = sqrt(y), where y is the real input number and x is the
+real output number.
+The input number y is required to be in the range [1, 4[.
+
+1. First the input number y is decomposed into two parts:
+y = a + b*eps
+where a is in the range [1, 4[, b is in the range [0, 1[, and eps = 2^(-9).
+In this way, the value a can be
+represented in fixed point 2.9 and the number b in fixed point 0.11
+
+2. Second the number a is used as index into two lookup tables (BRAMs)
+The first gives f(a) = sqrt(a)-1 represented as fixed point 0.18
+The second gives g(a) = (2/sqrt(a))-1 represented as fixed point 0.18
+
+3. The formula for calculating x = sqrt(y) is based on a Taylor
+expansion to first order in eps:
+In general we have f(a+b*eps) == f(a) + f'(a)*b*eps
+where "==" means approximately equal to.
+Here we use f(y) = sqrt(y), and we thus get
+sqrt(y) == sqrt(a) + (2/sqrt(a))*b*(eps/4)
+
 # Test results
 
 It takes approx 3 minutes to run the entire simulation.
