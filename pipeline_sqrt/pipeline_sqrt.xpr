@@ -166,7 +166,7 @@
           <Desc>Vivado Synthesis Defaults</Desc>
         </StratHandle>
         <Step Id="synth_design">
-          <Option Id="MoreOptsStr"><![CDATA[-mode out_of_context]]></Option>
+          <Option Id="MoreOptsStr"><![CDATA[-mode out_of_context -generic {G_EXTRA_BITS=2}]]></Option>
         </Step>
       </Strategy>
       <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>

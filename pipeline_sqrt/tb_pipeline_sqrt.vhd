@@ -4,6 +4,9 @@ use ieee.numeric_std_unsigned.all;
 use ieee.math_real.all;
 
 entity tb_pipeline_sqrt is
+  generic (
+    G_EXTRA_BITS : natural
+  );
 end entity tb_pipeline_sqrt;
 
 architecture sim of tb_pipeline_sqrt is
@@ -22,6 +25,9 @@ begin
   clk <= test_running and not clk after 5 ns; -- 100 MHz
 
   pipeline_sqrt_inst : entity work.pipeline_sqrt
+    generic map (
+      G_EXTRA_BITS => G_EXTRA_BITS
+    )
     port map (
       clk_i  => clk,
       data_i => data_in,
