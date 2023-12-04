@@ -3,6 +3,7 @@ names += fjerde.tex
 names += pell.tex
 names += pendulum.tex
 names += tredje.tex
+names += euler.tex
 
 tex_pdfs   = $(names:.tex=.pdf)
 

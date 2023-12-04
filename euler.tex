@@ -1,0 +1,197 @@
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+%\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+%\usepackage{graphicx}
+\usepackage{amsfonts}
+\usepackage{amsthm}        % Theorems
+\usepackage{amsmath}
+\usepackage{tcolorbox}
+%\usepackage{hyperref}
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\Z}[1]{{\mathbb{Z}}\!\left[#1\right]}
+
+%\DeclareMathSymbol{,}{\mathord}{letters}{"3B}
+
+\title{Project Euler, problem 318}
+\date{December 2023}
+\author{Michael Jørgensen}
+
+\begin{document}
+
+\maketitle
+\section{Problem}
+
+Consider the real number $\sqrt 2 + \sqrt 3$.
+When we calculate the even powers of $\sqrt 2 + \sqrt 3$
+we get:
+\begin{itemize}
+    \item ${(\sqrt 2 + \sqrt 3)}^2 = 9.898979485566356 \cdots $
+    \item ${(\sqrt 2 + \sqrt 3)}^4 = 97.98979485566356 \cdots $
+    \item ${(\sqrt 2 + \sqrt 3)}^6 = 969.998969071069263 \cdots $
+    \item ${(\sqrt 2 + \sqrt 3)}^8 = 9601.99989585502907 \cdots $
+    \item ${(\sqrt 2 + \sqrt 3)}^{10} = 95049.999989479221 \cdots $
+    \item ${(\sqrt 2 + \sqrt 3)}^{12} = 940897.9999989371855 \cdots $
+    \item ${(\sqrt 2 + \sqrt 3)}^{14} = 9313929.99999989263 \cdots $
+    \item ${(\sqrt 2 + \sqrt 3)}^{16} = 92198401.99999998915 \cdots $
+\end{itemize}
+
+It looks as if the number of consecutive nines at the beginning of the fractional part of
+these powers is non-decreasing.  In fact it can be proven that the fractional part of
+${(\sqrt 2 + \sqrt 3)}^{2 n}$ approaches $1$ for large $n$.
+
+Consider all real numbers of the form $\sqrt p + \sqrt q$ with $p$ and $q$ positive
+integers and $p<q$, such that the fractional part of ${(\sqrt p + \sqrt q)}^{2n}$
+approaches $1$ for large $n$.
+
+Let $C(p,q,n)$ be the number of consecutive nines at the beginning of the fractional part
+of ${(\sqrt p + \sqrt q)}^{2n}$.
+
+Let $N(p,q)$ be the minimal value of $n$ such that $C(p,q,n) \ge 2011$.
+
+Find $\displaystyle \sum N(p,q) \,\, \text{ for } p+q \le 2011$.
+
+
+\section{Solution}
+
+We start by assuming given two positive integers $p$ and $q$, such that $p<q$. Then we
+construct the real number $x \equiv \sqrt{p} + \sqrt{q}$ and define $y$ to be the square of
+$x$:
+\[
+    y \equiv x^2 = {\left(\sqrt{p} + \sqrt{q}\right)}^2 = p+q + 2\sqrt{pq} = s + 2\cdot\sqrt{t}
+\]
+where we've introduced the positive integers $s \equiv p+q$ and $t \equiv pq$.  We are
+interested in even powers of $x$, i.e.\ in positive powers of $y$.
+
+\subsection{Explicit expression for $y^n$}
+The real number $y$ is an element of the ring $\Z{\sqrt{t}\,}$. Since the ring is closed
+under multiplication, it follows that all positive powers of $y$ is an element of
+$\Z{\sqrt{t}\,}$. We can therefore write $y^n$ in the following way:
+\[
+    y^n = A_n + B_n\cdot\sqrt{t}
+\]
+where $A_n$ and $B_n$ are integers.
+We have the following special values: $(A_0, B_0) = (1, 0)$ and $(A_1, B_1) = (s, 2)$.
+
+Furthermore, since the ring $\Z{\sqrt{t}\,}$ admits the automorphism $\sqrt{t} \rightarrow
+-\sqrt{t}$,
+we can introduce the conjugate value $\tilde y = s - 2\cdot\sqrt{t}$. Because the
+conjugation operator is an automorphism, we have that $\widetilde{y^n} = {\tilde y}^n$.
+Specifically, we have
+\[
+    {\tilde y}^n = A_n - B_n\cdot\sqrt{t}
+\]
+By adding these two relations we eliminate the $\sqrt{t}$:
+\[
+    2A_n = y^n + {\tilde y}^n
+\]
+Rewriting this in terms of $y^n$ gives:
+\[
+    y^n =  2A_n - {\tilde y}^n
+\]
+Writing this in terms of the original variable $x$ gives:
+\[
+    x^{2n} = 2A_n - {\tilde x}^{2n}
+\]
+In terms of the integers $p$ and $q$ we have:
+\[
+    \tilde y = p+q - 2\cdot\sqrt{pq}
+\]
+Since we have $\tilde y = {\left(\sqrt{q} - \sqrt{p}\right)}^2$ we can write
+\[
+    \tilde x = \sqrt{q} - \sqrt{p}
+\]
+Finally, we thus get:
+\[
+    {\left(\sqrt{p} + \sqrt{q}\right)}^{2n} = 2A_n - {\left(\sqrt{q} - \sqrt{p}\right)}^{2n}
+\]
+We now see that the righthand side is the difference between an integer and a power that
+hopefully converges to zero.  This will precisely be the case when
+$\left|\sqrt{q}-\sqrt{p}\right|<1$.
+
+
+\subsection{Recurrence relation for $A_n$}
+This subsection is not really necessary, and could rather be considered as an alternate
+solution.
+
+We can find a recurrence relation for the pair $(A_n, B_n)$ by writing $y^{n+1} = y^n
+\cdot y$:
+\[
+    A_{n+1} + B_{n+1}\cdot\sqrt{t} = \left(A_n + B_n\cdot\sqrt{t}\right) \cdot \left(s +
+    2\cdot\sqrt{t}\right)
+\]
+Expanding out we get
+\[
+    A_{n+1} + B_{n+1}\cdot\sqrt{t} = A_{n}s + 2A_n\sqrt{t} + B_{n}s\sqrt{t}+2B_{n}t
+\]
+Collecting like terms (because $A_n$ and $B_n$ are all integers, whereas $\sqrt{t}$ is not) we get
+\[
+    A_{n+1} = sA_{n} + 2tB_{n}
+\]
+and
+\[
+    B_{n+1} = 2A_{n}+sB_{n}
+\]
+In the first of these we can increase $n$:
+\[
+    A_{n+2} = sA_{n+1} + 2tB_{n+1}
+\]
+Inserting $B_{n+1}$ from above gives:
+\[
+    A_{n+2} = sA_{n+1} + 2t(2A_{n}+sB_{n})
+\]
+Finally, isolating $B_n$ from the first equation above gives
+\[
+    2tB_{n} = A_{n+1} - sA_{n}
+\]
+Combining everything we get
+\[
+    A_{n+2} = sA_{n+1} + 4tA_{n}+s(A_{n+1} - sA_{n})
+\]
+Simplifying gives
+\[
+    A_{n+2} = 2sA_{n+1} - (s^2-4t)A_{n}
+\]
+We have thus derived a second-order recurrence relation satisfied by $A_n$, and where the
+coefficients are integers. In terms of the original integers $p$ and $q$ we have
+\[
+    2s = 2p + 2q
+\]
+and
+\[
+    s^2-4t = {(p-q)}^2
+\]
+
+\subsection{Counting number of nines}
+We now consider $C(p,q,n)$, the number of consecutive nines at the beginning of the fractional part
+of ${\left(\sqrt{p} + \sqrt{q}\right)}^{2n}$.
+
+From before we have
+\[
+    {\left(\sqrt{p} + \sqrt{q}\right)}^{2n} = 2A_n - {\left(\sqrt{q} - \sqrt{p}\right)}^{2n}
+\]
+The number of nines is therefore equal to the number of zeros after the fractional part of
+${\left(\sqrt{q} - \sqrt{p}\right)}^{2n}$. This number of zeros can be conviniently
+expressed in terms of the base-ten logarithm. We therefore get:
+\[
+    C(p,q,n) = \lfloor-\log_{10}{\left(\sqrt{q} - \sqrt{p}\right)}^{2n}\rfloor
+\]
+which we can rewrite as
+\[
+    C(p,q,n) = \lfloor-2n\log_{10}{\left(\sqrt{q} - \sqrt{p}\right)}\rfloor
+\]
+
+Next we consider $N(p,q)$, the minimal value of $n$ such that $C(p,q,n) \ge N$, where $N=2011$.
+Since $C(p,q,n)$ is a non-decreasing function of $n$ we can write the solution as
+\[
+    N(p,q) = \left\lfloor-\frac{N}{2\log_{10}{\left(\sqrt{q} - \sqrt{p}\right)}}\right\rfloor
+\]
+
+\end{document}
+
