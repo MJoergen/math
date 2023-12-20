@@ -18,12 +18,22 @@ end entity fast_divide;
 
 architecture wattle_and_daub of fast_divide is
 
-   type state_t is (IDLE_ST, NORMALISE_ST, STEP_ST, PREOUTPUT_ST, OUTPUT_ST);
+   type state_t is (IDLE_ST, STEP_ST, OUTPUT_ST);
    signal state : state_t := IDLE_ST;
    signal steps_remaining : integer range 0 to 5 := 0;
 
    signal dd : unsigned(35 downto 0) := to_unsigned(0,36);
    signal nn : unsigned(67 downto 0) := to_unsigned(0,68);
+
+   pure function count_leading_zeros(arg : unsigned(31 downto 0)) return natural is
+   begin
+      for i in 0 to 31 loop
+         if arg(31-i) = '1' then
+            return i;
+         end if;
+      end loop;
+      return 0;
+   end function count_leading_zeros;
 
 begin
 
@@ -31,6 +41,9 @@ begin
       variable temp64 : unsigned( 73 downto 0) := to_unsigned(0,74);
       variable temp96 : unsigned(105 downto 0) := to_unsigned(0,106);
       variable f      : unsigned( 37 downto 0) := to_unsigned(0,38);
+      variable leading_zeros : natural range 0 to 31;
+      variable new_dd : unsigned( 35 downto 0);
+      variable new_nn : unsigned( 67 downto 0);
    begin
       if rising_edge(clk_i) then
          if G_DEBUG then
@@ -44,43 +57,6 @@ begin
                if dd = to_unsigned(0,36) then
                   q_o <= (others => '1');
                   busy_o <= '0';
-               end if;
-
-            when NORMALISE_ST =>
-               if dd(35)='1' then
-                  if G_DEBUG then
-                     report "Normalised to $" & to_hstring(nn(67 downto 36)) & "." & to_hstring(nn(35 downto 4)) & "." & to_hstring(nn(3 downto 0))
-                     & " / $" & to_hstring(dd(35 downto 4)) & "." & to_hstring(dd(3 downto 0));
-                  end if;
-                  state <= STEP_ST;
-               else
-                  -- Normalise in not more than 5 cycles
-                  if dd(35 downto 20)= to_unsigned(0,16) then
-                     dd(35 downto 20) <= dd(19 downto 4);
-                     dd(19 downto 0) <= (others => '0');
-                     nn(67 downto 20) <= nn(51 downto 4);
-                     nn(19 downto 0) <= (others => '0');
-                  elsif dd(35 downto 28)= to_unsigned(0,8) then
-                     dd(35 downto 12) <= dd(27 downto 4);
-                     dd(11 downto 0) <= (others => '0');
-                     nn(67 downto 12) <= nn(59 downto 4);
-                     nn(11 downto 0) <= (others => '0');
-                  elsif dd(35 downto 32) = to_unsigned(0,4) then
-                     dd(35 downto 8) <= dd(31 downto 4);
-                     dd(7 downto 0) <= (others => '0');
-                     nn(67 downto 8) <= nn(63 downto 4);
-                     nn(7 downto 0) <= (others => '0');
-                  elsif dd(35 downto 34) = to_unsigned(0,2) then
-                     dd(35 downto 6) <= dd(33 downto 4);
-                     dd(5 downto 0) <= (others => '0');
-                     nn(67 downto 6) <= nn(65 downto 4);
-                     nn(5 downto 0) <= (others => '0');
-                  elsif dd(35)='0' then
-                     dd(35 downto 5) <= dd(34 downto 4);
-                     dd(4 downto 0) <= (others => '0');
-                     nn(67 downto 5) <= nn(66 downto 4);
-                     nn(4 downto 0) <= (others => '0');
-                  end if;
                end if;
 
             when STEP_ST =>
@@ -114,21 +90,18 @@ begin
                if steps_remaining /= 0 and dd /= x"FFFFFFFFF" then
                   steps_remaining <= steps_remaining - 1;
                else
-                  state <= PREOUTPUT_ST;
+                  state <= OUTPUT_ST;
                end if;
 
-            when PREOUTPUT_ST =>
+            when OUTPUT_ST =>
                -- No idea why we need to add one, but we do to stop things like 4/2
                -- giving a result of 1.999999999
                temp64(67 downto  0) := nn;
                temp64(73 downto 68) := (others => '0');
-               temp64 := temp64 + 1;
+               temp64 := temp64 + 7;
                if G_DEBUG then
                   report "temp64=$" & to_hstring(temp64);
                end if;
-               state <= OUTPUT_ST;
-
-            when OUTPUT_ST =>
                busy_o <= '0';
                q_o <= temp64(67 downto 4);
                state <= IDLE_ST;
@@ -139,12 +112,21 @@ begin
             if G_DEBUG then
                report "Calculating $" & to_hstring(n_i) & " / $" & to_hstring(d_i);
             end if;
-            dd(35 downto 4) <= d_i;
-            dd( 3 downto 0) <= (others => '0');
-            nn(35 downto 4) <= n_i;
-            nn( 3 downto 0) <= (others => '0');
-            nn(67 downto 36) <= (others => '0');
-            state <= NORMALISE_ST;
+
+            leading_zeros := count_leading_zeros(d_i);
+            new_dd := (others => '0');
+            new_dd(35 downto 4+leading_zeros) := d_i(31-leading_zeros downto 0);
+            new_nn := (others => '0');
+            new_nn(35+leading_zeros downto 4+leading_zeros) := n_i;
+            if G_DEBUG then
+               report "Normalised to $" & to_hstring(new_nn(67 downto 36)) & "." &
+               to_hstring(new_nn(35 downto 4)) & "." & to_hstring(new_nn(3 downto 0))
+               & " / $" & to_hstring(new_dd(35 downto 4)) & "." & to_hstring(new_dd(3 downto 0));
+            end if;
+            dd <= new_dd;
+            nn <= new_nn;
+            state <= STEP_ST;
+
             steps_remaining <= 5;
             busy_o <= '1';
          elsif start_over_i = '1' then

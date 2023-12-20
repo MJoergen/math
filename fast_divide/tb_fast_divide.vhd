@@ -16,6 +16,9 @@ architecture simulation of tb_fast_divide is
    signal start_over : std_logic;
    signal busy       : std_logic;
 
+   signal low_count  : natural := 0;
+   signal high_count : natural := 0;
+
 begin
 
    clk <= running and not clk after 5 ns;
@@ -61,18 +64,36 @@ begin
          assert q(31 downto 0)  = exp_q_low
             report "Calculating " & to_string(arg_n) & "/" & to_string(arg_d) &
                ". Got 0x" & to_hstring(q(31 downto 0)) & ", expected 0x" & to_hstring(exp_q_low);
+
+         if q(31 downto 0) < exp_q_low then
+            low_count <= low_count + 1;
+         end if;
+         if q(31 downto 0) > exp_q_low then
+            high_count <= high_count + 1;
+         end if;
       end procedure verify_division;
 
+      variable start_time : time;
+      variable end_time   : time;
+
+      constant MAX_D : natural := 100;
+      constant MAX_N : natural := 100;
    begin
       wait for 100 ns;
       wait until rising_edge(clk);
+      start_time := now;
       report "Test started";
-      for di in 1 to 10 loop
-         for ni in 1 to 10 loop
+      for di in 1 to MAX_D loop
+         for ni in 1 to MAX_N loop
             verify_division(ni, di);
          end loop;
       end loop;
-      report "Test finished";
+      end_time := now;
+      report "Test finished, " &
+         to_string(real((end_time-start_time) / 10 ns) / real(MAX_D*MAX_N)) &
+         " clock cycles per division";
+      report "low_count=" & to_string(low_count);
+      report "high_count=" & to_string(high_count);
       wait until rising_edge(clk);
       running <= '0';
    end process;
