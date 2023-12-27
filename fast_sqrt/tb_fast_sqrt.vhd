@@ -43,25 +43,43 @@ begin
          end if;
       end function real2unsigned;
 
-      procedure verify_sqrt(arg_val : real) is
-         variable exp_res : unsigned(31 downto 0) := real2unsigned(sqrt(arg_val));
+      pure function unsigned2real(arg : unsigned(31 downto 0)) return real is
+      begin
+         if arg = X"80000000" then
+            return 0.5;
+         elsif arg(31) = '0' then
+            return real(to_integer(arg))/(2.0**32);
+         else
+            return 1.0-real(to_integer(0-arg))/(2.0**32);
+         end if;
+      end function unsigned2real;
+
+      procedure verify_sqrt(real_val : real) is
+         variable bit_val      : unsigned(31 downto 0);
+         variable exp_real_res : real;
+         variable exp_bit_res  : unsigned(31 downto 0);
       begin
 
-         val <= real2unsigned(arg_val);
+         bit_val      := real2unsigned(real_val);
+         exp_real_res := sqrt(unsigned2real(bit_val));
+         exp_bit_res  := real2unsigned(exp_real_res);
+
+         val <= bit_val;
          start <= '1';
          wait until rising_edge(clk);
          start <= '0';
          wait until rising_edge(clk);
          assert busy = '1';
          wait until busy = '0';
-         assert res = exp_res
-            report "Calculating sqrt(" & to_string(arg_val) & ")" &
-               ". Got 0x" & to_hstring(res) & ", expected 0x" & to_hstring(exp_res);
+         assert res = exp_bit_res
+            report "Calculating sqrt(" & to_string(real_val) & ") = " & to_string(exp_real_res) &
+               ", i.e. " & to_hstring(bit_val) & " -> " & to_hstring(exp_bit_res) &
+               ". Got 0x" & to_hstring(res);
 
-         if res < exp_res then
+         if res < exp_bit_res then
             low_count <= low_count + 1;
          end if;
-         if res > exp_res then
+         if res > exp_bit_res then
             high_count <= high_count + 1;
          end if;
       end procedure verify_sqrt;
@@ -69,7 +87,7 @@ begin
       variable start_time : time;
       variable end_time   : time;
 
-      constant MAX_VAL : natural := 10;
+      constant MAX_VAL : natural := 1000;
 
    begin
       wait for 100 ns;

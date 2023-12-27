@@ -28,13 +28,15 @@ architecture synthesis of fast_sqrt is
    type state_type is (IDLE_ST, CALC_ST);
    signal state : state_type := IDLE_ST;
 
-   signal val : unsigned(31 downto 0);
-   signal res : unsigned(31 downto 0);
+   signal val  : unsigned(65 downto 0);
+   signal res  : unsigned(65 downto 0);
+   signal mask : unsigned(65 downto 0);
 
 begin
 
    busy_o <= '0' when state = IDLE_ST else '1';
-   res_o  <= res;
+   res_o  <= res(32 downto 1) when res(0) = '0' else
+             (res(32 downto 1) + 1);
 
    fsm_proc : process (clk_i)
    begin
@@ -46,16 +48,28 @@ begin
                null;
 
             when CALC_ST =>
-               state <= IDLE_ST;
+               if val >= (res or mask) then
+                  val <= val - (res or mask);
+                  res <= ("0" & res(65 downto 1)) or mask;
+               else
+                  res <= ("0" & res(65 downto 1));
+               end if;
+               mask   <= "00" & mask(65 downto 2);
+
+               if mask(0) = '1' then
+                  state <= IDLE_ST;
+               end if;
          end case;
 
          if start_i = '1' then
             assert val_i(31) = '1'; -- Number must be normalized
 
-            val    <= val_i;
-            res    <= (others => '0');
-            res(0) <= '1';
-            state  <= CALC_ST;
+            val(65 downto 34) <= val_i;
+            val(33 downto  0) <= (others => '0');
+            res      <= (others => '0');
+            mask     <= (others => '0');
+            mask(64) <= '1';
+            state    <= CALC_ST;
          end if;
       end if;
    end process fsm_proc;
