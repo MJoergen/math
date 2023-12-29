@@ -2,9 +2,11 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
--- This module takes a normalized number val_i and returns the
--- square root as a normalized number res_o.
--- In this context normalized means MSB is '1' with a fixed point before the MSB.
+-- This module takes a floating point number (exp_i, mant_i) and returns the
+-- square root as a floating point number (exp_o, mant_o).
+--
+-- It takes a total of 34 clock cycles to perform the calculation.
+-- It calculates one extra bit in order to perform the correct rounding.
 --
 -- Input and output are given in C64 floating point format (5-byte).
 -- * exp is the exponent byte.
@@ -74,6 +76,7 @@ begin
                end if;
          end case;
 
+         -- start_i can be asserted at any time, even in the middle of a calculation.
          if start_i = '1' then
             error_o <= '0';   -- Clear any previous errors.
             if mant_i(31) = '1' then
