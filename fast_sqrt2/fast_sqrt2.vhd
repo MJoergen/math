@@ -55,8 +55,8 @@ architecture synthesis of fast_sqrt2 is
       mant : unsigned(31 downto 0);
    end record float_type;
 
-   constant C_ROM_SIZE : natural := 8;
-   constant C_GUARDS   : natural := 8;
+   constant C_ROM_SIZE : natural := 6;
+   constant C_GUARDS   : natural := 4;
 
    -- Input is interpreted as a real value between 0.25 and 1.0
    -- Output is 0.5/sqrt(input) and is interpreted as a real value
@@ -77,11 +77,6 @@ architecture synthesis of fast_sqrt2 is
       return res;
    end function inv_sqrt;
 
-   signal x : unsigned(31+C_GUARDS downto 0);
-   signal y : unsigned(31+C_GUARDS downto 0);
-   signal h : unsigned(31+C_GUARDS downto 0);
-   signal r : unsigned(31+C_GUARDS downto 0);
-
    type state_type is (IDLE_ST, INIT_ST, CALC_R_ST, CALC_XH_ST);
    signal state : state_type := IDLE_ST;
 
@@ -92,67 +87,58 @@ architecture synthesis of fast_sqrt2 is
    begin
       for i in 2**C_ROM_SIZE/4 to 2**C_ROM_SIZE-1 loop
          res(i) := inv_sqrt(to_unsigned(i, C_ROM_SIZE));
-         report "res(" & to_string(i) & ")=" & to_hstring(res(i));
       end loop;
       return res;
    end function init_inv_sqrt;
 
    constant C_INV_SQRT : rom_type := init_inv_sqrt;
+   constant C_ZERO     : unsigned(31+C_GUARDS downto 0) := (others =>'0');
+   constant C_HALF     : unsigned(31+C_GUARDS downto 0) := (31+C_GUARDS => '1', others =>'0');
 
-   signal mant     : unsigned(31+C_GUARDS downto 0);
-   signal dsp_r    : unsigned(31+C_GUARDS downto 0);
-   signal dsp_x    : unsigned(31+C_GUARDS downto 0);
-   signal dsp_h    : unsigned(31+C_GUARDS downto 0);
-   signal dsp_init : unsigned(31+C_GUARDS downto 0);
-
-   constant C_ZERO : unsigned(31+C_GUARDS downto 0) := (others =>'0');
-   constant C_HALF : unsigned(31+C_GUARDS downto 0) := (31+C_GUARDS => '1', others =>'0');
+   signal x         : unsigned(31+C_GUARDS downto 0);
+   signal h         : unsigned(31+C_GUARDS downto 0);
+   signal r         : unsigned(31+C_GUARDS downto 0);
+   signal dsp_0_a   : unsigned(31+C_GUARDS downto 0);
+   signal dsp_0_b   : unsigned(31+C_GUARDS downto 0);
+   signal dsp_0_c   : unsigned(31+C_GUARDS downto 0);
+   signal dsp_0_res : unsigned(31+C_GUARDS downto 0);
+   signal dsp_1_a   : unsigned(31+C_GUARDS downto 0);
+   signal dsp_1_b   : unsigned(31+C_GUARDS downto 0);
+   signal dsp_1_c   : unsigned(31+C_GUARDS downto 0);
+   signal dsp_1_res : unsigned(31+C_GUARDS downto 0);
 
 begin
 
-   dsp_init_inst : entity work.dsp
+   dsp_0_inst : entity work.dsp
       generic map (
          G_SIZE => 32+C_GUARDS
       )
       port map (
-         a_i   => mant,
-         b_i   => y,
-         c_i   => C_ZERO,
-         res_o => dsp_init
+         a_i   => dsp_0_a,
+         b_i   => dsp_0_b,
+         c_i   => dsp_0_c,
+         res_o => dsp_0_res
       );
 
-   dsp_r_inst : entity work.dsp
+   dsp_1_inst : entity work.dsp
       generic map (
          G_SIZE => 32+C_GUARDS
       )
       port map (
-         a_i   => x,
-         b_i   => h,
-         c_i   => C_HALF,
-         res_o => dsp_r
+         a_i   => dsp_1_a,
+         b_i   => dsp_1_b,
+         c_i   => dsp_1_c,
+         res_o => dsp_1_res
       );
 
-   dsp_x_inst : entity work.dsp
-      generic map (
-         G_SIZE => 32+C_GUARDS
-      )
-      port map (
-         a_i   => x,
-         b_i   => r,
-         c_i   => x,
-         res_o => dsp_x
-      );
+   dsp_0_a <= x;
+   dsp_0_b <= r when state = CALC_XH_ST else h;
+   dsp_0_c <= x when state = CALC_XH_ST else C_HALF;
 
-   dsp_h_inst : entity work.dsp
-      generic map (
-         G_SIZE => 32+C_GUARDS
-      )
-      port map (
-         a_i   => h,
-         b_i   => r,
-         c_i   => h,
-         res_o => dsp_h
-      );
+   dsp_1_a <= h;
+   dsp_1_b <= r;
+   dsp_1_c <= h when state = CALC_XH_ST else C_ZERO;
+
 
    sqrt_proc : process (clk_i)
    begin
@@ -162,23 +148,22 @@ begin
                null;
 
             when INIT_ST =>
-               x <= dsp_init(30+C_GUARDS downto 0) & "0";
-               h <= y;
+               x <= dsp_1_res(30+C_GUARDS downto 0) & "0";
                state <= CALC_R_ST;
 
             when CALC_R_ST =>
-               r <= 0-dsp_r;
+               r <= 0-dsp_0_res;
                state <= CALC_XH_ST;
 
             when CALC_XH_ST =>
-               x <= dsp_x;
-               h <= dsp_h;
+               x <= dsp_0_res;
+               h <= dsp_1_res;
                state <= CALC_R_ST;
                if r(31+C_GUARDS downto (32+C_GUARDS)/2) = 0 then
-                  if dsp_x(C_GUARDS-1) = '0' then
-                     mant_o <= unsigned(dsp_x(31+C_GUARDS downto C_GUARDS));
+                  if dsp_0_res(C_GUARDS-1) = '0' then
+                     mant_o <= unsigned(dsp_0_res(31+C_GUARDS downto C_GUARDS));
                   else
-                     mant_o <= unsigned(dsp_x(31+C_GUARDS downto C_GUARDS)) + 1;
+                     mant_o <= unsigned(dsp_0_res(31+C_GUARDS downto C_GUARDS)) + 1;
                   end if;
                   if exp_i(0) = '0' then
                      exp_o <= ("0" & exp_i(7 downto 1)) + X"40";
@@ -196,15 +181,15 @@ begin
             if mant_i(31) = '1' then
                error_o <= '1';
             else
-               y <= (others => '0');
+               h <= (others => '0');
                if exp_i(0) = '0' then
-                  mant <= (others => '0');
-                  mant(31+C_GUARDS downto C_GUARDS) <= mant_i or X"80000000";
-                  y(31+C_GUARDS downto 32+C_GUARDS-C_ROM_SIZE) <= C_INV_SQRT(to_integer("1" & mant_i(30 downto 32-C_ROM_SIZE)));
+                  r <= (others => '0');
+                  r(31+C_GUARDS downto C_GUARDS) <= mant_i or X"80000000";
+                  h(31+C_GUARDS downto 32+C_GUARDS-C_ROM_SIZE) <= C_INV_SQRT(to_integer("1" & mant_i(30 downto 32-C_ROM_SIZE)));
                else
-                  mant <= (others => '0');
-                  mant(30+C_GUARDS downto C_GUARDS-1) <= mant_i or X"80000000";
-                  y(31+C_GUARDS downto 32+C_GUARDS-C_ROM_SIZE) <= C_INV_SQRT(to_integer("01" & mant_i(30 downto 33-C_ROM_SIZE)));
+                  r <= (others => '0');
+                  r(30+C_GUARDS downto C_GUARDS-1) <= mant_i or X"80000000";
+                  h(31+C_GUARDS downto 32+C_GUARDS-C_ROM_SIZE) <= C_INV_SQRT(to_integer("01" & mant_i(30 downto 33-C_ROM_SIZE)));
                end if;
                if exp_i = X"00" then
                   exp_o <= X"00";
