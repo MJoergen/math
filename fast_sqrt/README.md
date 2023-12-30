@@ -8,7 +8,7 @@ thus 157 ns.
 
 The resource usage is:
 
-* LUT   : 292
-* FF    : 167
-* Slice :  98
+* LUT   : 283
+* FF    : 208
+* Slice : 103
 

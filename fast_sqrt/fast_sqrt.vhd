@@ -26,7 +26,7 @@ entity fast_sqrt is
    port (
       clk_i   : in  std_logic;
       start_i : in  std_logic;                -- Assert to restart calculation.
-      ready_o : out std_logic;                -- Asserted when output is ready.
+      ready_o : out std_logic := '1';         -- Asserted when output is ready.
       error_o : out std_logic := '0';         -- Asserted when input is negative.
       exp_i   : in  unsigned( 7 downto 0);    -- Exponent
       mant_i  : in  unsigned(31 downto 0);    -- Mantissa
@@ -46,14 +46,8 @@ architecture synthesis of fast_sqrt is
 
 begin
 
-   ready_o <= '1' when state = IDLE_ST else '0';
-   mant_o(30 downto 0)  <= mant(31 downto 1) when mant(0) = '0' else
-             (mant(31 downto 1) + 1);
-   mant_o(31) <= '0';
-   exp_o <= ("0" & exp_i(7 downto 1)) + X"40" when exp_i(0) = '0' else
-            ("0" & exp_i(7 downto 1)) + X"41";
-
    fsm_proc : process (clk_i)
+      variable new_mant : unsigned(65 downto 0);
    begin
       if rising_edge(clk_i) then
 
@@ -65,14 +59,27 @@ begin
             when CALC_ST =>
                if val >= (mant or mask) then
                   val <= val - (mant or mask);
-                  mant <= ("0" & mant(65 downto 1)) or mask;
+                  new_mant := ("0" & mant(65 downto 1)) or mask;
                else
-                  mant <= ("0" & mant(65 downto 1));
+                  new_mant := ("0" & mant(65 downto 1));
                end if;
-               mask   <= "00" & mask(65 downto 2);
+               mask <= "00" & mask(65 downto 2);
+               mant <= new_mant;
 
                if mask(0) = '1' then
-                  state <= IDLE_ST;
+                  if new_mant(0) = '0' then
+                     mant_o(30 downto 0)  <= new_mant(31 downto 1);
+                  else
+                     mant_o(30 downto 0)  <= new_mant(31 downto 1) + 1;
+                  end if;
+                  mant_o(31) <= '0';
+                  if exp_i(0) = '0' then
+                     exp_o <= ("0" & exp_i(7 downto 1)) + X"40";
+                  else
+                     exp_o <= ("0" & exp_i(7 downto 1)) + X"41";
+                  end if;
+                  ready_o <= '1';
+                  state   <= IDLE_ST;
                end if;
          end case;
 
@@ -93,7 +100,12 @@ begin
                mant     <= (others => '0');
                mask     <= (others => '0');
                mask(64) <= '1';
-               state    <= CALC_ST;
+               if exp_i /= X"00" then
+                  ready_o <= '0';
+                  state   <= CALC_ST;
+               else
+                  exp_o <= X"00";
+               end if;
             end if;
          end if;
       end if;

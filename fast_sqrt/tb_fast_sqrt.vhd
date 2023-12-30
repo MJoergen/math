@@ -115,7 +115,11 @@ begin
          wait until rising_edge(clk);
          start <= '0';
          wait until rising_edge(clk);
-         if real_val >= 0.0 then
+         if real_val = 0.0 then
+            assert ready = '1';
+            assert err = '0';
+            assert float_out.exp = X"00";
+         elsif real_val >= 0.0 then
             exp_real_res  := sqrt(float2real(float_val));
             exp_float_res := real2float(exp_real_res);
             assert ready = '0';
@@ -142,6 +146,7 @@ begin
       wait until rising_edge(clk);
       start_time := now;
       report "Test started";
+      verify_sqrt(0.0);
       verify_sqrt(1.0);
       verify_sqrt(2.0);
       verify_sqrt(3.0);
