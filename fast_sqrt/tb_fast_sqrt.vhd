@@ -123,7 +123,9 @@ begin
             exp_real_res  := sqrt(float2real(float_val));
             exp_float_res := real2float(exp_real_res);
             assert ready = '0';
-            wait until ready = '1';
+            while ready = '0' loop
+               wait until rising_edge(clk);
+            end loop;
             assert err = '0';
             assert float_out = exp_float_res
                report "Calculating sqrt(" & to_string(real_val) & ") = " & to_string(exp_real_res) &

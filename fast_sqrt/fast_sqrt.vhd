@@ -40,14 +40,18 @@ architecture synthesis of fast_sqrt is
    type state_type is (IDLE_ST, CALC_ST);
    signal state : state_type := IDLE_ST;
 
-   signal val  : unsigned(65 downto 0);
-   signal mant : unsigned(65 downto 0);
-   signal mask : unsigned(65 downto 0);
+   signal val  : unsigned(33 downto 0);
+   signal mant : unsigned(33 downto 0);
+   signal mask : unsigned(33 downto 0);
 
 begin
 
+   mant_o(30 downto 0) <= mant(31 downto 1) when mant(0) = '0' else
+                          mant(31 downto 1) + 1;
+   mant_o(31) <= '0';
+
    fsm_proc : process (clk_i)
-      variable new_mant : unsigned(65 downto 0);
+      variable tmp      : unsigned(33 downto 0);
    begin
       if rising_edge(clk_i) then
 
@@ -57,22 +61,16 @@ begin
                null;
 
             when CALC_ST =>
-               if val >= (mant or mask) then
-                  val <= val - (mant or mask);
-                  new_mant := ("0" & mant(65 downto 1)) or mask;
+               if val >= (mant or ("0" & mask(33 downto 1))) then
+                  val(33 downto 1) <= val(32 downto 0) - (mant(32 downto 0) or mask(33 downto 1));
+                  val(0) <= '0';
+                  mant <= mant or mask;
                else
-                  new_mant := ("0" & mant(65 downto 1));
+                  val <= val(32 downto 0) & "0";
                end if;
-               mask <= "00" & mask(65 downto 2);
-               mant <= new_mant;
+               mask <= "0" & mask(33 downto 1);
 
                if mask(0) = '1' then
-                  if new_mant(0) = '0' then
-                     mant_o(30 downto 0)  <= new_mant(31 downto 1);
-                  else
-                     mant_o(30 downto 0)  <= new_mant(31 downto 1) + 1;
-                  end if;
-                  mant_o(31) <= '0';
                   if exp_i(0) = '0' then
                      exp_o <= ("0" & exp_i(7 downto 1)) + X"40";
                   else
@@ -90,16 +88,15 @@ begin
                error_o <= '1';   -- Error if number is negative.
             else
                if exp_i(0) = '0' then
-                  val(65 downto 34) <= mant_i or X"80000000";
-                  val(33 downto  0) <= (others => '0');
+                  val <= (others => '0');
+                  val(32 downto  1) <= mant_i or X"80000000";
                else
-                  val(65)           <= '0';
-                  val(64 downto 33) <= mant_i or X"80000000";
-                  val(32 downto  0) <= (others => '0');
+                  val <= (others => '0');
+                  val(31 downto  0) <= mant_i or X"80000000";
                end if;
                mant     <= (others => '0');
                mask     <= (others => '0');
-               mask(64) <= '1';
+               mask(32) <= '1';
                if exp_i /= X"00" then
                   ready_o <= '0';
                   state   <= CALC_ST;
