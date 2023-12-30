@@ -39,12 +39,8 @@ entity fast_sqrt2 is
    port (
       clk_i   : in  std_logic;
       start_i : in  std_logic;                -- Assert to restart calculation.
-      ready_o : out std_logic;                -- Asserted when output is ready.
+      ready_o : out std_logic := '1';         -- Asserted when output is ready.
       error_o : out std_logic := '0';         -- Asserted when input is negative.
-      x_o     : out unsigned(31 downto 0);
-      y_o     : out unsigned(31 downto 0);
-      r_o     : out unsigned(31 downto 0);
-      h_o     : out unsigned(31 downto 0);
       exp_i   : in  unsigned( 7 downto 0);    -- Exponent
       mant_i  : in  unsigned(31 downto 0);    -- Mantissa
       exp_o   : out unsigned( 7 downto 0);    -- Exponent
@@ -59,7 +55,8 @@ architecture synthesis of fast_sqrt2 is
       mant : unsigned(31 downto 0);
    end record float_type;
 
-   constant C_ROM_SIZE : natural := 6;
+   constant C_ROM_SIZE : natural := 8;
+   constant C_GUARDS   : natural := 8;
 
    -- Input is interpreted as a real value between 0.25 and 1.0
    -- Output is 0.5/sqrt(input) and is interpreted as a real value
@@ -70,7 +67,7 @@ architecture synthesis of fast_sqrt2 is
       variable res      : unsigned(C_ROM_SIZE-1 downto 0);
    begin
       assert arg(C_ROM_SIZE-1 downto C_ROM_SIZE-2) /= "00";
-      arg_real := real(to_integer(arg))/(2.0 ** C_ROM_SIZE);
+      arg_real := real(to_integer(arg)+1)/(2.0 ** C_ROM_SIZE);
       res_real := 0.5/sqrt(arg_real);
       if res_real = 1.0 then
          res := (others => '1');
@@ -80,11 +77,10 @@ architecture synthesis of fast_sqrt2 is
       return res;
    end function inv_sqrt;
 
-
-   signal x : unsigned(31 downto 0);
-   signal y : unsigned(31 downto 0);
-   signal h : unsigned(31 downto 0);
-   signal r : unsigned(31 downto 0);
+   signal x : unsigned(31+C_GUARDS downto 0);
+   signal y : unsigned(31+C_GUARDS downto 0);
+   signal h : unsigned(31+C_GUARDS downto 0);
+   signal r : unsigned(31+C_GUARDS downto 0);
 
    type state_type is (IDLE_ST, INIT_ST, CALC_R_ST, CALC_XH_ST);
    signal state : state_type := IDLE_ST;
@@ -103,44 +99,42 @@ architecture synthesis of fast_sqrt2 is
 
    constant C_INV_SQRT : rom_type := init_inv_sqrt;
 
-   signal mant     : unsigned(31 downto 0);
-   signal dsp_r    : unsigned(31 downto 0);
-   signal dsp_x    : unsigned(31 downto 0);
-   signal dsp_h    : unsigned(31 downto 0);
-   signal dsp_init : unsigned(31 downto 0);
+   signal mant     : unsigned(31+C_GUARDS downto 0);
+   signal dsp_r    : unsigned(31+C_GUARDS downto 0);
+   signal dsp_x    : unsigned(31+C_GUARDS downto 0);
+   signal dsp_h    : unsigned(31+C_GUARDS downto 0);
+   signal dsp_init : unsigned(31+C_GUARDS downto 0);
+
+   constant C_ZERO : unsigned(31+C_GUARDS downto 0) := (others =>'0');
+   constant C_HALF : unsigned(31+C_GUARDS downto 0) := (31+C_GUARDS => '1', others =>'0');
 
 begin
 
-   x_o <= x;
-   y_o <= y;
-   h_o <= h;
-   r_o <= r;
-
    dsp_init_inst : entity work.dsp
       generic map (
-         G_SIZE => 32
+         G_SIZE => 32+C_GUARDS
       )
       port map (
          a_i   => mant,
          b_i   => y,
-         c_i   => X"00000000",
+         c_i   => C_ZERO,
          res_o => dsp_init
       );
 
    dsp_r_inst : entity work.dsp
       generic map (
-         G_SIZE => 32
+         G_SIZE => 32+C_GUARDS
       )
       port map (
          a_i   => x,
          b_i   => h,
-         c_i   => X"80000000",
+         c_i   => C_HALF,
          res_o => dsp_r
       );
 
    dsp_x_inst : entity work.dsp
       generic map (
-         G_SIZE => 32
+         G_SIZE => 32+C_GUARDS
       )
       port map (
          a_i   => x,
@@ -151,7 +145,7 @@ begin
 
    dsp_h_inst : entity work.dsp
       generic map (
-         G_SIZE => 32
+         G_SIZE => 32+C_GUARDS
       )
       port map (
          a_i   => h,
@@ -159,11 +153,6 @@ begin
          c_i   => h,
          res_o => dsp_h
       );
-
-   ready_o <= '1' when state = IDLE_ST else '0';
-
-   exp_o <= ("0" & exp_i(7 downto 1)) + X"40" when exp_i(0) = '0' else
-            ("0" & exp_i(7 downto 1)) + X"41";
 
    sqrt_proc : process (clk_i)
    begin
@@ -173,7 +162,7 @@ begin
                null;
 
             when INIT_ST =>
-               x <= dsp_init(30 downto 0) & "0";
+               x <= dsp_init(30+C_GUARDS downto 0) & "0";
                h <= y;
                state <= CALC_R_ST;
 
@@ -185,8 +174,18 @@ begin
                x <= dsp_x;
                h <= dsp_h;
                state <= CALC_R_ST;
-               if r(31 downto 16) = 0 then
-                  mant_o <= unsigned(dsp_x);
+               if r(31+C_GUARDS downto (32+C_GUARDS)/2) = 0 then
+                  if dsp_x(C_GUARDS-1) = '0' then
+                     mant_o <= unsigned(dsp_x(31+C_GUARDS downto C_GUARDS));
+                  else
+                     mant_o <= unsigned(dsp_x(31+C_GUARDS downto C_GUARDS)) + 1;
+                  end if;
+                  if exp_i(0) = '0' then
+                     exp_o <= ("0" & exp_i(7 downto 1)) + X"40";
+                  else
+                     exp_o <= ("0" & exp_i(7 downto 1)) + X"41";
+                  end if;
+                  ready_o <= '1';
                   mant_o(31) <= '0';
                   state  <= IDLE_ST;
                end if;
@@ -199,13 +198,20 @@ begin
             else
                y <= (others => '0');
                if exp_i(0) = '0' then
-                  mant <= mant_i or X"80000000";
-                  y(31 downto 32-C_ROM_SIZE) <= C_INV_SQRT(to_integer("1" & mant_i(30 downto 32-C_ROM_SIZE)));
+                  mant <= (others => '0');
+                  mant(31+C_GUARDS downto C_GUARDS) <= mant_i or X"80000000";
+                  y(31+C_GUARDS downto 32+C_GUARDS-C_ROM_SIZE) <= C_INV_SQRT(to_integer("1" & mant_i(30 downto 32-C_ROM_SIZE)));
                else
-                  mant <= ("0" & mant_i(31 downto 1)) or X"40000000";
-                  y(31 downto 32-C_ROM_SIZE) <= C_INV_SQRT(to_integer("01" & mant_i(30 downto 33-C_ROM_SIZE)));
+                  mant <= (others => '0');
+                  mant(30+C_GUARDS downto C_GUARDS-1) <= mant_i or X"80000000";
+                  y(31+C_GUARDS downto 32+C_GUARDS-C_ROM_SIZE) <= C_INV_SQRT(to_integer("01" & mant_i(30 downto 33-C_ROM_SIZE)));
                end if;
-               state <= INIT_ST;
+               if exp_i = X"00" then
+                  exp_o <= X"00";
+               else
+                  state <= INIT_ST;
+                  ready_o <= '0';
+               end if;
             end if;
          end if;
       end if;

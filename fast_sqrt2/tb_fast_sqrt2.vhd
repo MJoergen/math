@@ -22,6 +22,9 @@ architecture simulation of tb_fast_sqrt2 is
    signal float_out  : float_type;
    signal count      : natural := 0;
 
+   signal low_count  : natural := 0;
+   signal high_count : natural := 0;
+
 begin
 
    clk <= running and not clk after 5 ns;
@@ -115,7 +118,11 @@ begin
          wait until rising_edge(clk);
          start <= '0';
          wait until rising_edge(clk);
-         if real_val >= 0.0 then
+         if real_val = 0.0 then
+            assert ready = '1';
+            assert err = '0';
+            assert float_out.exp = X"00";
+         elsif real_val >= 0.0 then
             exp_real_res  := sqrt(float2real(float_val));
             exp_float_res := real2float(exp_real_res);
             assert ready = '0';
@@ -125,6 +132,12 @@ begin
                report "Calculating sqrt(" & to_string(real_val) & ") = " & to_string(exp_real_res) &
                   ", i.e. " & to_hstring(float_val) & " -> " & to_hstring(exp_float_res) &
                   ". Got 0x" & to_hstring(float_out);
+            if float2real(float_out) < float2real(exp_float_res) then
+               low_count <= low_count + 1;
+            end if;
+            if float2real(float_out) > float2real(exp_float_res) then
+               high_count <= high_count + 1;
+            end if;
          else
             assert ready = '1';
             assert err = '1';
@@ -134,7 +147,7 @@ begin
       variable start_time : time;
       variable end_time   : time;
 
-      constant MAX_VAL : natural := 1;
+      constant MAX_VAL : natural := 1000;
       variable arg : real;
 
    begin
@@ -142,8 +155,9 @@ begin
       wait until rising_edge(clk);
       start_time := now;
       report "Test started";
---      verify_sqrt(1.0);
---      verify_sqrt(2.0);
+      verify_sqrt(0.0);
+      verify_sqrt(1.0);
+      verify_sqrt(2.0);
       verify_sqrt(3.0);
       verify_sqrt(4.0);
       verify_sqrt(0.5);
@@ -156,6 +170,8 @@ begin
       report "Test finished, " &
          to_string(real((end_time-start_time) / 10 ns) / real(count)) &
          " clock cycles per calculation";
+      report "low_count=" & to_string(low_count);
+      report "high_count=" & to_string(high_count);
       wait until rising_edge(clk);
       running <= '0';
    end process test_proc;
