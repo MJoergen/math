@@ -127,7 +127,7 @@ begin
                ", i.e. " & to_hstring(float_arg) & " -> " & to_hstring(exp_cos) &
                ". Got 0x" & to_hstring(float_out_cos);
 
-         assert float_out_sin = exp_sin;
+         assert float_out_sin = exp_sin
             report "Calculating sin(" & to_string(real_arg) & ") = " & to_string(sin(real_arg)) &
                ", i.e. " & to_hstring(float_arg) & " -> " & to_hstring(exp_sin) &
                ". Got 0x" & to_hstring(float_out_sin);

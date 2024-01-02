@@ -20,8 +20,8 @@ use ieee.math_real.all;
 --  -1.0 | 0x81 | 0x80000000
 -- See also: https://www.c64-wiki.com/wiki/Floating_point_arithmetic
 --
--- The alforithm is described here: https://www.allaboutcircuits.com/technical-articles/an-introduction-to-the-cordic-algorithm/
-
+-- The algorithm is described here:
+-- https://www.allaboutcircuits.com/technical-articles/an-introduction-to-the-cordic-algorithm/
 
 entity fast_sincos is
    port (
@@ -49,7 +49,7 @@ architecture synthesis of fast_sincos is
    constant C_INIT_X : signed(33 downto 0) := "01" & X"00000000"; -- Real value 1.0
    constant C_INIT_Y : signed(33 downto 0) := "00" & X"00000000"; -- Real value 0.0
 
-   constant C_ANGLE_NUM : natural := 4;
+   constant C_ANGLE_NUM : natural := 3;
 
    type rom_type is array (0 to C_ANGLE_NUM-1) of signed(33 downto 0);
 
@@ -65,7 +65,7 @@ architecture synthesis of fast_sincos is
       for i in 0 to C_ANGLE_NUM-1 loop
          angle_v  := 0.5*arctan(1.0 / (2.0**i))/arctan(1.0); -- In units of pi/2
          res_v(i) := real2signed(angle_v);
---         report "res(" & to_string(i) & ") = " & to_hstring(res_v(i));
+         report "C_ANGLES(" & to_string(i) & ") = " & to_hstring(res_v(i));
       end loop;
       return res_v;
    end function calc_angles;
@@ -75,10 +75,10 @@ architecture synthesis of fast_sincos is
       variable angle_v : real;
    begin
       for i in 0 to C_ANGLE_NUM-1 loop
-         angle_v := 0.5*arctan(1.0 / (2.0**i))/arctan(1.0); -- In units of pi/2
-         res_v := res_v * cos(angle_v);
+         res_v := res_v * sqrt(1.0 + 1.0 / (4.0**i));
       end loop;
-      return real2signed(res_v);
+      report "scaling = " & to_string(res_v);
+      return real2signed(res_v/2.0);
    end function calc_scaling;
 
    constant C_ANGLES : rom_type := calc_angles;
@@ -138,12 +138,14 @@ begin
             y       <= C_INIT_Y;
             if arg_exp_i < X"80" then
                angle <= (others => '0');
+               angle(32) <= '1';
                if arg_exp_i > X"60" then
                   angle(to_integer(arg_exp_i - X"61") downto 0) <=
                      signed(arg_mant_i(31 downto to_integer(X"80" - arg_exp_i)));
                end if;
             else
                angle <= (others => '0');
+               angle(32) <= '1';
                if arg_exp_i < X"A0" then
                   angle(31 downto to_integer(X"A0" - arg_exp_i)) <=
                      signed(arg_mant_i(to_integer(arg_exp_i - X"81") downto 0));
