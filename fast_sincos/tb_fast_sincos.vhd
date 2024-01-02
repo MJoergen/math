@@ -13,13 +13,14 @@ architecture simulation of tb_fast_sincos is
       mant : unsigned(31 downto 0);
    end record float_type;
 
-   signal running    : std_logic := '1';
-   signal clk        : std_logic := '1';
-   signal start      : std_logic;
-   signal ready      : std_logic;
-   signal float_in   : float_type;
-   signal float_out  : float_type;
-   signal count      : natural := 0;
+   signal running       : std_logic := '1';
+   signal clk           : std_logic := '1';
+   signal start         : std_logic;
+   signal ready         : std_logic;
+   signal float_in      : float_type;
+   signal float_out_cos : float_type;
+   signal float_out_sin : float_type;
+   signal count         : natural := 0;
 
 begin
 
@@ -27,13 +28,15 @@ begin
 
    fast_sincos_inst : entity work.fast_sincos
       port map (
-         clk_i   => clk,
-         start_i => start,
-         ready_o => ready,
-         exp_i   => float_in.exp,
-         mant_i  => float_in.mant,
-         exp_o   => float_out.exp,
-         mant_o  => float_out.mant
+         clk_i      => clk,
+         start_i    => start,
+         ready_o    => ready,
+         arg_exp_i  => float_in.exp,
+         arg_mant_i => float_in.mant,
+         cos_exp_o  => float_out_cos.exp,
+         cos_mant_o => float_out_cos.mant,
+         sin_exp_o  => float_out_sin.exp,
+         sin_mant_o => float_out_sin.mant
       ); -- fast_sqrt_inst
 
    test_proc : process
@@ -99,31 +102,62 @@ begin
       end function float2real;
 
       procedure verify_sincos(real_val : real) is
+         variable float_arg : float_type;
+         variable real_arg : real;
+         variable exp_cos  : float_type;
+         variable exp_sin  : float_type;
       begin
+         count <= count + 1;
+         float_arg := real2float(real_val);
+         real_arg  := float2real(float_arg);
+         exp_cos   := real2float(cos(real_arg));
+         exp_sin   := real2float(sin(real_arg));
+
+         float_in <= float_arg;
+         start    <= '1';
+         wait until rising_edge(clk);
+         start    <= '0';
+         wait until rising_edge(clk);
+         while ready = '0' loop
+            wait until rising_edge(clk);
+         end loop;
+
+         assert float_out_cos = exp_cos
+            report "Calculating cos(" & to_string(real_arg) & ") = " & to_string(cos(real_arg)) &
+               ", i.e. " & to_hstring(float_arg) & " -> " & to_hstring(exp_cos) &
+               ". Got 0x" & to_hstring(float_out_cos);
+
+         assert float_out_sin = exp_sin;
+            report "Calculating sin(" & to_string(real_arg) & ") = " & to_string(sin(real_arg)) &
+               ", i.e. " & to_hstring(float_arg) & " -> " & to_hstring(exp_sin) &
+               ". Got 0x" & to_hstring(float_out_sin);
+
       end procedure verify_sincos;
 
       variable start_time : time;
       variable end_time   : time;
 
-      constant MAX_VAL : natural := 1000;
+      constant MAX_VAL : natural := 1;
       variable arg : real;
 
    begin
+      start <= '0';
       wait for 100 ns;
       wait until rising_edge(clk);
       start_time := now;
       report "Test started";
-      verify_sincos(0.0);
-      verify_sincos(1.0);
-      verify_sincos(2.0);
-      verify_sincos(3.0);
-      verify_sincos(4.0);
-      verify_sincos(0.5);
-      verify_sincos(-1.0);
-      for vali in MAX_VAL/16 to 16*MAX_VAL-1 loop
-         arg := real(vali)/(2.0*real(MAX_VAL));
-         verify_sincos(arg);
-      end loop;
+      verify_sincos(0.25);
+--      verify_sincos(0.0);
+--      verify_sincos(1.0);
+--      verify_sincos(2.0);
+--      verify_sincos(3.0);
+--      verify_sincos(4.0);
+--      verify_sincos(0.5);
+--      verify_sincos(-1.0);
+--      for vali in MAX_VAL/16 to 16*MAX_VAL-1 loop
+--         arg := real(vali)/(2.0*real(MAX_VAL));
+--         verify_sincos(arg);
+--      end loop;
       end_time := now;
       report "Test finished, " &
          to_string(real((end_time-start_time) / 10 ns) / real(count)) &
