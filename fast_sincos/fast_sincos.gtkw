@@ -1,20 +1,20 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Tue Jan  2 14:08:05 2024
+[*] Tue Jan  2 20:30:11 2024
 [*]
-[dumpfile] "/home/mfj/git/PRIVATE/MJoergen/math/fast_sincos/fast_sincos.ghw"
-[dumpfile_mtime] "Tue Jan  2 14:07:45 2024"
-[dumpfile_size] 2261
-[savefile] "/home/mfj/git/PRIVATE/MJoergen/math/fast_sincos/fast_sincos.gtkw"
-[timestart] 0
-[size] 1920 1127
+[dumpfile] "/home/mike/git/MJoergen/math/fast_sincos/fast_sincos.ghw"
+[dumpfile_mtime] "Tue Jan  2 20:29:59 2024"
+[dumpfile_size] 2462
+[savefile] "/home/mike/git/MJoergen/math/fast_sincos/fast_sincos.gtkw"
+[timestart] 89000000
+[size] 1920 1012
 [pos] -1 -1
-*-25.308250 116300000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-24.308250 123300000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] top.
 [treeopen] top.tb_fast_sincos.
 [treeopen] top.tb_fast_sincos.fast_sincos_inst.
-[sst_width] 210
-[signals_width] 260
+[sst_width] 249
+[signals_width] 322
 [sst_expanded] 1
 [sst_vpaned_height] 326
 @800200
@@ -33,10 +33,49 @@ top.tb_fast_sincos.fast_sincos_inst.ready_o
 @420
 top.tb_fast_sincos.fast_sincos_inst.state
 top.tb_fast_sincos.fast_sincos_inst.count
-@22
+@c00022
 #{top.tb_fast_sincos.fast_sincos_inst.x[33:0]} top.tb_fast_sincos.fast_sincos_inst.x[33] top.tb_fast_sincos.fast_sincos_inst.x[32] top.tb_fast_sincos.fast_sincos_inst.x[31] top.tb_fast_sincos.fast_sincos_inst.x[30] top.tb_fast_sincos.fast_sincos_inst.x[29] top.tb_fast_sincos.fast_sincos_inst.x[28] top.tb_fast_sincos.fast_sincos_inst.x[27] top.tb_fast_sincos.fast_sincos_inst.x[26] top.tb_fast_sincos.fast_sincos_inst.x[25] top.tb_fast_sincos.fast_sincos_inst.x[24] top.tb_fast_sincos.fast_sincos_inst.x[23] top.tb_fast_sincos.fast_sincos_inst.x[22] top.tb_fast_sincos.fast_sincos_inst.x[21] top.tb_fast_sincos.fast_sincos_inst.x[20] top.tb_fast_sincos.fast_sincos_inst.x[19] top.tb_fast_sincos.fast_sincos_inst.x[18] top.tb_fast_sincos.fast_sincos_inst.x[17] top.tb_fast_sincos.fast_sincos_inst.x[16] top.tb_fast_sincos.fast_sincos_inst.x[15] top.tb_fast_sincos.fast_sincos_inst.x[14] top.tb_fast_sincos.fast_sincos_inst.x[13] top.tb_fast_sincos.fast_sincos_inst.x[12] top.tb_fast_sincos.fast_sincos_inst.x[11] top.tb_fast_sincos.fast_sincos_inst.x[10] top.tb_fast_sincos.fast_sincos_inst.x[9] top.tb_fast_sincos.fast_sincos_inst.x[8] top.tb_fast_sincos.fast_sincos_inst.x[7] top.tb_fast_sincos.fast_sincos_inst.x[6] top.tb_fast_sincos.fast_sincos_inst.x[5] top.tb_fast_sincos.fast_sincos_inst.x[4] top.tb_fast_sincos.fast_sincos_inst.x[3] top.tb_fast_sincos.fast_sincos_inst.x[2] top.tb_fast_sincos.fast_sincos_inst.x[1] top.tb_fast_sincos.fast_sincos_inst.x[0]
+@28
+top.tb_fast_sincos.fast_sincos_inst.x[33]
+top.tb_fast_sincos.fast_sincos_inst.x[32]
+top.tb_fast_sincos.fast_sincos_inst.x[31]
+top.tb_fast_sincos.fast_sincos_inst.x[30]
+top.tb_fast_sincos.fast_sincos_inst.x[29]
+top.tb_fast_sincos.fast_sincos_inst.x[28]
+top.tb_fast_sincos.fast_sincos_inst.x[27]
+top.tb_fast_sincos.fast_sincos_inst.x[26]
+top.tb_fast_sincos.fast_sincos_inst.x[25]
+top.tb_fast_sincos.fast_sincos_inst.x[24]
+top.tb_fast_sincos.fast_sincos_inst.x[23]
+top.tb_fast_sincos.fast_sincos_inst.x[22]
+top.tb_fast_sincos.fast_sincos_inst.x[21]
+top.tb_fast_sincos.fast_sincos_inst.x[20]
+top.tb_fast_sincos.fast_sincos_inst.x[19]
+top.tb_fast_sincos.fast_sincos_inst.x[18]
+top.tb_fast_sincos.fast_sincos_inst.x[17]
+top.tb_fast_sincos.fast_sincos_inst.x[16]
+top.tb_fast_sincos.fast_sincos_inst.x[15]
+top.tb_fast_sincos.fast_sincos_inst.x[14]
+top.tb_fast_sincos.fast_sincos_inst.x[13]
+top.tb_fast_sincos.fast_sincos_inst.x[12]
+top.tb_fast_sincos.fast_sincos_inst.x[11]
+top.tb_fast_sincos.fast_sincos_inst.x[10]
+top.tb_fast_sincos.fast_sincos_inst.x[9]
+top.tb_fast_sincos.fast_sincos_inst.x[8]
+top.tb_fast_sincos.fast_sincos_inst.x[7]
+top.tb_fast_sincos.fast_sincos_inst.x[6]
+top.tb_fast_sincos.fast_sincos_inst.x[5]
+top.tb_fast_sincos.fast_sincos_inst.x[4]
+top.tb_fast_sincos.fast_sincos_inst.x[3]
+top.tb_fast_sincos.fast_sincos_inst.x[2]
+top.tb_fast_sincos.fast_sincos_inst.x[1]
+top.tb_fast_sincos.fast_sincos_inst.x[0]
+@1401200
+-group_end
+@22
 #{top.tb_fast_sincos.fast_sincos_inst.y[33:0]} top.tb_fast_sincos.fast_sincos_inst.y[33] top.tb_fast_sincos.fast_sincos_inst.y[32] top.tb_fast_sincos.fast_sincos_inst.y[31] top.tb_fast_sincos.fast_sincos_inst.y[30] top.tb_fast_sincos.fast_sincos_inst.y[29] top.tb_fast_sincos.fast_sincos_inst.y[28] top.tb_fast_sincos.fast_sincos_inst.y[27] top.tb_fast_sincos.fast_sincos_inst.y[26] top.tb_fast_sincos.fast_sincos_inst.y[25] top.tb_fast_sincos.fast_sincos_inst.y[24] top.tb_fast_sincos.fast_sincos_inst.y[23] top.tb_fast_sincos.fast_sincos_inst.y[22] top.tb_fast_sincos.fast_sincos_inst.y[21] top.tb_fast_sincos.fast_sincos_inst.y[20] top.tb_fast_sincos.fast_sincos_inst.y[19] top.tb_fast_sincos.fast_sincos_inst.y[18] top.tb_fast_sincos.fast_sincos_inst.y[17] top.tb_fast_sincos.fast_sincos_inst.y[16] top.tb_fast_sincos.fast_sincos_inst.y[15] top.tb_fast_sincos.fast_sincos_inst.y[14] top.tb_fast_sincos.fast_sincos_inst.y[13] top.tb_fast_sincos.fast_sincos_inst.y[12] top.tb_fast_sincos.fast_sincos_inst.y[11] top.tb_fast_sincos.fast_sincos_inst.y[10] top.tb_fast_sincos.fast_sincos_inst.y[9] top.tb_fast_sincos.fast_sincos_inst.y[8] top.tb_fast_sincos.fast_sincos_inst.y[7] top.tb_fast_sincos.fast_sincos_inst.y[6] top.tb_fast_sincos.fast_sincos_inst.y[5] top.tb_fast_sincos.fast_sincos_inst.y[4] top.tb_fast_sincos.fast_sincos_inst.y[3] top.tb_fast_sincos.fast_sincos_inst.y[2] top.tb_fast_sincos.fast_sincos_inst.y[1] top.tb_fast_sincos.fast_sincos_inst.y[0]
 #{top.tb_fast_sincos.fast_sincos_inst.angle[33:0]} top.tb_fast_sincos.fast_sincos_inst.angle[33] top.tb_fast_sincos.fast_sincos_inst.angle[32] top.tb_fast_sincos.fast_sincos_inst.angle[31] top.tb_fast_sincos.fast_sincos_inst.angle[30] top.tb_fast_sincos.fast_sincos_inst.angle[29] top.tb_fast_sincos.fast_sincos_inst.angle[28] top.tb_fast_sincos.fast_sincos_inst.angle[27] top.tb_fast_sincos.fast_sincos_inst.angle[26] top.tb_fast_sincos.fast_sincos_inst.angle[25] top.tb_fast_sincos.fast_sincos_inst.angle[24] top.tb_fast_sincos.fast_sincos_inst.angle[23] top.tb_fast_sincos.fast_sincos_inst.angle[22] top.tb_fast_sincos.fast_sincos_inst.angle[21] top.tb_fast_sincos.fast_sincos_inst.angle[20] top.tb_fast_sincos.fast_sincos_inst.angle[19] top.tb_fast_sincos.fast_sincos_inst.angle[18] top.tb_fast_sincos.fast_sincos_inst.angle[17] top.tb_fast_sincos.fast_sincos_inst.angle[16] top.tb_fast_sincos.fast_sincos_inst.angle[15] top.tb_fast_sincos.fast_sincos_inst.angle[14] top.tb_fast_sincos.fast_sincos_inst.angle[13] top.tb_fast_sincos.fast_sincos_inst.angle[12] top.tb_fast_sincos.fast_sincos_inst.angle[11] top.tb_fast_sincos.fast_sincos_inst.angle[10] top.tb_fast_sincos.fast_sincos_inst.angle[9] top.tb_fast_sincos.fast_sincos_inst.angle[8] top.tb_fast_sincos.fast_sincos_inst.angle[7] top.tb_fast_sincos.fast_sincos_inst.angle[6] top.tb_fast_sincos.fast_sincos_inst.angle[5] top.tb_fast_sincos.fast_sincos_inst.angle[4] top.tb_fast_sincos.fast_sincos_inst.angle[3] top.tb_fast_sincos.fast_sincos_inst.angle[2] top.tb_fast_sincos.fast_sincos_inst.angle[1] top.tb_fast_sincos.fast_sincos_inst.angle[0]
+#{top.tb_fast_sincos.fast_sincos_inst.diff[33:0]} top.tb_fast_sincos.fast_sincos_inst.diff[33] top.tb_fast_sincos.fast_sincos_inst.diff[32] top.tb_fast_sincos.fast_sincos_inst.diff[31] top.tb_fast_sincos.fast_sincos_inst.diff[30] top.tb_fast_sincos.fast_sincos_inst.diff[29] top.tb_fast_sincos.fast_sincos_inst.diff[28] top.tb_fast_sincos.fast_sincos_inst.diff[27] top.tb_fast_sincos.fast_sincos_inst.diff[26] top.tb_fast_sincos.fast_sincos_inst.diff[25] top.tb_fast_sincos.fast_sincos_inst.diff[24] top.tb_fast_sincos.fast_sincos_inst.diff[23] top.tb_fast_sincos.fast_sincos_inst.diff[22] top.tb_fast_sincos.fast_sincos_inst.diff[21] top.tb_fast_sincos.fast_sincos_inst.diff[20] top.tb_fast_sincos.fast_sincos_inst.diff[19] top.tb_fast_sincos.fast_sincos_inst.diff[18] top.tb_fast_sincos.fast_sincos_inst.diff[17] top.tb_fast_sincos.fast_sincos_inst.diff[16] top.tb_fast_sincos.fast_sincos_inst.diff[15] top.tb_fast_sincos.fast_sincos_inst.diff[14] top.tb_fast_sincos.fast_sincos_inst.diff[13] top.tb_fast_sincos.fast_sincos_inst.diff[12] top.tb_fast_sincos.fast_sincos_inst.diff[11] top.tb_fast_sincos.fast_sincos_inst.diff[10] top.tb_fast_sincos.fast_sincos_inst.diff[9] top.tb_fast_sincos.fast_sincos_inst.diff[8] top.tb_fast_sincos.fast_sincos_inst.diff[7] top.tb_fast_sincos.fast_sincos_inst.diff[6] top.tb_fast_sincos.fast_sincos_inst.diff[5] top.tb_fast_sincos.fast_sincos_inst.diff[4] top.tb_fast_sincos.fast_sincos_inst.diff[3] top.tb_fast_sincos.fast_sincos_inst.diff[2] top.tb_fast_sincos.fast_sincos_inst.diff[1] top.tb_fast_sincos.fast_sincos_inst.diff[0]
 @1000200
 -fast_sincos
 [pattern_trace] 1

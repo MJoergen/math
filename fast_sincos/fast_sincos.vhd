@@ -42,21 +42,53 @@ architecture synthesis of fast_sincos is
    type state_type is (IDLE_ST, PREPARE_ST, CALC_ST);
    signal state : state_type := IDLE_ST;
 
-   signal x     : signed(33 downto 0);
-   signal y     : signed(33 downto 0);
-   signal angle : signed(33 downto 0);
+   -- x and y take on values in the range 0 to 1.7. So they are encoded as
+   -- unsigned fixed point 1.33.
+   -- angle takes on values in the range -0.8 to 0.8. So that is encoded
+   -- signed fixed point 1.33.
+   signal x     : unsigned(33 downto 0);
+   signal y     : unsigned(33 downto 0);
+   signal angle :   signed(33 downto 0);
+   signal diff  :   signed(33 downto 0);
 
-   constant C_INIT_X : signed(33 downto 0) := "01" & X"00000000"; -- Real value 1.0
-   constant C_INIT_Y : signed(33 downto 0) := "00" & X"00000000"; -- Real value 0.0
+   constant C_INIT_X : unsigned(33 downto 0) := "1" & X"00000000" & "0"; -- Real value 1.0
+   constant C_INIT_Y : unsigned(33 downto 0) := "0" & X"00000000" & "0"; -- Real value 0.0
 
    constant C_ANGLE_NUM : natural := 3;
 
    type rom_type is array (0 to C_ANGLE_NUM-1) of signed(33 downto 0);
 
-   pure function real2signed(arg : real) return signed is
+   pure function real2unsigned(arg : real) return unsigned is
+      variable tmp : real;
+      variable res : unsigned(33 downto 0);
    begin
-      return "00" & to_signed(integer(arg*(2.0**31)), 32);
+      res(33 downto 29) := to_unsigned(integer(arg*(2.0**4)), 5);
+      tmp := arg*(2.0**4) - real(integer(arg*(2.0**4)));
+      res(28 downto 0) := to_unsigned(integer(tmp*(2.0**29)), 29);
+      return res;
+   end function real2unsigned;
+
+   pure function real2signed(arg : real) return signed is
+      variable tmp : real;
+      variable res : signed(33 downto 0);
+   begin
+      res(33 downto 29) := to_signed(integer(arg*(2.0**4)), 5);
+      tmp := arg*(2.0**4) - real(integer(arg*(2.0**4)));
+      res(28 downto 0) := to_signed(integer(tmp*(2.0**29)), 29);
+      return res;
    end function real2signed;
+
+   pure function unsigned2real(arg : unsigned) return real is
+   begin
+      return (real(to_integer(arg(33 downto 29))) +
+              real(to_integer(arg(28 downto 0))) / (2.0**29)) / (2.0**4);
+   end function unsigned2real;
+
+   pure function signed2real(arg : signed) return real is
+   begin
+      return (real(to_integer(arg(33 downto 29))) +
+              real(to_integer(arg(28 downto 0))) / (2.0**29)) / (2.0**4);
+   end function signed2real;
 
    pure function calc_angles return rom_type is
       variable res_v   : rom_type := (others => (others => '0'));
@@ -70,7 +102,7 @@ architecture synthesis of fast_sincos is
       return res_v;
    end function calc_angles;
 
-   pure function calc_scaling return signed is
+   pure function calc_scaling return unsigned is
       variable res_v   : real := 1.0;
       variable angle_v : real;
    begin
@@ -78,11 +110,24 @@ architecture synthesis of fast_sincos is
          res_v := res_v * sqrt(1.0 + 1.0 / (4.0**i));
       end loop;
       report "scaling = " & to_string(res_v);
-      return real2signed(res_v/2.0);
+      return real2unsigned(res_v/2.0);
    end function calc_scaling;
 
    constant C_ANGLES : rom_type := calc_angles;
-   constant C_SCALE  : signed(33 downto 0) := calc_scaling;
+   constant C_SCALE  : unsigned(33 downto 0) := calc_scaling;
+
+   pure function rotate_right(arg : unsigned(33 downto 0); count : natural) return unsigned is
+      variable res : unsigned(33 downto 0);
+   begin
+      res := (others => arg(33));
+      res(33-count downto 0) := arg(33 downto count);
+      if count > 0 then
+         if arg(count-1) = '1' then
+            res := res + 1;
+         end if;
+      end if;
+      return res;
+   end function rotate_right;
 
    pure function rotate_right(arg : signed(33 downto 0); count : natural) return signed is
       variable res : signed(33 downto 0);
@@ -91,7 +136,7 @@ architecture synthesis of fast_sincos is
       res(33-count downto 0) := arg(33 downto count);
       if count > 0 then
          if arg(count-1) = '1' then
-            res(33-count downto 0) := arg(33 downto count) + 1;
+            res := res + 1;
          end if;
       end if;
       return res;
@@ -104,52 +149,46 @@ begin
    fsm_proc : process (clk_i)
    begin
       if rising_edge(clk_i) then
+         report "x=" & to_string(unsigned2real(x)) &
+              ", y=" & to_string(unsigned2real(y));
+
          case state is
             when IDLE_ST =>
                null;
 
             when PREPARE_ST =>
                count <= 0;
+               diff  <= C_ANGLES(0);
                state <= CALC_ST;
 
             when CALC_ST =>
                if count = C_ANGLE_NUM-1 then
-                  cos_mant_o <= unsigned(x(31 downto 0));
-                  sin_mant_o <= unsigned(y(31 downto 0));
+                  cos_mant_o <= x(31 downto 0);
+                  sin_mant_o <= y(31 downto 0);
                   ready_o    <= '1';
                   state      <= IDLE_ST;
                else
                   if angle > 0 then
-                     angle <= angle - C_ANGLES(count);
+                     angle <= angle - diff;
                      x     <= x - rotate_right(y, count);
                      y     <= y + rotate_right(x, count);
                   else
-                     angle <= angle + C_ANGLES(count);
+                     angle <= angle + diff;
                      x     <= x + rotate_right(y, count);
                      y     <= y - rotate_right(x, count);
                   end if;
                   count <= count + 1;
+                  diff  <= C_ANGLES(count+1);
                end if;
-
          end case;
 
          if start_i = '1' then
             x       <= C_INIT_X; -- C_SCALE
             y       <= C_INIT_Y;
-            if arg_exp_i < X"80" then
-               angle <= (others => '0');
-               angle(32) <= '1';
-               if arg_exp_i > X"60" then
-                  angle(to_integer(arg_exp_i - X"61") downto 0) <=
-                     signed(arg_mant_i(31 downto to_integer(X"80" - arg_exp_i)));
-               end if;
-            else
-               angle <= (others => '0');
-               angle(32) <= '1';
-               if arg_exp_i < X"A0" then
-                  angle(31 downto to_integer(X"A0" - arg_exp_i)) <=
-                     signed(arg_mant_i(to_integer(arg_exp_i - X"81") downto 0));
-               end if;
+            angle <= (others => '0');
+            angle(32) <= '1';
+            if arg_exp_i > X"60" and arg_exp_i < X"80" then
+               angle <= rotate_right(signed(arg_mant_i) & "00", to_integer(X"80" - arg_exp_i));
             end if;
             ready_o <= '0';
             state   <= PREPARE_ST;
