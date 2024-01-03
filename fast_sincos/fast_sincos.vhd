@@ -39,25 +39,6 @@ end entity fast_sincos;
 
 architecture synthesis of fast_sincos is
 
-   type state_type is (IDLE_ST, PREPARE_ST, CALC_ST);
-   signal state : state_type := IDLE_ST;
-
-   -- x and y take on values in the range 0 to 1.7. So they are encoded as
-   -- unsigned fixed point 1.33.
-   -- angle takes on values in the range -0.8 to 0.8. So that is encoded
-   -- signed fixed point 1.33.
-   signal x     : unsigned(33 downto 0);
-   signal y     : unsigned(33 downto 0);
-   signal angle :   signed(33 downto 0);
-   signal diff  :   signed(33 downto 0);
-
-   constant C_INIT_X : unsigned(33 downto 0) := "1" & X"00000000" & "0"; -- Real value 1.0
-   constant C_INIT_Y : unsigned(33 downto 0) := "0" & X"00000000" & "0"; -- Real value 0.0
-
-   constant C_ANGLE_NUM : natural := 3;
-
-   type rom_type is array (0 to C_ANGLE_NUM-1) of signed(33 downto 0);
-
    pure function real2unsigned(arg : real) return unsigned is
       variable tmp : real;
       variable res : unsigned(33 downto 0);
@@ -68,83 +49,116 @@ architecture synthesis of fast_sincos is
       return res;
    end function real2unsigned;
 
-   pure function real2signed(arg : real) return signed is
-      variable tmp : real;
-      variable res : signed(33 downto 0);
-   begin
-      res(33 downto 29) := to_signed(integer(arg*(2.0**4)), 5);
-      tmp := arg*(2.0**4) - real(integer(arg*(2.0**4)));
-      res(28 downto 0) := to_signed(integer(tmp*(2.0**29)), 29);
-      return res;
-   end function real2signed;
-
    pure function unsigned2real(arg : unsigned) return real is
    begin
       return (real(to_integer(arg(33 downto 29))) +
               real(to_integer(arg(28 downto 0))) / (2.0**29)) / (2.0**4);
    end function unsigned2real;
 
-   pure function signed2real(arg : signed) return real is
-   begin
-      return (real(to_integer(arg(33 downto 29))) +
-              real(to_integer(arg(28 downto 0))) / (2.0**29)) / (2.0**4);
-   end function signed2real;
-
-   pure function calc_angles return rom_type is
-      variable res_v   : rom_type := (others => (others => '0'));
-      variable angle_v : real;
-   begin
-      for i in 0 to C_ANGLE_NUM-1 loop
-         angle_v  := 0.5*arctan(1.0 / (2.0**i))/arctan(1.0); -- In units of pi/2
-         res_v(i) := real2signed(angle_v);
-         report "C_ANGLES(" & to_string(i) & ") = " & to_hstring(res_v(i));
-      end loop;
-      return res_v;
-   end function calc_angles;
-
-   pure function calc_scaling return unsigned is
+   pure function calc_scaling(count : natural) return unsigned is
       variable res_v   : real := 1.0;
       variable angle_v : real;
    begin
-      for i in 0 to C_ANGLE_NUM-1 loop
+      for i in 0 to count-1 loop
          res_v := res_v * sqrt(1.0 + 1.0 / (4.0**i));
       end loop;
-      report "scaling = " & to_string(res_v);
+--      report "scaling = " & to_string(res_v);
       return real2unsigned(res_v/2.0);
    end function calc_scaling;
 
-   constant C_ANGLES : rom_type := calc_angles;
-   constant C_SCALE  : unsigned(33 downto 0) := calc_scaling;
 
-   pure function rotate_right(arg : unsigned(33 downto 0); count : natural) return unsigned is
-      variable res : unsigned(33 downto 0);
-   begin
-      res := (others => arg(33));
-      res(33-count downto 0) := arg(33 downto count);
-      if count > 0 then
-         if arg(count-1) = '1' then
-            res := res + 1;
-         end if;
-      end if;
-      return res;
-   end function rotate_right;
+   constant C_INIT_X    : unsigned(33 downto 0) := "1" & X"00000000" & "0"; -- Real value 1.0
+   constant C_INIT_Y    : unsigned(33 downto 0) := "0" & X"00000000" & "0"; -- Real value 0.0
+   constant C_ANGLE_NUM : natural := 3;
+   constant C_SCALE     : unsigned(33 downto 0) := calc_scaling(C_ANGLE_NUM);
 
-   pure function rotate_right(arg : signed(33 downto 0); count : natural) return signed is
-      variable res : signed(33 downto 0);
-   begin
-      res := (others => arg(33));
-      res(33-count downto 0) := arg(33 downto count);
-      if count > 0 then
-         if arg(count-1) = '1' then
-            res := res + 1;
-         end if;
-      end if;
-      return res;
-   end function rotate_right;
+   type state_type is (IDLE_ST, PREPARE_ST, CALC_ST);
+   signal state : state_type := IDLE_ST;
 
-   signal count : natural range 0 to C_ANGLE_NUM-1;
+   -- x and y take on values in the range 0 to 1.7. So they are encoded as
+   -- unsigned fixed point 1.33.
+   -- angle takes on values in the range -0.8 to 0.8. So that is encoded
+   -- signed fixed point 1.33.
+   signal x         : unsigned(33 downto 0);
+   signal y         : unsigned(33 downto 0);
+   signal angle     :   signed(33 downto 0);
+   signal count     : natural range 0 to C_ANGLE_NUM-1;
+   signal diff      :   signed(33 downto 0);
+   signal x_rot     : unsigned(33 downto 0);
+   signal y_rot     : unsigned(33 downto 0);
+   signal mant_rot  : unsigned(33 downto 0);
+   signal do_sub    : std_logic;
+   signal new_angle :   signed(33 downto 0);
+   signal new_x     :   signed(33 downto 0);
+   signal new_y     :   signed(33 downto 0);
 
 begin
+
+   fast_sincos_rom_inst : entity work.fast_sincos_rom
+      generic map (
+         G_ANGLE_NUM => C_ANGLE_NUM
+      )
+      port map (
+         clk_i  => clk_i,
+         addr_i => count,
+         data_o => diff
+      );
+
+   fast_sincos_rotate_x_inst : entity work.fast_sincos_rotate
+      generic map (
+         G_ANGLE_NUM => C_ANGLE_NUM
+      )
+      port map (
+         in_i    => x,
+         shift_i => count,
+         out_o   => x_rot
+      );
+
+   fast_sincos_rotate_y_inst : entity work.fast_sincos_rotate
+      generic map (
+         G_ANGLE_NUM => C_ANGLE_NUM
+      )
+      port map (
+         in_i    => y,
+         shift_i => count,
+         out_o   => y_rot
+      );
+
+   fast_sincos_rotate_angle_inst : entity work.fast_sincos_rotate
+      generic map (
+         G_ANGLE_NUM => 33
+      )
+      port map (
+         in_i    => arg_mant_i & "00",
+         shift_i => to_integer(X"80" - arg_exp_i),
+         out_o   => mant_rot
+      );
+
+   fast_sincos_addsub_x_inst : entity work.fast_sincos_addsub
+      port map (
+         a_i      => signed(x),
+         b_i      => signed(y_rot),
+         do_sub_i => do_sub,
+         out_o    => new_x
+      );
+
+   fast_sincos_addsub_y_inst : entity work.fast_sincos_addsub
+      port map (
+         a_i      => signed(y),
+         b_i      => signed(x_rot),
+         do_sub_i => not do_sub,
+         out_o    => new_y
+      );
+
+   fast_sincos_addsub_angle_inst : entity work.fast_sincos_addsub
+      port map (
+         a_i      => signed(angle),
+         b_i      => signed(diff),
+         do_sub_i => do_sub,
+         out_o    => new_angle
+      );
+
+   do_sub <= '1' when angle >= 0 else '0';
 
    fsm_proc : process (clk_i)
    begin
@@ -158,7 +172,6 @@ begin
 
             when PREPARE_ST =>
                count <= 0;
-               diff  <= C_ANGLES(0);
                state <= CALC_ST;
 
             when CALC_ST =>
@@ -168,17 +181,10 @@ begin
                   ready_o    <= '1';
                   state      <= IDLE_ST;
                else
-                  if angle > 0 then
-                     angle <= angle - diff;
-                     x     <= x - rotate_right(y, count);
-                     y     <= y + rotate_right(x, count);
-                  else
-                     angle <= angle + diff;
-                     x     <= x + rotate_right(y, count);
-                     y     <= y - rotate_right(x, count);
-                  end if;
+                  angle <= new_angle;
+                  x     <= unsigned(new_x);
+                  y     <= unsigned(new_y);
                   count <= count + 1;
-                  diff  <= C_ANGLES(count+1);
                end if;
          end case;
 
@@ -188,7 +194,7 @@ begin
             angle <= (others => '0');
             angle(32) <= '1';
             if arg_exp_i > X"60" and arg_exp_i < X"80" then
-               angle <= rotate_right(signed(arg_mant_i) & "00", to_integer(X"80" - arg_exp_i));
+               angle <= signed(mant_rot);
             end if;
             ready_o <= '0';
             state   <= PREPARE_ST;

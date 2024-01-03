@@ -1,6 +1,9 @@
 #!/bin/bash
 
 SRC="fast_sincos.vhd \
+fast_sincos_rom.vhd \
+fast_sincos_rotate.vhd \
+fast_sincos_addsub.vhd \
 tb_fast_sincos.vhd"
 
 rm fast_sincos.ghw
