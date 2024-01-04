@@ -22,12 +22,15 @@ use ieee.math_real.all;
 --
 -- The algorithm is described here:
 -- https://www.allaboutcircuits.com/technical-articles/an-introduction-to-the-cordic-algorithm/
+--
+-- Step 1 is to store the current sign bit, and use the absolute value
+-- Step 2 is to multiply by 1/(2*pi), and keep only the fractional part.
 
 entity fast_sincos is
    port (
       clk_i      : in  std_logic;
-      start_i    : in  std_logic;                -- Assert to restart calculation.
       ready_o    : out std_logic := '1';         -- Asserted when output is ready.
+      start_i    : in  std_logic;                -- Assert to restart calculation.
       arg_exp_i  : in  unsigned( 7 downto 0);    -- Exponent
       arg_mant_i : in  unsigned(31 downto 0);    -- Mantissa
       sin_exp_o  : out unsigned( 7 downto 0);    -- Exponent
@@ -67,30 +70,35 @@ architecture synthesis of fast_sincos is
    end function calc_scaling;
 
 
-   constant C_INIT_X    : unsigned(33 downto 0) := "1" & X"00000000" & "0"; -- Real value 1.0
-   constant C_INIT_Y    : unsigned(33 downto 0) := "0" & X"00000000" & "0"; -- Real value 0.0
-   constant C_ANGLE_NUM : natural := 3;
-   constant C_SCALE     : unsigned(33 downto 0) := calc_scaling(C_ANGLE_NUM);
+   constant C_ANGLE_NUM   : natural := 5;
+   constant C_SCALE       : unsigned(33 downto 0) := calc_scaling(C_ANGLE_NUM);
+   constant C_TWO_OVER_PI : unsigned(33 downto 0) := real2unsigned(0.6366197723675814);
 
-   type state_type is (IDLE_ST, PREPARE_ST, CALC_ST);
+   type state_type is (IDLE_ST, PREPARE_ST, PREPARE2_ST, CALC_ST);
    signal state : state_type := IDLE_ST;
 
    -- x and y take on values in the range 0 to 1.7. So they are encoded as
    -- unsigned fixed point 1.33.
    -- angle takes on values in the range -0.8 to 0.8. So that is encoded
    -- signed fixed point 1.33.
-   signal x         : unsigned(33 downto 0);
-   signal y         : unsigned(33 downto 0);
-   signal angle     :   signed(33 downto 0);
-   signal count     : natural range 0 to C_ANGLE_NUM-1;
-   signal diff      :   signed(33 downto 0);
-   signal x_rot     : unsigned(33 downto 0);
-   signal y_rot     : unsigned(33 downto 0);
-   signal mant_rot  : unsigned(33 downto 0);
-   signal do_sub    : std_logic;
-   signal new_angle :   signed(33 downto 0);
-   signal new_x     :   signed(33 downto 0);
-   signal new_y     :   signed(33 downto 0);
+   signal start       : std_logic;                -- Assert to restart calculation.
+   signal arg_exp     : unsigned( 7 downto 0);    -- Exponent
+   signal arg_mant    : unsigned(31 downto 0);    -- Mantissa
+   signal sign        : std_logic;
+   signal x           : unsigned(33 downto 0) := (others => '0');
+   signal y           : unsigned(33 downto 0) := (others => '0');
+   signal angle       :   signed(33 downto 0);
+   signal angle_d     :   signed(33 downto 0);
+   signal count       : natural range 0 to C_ANGLE_NUM-1;
+   signal diff        :   signed(33 downto 0);
+   signal x_rot       : unsigned(33 downto 0);
+   signal y_rot       : unsigned(33 downto 0);
+   signal mant_rot    : unsigned(33 downto 0);
+   signal do_sub      : std_logic;
+   signal new_angle   :   signed(33 downto 0);
+   signal new_x       :   signed(33 downto 0);
+   signal new_y       :   signed(33 downto 0);
+   signal angle_shift : natural range 0 to C_ANGLE_NUM-1;
 
 begin
 
@@ -129,8 +137,8 @@ begin
          G_ANGLE_NUM => 33
       )
       port map (
-         in_i    => arg_mant_i & "00",
-         shift_i => to_integer(X"80" - arg_exp_i),
+         in_i    => unsigned(angle),
+         shift_i => angle_shift,
          out_o   => mant_rot
       );
 
@@ -161,8 +169,16 @@ begin
    do_sub <= '1' when angle >= 0 else '0';
 
    fsm_proc : process (clk_i)
+      variable tmp : unsigned(65 downto 0);
    begin
       if rising_edge(clk_i) then
+         start    <= start_i;
+         if start_i = '1' then
+            arg_exp  <= arg_exp_i;
+            arg_mant <= arg_mant_i;
+            ready_o  <= '0';
+         end if;
+
          report "x=" & to_string(unsigned2real(x)) &
               ", y=" & to_string(unsigned2real(y));
 
@@ -171,13 +187,21 @@ begin
                null;
 
             when PREPARE_ST =>
-               count <= 0;
+               angle <= angle_d;
+               angle_shift <= to_integer(X"80" - arg_exp);
+               state <= PREPARE2_ST;
+
+            when PREPARE2_ST =>
+               angle <= signed(mant_rot);
+               count <= count + 1;
                state <= CALC_ST;
 
             when CALC_ST =>
-               if count = C_ANGLE_NUM-1 then
+               if count = C_ANGLE_NUM-1 or angle = 0 then
                   cos_mant_o <= x(31 downto 0);
                   sin_mant_o <= y(31 downto 0);
+                  cos_exp_o  <= X"80";
+                  sin_exp_o  <= X"80";
                   ready_o    <= '1';
                   state      <= IDLE_ST;
                else
@@ -188,15 +212,16 @@ begin
                end if;
          end case;
 
-         if start_i = '1' then
-            x       <= C_INIT_X; -- C_SCALE
-            y       <= C_INIT_Y;
-            angle <= (others => '0');
-            angle(32) <= '1';
-            if arg_exp_i > X"60" and arg_exp_i < X"80" then
-               angle <= signed(mant_rot);
-            end if;
-            ready_o <= '0';
+         if start = '1' then
+            -- Step 1: Store the sign
+            sign  <= arg_mant(31);
+
+            -- Step 2: Take absolute value and multiply by 2/pi
+            tmp := (arg_mant or X"80000000") * C_TWO_OVER_PI;
+            angle_d <= signed(tmp(65 downto 32));
+            x       <= C_SCALE;
+            y       <= (others => '0');
+            count   <= 0;
             state   <= PREPARE_ST;
          end if;
       end if;

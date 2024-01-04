@@ -146,7 +146,7 @@ begin
       wait until rising_edge(clk);
       start_time := now;
       report "Test started";
-      verify_sincos(0.25);
+      verify_sincos(0.7853981633974483); -- pi/4
 --      verify_sincos(0.0);
 --      verify_sincos(1.0);
 --      verify_sincos(2.0);
