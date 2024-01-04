@@ -42,7 +42,7 @@ architecture synthesis of fast_sincos_rom is
 
    attribute ram_style : string;
    signal C_ANGLES : rom_type := calc_angles;
-   attribute ram_style of C_ANGLES : signal is "block";
+   attribute ram_style of C_ANGLES : signal is "distributed";
 
 begin
 

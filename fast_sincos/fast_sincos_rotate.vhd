@@ -21,11 +21,11 @@ architecture synthesis of fast_sincos_rotate is
    begin
       res := (others => arg(33));
       res(33-count downto 0) := arg(33 downto count);
-      if count > 0 then
-         if arg(count-1) = '1' then
-            res := res + 1;
-         end if;
-      end if;
+--      if count > 0 then
+--         if arg(count-1) = '1' then
+--            res := res + 1;
+--         end if;
+--      end if;
       return res;
    end function rotate_right;
 
