@@ -25,6 +25,10 @@ use ieee.math_real.all;
 --
 -- Step 1 is to store the current sign bit, and use the absolute value
 -- Step 2 is to multiply by 1/(2*pi), and keep only the fractional part.
+-- Example: arg = 13pi/6
+-- 13pi/6 = 6.806784083
+-- In C64 floating format that is 83:59D12CDA.
+-- We divide by (2pi) to get 13/12 = 1.08333333, which is encoded as 81:0AAAAAAA.
 
 entity fast_sincos is
    port (
@@ -33,21 +37,22 @@ entity fast_sincos is
       start_i    : in  std_logic;                -- Assert to restart calculation.
       arg_exp_i  : in  unsigned( 7 downto 0);    -- Exponent
       arg_mant_i : in  unsigned(31 downto 0);    -- Mantissa
-      sin_exp_o  : out unsigned( 7 downto 0);    -- Exponent
-      sin_mant_o : out unsigned(31 downto 0);    -- Mantissa
-      cos_exp_o  : out unsigned( 7 downto 0);    -- Exponent
-      cos_mant_o : out unsigned(31 downto 0)     -- Mantissa
+      sin_exp_o  : out unsigned( 7 downto 0) := (others => '0');    -- Exponent
+      sin_mant_o : out unsigned(31 downto 0) := (others => '0');    -- Mantissa
+      cos_exp_o  : out unsigned( 7 downto 0) := (others => '0');    -- Exponent
+      cos_mant_o : out unsigned(31 downto 0) := (others => '0')     -- Mantissa
    );
 end entity fast_sincos;
 
 architecture synthesis of fast_sincos is
 
+   -- arg must satisfy: 0 <= arg < 1.
    pure function real2unsigned(arg : real) return unsigned is
       variable tmp : real;
       variable res : unsigned(33 downto 0);
    begin
-      res(33 downto 29) := to_unsigned(integer(arg*(2.0**4)), 5);
-      tmp := arg*(2.0**4) - real(integer(arg*(2.0**4)));
+      res(33 downto 29) := to_unsigned(integer(arg*(2.0**5)), 5);
+      tmp := arg*(2.0**5) - real(integer(arg*(2.0**5)));
       res(28 downto 0) := to_unsigned(integer(tmp*(2.0**29)), 29);
       return res;
    end function real2unsigned;
@@ -74,32 +79,32 @@ architecture synthesis of fast_sincos is
    constant C_SCALE       : unsigned(33 downto 0) := calc_scaling(C_ANGLE_NUM);
    constant C_TWO_OVER_PI : unsigned(33 downto 0) := real2unsigned(0.6366197723675814);
 
-   type state_type is (IDLE_ST, START_ST, SCALE_ST, SCALE2_ST, CALC_ST);
+   type state_type is (IDLE_ST, SCALE_ST, SCALE2_ST, FRACTION_ST, FRACTION2_ST, CALC_ST);
    signal state : state_type := IDLE_ST;
 
    -- x and y take on values in the range 0 to 1.7. So they are encoded as
    -- unsigned fixed point 1.33.
    -- angle takes on values in the range -0.8 to 0.8. So that is encoded
    -- signed fixed point 1.33.
-   signal arg_exp      : unsigned( 7 downto 0);    -- Exponent
-   signal arg_mant     : unsigned(31 downto 0);    -- Mantissa
+   signal arg_exp      : unsigned( 7 downto 0) := (others => '0');    -- Exponent
+   signal arg_mant     : unsigned(31 downto 0) := (others => '0');    -- Mantissa
 
-   signal sign         : std_logic;
-   signal mant_scale   :   signed(33 downto 0);
+   signal sign         : std_logic := '0';
+   signal mant_scale   :   signed(33 downto 0) := (others => '0');
 
-   signal mant_scale_d :   signed(33 downto 0);
-   signal angle_shift  : natural range 0 to 32;
+   signal mant_scale_d :   signed(33 downto 0) := (others => '0');
+   signal angle_shift  : natural range 0 to 32 := 0;
    signal x            : unsigned(33 downto 0) := (others => '0');
    signal y            : unsigned(33 downto 0) := (others => '0');
    signal count        : natural range 0 to C_ANGLE_NUM-1;
+   signal mant_rot     : unsigned(33 downto 0) := (others => '0');
 
-   signal angle        :   signed(33 downto 0);
+   signal angle        :   signed(33 downto 0) := (others => '0');
    signal diff         :   signed(33 downto 0);
    signal x_rot        : unsigned(33 downto 0);
    signal y_rot        : unsigned(33 downto 0);
-   signal mant_rot     : unsigned(33 downto 0);
    signal do_sub       : std_logic;
-   signal new_angle    :   signed(33 downto 0);
+   signal new_angle    :   signed(33 downto 0) := (others => '0');
    signal new_x        :   signed(33 downto 0);
    signal new_y        :   signed(33 downto 0);
 
@@ -184,24 +189,27 @@ begin
             when IDLE_ST =>
                null;
 
-            when START_ST =>
-               -- Step 1: Store the sign
+            when SCALE_ST =>
+               -- Store the sign
                sign  <= arg_mant(31);
 
-               -- Step 2: Take absolute value and multiply by 2/pi
+               -- Take absolute value and multiply by 2/pi
                tmp := (arg_mant or X"80000000") * C_TWO_OVER_PI;
                mant_scale <= signed(tmp(65 downto 32));
-               state      <= SCALE_ST;
+               state      <= SCALE2_ST;
 
-            when SCALE_ST =>
+            when SCALE2_ST =>
                mant_scale_d <= mant_scale; -- Pipeline the previous multiplier
+               state        <= FRACTION_ST;
+
+            when FRACTION_ST =>
                angle_shift  <= to_integer(X"80" - arg_exp);
                x            <= C_SCALE;
                y            <= (others => '0');
                count        <= 0;
-               state        <= SCALE2_ST;
+               state        <= FRACTION2_ST;
 
-            when SCALE2_ST =>
+            when FRACTION2_ST =>
                angle <= signed(mant_rot);
                count <= count + 1;
                state <= CALC_ST;
@@ -228,7 +236,7 @@ begin
             arg_exp  <= arg_exp_i;
             arg_mant <= arg_mant_i;
             ready_o  <= '0';
-            state    <= START_ST;
+            state    <= SCALE_ST;
          end if;
       end if;
    end process fsm_proc;

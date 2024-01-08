@@ -132,6 +132,8 @@ begin
                ", i.e. " & to_hstring(float_arg) & " -> " & to_hstring(exp_sin) &
                ". Got 0x" & to_hstring(float_out_sin);
 
+         wait until rising_edge(clk);
+         wait until rising_edge(clk);
       end procedure verify_sincos;
 
       variable start_time : time;
@@ -146,7 +148,8 @@ begin
       wait until rising_edge(clk);
       start_time := now;
       report "Test started";
-      verify_sincos(0.7853981633974483); -- pi/4
+      verify_sincos(13.0*0.5235987755982988); -- 13pi/6
+--      verify_sincos(0.7853981633974483); -- pi/4
 --      verify_sincos(0.0);
 --      verify_sincos(1.0);
 --      verify_sincos(2.0);
@@ -154,10 +157,10 @@ begin
 --      verify_sincos(4.0);
 --      verify_sincos(0.5);
 --      verify_sincos(-1.0);
---      for vali in MAX_VAL/16 to 16*MAX_VAL-1 loop
---         arg := real(vali)/(2.0*real(MAX_VAL));
---         verify_sincos(arg);
---      end loop;
+      for vali in -24 to 24 loop
+         arg := real(vali)/(6.0*3.141592653589793);
+         verify_sincos(arg);
+      end loop;
       end_time := now;
       report "Test finished, " &
          to_string(real((end_time-start_time) / 10 ns) / real(count)) &
