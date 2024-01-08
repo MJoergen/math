@@ -86,27 +86,28 @@ architecture synthesis of fast_sincos is
    -- unsigned fixed point 1.33.
    -- angle takes on values in the range -0.8 to 0.8. So that is encoded
    -- signed fixed point 1.33.
-   signal arg_exp      : unsigned( 7 downto 0) := (others => '0');    -- Exponent
-   signal arg_mant     : unsigned(31 downto 0) := (others => '0');    -- Mantissa
+   signal arg_exp       : unsigned( 7 downto 0) := (others => '0');    -- Exponent
+   signal arg_mant      : unsigned(31 downto 0) := (others => '0');    -- Mantissa
 
-   signal sign         : std_logic := '0';
-   signal mant_scale   :   signed(33 downto 0) := (others => '0');
+   signal sign          : std_logic := '0';
+   signal mant_scale    :   signed(33 downto 0) := (others => '0');
 
-   signal mant_scale_d :   signed(33 downto 0) := (others => '0');
-   signal angle_shift  : natural range 0 to 32 := 0;
-   signal x            : unsigned(33 downto 0) := (others => '0');
-   signal y            : unsigned(33 downto 0) := (others => '0');
-   signal count        : natural range 0 to C_ANGLE_NUM-1;
-   signal mant_rot     : unsigned(33 downto 0) := (others => '0');
+   signal mant_scale_d  :   signed(33 downto 0) := (others => '0');
+   signal mant_scale_dd :   signed(33 downto 0) := (others => '0');
+   signal angle_shift   : natural range 0 to 32 := 0;
+   signal x             : unsigned(33 downto 0) := (others => '0');
+   signal y             : unsigned(33 downto 0) := (others => '0');
+   signal count         : natural range 0 to C_ANGLE_NUM-1;
+   signal mant_rot      : unsigned(33 downto 0) := (others => '0');
 
-   signal angle        :   signed(33 downto 0) := (others => '0');
-   signal diff         :   signed(33 downto 0);
-   signal x_rot        : unsigned(33 downto 0);
-   signal y_rot        : unsigned(33 downto 0);
-   signal do_sub       : std_logic;
-   signal new_angle    :   signed(33 downto 0) := (others => '0');
-   signal new_x        :   signed(33 downto 0);
-   signal new_y        :   signed(33 downto 0);
+   signal angle         :   signed(33 downto 0) := (others => '0');
+   signal diff          :   signed(33 downto 0);
+   signal x_rot         : unsigned(33 downto 0);
+   signal y_rot         : unsigned(33 downto 0);
+   signal do_sub        : std_logic;
+   signal new_angle     :   signed(33 downto 0) := (others => '0');
+   signal new_x         :   signed(33 downto 0);
+   signal new_y         :   signed(33 downto 0);
 
 begin
 
@@ -145,7 +146,7 @@ begin
          G_ANGLE_NUM => 33
       )
       port map (
-         in_i    => unsigned(mant_scale_d),
+         in_i    => unsigned(mant_scale_dd),
          shift_i => angle_shift,
          out_o   => mant_rot
       );
@@ -203,7 +204,18 @@ begin
                state        <= FRACTION_ST;
 
             when FRACTION_ST =>
-               angle_shift  <= to_integer(X"80" - arg_exp);
+               mant_scale_dd <= mant_scale_d;
+               if arg_exp > X"82" and arg_exp <= X"A3" then
+                  for i in 33 downto 33-to_integer(arg_exp - X"82") loop
+                     mant_scale_dd(i) <= '0';
+                  end loop;
+               end if;
+
+               angle_shift  <= 0;
+               if arg_exp > X"62" and arg_exp <= X"82" then
+                  angle_shift  <= to_integer(X"82" - arg_exp);
+               end if;
+
                x            <= C_SCALE;
                y            <= (others => '0');
                count        <= 0;
