@@ -79,7 +79,7 @@ architecture synthesis of fast_sincos is
    constant C_SCALE       : unsigned(33 downto 0) := calc_scaling(C_ANGLE_NUM);
    constant C_TWO_OVER_PI : unsigned(33 downto 0) := real2unsigned(0.6366197723675814);
 
-   type state_type is (IDLE_ST, SCALE_ST, SCALE2_ST, FRACTION_ST, FRACTION2_ST, CALC_ST);
+   type state_type is (IDLE_ST, SCALE_ST, SCALE2_ST, FRACTION_ST, CALC_ST);
    signal state : state_type := IDLE_ST;
 
    -- x and y take on values in the range 0 to 1.7. So they are encoded as
@@ -90,17 +90,16 @@ architecture synthesis of fast_sincos is
    signal arg_mant      : unsigned(31 downto 0) := (others => '0');    -- Mantissa
 
    signal sign          : std_logic := '0';
-   signal mant_scale    :   signed(33 downto 0) := (others => '0');
+   signal mant_scale    : unsigned(33 downto 0) := (others => '0');
 
-   signal mant_scale_d  :   signed(33 downto 0) := (others => '0');
-   signal mant_scale_dd :   signed(33 downto 0) := (others => '0');
-   signal angle_shift   : natural range 0 to 32 := 0;
+   signal mant_scale_d  : unsigned(33 downto 0) := (others => '0');
+   signal angle_shift   : integer range -32 to 32 := 0;
    signal x             : unsigned(33 downto 0) := (others => '0');
    signal y             : unsigned(33 downto 0) := (others => '0');
    signal count         : natural range 0 to C_ANGLE_NUM-1;
-   signal mant_rot      : unsigned(33 downto 0) := (others => '0');
 
    signal angle         :   signed(33 downto 0) := (others => '0');
+
    signal diff          :   signed(33 downto 0);
    signal x_rot         : unsigned(33 downto 0);
    signal y_rot         : unsigned(33 downto 0);
@@ -108,6 +107,22 @@ architecture synthesis of fast_sincos is
    signal new_angle     :   signed(33 downto 0) := (others => '0');
    signal new_x         :   signed(33 downto 0);
    signal new_y         :   signed(33 downto 0);
+
+   pure function rotate(arg : unsigned(33 downto 0); count : integer) return
+   unsigned is
+      variable res : unsigned(33 downto 0);
+   begin
+      if count > 0 then
+         -- rotate right
+         res := (others => arg(33));
+         res(33-count downto 0) := arg(33 downto count);
+      else
+         -- rotate left
+         res := (others => '0');
+         res(33 downto -count) := arg(33+count downto 0);
+      end if;
+      return res;
+   end function rotate;
 
 begin
 
@@ -123,7 +138,7 @@ begin
 
    fast_sincos_rotate_x_inst : entity work.fast_sincos_rotate
       generic map (
-         G_ANGLE_NUM => C_ANGLE_NUM
+         G_SHIFT_RANGE => C_ANGLE_NUM
       )
       port map (
          in_i    => x,
@@ -133,22 +148,12 @@ begin
 
    fast_sincos_rotate_y_inst : entity work.fast_sincos_rotate
       generic map (
-         G_ANGLE_NUM => C_ANGLE_NUM
+         G_SHIFT_RANGE => C_ANGLE_NUM
       )
       port map (
          in_i    => y,
          shift_i => count,
          out_o   => y_rot
-      );
-
-   fast_sincos_rotate_angle_inst : entity work.fast_sincos_rotate
-      generic map (
-         G_ANGLE_NUM => 33
-      )
-      port map (
-         in_i    => unsigned(mant_scale_dd),
-         shift_i => angle_shift,
-         out_o   => mant_rot
       );
 
    fast_sincos_addsub_x_inst : entity work.fast_sincos_addsub
@@ -196,33 +201,23 @@ begin
 
                -- Take absolute value and multiply by 2/pi
                tmp := (arg_mant or X"80000000") * C_TWO_OVER_PI;
-               mant_scale <= signed(tmp(65 downto 32));
+               mant_scale <= tmp(65 downto 32);
                state      <= SCALE2_ST;
 
             when SCALE2_ST =>
                mant_scale_d <= mant_scale; -- Pipeline the previous multiplier
-               state        <= FRACTION_ST;
-
-            when FRACTION_ST =>
-               mant_scale_dd <= mant_scale_d;
-               if arg_exp > X"82" and arg_exp <= X"A3" then
-                  for i in 33 downto 33-to_integer(arg_exp - X"82") loop
-                     mant_scale_dd(i) <= '0';
-                  end loop;
-               end if;
-
                angle_shift  <= 0;
-               if arg_exp > X"62" and arg_exp <= X"82" then
-                  angle_shift  <= to_integer(X"82" - arg_exp);
+               if arg_exp > X"62" and arg_exp <= X"A3" then
+                  angle_shift <= 130 - to_integer(arg_exp);
                end if;
 
                x            <= C_SCALE;
                y            <= (others => '0');
                count        <= 0;
-               state        <= FRACTION2_ST;
+               state        <= FRACTION_ST;
 
-            when FRACTION2_ST =>
-               angle <= signed(mant_rot);
+            when FRACTION_ST =>
+               angle <= signed(rotate(mant_scale_d, angle_shift));
                count <= count + 1;
                state <= CALC_ST;
 

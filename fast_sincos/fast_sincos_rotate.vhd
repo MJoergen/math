@@ -4,11 +4,11 @@ use ieee.numeric_std.all;
 
 entity fast_sincos_rotate is
    generic (
-      G_ANGLE_NUM : natural
+      G_SHIFT_RANGE : natural
    );
    port (
       in_i       : in  unsigned(33 downto 0);
-      shift_i    : in  natural range 0 to G_ANGLE_NUM-1;
+      shift_i    : in  natural range 0 to G_SHIFT_RANGE-1;
       out_o      : out unsigned(33 downto 0)
    );
 end entity fast_sincos_rotate;
