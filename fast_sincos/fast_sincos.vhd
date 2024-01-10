@@ -76,11 +76,11 @@ architecture synthesis of fast_sincos is
    end function calc_scaling;
 
 
-   constant C_ANGLE_NUM   : natural                := 35;
+   constant C_ANGLE_NUM   : natural                := 3;
    constant C_SCALE       : unsigned(33 downto 0)  := calc_scaling(C_ANGLE_NUM);
    constant C_TWO_OVER_PI : unsigned(33 downto 0)  := real2unsigned(0.6366197723675814);
 
-   type     state_type is (IDLE_ST, SCALE_ST, SCALE2_ST, FRACTION_ST, CALC_ST);
+   type     state_type is (IDLE_ST, SCALE_ST, SCALE2_ST, FRACTION_ST, FRACTION2_ST, CALC_ST);
    signal   state : state_type                     := IDLE_ST;
 
    -- x and y take on values in the range 0 to 1.7. So they are encoded as
@@ -99,6 +99,9 @@ architecture synthesis of fast_sincos is
    signal   y            : unsigned(33 downto 0)   := (others => '0');
    signal   count        : natural range 0 to C_ANGLE_NUM - 1;
 
+   signal   angle2 : unsigned(33 downto 0)         := (others => '0');
+
+   signal   quad  : unsigned(1 downto 0)           := (others => '0');
    signal   angle : signed(33 downto 0)            := (others => '0');
 
    signal   diff      : signed(33 downto 0);
@@ -220,7 +223,12 @@ begin
                state <= FRACTION_ST;
 
             when FRACTION_ST =>
-               angle <= signed(rotate(mant_scale_d, angle_shift));
+               angle2 <= rotate(mant_scale_d, angle_shift);
+               state  <= FRACTION2_ST;
+
+            when FRACTION2_ST =>
+               quad  <= angle2(33 downto 32);
+               angle <= signed(angle2(31 downto 0)) & "00";
                count <= count + 1;
                state <= CALC_ST;
 

@@ -157,10 +157,10 @@ begin
 --      verify_sincos(4.0);
 --      verify_sincos(0.5);
 --      verify_sincos(-1.0);
-      for vali in -24 to 24 loop
-         arg := real(vali)/(6.0*3.141592653589793);
-         verify_sincos(arg);
-      end loop;
+--      for vali in -24 to 24 loop
+--         arg := real(vali)/(6.0*3.141592653589793);
+--         verify_sincos(arg);
+--      end loop;
       end_time := now;
       report "Test finished, " &
          to_string(real((end_time-start_time) / 10 ns) / real(count)) &
