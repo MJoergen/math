@@ -1,7 +1,7 @@
 library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-use ieee.math_real.all;
+   use ieee.std_logic_1164.all;
+   use ieee.numeric_std.all;
+   use ieee.math_real.all;
 
 -- This module takes a floating point number (exp_i, mant_i) and returns the
 -- sine and cosing as a floating point number (exp_o, mant_o).
@@ -32,96 +32,97 @@ use ieee.math_real.all;
 
 entity fast_sincos is
    port (
-      clk_i      : in  std_logic;
-      ready_o    : out std_logic := '1';         -- Asserted when output is ready.
-      start_i    : in  std_logic;                -- Assert to restart calculation.
-      arg_exp_i  : in  unsigned( 7 downto 0);    -- Exponent
-      arg_mant_i : in  unsigned(31 downto 0);    -- Mantissa
-      sin_exp_o  : out unsigned( 7 downto 0) := (others => '0');    -- Exponent
-      sin_mant_o : out unsigned(31 downto 0) := (others => '0');    -- Mantissa
-      cos_exp_o  : out unsigned( 7 downto 0) := (others => '0');    -- Exponent
-      cos_mant_o : out unsigned(31 downto 0) := (others => '0')     -- Mantissa
+      clk_i      : in    std_logic;
+      ready_o    : out   std_logic             := '1';             -- Asserted when output is ready.
+      start_i    : in    std_logic;                                -- Assert to restart calculation.
+      arg_exp_i  : in    unsigned( 7 downto 0);                    -- Exponent
+      arg_mant_i : in    unsigned(31 downto 0);                    -- Mantissa
+      sin_exp_o  : out   unsigned( 7 downto 0) := (others => '0'); -- Exponent
+      sin_mant_o : out   unsigned(31 downto 0) := (others => '0'); -- Mantissa
+      cos_exp_o  : out   unsigned( 7 downto 0) := (others => '0'); -- Exponent
+      cos_mant_o : out   unsigned(31 downto 0) := (others => '0')  -- Mantissa
    );
 end entity fast_sincos;
 
 architecture synthesis of fast_sincos is
 
    -- arg must satisfy: 0 <= arg < 1.
-   pure function real2unsigned(arg : real) return unsigned is
-      variable tmp : real;
-      variable res : unsigned(33 downto 0);
+
+   pure function real2unsigned (arg : real) return unsigned is
+      variable tmp_v : real;
+      variable res_v : unsigned(33 downto 0);
    begin
-      res(33 downto 29) := to_unsigned(integer(arg*(2.0**5)), 5);
-      tmp := arg*(2.0**5) - real(integer(arg*(2.0**5)));
-      res(28 downto 0) := to_unsigned(integer(tmp*(2.0**29)), 29);
-      return res;
+      res_v(33 downto 29) := to_unsigned(integer(arg * (2.0 ** 5)), 5);
+      tmp_v               := arg * (2.0 ** 5) - real(integer(arg * (2.0 ** 5)));
+      res_v(28 downto 0)  := to_unsigned(integer(tmp_v * (2.0 ** 29)), 29);
+      return res_v;
    end function real2unsigned;
 
-   pure function unsigned2real(arg : unsigned) return real is
+   pure function unsigned2real (arg : unsigned) return real is
    begin
       return (real(to_integer(arg(33 downto 29))) +
-              real(to_integer(arg(28 downto 0))) / (2.0**29)) / (2.0**4);
+              real(to_integer(arg(28 downto 0))) / (2.0 ** 29)) / (2.0 ** 4);
    end function unsigned2real;
 
-   pure function calc_scaling(count : natural) return unsigned is
+   pure function calc_scaling (count : natural) return unsigned is
       variable res_v   : real := 1.0;
       variable angle_v : real;
    begin
-      for i in 0 to count-1 loop
-         res_v := res_v * sqrt(1.0 + 1.0 / (4.0**i));
+      for i in 0 to count - 1 loop
+         res_v := res_v * sqrt(1.0 + 1.0 / (4.0 ** i));
       end loop;
---      report "scaling = " & to_string(res_v);
-      return real2unsigned(res_v/2.0);
+      --      report "scaling = " & to_string(res_v);
+      return real2unsigned(res_v / 2.0);
    end function calc_scaling;
 
 
-   constant C_ANGLE_NUM   : natural := 35;
-   constant C_SCALE       : unsigned(33 downto 0) := calc_scaling(C_ANGLE_NUM);
-   constant C_TWO_OVER_PI : unsigned(33 downto 0) := real2unsigned(0.6366197723675814);
+   constant C_ANGLE_NUM   : natural                := 35;
+   constant C_SCALE       : unsigned(33 downto 0)  := calc_scaling(C_ANGLE_NUM);
+   constant C_TWO_OVER_PI : unsigned(33 downto 0)  := real2unsigned(0.6366197723675814);
 
-   type state_type is (IDLE_ST, SCALE_ST, SCALE2_ST, FRACTION_ST, CALC_ST);
-   signal state : state_type := IDLE_ST;
+   type     state_type is (IDLE_ST, SCALE_ST, SCALE2_ST, FRACTION_ST, CALC_ST);
+   signal   state : state_type                     := IDLE_ST;
 
    -- x and y take on values in the range 0 to 1.7. So they are encoded as
    -- unsigned fixed point 1.33.
    -- angle takes on values in the range -0.8 to 0.8. So that is encoded
    -- signed fixed point 1.33.
-   signal arg_exp       : unsigned( 7 downto 0) := (others => '0');    -- Exponent
-   signal arg_mant      : unsigned(31 downto 0) := (others => '0');    -- Mantissa
+   signal   arg_exp  : unsigned( 7 downto 0)       := (others => '0'); -- Exponent
+   signal   arg_mant : unsigned(31 downto 0)       := (others => '0'); -- Mantissa
 
-   signal sign          : std_logic := '0';
-   signal mant_scale    : unsigned(33 downto 0) := (others => '0');
+   signal   sign       : std_logic                 := '0';
+   signal   mant_scale : unsigned(33 downto 0)     := (others => '0');
 
-   signal mant_scale_d  : unsigned(33 downto 0) := (others => '0');
-   signal angle_shift   : integer range -32 to 32 := 0;
-   signal x             : unsigned(33 downto 0) := (others => '0');
-   signal y             : unsigned(33 downto 0) := (others => '0');
-   signal count         : natural range 0 to C_ANGLE_NUM-1;
+   signal   mant_scale_d : unsigned(33 downto 0)   := (others => '0');
+   signal   angle_shift  : integer range -32 to 32 := 0;
+   signal   x            : unsigned(33 downto 0)   := (others => '0');
+   signal   y            : unsigned(33 downto 0)   := (others => '0');
+   signal   count        : natural range 0 to C_ANGLE_NUM - 1;
 
-   signal angle         :   signed(33 downto 0) := (others => '0');
+   signal   angle : signed(33 downto 0)            := (others => '0');
 
-   signal diff          :   signed(33 downto 0);
-   signal x_rot         : unsigned(33 downto 0);
-   signal y_rot         : unsigned(33 downto 0);
-   signal do_sub        : std_logic;
-   signal new_angle     :   signed(33 downto 0) := (others => '0');
-   signal new_x         :   signed(33 downto 0);
-   signal new_y         :   signed(33 downto 0);
+   signal   diff      : signed(33 downto 0);
+   signal   x_rot     : unsigned(33 downto 0);
+   signal   y_rot     : unsigned(33 downto 0);
+   signal   do_sub    : std_logic;
+   signal   new_angle : signed(33 downto 0)        := (others => '0');
+   signal   new_x     : signed(33 downto 0);
+   signal   new_y     : signed(33 downto 0);
 
-   pure function rotate(arg : unsigned(33 downto 0); count : integer) return
+   pure function rotate (arg : unsigned(33 downto 0); count : integer) return
    unsigned is
-      variable res : unsigned(33 downto 0);
+      variable res_v : unsigned(33 downto 0);
    begin
       if count > 0 then
          -- rotate right
-         res := (others => arg(33));
-         res(33-count downto 0) := arg(33 downto count);
+         res_v                      := (others => arg(33));
+         res_v(33 - count downto 0) := arg(33 downto count);
       else
          -- rotate left
-         res := (others => '0');
-         res(33 downto -count) := arg(33+count downto 0);
+         res_v                    := (others => '0');
+         res_v(33 downto - count) := arg(33 + count downto 0);
       end if;
-      return res;
+      return res_v;
    end function rotate;
 
 begin
@@ -180,41 +181,43 @@ begin
          out_o    => new_angle
       );
 
-   do_sub <= '1' when angle >= 0 else '0';
+   do_sub <= '1' when angle >= 0 else
+             '0';
 
    fsm_proc : process (clk_i)
-      variable tmp : unsigned(65 downto 0);
+      variable tmp_v : unsigned(65 downto 0);
    begin
       if rising_edge(clk_i) then
          if state /= IDLE_ST then
             report "x=" & to_string(unsigned2real(x)) &
-                 ", y=" & to_string(unsigned2real(y));
+                   ", y=" & to_string(unsigned2real(y));
          end if;
 
          case state is
+
             when IDLE_ST =>
                null;
 
             when SCALE_ST =>
                -- Store the sign
-               sign  <= arg_mant(31);
+               sign       <= arg_mant(31);
 
                -- Take absolute value and multiply by 2/pi
-               tmp := (arg_mant or X"80000000") * C_TWO_OVER_PI;
-               mant_scale <= tmp(65 downto 32);
+               tmp_v      := (arg_mant or x"80000000") * C_TWO_OVER_PI;
+               mant_scale <= tmp_v(65 downto 32);
                state      <= SCALE2_ST;
 
             when SCALE2_ST =>
                mant_scale_d <= mant_scale; -- Pipeline the previous multiplier
                angle_shift  <= 0;
-               if arg_exp > X"62" and arg_exp <= X"A3" then
+               if arg_exp > x"62" and arg_exp <= x"A3" then
                   angle_shift <= 130 - to_integer(arg_exp);
                end if;
 
-               x            <= C_SCALE;
-               y            <= (others => '0');
-               count        <= 0;
-               state        <= FRACTION_ST;
+               x     <= C_SCALE;
+               y     <= (others => '0');
+               count <= 0;
+               state <= FRACTION_ST;
 
             when FRACTION_ST =>
                angle <= signed(rotate(mant_scale_d, angle_shift));
@@ -222,11 +225,11 @@ begin
                state <= CALC_ST;
 
             when CALC_ST =>
-               if count = C_ANGLE_NUM-1 or angle = 0 then
+               if count = C_ANGLE_NUM - 1 or angle = 0 then
                   cos_mant_o     <= x(31 downto 0);
                   sin_mant_o     <= y(31 downto 0);
-                  cos_exp_o      <= X"80";
-                  sin_exp_o      <= X"80";
+                  cos_exp_o      <= x"80";
+                  sin_exp_o      <= x"80";
                   ready_o        <= '1';
                   cos_mant_o(31) <= sign;
                   sin_mant_o(31) <= sign;
@@ -237,6 +240,7 @@ begin
                   y     <= unsigned(new_y);
                   count <= count + 1;
                end if;
+
          end case;
 
          if start_i = '1' then
