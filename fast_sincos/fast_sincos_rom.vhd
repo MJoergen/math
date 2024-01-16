@@ -5,24 +5,25 @@ use ieee.math_real.all;
 
 entity fast_sincos_rom is
    generic (
-      G_ANGLE_NUM : natural
+      G_ANGLE_NUM : natural;
+      G_SIZE      : natural
    );
    port (
       clk_i  : in  std_logic;
       addr_i : in  natural range 0 to G_ANGLE_NUM-1;
-      data_o : out signed(33 downto 0)
+      data_o : out signed(G_SIZE-1 downto 0)
    );
 end entity fast_sincos_rom;
 
 architecture synthesis of fast_sincos_rom is
 
-   type rom_type is array (0 to G_ANGLE_NUM-1) of signed(33 downto 0);
+   type rom_type is array (0 to G_ANGLE_NUM-1) of signed(G_SIZE-1 downto 0);
 
    pure function real2signed(arg : real) return signed is
       variable tmp : real;
-      variable res : signed(33 downto 0);
+      variable res : signed(G_SIZE-1 downto 0);
    begin
-      res(33 downto 29) := to_signed(integer(arg*(2.0**4)), 5);
+      res(G_SIZE-1 downto 29) := to_signed(integer(arg*(2.0**(G_SIZE-30))), G_SIZE-29);
       tmp := arg*(2.0**4) - real(integer(arg*(2.0**4)));
       res(28 downto 0) := to_signed(integer(tmp*(2.0**29)), 29);
       return res;
