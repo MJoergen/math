@@ -33,10 +33,10 @@ library ieee;
 entity fast_sincos is
    port (
       clk_i      : in    std_logic;
-      ready_o    : out   std_logic := '1';      -- Asserted when output is ready.
-      start_i    : in    std_logic;             -- Assert to restart calculation.
-      arg_exp_i  : in    unsigned( 7 downto 0); -- Exponent
-      arg_mant_i : in    unsigned(31 downto 0); -- Mantissa
+      ready_o    : out   std_logic             := '1';             -- Asserted when output is ready.
+      start_i    : in    std_logic;                                -- Assert to restart calculation.
+      arg_exp_i  : in    unsigned( 7 downto 0);                    -- Exponent
+      arg_mant_i : in    unsigned(31 downto 0);                    -- Mantissa
       sin_exp_o  : out   unsigned( 7 downto 0) := (others => '0'); -- Exponent
       sin_mant_o : out   unsigned(31 downto 0) := (others => '0'); -- Mantissa
       cos_exp_o  : out   unsigned( 7 downto 0) := (others => '0'); -- Exponent
@@ -46,73 +46,84 @@ end entity fast_sincos;
 
 architecture synthesis of fast_sincos is
 
-   constant C_SIZE : natural                              := 32 + 4;
+   -- C_ANGLE_NUM is the number of CORDIC iterations.
+   constant C_ANGLE_NUM  : natural                       := 3;
+   constant C_GUARD_BITS : natural                       := 4;
+   constant C_SIZE       : natural                       := 32 + C_GUARD_BITS;
 
-   -- arg must satisfy: 0 <= arg < 1.
+   -- This is just giving a name to a commonly used type.
+   -- This type represents an unsigned fractional value, i.e. real number between 0.0 and 1.0.
+   subtype  fraction_type is unsigned(C_SIZE - 1 downto 0);
 
-   pure function real2unsigned (arg : real) return unsigned is
-      variable tmp_v : real;
-      variable res_v : unsigned(C_SIZE - 1 downto 0);
+   -- The following two helper functions convert between real numbers and the above
+   -- fraction_type.
+
+   pure function real2fraction (arg : real) return fraction_type is
+      variable tmp_v        : real;
+      variable res_v        : fraction_type;
+      constant C_SCALE_HIGH : real := 2.0 ** (C_SIZE - 29);
+      constant C_SCALE_LOW  : real := 2.0 ** 29;
    begin
-      res_v(C_SIZE - 1 downto 29) := to_unsigned(integer(arg * (2.0 ** (C_SIZE - 29))), (C_SIZE - 29));
-      tmp_v                       := arg * (2.0 ** (C_SIZE - 29)) - real(integer(arg * (2.0 ** (C_SIZE - 29))));
-      res_v(28 downto 0)          := to_unsigned(integer(tmp_v * (2.0 ** 29)), 29);
+      tmp_v                       := arg * C_SCALE_HIGH;
+      res_v(C_SIZE - 1 downto 29) := to_unsigned(integer(tmp_v), C_SIZE - 29);
+      tmp_v                       := tmp_v - real(integer(tmp_v));
+      tmp_v                       := tmp_v * C_SCALE_LOW;
+      res_v(28 downto 0)          := to_unsigned(integer(tmp_v), 29);
       return res_v;
-   end function real2unsigned;
+   end function real2fraction;
 
-   pure function unsigned2real (arg : unsigned) return real is
+   pure function fraction2real (arg : fraction_type) return real is
    begin
       return (real(to_integer(arg(C_SIZE - 1 downto 29))) +
-              real(to_integer(arg(28 downto 0))) / (2.0 ** 29)) / (2.0 ** 4);
-   end function unsigned2real;
+              real(to_integer(arg(28 downto 0))) / (2.0 ** 29)) / (2.0 ** (C_SIZE - 29));
+   end function fraction2real;
 
-   pure function calc_scaling (count : natural) return unsigned is
-      variable res_v   : real := 1.0;
-      variable angle_v : real;
+   -- This calculates the scaling used in the CORDIC algorithm
+
+   pure function calc_scaling return fraction_type is
+      variable res_v : real := 1.0;
    begin
-      --
-      for i in 0 to count - 1 loop
-         res_v := res_v * sqrt(1.0 + 1.0 / (4.0 ** i));
+      for i in 0 to C_ANGLE_NUM - 1 loop
+         res_v := res_v * (1.0 + 1.0 / (4.0 ** i));
       end loop;
 
-      --      report "scaling = " & to_string(res_v);
-      return real2unsigned(res_v / 2.0);
+      return real2fraction(sqrt(res_v) / 2.0);
    end function calc_scaling;
 
 
-   constant C_ANGLE_NUM   : natural                       := 3;
-   constant C_SCALE       : unsigned(C_SIZE - 1 downto 0) := calc_scaling(C_ANGLE_NUM);
-   constant C_TWO_OVER_PI : unsigned(C_SIZE - 1 downto 0) := real2unsigned(0.6366197723675814);
+
+   constant C_SCALE       : fraction_type                := calc_scaling;
+   constant C_TWO_OVER_PI : fraction_type                := real2fraction(0.6366197723675814);
 
    type     state_type is (IDLE_ST, SCALE_ST, SCALE2_ST, FRACTION_ST, FRACTION2_ST, CALC_ST);
-   signal   state : state_type                            := IDLE_ST;
+   signal   state : state_type                           := IDLE_ST;
 
    -- x and y take on values in the range 0 to 1.7. So they are encoded as
    -- unsigned fixed point 1.C_SIZE-1.
    -- angle takes on values in the range -0.8 to 0.8. So that is encoded
    -- signed fixed point 1.C_SIZE-1.
-   signal   arg_exp  : unsigned( 7 downto 0)              := (others => '0'); -- Exponent
-   signal   arg_mant : unsigned(31 downto 0)              := (others => '0'); -- Mantissa
+   signal   arg_exp  : unsigned( 7 downto 0)             := (others => '0'); -- Exponent
+   signal   arg_mant : unsigned(31 downto 0)             := (others => '0'); -- Mantissa
 
-   signal   sign       : std_logic                        := '0';
-   signal   mant_scale : unsigned(C_SIZE - 1 downto 0)    := (others => '0');
+   signal   sign       : std_logic                       := '0';
+   signal   mant_scale : unsigned(C_SIZE - 1 downto 0)   := (others => '0');
 
-   signal   mant_scale_d : unsigned(C_SIZE - 1 downto 0)  := (others => '0');
-   signal   angle_shift  : integer range -32 to 32        := 0;
-   signal   x            : unsigned(C_SIZE - 1 downto 0)  := (others => '0');
-   signal   y            : unsigned(C_SIZE - 1 downto 0)  := (others => '0');
+   signal   mant_scale_d : unsigned(C_SIZE - 1 downto 0) := (others => '0');
+   signal   angle_shift  : integer range -32 to 32       := 0;
+   signal   x            : unsigned(C_SIZE - 1 downto 0) := (others => '0');
+   signal   y            : unsigned(C_SIZE - 1 downto 0) := (others => '0');
    signal   count        : natural range 0 to C_ANGLE_NUM - 1;
 
-   signal   angle2 : unsigned(C_SIZE - 1 downto 0)        := (others => '0');
+   signal   angle2 : unsigned(C_SIZE - 1 downto 0)       := (others => '0');
 
-   signal   quad  : unsigned(1 downto 0)                  := (others => '0');
-   signal   angle : signed(C_SIZE - 1 downto 0)           := (others => '0');
+   signal   quad  : unsigned(1 downto 0)                 := (others => '0');
+   signal   angle : signed(C_SIZE - 1 downto 0)          := (others => '0');
 
    signal   diff      : signed(C_SIZE - 1 downto 0);
    signal   x_rot     : unsigned(C_SIZE - 1 downto 0);
    signal   y_rot     : unsigned(C_SIZE - 1 downto 0);
    signal   do_sub    : std_logic;
-   signal   new_angle : signed(C_SIZE - 1 downto 0)       := (others => '0');
+   signal   new_angle : signed(C_SIZE - 1 downto 0)      := (others => '0');
    signal   new_x     : signed(C_SIZE - 1 downto 0);
    signal   new_y     : signed(C_SIZE - 1 downto 0);
 
@@ -207,11 +218,6 @@ begin
       variable tmp_v : unsigned(C_SIZE + 31 downto 0);
    begin
       if rising_edge(clk_i) then
-         if state /= IDLE_ST then
-            report "x=" & to_string(unsigned2real(x)) &
-                   ", y=" & to_string(unsigned2real(y));
-         end if;
-
          case state is
 
             when IDLE_ST =>
@@ -268,6 +274,11 @@ begin
          end case;
 
          if start_i = '1' then
+            report "arg_exp_i     = 0x" & to_hstring(arg_exp_i);
+            report "arg_mant_i    = " & to_string(fraction2real((arg_mant_i or X"80000000") & "0000"), 11);
+            report "C_SCALE       = " & to_string(fraction2real(C_SCALE), 11);
+            report "C_TWO_OVER_PI = " & to_string(fraction2real(C_TWO_OVER_PI), 11);
+
             arg_exp  <= arg_exp_i;
             arg_mant <= arg_mant_i;
             ready_o  <= '0';
