@@ -3,6 +3,9 @@ library ieee;
    use ieee.numeric_std.all;
    use ieee.math_real.all;
 
+library work;
+   use work.fast_sincos_pkg.all;
+
 -- This module takes a floating point number (exp_i, mant_i) and returns the
 -- sine and cosing as a floating point number (exp_o, mant_o).
 --
@@ -48,35 +51,6 @@ architecture synthesis of fast_sincos is
 
    -- C_ANGLE_NUM is the number of CORDIC iterations.
    constant C_ANGLE_NUM  : natural                       := 3;
-   constant C_GUARD_BITS : natural                       := 4;
-   constant C_SIZE       : natural                       := 32 + C_GUARD_BITS;
-
-   -- This is just giving a name to a commonly used type.
-   -- This type represents an unsigned fractional value, i.e. real number between 0.0 and 1.0.
-   subtype  fraction_type is unsigned(C_SIZE - 1 downto 0);
-
-   -- The following two helper functions convert between real numbers and the above
-   -- fraction_type.
-
-   pure function real2fraction (arg : real) return fraction_type is
-      variable tmp_v        : real;
-      variable res_v        : fraction_type;
-      constant C_SCALE_HIGH : real := 2.0 ** (C_SIZE - 29);
-      constant C_SCALE_LOW  : real := 2.0 ** 29;
-   begin
-      tmp_v                       := arg * C_SCALE_HIGH;
-      res_v(C_SIZE - 1 downto 29) := to_unsigned(integer(tmp_v), C_SIZE - 29);
-      tmp_v                       := tmp_v - real(integer(tmp_v));
-      tmp_v                       := tmp_v * C_SCALE_LOW;
-      res_v(28 downto 0)          := to_unsigned(integer(tmp_v), 29);
-      return res_v;
-   end function real2fraction;
-
-   pure function fraction2real (arg : fraction_type) return real is
-   begin
-      return (real(to_integer(arg(C_SIZE - 1 downto 29))) +
-              real(to_integer(arg(28 downto 0))) / (2.0 ** 29)) / (2.0 ** (C_SIZE - 29));
-   end function fraction2real;
 
    -- This calculates the scaling used in the CORDIC algorithm
 
@@ -106,34 +80,34 @@ architecture synthesis of fast_sincos is
    signal   arg_mant : unsigned(31 downto 0)             := (others => '0'); -- Mantissa
 
    signal   sign       : std_logic                       := '0';
-   signal   mant_scale : unsigned(C_SIZE - 1 downto 0)   := (others => '0');
+   signal   mant_scale : fraction_type  := (others => '0');
 
-   signal   mant_scale_d : unsigned(C_SIZE - 1 downto 0) := (others => '0');
+   signal   mant_scale_d : fraction_type := (others => '0');
    signal   angle_shift  : integer range -32 to 32       := 0;
-   signal   x            : unsigned(C_SIZE - 1 downto 0) := (others => '0');
-   signal   y            : unsigned(C_SIZE - 1 downto 0) := (others => '0');
+   signal   x            : fraction_type := (others => '0');
+   signal   y            : fraction_type := (others => '0');
    signal   count        : natural range 0 to C_ANGLE_NUM - 1;
 
-   signal   angle2 : unsigned(C_SIZE - 1 downto 0)       := (others => '0');
+   signal   angle2 : fraction_type      := (others => '0');
 
    signal   quad  : unsigned(1 downto 0)                 := (others => '0');
-   signal   angle : signed(C_SIZE - 1 downto 0)          := (others => '0');
+   signal   angle : fraction_type        := (others => '0');
 
-   signal   diff      : signed(C_SIZE - 1 downto 0);
-   signal   x_rot     : unsigned(C_SIZE - 1 downto 0);
-   signal   y_rot     : unsigned(C_SIZE - 1 downto 0);
+   signal   diff      : fraction_type;
+   signal   x_rot     : fraction_type;
+   signal   y_rot     : fraction_type;
    signal   do_sub    : std_logic;
-   signal   new_angle : signed(C_SIZE - 1 downto 0)      := (others => '0');
-   signal   new_x     : signed(C_SIZE - 1 downto 0);
-   signal   new_y     : signed(C_SIZE - 1 downto 0);
+   signal   new_angle : fraction_type      := (others => '0');
+   signal   new_x     : fraction_type;
+   signal   new_y     : fraction_type;
 
-   pure function rotate (arg : unsigned(C_SIZE - 1 downto 0); ncount : integer) return
+   pure function rotate (arg : fraction_type; ncount : integer) return
    unsigned is
-      variable res_v : unsigned(C_SIZE - 1 downto 0);
+      variable res_v : fraction_type;
    begin
       if ncount > 0 then
          -- rotate right
-         res_v                               := (others => arg(C_SIZE - 1));
+         res_v                               := (others => '0');
          res_v(C_SIZE - 1 - ncount downto 0) := arg(C_SIZE - 1 downto ncount);
       else
          -- rotate left
@@ -147,7 +121,6 @@ begin
 
    fast_sincos_rom_inst : entity work.fast_sincos_rom
       generic map (
-         G_SIZE      => C_SIZE,
          G_ANGLE_NUM => C_ANGLE_NUM
       )
       port map (
@@ -183,8 +156,8 @@ begin
          G_SIZE => C_SIZE
       )
       port map (
-         a_i      => signed(x),
-         b_i      => signed(y_rot),
+         a_i      => x,
+         b_i      => y_rot,
          do_sub_i => do_sub,
          out_o    => new_x
       );
@@ -194,8 +167,8 @@ begin
          G_SIZE => C_SIZE
       )
       port map (
-         a_i      => signed(y),
-         b_i      => signed(x_rot),
+         a_i      => y,
+         b_i      => x_rot,
          do_sub_i => not do_sub,
          out_o    => new_y
       );
@@ -205,8 +178,8 @@ begin
          G_SIZE => C_SIZE
       )
       port map (
-         a_i      => signed(angle),
-         b_i      => signed(diff),
+         a_i      => angle,
+         b_i      => diff,
          do_sub_i => do_sub,
          out_o    => new_angle
       );
@@ -234,6 +207,7 @@ begin
 
             when SCALE2_ST =>
                mant_scale_d <= mant_scale; -- Pipeline the previous multiplier
+               report "mant_scale = " & to_string(fraction2real(mant_scale), 11);
                angle_shift  <= 0;
                if arg_exp > x"62" and arg_exp <= x"A3" then
                   angle_shift <= 130 - to_integer(arg_exp);
@@ -249,8 +223,9 @@ begin
                state  <= FRACTION2_ST;
 
             when FRACTION2_ST =>
+               report "angle2 = " & to_string(4.0*fraction2real(angle2), 11);
                quad  <= angle2(C_SIZE - 1 downto C_SIZE - 2);
-               angle <= signed(angle2(C_SIZE - 3 downto 0)) & "00";
+               angle <= angle2(C_SIZE - 3 downto 0) & "00";
                count <= count + 1;
                state <= CALC_ST;
 
