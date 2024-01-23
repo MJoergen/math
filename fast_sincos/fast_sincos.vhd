@@ -60,8 +60,9 @@ architecture synthesis of fast_sincos is
       for i in 0 to C_ANGLE_NUM - 1 loop
          res_v := res_v * (1.0 + 1.0 / (4.0 ** i));
       end loop;
+      res_v := sqrt(res_v) / 2.0;
 
-      return real2fraction(sqrt(res_v) / 2.0);
+      return real2fraction(res_v);
    end function calc_scaling;
 
 
@@ -79,18 +80,18 @@ architecture synthesis of fast_sincos is
    signal   arg_exp  : unsigned( 7 downto 0)             := (others => '0'); -- Exponent
    signal   arg_mant : unsigned(31 downto 0)             := (others => '0'); -- Mantissa
 
-   signal   sign       : std_logic                       := '0';
-   signal   mant_scale : fraction_type  := (others => '0');
+   signal   scale_sign : std_logic                       := '0';
+   signal   scale_mant : fraction_type  := (others => '0');
 
-   signal   mant_scale_d : fraction_type := (others => '0');
-   signal   angle_shift  : integer range -32 to 32       := 0;
+   signal   scale2_mant : fraction_type := (others => '0');
+   signal   scale2_shift  : integer range -32 to 32       := 0;
+
+   signal   fraction_angle : fraction_type      := (others => '0');
+
    signal   x            : fraction_type := (others => '0');
    signal   y            : fraction_type := (others => '0');
-   signal   count        : natural range 0 to C_ANGLE_NUM - 1;
-
-   signal   angle2 : fraction_type      := (others => '0');
-
-   signal   quad  : unsigned(1 downto 0)                 := (others => '0');
+   signal   count        : natural range 0 to C_ANGLE_NUM;
+   signal   fraction2_quad  : unsigned(1 downto 0)                 := (others => '0');
    signal   angle : fraction_type        := (others => '0');
 
    signal   diff      : fraction_type;
@@ -125,7 +126,7 @@ begin
       )
       port map (
          clk_i  => clk_i,
-         addr_i => count,
+         addr_i => count mod C_ANGLE_NUM,
          data_o => diff
       );
 
@@ -136,7 +137,7 @@ begin
       )
       port map (
          in_i    => x,
-         shift_i => count,
+         shift_i => count mod C_ANGLE_NUM,
          out_o   => x_rot
       );
 
@@ -147,7 +148,7 @@ begin
       )
       port map (
          in_i    => y,
-         shift_i => count,
+         shift_i => count mod C_ANGLE_NUM,
          out_o   => y_rot
       );
 
@@ -198,46 +199,52 @@ begin
 
             when SCALE_ST =>
                -- Store the sign
-               sign       <= arg_mant(31);
+               scale_sign       <= arg_mant(31);
 
                -- Take absolute value and multiply by 2/pi
                tmp_v      := (arg_mant or x"80000000") * C_TWO_OVER_PI;
-               mant_scale <= tmp_v(C_SIZE + 31 downto 32);
+               scale_mant <= tmp_v(C_SIZE + 31 downto 32);
                state      <= SCALE2_ST;
 
             when SCALE2_ST =>
-               mant_scale_d <= mant_scale; -- Pipeline the previous multiplier
-               report "mant_scale = " & to_string(fraction2real(mant_scale), 11);
-               angle_shift  <= 0;
+               scale2_mant <= scale_mant; -- Pipeline the previous multiplier
+               report "scale_mant = " & to_string(fraction2real(scale_mant), 11);
+               scale2_shift  <= 0;
                if arg_exp > x"62" and arg_exp <= x"A3" then
-                  angle_shift <= 130 - to_integer(arg_exp);
+                  scale2_shift <= 130 - to_integer(arg_exp);
                end if;
 
-               x     <= C_SCALE;
-               y     <= (others => '0');
-               count <= 0;
                state <= FRACTION_ST;
 
             when FRACTION_ST =>
-               angle2 <= rotate(mant_scale_d, angle_shift);
+               fraction_angle <= rotate(scale2_mant, scale2_shift);
+
+               -- Prepare first iteration
+               x      <= C_SCALE;
+               y      <= (others => '0');
+               count  <= 0;
                state  <= FRACTION2_ST;
 
             when FRACTION2_ST =>
-               report "angle2 = " & to_string(4.0*fraction2real(angle2), 11);
-               quad  <= angle2(C_SIZE - 1 downto C_SIZE - 2);
-               angle <= angle2(C_SIZE - 3 downto 0) & "00";
+               report "fraction_angle = " & to_string(fraction2real(fraction_angle), 11) & " * 2pi";
+               fraction2_quad  <= fraction_angle(C_SIZE - 1 downto C_SIZE - 2);
+               angle <= fraction_angle(C_SIZE - 3 downto 0) & "00";
                count <= count + 1;
                state <= CALC_ST;
 
             when CALC_ST =>
-               if count = C_ANGLE_NUM - 1 or angle = 0 then
+               report "count = " & to_string(count);
+               report "angle = " & to_string(fraction2real(angle), 11) & " * pi/2";
+               report "x     = " & to_string(fraction2real(x), 11);
+               report "y     = " & to_string(fraction2real(y), 11);
+               if count = C_ANGLE_NUM or angle = 0 then
                   cos_mant_o     <= x(31 downto 0);
                   sin_mant_o     <= y(31 downto 0);
                   cos_exp_o      <= x"80";
                   sin_exp_o      <= x"80";
                   ready_o        <= '1';
-                  cos_mant_o(31) <= sign;
-                  sin_mant_o(31) <= sign;
+                  cos_mant_o(31) <= scale_sign;
+                  sin_mant_o(31) <= scale_sign;
                   state          <= IDLE_ST;
                else
                   angle <= new_angle;

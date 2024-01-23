@@ -28,7 +28,7 @@ architecture synthesis of fast_sincos_rom is
       for i in 0 to G_ANGLE_NUM-1 loop
          angle_v  := 0.5*arctan(1.0 / (2.0**i))/arctan(1.0); -- In units of pi/2
          res_v(i) := real2fraction(angle_v);
-         report "C_ANGLES(" & to_string(i) & ") = " & to_string(angle_v, 11) & " = " & to_hstring(res_v(i));
+         report "C_ANGLES(" & to_string(i) & ") = " & to_string(angle_v, 11) & " = 0x" & to_hstring(res_v(i));
       end loop;
       return res_v;
    end function calc_angles;

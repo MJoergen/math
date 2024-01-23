@@ -112,6 +112,7 @@ begin
          real_arg  := float2real(float_arg);
          exp_cos   := real2float(cos(real_arg));
          exp_sin   := real2float(sin(real_arg));
+         report "Testing " & to_string(real_arg, 11) & " = " & to_string(real_arg/6.283185307179586, 11) & " * 2pi";
 
          float_in <= float_arg;
          start    <= '1';
