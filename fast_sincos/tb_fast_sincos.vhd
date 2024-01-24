@@ -21,6 +21,8 @@ architecture simulation of tb_fast_sincos is
    signal float_out_cos : float_type;
    signal float_out_sin : float_type;
    signal count         : natural := 0;
+   signal max_error_cos : real := 0.0;
+   signal max_error_sin : real := 0.0;
 
 begin
 
@@ -106,6 +108,8 @@ begin
          variable real_arg : real;
          variable exp_cos  : float_type;
          variable exp_sin  : float_type;
+         variable diff_cos_v : real;
+         variable diff_sin_v : real;
       begin
          count <= count + 1;
          float_arg := real2float(real_val);
@@ -124,14 +128,25 @@ begin
          end loop;
 
          assert float_out_cos = exp_cos
-            report "Calculating cos(" & to_string(real_arg) & ") = " & to_string(cos(real_arg)) &
-               ", i.e. " & to_hstring(float_arg) & " -> " & to_hstring(exp_cos) &
-               ". Got 0x" & to_hstring(float_out_cos);
+            report "cos(" & to_string(real_arg, 11) & ") = " &
+            to_string(cos(real_arg), 11) &
+               ", got " & to_string(float2real(float_out_cos), 11);
 
          assert float_out_sin = exp_sin
-            report "Calculating sin(" & to_string(real_arg) & ") = " & to_string(sin(real_arg)) &
-               ", i.e. " & to_hstring(float_arg) & " -> " & to_hstring(exp_sin) &
-               ". Got 0x" & to_hstring(float_out_sin);
+            report "sin(" & to_string(real_arg, 11) & ") = " &
+            to_string(sin(real_arg), 11) &
+               ", got " & to_string(float2real(float_out_sin), 11);
+
+         diff_cos_v := abs(float2real(float_out_cos) - cos(real_arg));
+         diff_sin_v := abs(float2real(float_out_sin) - sin(real_arg));
+
+         if diff_cos_v > max_error_cos then
+            max_error_cos <= diff_cos_v;
+         end if;
+
+         if diff_sin_v > max_error_sin then
+            max_error_sin <= diff_sin_v;
+         end if;
 
          wait until rising_edge(clk);
          wait until rising_edge(clk);
@@ -166,6 +181,8 @@ begin
       report "Test finished, " &
          to_string(real((end_time-start_time) / 10 ns) / real(count)) &
          " clock cycles per calculation";
+      report "max_error_cos=" & to_string(max_error_cos, 11);
+      report "max_error_sin=" & to_string(max_error_sin, 11);
       wait until rising_edge(clk);
       running <= '0';
    end process test_proc;

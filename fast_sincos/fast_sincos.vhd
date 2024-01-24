@@ -50,7 +50,7 @@ end entity fast_sincos;
 architecture synthesis of fast_sincos is
 
    -- C_ANGLE_NUM is the number of CORDIC iterations.
-   constant C_ANGLE_NUM  : natural                       := 3;
+   constant C_ANGLE_NUM  : natural                       := 35;
 
    -- This calculates the scaling used in the CORDIC algorithm
 
@@ -60,7 +60,7 @@ architecture synthesis of fast_sincos is
       for i in 0 to C_ANGLE_NUM - 1 loop
          res_v := res_v * (1.0 + 1.0 / (4.0 ** i));
       end loop;
-      res_v := sqrt(res_v) / 2.0;
+      res_v := 1.0 / sqrt(res_v);
 
       return real2fraction(res_v);
    end function calc_scaling;
@@ -70,7 +70,8 @@ architecture synthesis of fast_sincos is
    constant C_SCALE       : fraction_type                := calc_scaling;
    constant C_TWO_OVER_PI : fraction_type                := real2fraction(0.6366197723675814);
 
-   type     state_type is (IDLE_ST, SCALE_ST, SCALE2_ST, FRACTION_ST, FRACTION2_ST, CALC_ST);
+   type     state_type is (IDLE_ST, SCALE_ST, SCALE2_ST, FRACTION_ST, FRACTION2_ST,
+   CALC_ST, NORMALIZE_ST);
    signal   state : state_type                           := IDLE_ST;
 
    -- x and y take on values in the range 0 to 1.7. So they are encoded as
@@ -101,6 +102,19 @@ architecture synthesis of fast_sincos is
    signal   new_angle : fraction_type      := (others => '0');
    signal   new_x     : fraction_type;
    signal   new_y     : fraction_type;
+
+   signal   calc_leading_x : natural range 0 to fraction_type'length;
+   signal   calc_leading_y : natural range 0 to fraction_type'length;
+
+   pure function count_leading_zeros(arg : fraction_type) return natural is
+   begin
+      for i in arg'left downto arg'right loop
+         if arg(i) /= '0' then
+            return arg'left - i;
+         end if;
+      end loop;
+      return arg'length;
+   end function count_leading_zeros;
 
    pure function rotate (arg : fraction_type; ncount : integer) return
    unsigned is
@@ -137,7 +151,7 @@ begin
       )
       port map (
          in_i    => x,
-         shift_i => count mod C_ANGLE_NUM,
+         shift_i => (count-1) mod C_ANGLE_NUM,
          out_o   => x_rot
       );
 
@@ -148,7 +162,7 @@ begin
       )
       port map (
          in_i    => y,
-         shift_i => count mod C_ANGLE_NUM,
+         shift_i => (count-1) mod C_ANGLE_NUM,
          out_o   => y_rot
       );
 
@@ -185,8 +199,7 @@ begin
          out_o    => new_angle
       );
 
-   do_sub <= '1' when angle >= 0 else
-             '0';
+   do_sub <= not angle(angle'left);
 
    fsm_proc : process (clk_i)
       variable tmp_v : unsigned(C_SIZE + 31 downto 0);
@@ -199,7 +212,7 @@ begin
 
             when SCALE_ST =>
                -- Store the sign
-               scale_sign       <= arg_mant(31);
+               scale_sign <= arg_mant(31);
 
                -- Take absolute value and multiply by 2/pi
                tmp_v      := (arg_mant or x"80000000") * C_TWO_OVER_PI;
@@ -220,10 +233,10 @@ begin
                fraction_angle <= rotate(scale2_mant, scale2_shift);
 
                -- Prepare first iteration
-               x      <= C_SCALE;
-               y      <= (others => '0');
-               count  <= 0;
-               state  <= FRACTION2_ST;
+               x     <= C_SCALE;
+               y     <= (others => '0');
+               count <= 0;
+               state <= FRACTION2_ST;
 
             when FRACTION2_ST =>
                report "fraction_angle = " & to_string(fraction2real(fraction_angle), 11) & " * 2pi";
@@ -233,25 +246,36 @@ begin
                state <= CALC_ST;
 
             when CALC_ST =>
-               report "count = " & to_string(count);
-               report "angle = " & to_string(fraction2real(angle), 11) & " * pi/2";
-               report "x     = " & to_string(fraction2real(x), 11);
-               report "y     = " & to_string(fraction2real(y), 11);
+               report "count  = " & to_string(count);
+               report "angle  = " & to_string(fraction2real(angle), 11) & " * pi/2";
+               report "x      = " & to_string(fraction2real(x), 11);
+               report "y      = " & to_string(fraction2real(y), 11);
+               report "x_rot  = " & to_string(fraction2real(x_rot), 11);
+               report "y_rot  = " & to_string(fraction2real(y_rot), 11);
+               report "diff   = " & to_string(fraction2real(diff), 11);
+               report "do_sub = " & to_string(do_sub);
                if count = C_ANGLE_NUM or angle = 0 then
-                  cos_mant_o     <= x(31 downto 0);
-                  sin_mant_o     <= y(31 downto 0);
-                  cos_exp_o      <= x"80";
-                  sin_exp_o      <= x"80";
-                  ready_o        <= '1';
-                  cos_mant_o(31) <= scale_sign;
-                  sin_mant_o(31) <= scale_sign;
-                  state          <= IDLE_ST;
+                  calc_leading_x <= count_leading_zeros(x);
+                  calc_leading_y <= count_leading_zeros(y);
+                  state          <= NORMALIZE_ST;
                else
                   angle <= new_angle;
                   x     <= unsigned(new_x);
                   y     <= unsigned(new_y);
                   count <= count + 1;
                end if;
+
+            when NORMALIZE_ST =>
+               report "calc_leading_x  = " & to_string(calc_leading_x);
+               report "calc_leading_y  = " & to_string(calc_leading_y);
+               cos_mant_o     <= rotate(x, -calc_leading_x)(C_SIZE-1 downto C_SIZE-32);
+               sin_mant_o     <= rotate(y, -calc_leading_y)(C_SIZE-1 downto C_SIZE-32);
+               cos_exp_o      <= x"80" - calc_leading_x;
+               sin_exp_o      <= x"80" - calc_leading_y;
+               ready_o        <= '1';
+               cos_mant_o(31) <= scale_sign;
+               sin_mant_o(31) <= scale_sign;
+               state          <= IDLE_ST;
 
          end case;
 
