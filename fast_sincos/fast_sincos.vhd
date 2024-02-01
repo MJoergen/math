@@ -149,6 +149,7 @@ begin
    fast_sincos_rotate_x_inst : entity work.fast_sincos_rotate
       generic map (
          G_SIZE        => C_SIZE + 1,
+         G_SIGNED      => false,
          G_SHIFT_RANGE => C_ANGLE_NUM
       )
       port map (
@@ -160,6 +161,7 @@ begin
    fast_sincos_rotate_y_inst : entity work.fast_sincos_rotate
       generic map (
          G_SIZE        => C_SIZE + 1,
+         G_SIGNED      => true,
          G_SHIFT_RANGE => C_ANGLE_NUM
       )
       port map (

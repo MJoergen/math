@@ -5,6 +5,7 @@ use ieee.numeric_std.all;
 entity fast_sincos_rotate is
    generic (
       G_SHIFT_RANGE : natural;
+      G_SIGNED      : boolean;
       G_SIZE        : natural
    );
    port (
@@ -20,7 +21,11 @@ architecture synthesis of fast_sincos_rotate is
    unsigned is
       variable res : unsigned(G_SIZE-1 downto 0);
    begin
-      res := (others => arg(G_SIZE-1));
+      if G_SIGNED then
+         res := (others => arg(G_SIZE-1));
+      else
+         res := (others => '0');
+      end if;
       res(G_SIZE-1-count downto 0) := arg(G_SIZE-1 downto count);
 --      if count > 0 then
 --         if arg(count-1) = '1' then
