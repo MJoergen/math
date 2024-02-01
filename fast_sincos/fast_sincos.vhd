@@ -31,7 +31,7 @@ library work;
 -- Example: arg = 13pi/6
 -- 13pi/6 = 6.806784083
 -- In C64 floating format that is 83:59D12CDA.
--- We divide by (2pi) to get 13/12 = 1.08C_SIZE-1C_SIZE-1C_SIZE-1, which is encoded as 81:0AAAAAAA.
+-- We divide by (2pi) to get 13/12 = 1.08333333, which is encoded as 81:0AAAAAAA.
 
 entity fast_sincos is
    port (
@@ -71,8 +71,7 @@ architecture synthesis of fast_sincos is
    constant C_TWO_OVER_PI : fraction_type := real2fraction(0.6366197723675814);
 
    type     state_type is (
-      IDLE_ST, SCALE_ST, SCALE2_ST, FRACTION2_ST,
-      CALC_ST, NORMALIZE_ST
+      IDLE_ST, SCALE_ST, SCALE2_ST, CALC_ST, NORMALIZE_ST
    );
    signal   state : state_type            := IDLE_ST;
 
@@ -80,23 +79,23 @@ architecture synthesis of fast_sincos is
    -- unsigned fixed point 1.C_SIZE-1.
    -- angle takes on values in the range -0.8 to 0.8. So that is encoded
    -- signed fixed point 1.C_SIZE-1.
-   signal   arg_exp  : unsigned( 7 downto 0);                -- Exponent
-   signal   arg_mant : unsigned(31 downto 0);                -- Mantissa
+   signal   arg_exp       : unsigned( 7 downto 0);           -- Exponent
+   signal   arg_mant      : unsigned(31 downto 0);           -- Mantissa
+   signal   arg_mant_prod : unsigned(C_SIZE + 32 downto 0);
 
-   signal   scale_sign : std_logic;
-   signal   scale_mant : fraction_type;
+   signal   arg_mant_prod_d : unsigned(C_SIZE + 32 downto 0);
 
+   signal   scale_sign  : std_logic;
    signal   scale_shift : integer range -C_SIZE to C_SIZE;
+   signal   scale_angle : fraction_type;
 
-   signal   fraction_angle     : fraction_type;
-   signal   fraction_angle_tmp : fraction_type;
+   signal   scale2_quad    : unsigned(1 downto 0);
+   signal   scale2_reflect : std_logic;
 
-   signal   x                 : fraction_type;
-   signal   y                 : fraction_type;
-   signal   count             : natural range 0 to C_ANGLE_NUM;
-   signal   fraction2_quad    : unsigned(1 downto 0);
-   signal   fraction2_reflect : std_logic;
-   signal   angle             : fraction_type;
+   signal   x     : fraction_type;
+   signal   y     : fraction_type;
+   signal   count : natural range 0 to C_ANGLE_NUM;
+   signal   angle : fraction_type;
 
    signal   diff      : fraction_type;
    signal   x_rot     : fraction_type;
@@ -167,25 +166,29 @@ architecture synthesis of fast_sincos is
 
 begin
 
-   diff      <= C_ANGLES(count);
+   -- This instantiates a DSP
+   arg_mant_prod <= (arg_mant or x"80000000") * C_TWO_OVER_PI;
 
-   x_rot     <= rotate_unsigned(x, count);
-   y_rot     <= rotate(y, count);
+   diff          <= C_ANGLES(count);
 
-   do_sub    <= not angle(angle'left);
-   new_x     <= x - y_rot when do_sub = '1' else
-                x + y_rot;
-   new_y     <= y - x_rot when do_sub = '0' else
-                y + x_rot;
-   new_angle <= angle - diff when do_sub = '1' else
-                angle + diff;
+   x_rot         <= rotate_unsigned(x, count);
+   y_rot         <= rotate(y, count);
+
+   do_sub        <= not angle(angle'left);
+   new_x         <= x - y_rot when do_sub = '1' else
+                    x + y_rot;
+   new_y         <= y - x_rot when do_sub = '0' else
+                    y + x_rot;
+   new_angle     <= angle - diff when do_sub = '1' else
+                    angle + diff;
+
+   scale_angle   <= rotate(arg_mant_prod_d(C_SIZE + 32 downto 32), scale_shift);
 
    fsm_proc : process (clk_i)
-      variable tmp_v : unsigned(C_SIZE + 32 downto 0);
    begin
       if rising_edge(clk_i) then
-         tmp_v      := (arg_mant or x"80000000") * C_TWO_OVER_PI;
-         scale_mant <= tmp_v(C_SIZE + 32 downto 32);
+         -- This adds a register to the DSP output
+         arg_mant_prod_d <= arg_mant_prod;
 
          case state is
 
@@ -195,7 +198,6 @@ begin
             when SCALE_ST =>
                -- Store the sign
                scale_sign  <= arg_mant(31);
-
                scale_shift <= C_SIZE;
                if arg_exp > x"62" and arg_exp <= x"A3" then
                   scale_shift <= 130 - to_integer(arg_exp);
@@ -205,28 +207,23 @@ begin
                state <= SCALE2_ST;
 
             when SCALE2_ST =>
-               report "scale_mant = " & to_string(fraction2real(scale_mant), 11);
-
-               fraction_angle <= rotate(scale_mant, scale_shift);
+               report "scale_angle = " & to_string(fraction2real(scale_angle), 11) & " * 2pi";
 
                -- Prepare first iteration
                x              <= C_SCALE;
                y              <= (others => '0');
                count          <= 0;
-               state          <= FRACTION2_ST;
 
-            when FRACTION2_ST =>
-               report "fraction_angle = " & to_string(fraction2real(fraction_angle), 11) & " * 2pi";
-               fraction2_quad    <= fraction_angle(C_SIZE - 1 downto C_SIZE - 2);
-               fraction2_reflect <= fraction_angle(C_SIZE - 3);
+               scale2_quad    <= scale_angle(C_SIZE - 1 downto C_SIZE - 2);
+               scale2_reflect <= scale_angle(C_SIZE - 3);
 
-               case fraction_angle(C_SIZE - 3) is
+               case scale_angle(C_SIZE - 3) is
 
                   when '0' =>
-                     angle <= "0" & fraction_angle(C_SIZE - 3 downto 0) & "00";
+                     angle <= "0" & scale_angle(C_SIZE - 3 downto 0) & "00";
 
                   when '1' =>
-                     angle <= "0" & (not fraction_angle(C_SIZE - 3 downto 0)) & "11";
+                     angle <= "0" & (not scale_angle(C_SIZE - 3 downto 0)) & "11";
 
                   when others =>
                      null;
@@ -256,12 +253,12 @@ begin
                end if;
 
             when NORMALIZE_ST =>
-               report "fraction2_quad    = " & to_string(fraction2_quad);
-               report "fraction2_reflect = " & to_string(fraction2_reflect);
-               report "calc_leading_x    = " & to_string(calc_leading_x);
-               report "calc_leading_y    = " & to_string(calc_leading_y);
+               report "scale2_quad    = " & to_string(scale2_quad);
+               report "scale2_reflect = " & to_string(scale2_reflect);
+               report "calc_leading_x = " & to_string(calc_leading_x);
+               report "calc_leading_y = " & to_string(calc_leading_y);
 
-               case fraction2_quad & fraction2_reflect is
+               case scale2_quad & scale2_reflect is
 
                   when "000" =>
                      cos_mant_o     <= rotate(x, -calc_leading_x)(C_SIZE downto C_SIZE - 31);
