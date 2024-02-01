@@ -96,6 +96,8 @@ architecture synthesis of fast_sincos is
    signal   y     : fraction_type;
    signal   count : natural range 0 to C_ANGLE_NUM;
    signal   angle : fraction_type;
+   signal   rotate_x     : fraction_type;
+   signal   rotate_y     : fraction_type;
 
    signal   diff      : fraction_type;
    signal   x_rot     : fraction_type;
@@ -132,6 +134,14 @@ architecture synthesis of fast_sincos is
       end if;
       return res_v;
    end function rotate;
+
+   pure function rotate_left (arg : fraction_type; ncount : integer) return unsigned is
+      variable res_v : fraction_type;
+   begin
+      res_v                         := (others => '0');
+      res_v(C_SIZE downto ncount) := arg(C_SIZE - ncount downto 0);
+      return res_v;
+   end function rotate_left;
 
    pure function rotate_unsigned (arg : fraction_type; ncount : integer) return unsigned is
       variable res_v : fraction_type;
@@ -190,6 +200,11 @@ begin
          -- This adds a register to the DSP output
          arg_mant_prod_d <= arg_mant_prod;
 
+         calc_leading_x <= count_leading_zeros(x);
+         calc_leading_y <= count_leading_zeros(y);
+         rotate_x       <= rotate_left(x, count_leading_zeros(x));
+         rotate_y       <= rotate_left(y, count_leading_zeros(y));
+
          case state is
 
             when IDLE_ST =>
@@ -241,14 +256,13 @@ begin
                report "y_rot  = " & to_string(fraction2real(y_rot), 11);
                report "diff   = " & to_string(fraction2real(diff), 11);
                report "do_sub = " & to_string(do_sub);
+
                if count = C_ANGLE_NUM - 1 then
-                  calc_leading_x <= count_leading_zeros(x);
-                  calc_leading_y <= count_leading_zeros(y);
                   state          <= NORMALIZE_ST;
                else
                   angle <= new_angle;
-                  x     <= unsigned(new_x);
-                  y     <= unsigned(new_y);
+                  x     <= new_x;
+                  y     <= new_y;
                   count <= count + 1;
                end if;
 
@@ -261,64 +275,64 @@ begin
                case scale2_quad & scale2_reflect is
 
                   when "000" =>
-                     cos_mant_o     <= rotate(x, -calc_leading_x)(C_SIZE downto C_SIZE - 31);
-                     sin_mant_o     <= rotate(y, -calc_leading_y)(C_SIZE downto C_SIZE - 31);
+                     cos_mant_o     <= rotate_x(C_SIZE downto C_SIZE - 31);
+                     sin_mant_o     <= rotate_y(C_SIZE downto C_SIZE - 31);
                      cos_exp_o      <= x"81" - calc_leading_x;
                      sin_exp_o      <= x"81" - calc_leading_y;
                      cos_mant_o(31) <= '0';
                      sin_mant_o(31) <= scale_sign;
 
                   when "001" =>
-                     cos_mant_o     <= rotate(y, -calc_leading_y)(C_SIZE downto C_SIZE - 31);
-                     sin_mant_o     <= rotate(x, -calc_leading_x)(C_SIZE downto C_SIZE - 31);
+                     cos_mant_o     <= rotate_y(C_SIZE downto C_SIZE - 31);
+                     sin_mant_o     <= rotate_x(C_SIZE downto C_SIZE - 31);
                      cos_exp_o      <= x"81" - calc_leading_y;
                      sin_exp_o      <= x"81" - calc_leading_x;
                      cos_mant_o(31) <= '0';
                      sin_mant_o(31) <= scale_sign;
 
                   when "010" =>
-                     cos_mant_o     <= rotate(y, -calc_leading_y)(C_SIZE downto C_SIZE - 31);
-                     sin_mant_o     <= rotate(x, -calc_leading_x)(C_SIZE downto C_SIZE - 31);
+                     cos_mant_o     <= rotate_y(C_SIZE downto C_SIZE - 31);
+                     sin_mant_o     <= rotate_x(C_SIZE downto C_SIZE - 31);
                      cos_exp_o      <= x"81" - calc_leading_y;
                      sin_exp_o      <= x"81" - calc_leading_x;
                      cos_mant_o(31) <= '1';
                      sin_mant_o(31) <= scale_sign;
 
                   when "011" =>
-                     cos_mant_o     <= rotate(x, -calc_leading_x)(C_SIZE downto C_SIZE - 31);
-                     sin_mant_o     <= rotate(y, -calc_leading_y)(C_SIZE downto C_SIZE - 31);
+                     cos_mant_o     <= rotate_x(C_SIZE downto C_SIZE - 31);
+                     sin_mant_o     <= rotate_y(C_SIZE downto C_SIZE - 31);
                      cos_exp_o      <= x"81" - calc_leading_x;
                      sin_exp_o      <= x"81" - calc_leading_y;
                      cos_mant_o(31) <= '1';
                      sin_mant_o(31) <= scale_sign;
 
                   when "100" =>
-                     cos_mant_o     <= rotate(x, -calc_leading_x)(C_SIZE downto C_SIZE - 31);
-                     sin_mant_o     <= rotate(y, -calc_leading_y)(C_SIZE downto C_SIZE - 31);
+                     cos_mant_o     <= rotate_x(C_SIZE downto C_SIZE - 31);
+                     sin_mant_o     <= rotate_y(C_SIZE downto C_SIZE - 31);
                      cos_exp_o      <= x"81" - calc_leading_x;
                      sin_exp_o      <= x"81" - calc_leading_y;
                      cos_mant_o(31) <= '1';
                      sin_mant_o(31) <= not scale_sign;
 
                   when "101" =>
-                     cos_mant_o     <= rotate(y, -calc_leading_y)(C_SIZE downto C_SIZE - 31);
-                     sin_mant_o     <= rotate(x, -calc_leading_x)(C_SIZE downto C_SIZE - 31);
+                     cos_mant_o     <= rotate_y(C_SIZE downto C_SIZE - 31);
+                     sin_mant_o     <= rotate_x(C_SIZE downto C_SIZE - 31);
                      cos_exp_o      <= x"81" - calc_leading_y;
                      sin_exp_o      <= x"81" - calc_leading_x;
                      cos_mant_o(31) <= '1';
                      sin_mant_o(31) <= not scale_sign;
 
                   when "110" =>
-                     cos_mant_o     <= rotate(y, -calc_leading_y)(C_SIZE downto C_SIZE - 31);
-                     sin_mant_o     <= rotate(x, -calc_leading_x)(C_SIZE downto C_SIZE - 31);
+                     cos_mant_o     <= rotate_y(C_SIZE downto C_SIZE - 31);
+                     sin_mant_o     <= rotate_x(C_SIZE downto C_SIZE - 31);
                      cos_exp_o      <= x"81" - calc_leading_y;
                      sin_exp_o      <= x"81" - calc_leading_x;
                      cos_mant_o(31) <= '0';
                      sin_mant_o(31) <= not scale_sign;
 
                   when "111" =>
-                     cos_mant_o     <= rotate(x, -calc_leading_x)(C_SIZE downto C_SIZE - 31);
-                     sin_mant_o     <= rotate(y, -calc_leading_y)(C_SIZE downto C_SIZE - 31);
+                     cos_mant_o     <= rotate_x(C_SIZE downto C_SIZE - 31);
+                     sin_mant_o     <= rotate_y(C_SIZE downto C_SIZE - 31);
                      cos_exp_o      <= x"81" - calc_leading_x;
                      sin_exp_o      <= x"81" - calc_leading_y;
                      cos_mant_o(31) <= '0';
