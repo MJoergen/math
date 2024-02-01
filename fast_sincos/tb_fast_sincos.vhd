@@ -23,6 +23,8 @@ architecture simulation of tb_fast_sincos is
    signal count         : natural := 0;
    signal max_error_cos : real := 0.0;
    signal max_error_sin : real := 0.0;
+   signal max_error_cos_angle : real;
+   signal max_error_sin_angle : real;
 
 begin
 
@@ -142,10 +144,12 @@ begin
 
          if diff_cos_v > max_error_cos then
             max_error_cos <= diff_cos_v;
+            max_error_cos_angle <= real_val;
          end if;
 
          if diff_sin_v > max_error_sin then
             max_error_sin <= diff_sin_v;
+            max_error_sin_angle <= real_val;
          end if;
 
          wait until rising_edge(clk);
@@ -164,7 +168,7 @@ begin
       wait until rising_edge(clk);
       start_time := now;
       report "Test started";
-      verify_sincos(13.0*0.5235987755982988); -- 13pi/6
+      verify_sincos(4.0*0.5235987755982988); -- 5pi/6
 --      verify_sincos(0.7853981633974483); -- pi/4
 --      verify_sincos(0.0);
 --      verify_sincos(1.0);
@@ -174,15 +178,15 @@ begin
 --      verify_sincos(0.5);
 --      verify_sincos(-1.0);
 --      for vali in -24 to 24 loop
---         arg := real(vali)/(6.0*3.141592653589793);
+--         arg := (real(vali)/12.0)*3.141592653589793;
 --         verify_sincos(arg);
 --      end loop;
       end_time := now;
       report "Test finished, " &
          to_string(real((end_time-start_time) / 10 ns) / real(count)) &
          " clock cycles per calculation";
-      report "max_error_cos=" & to_string(max_error_cos, 11);
-      report "max_error_sin=" & to_string(max_error_sin, 11);
+      report "max_error_cos=" & to_string(max_error_cos, 11) & " at " & to_string(max_error_cos_angle, 11);
+      report "max_error_sin=" & to_string(max_error_sin, 11) & " at " & to_string(max_error_sin_angle, 11);
       wait until rising_edge(clk);
       running <= '0';
    end process test_proc;

@@ -264,15 +264,42 @@ begin
                end if;
 
             when NORMALIZE_ST =>
+               report "fraction2_quad  = " & to_string(fraction2_quad);
                report "calc_leading_x  = " & to_string(calc_leading_x);
                report "calc_leading_y  = " & to_string(calc_leading_y);
-               cos_mant_o     <= rotate(x, -calc_leading_x)(C_SIZE-1 downto C_SIZE-32);
-               sin_mant_o     <= rotate(y, -calc_leading_y)(C_SIZE-1 downto C_SIZE-32);
-               cos_exp_o      <= x"80" - calc_leading_x;
-               sin_exp_o      <= x"80" - calc_leading_y;
+               case fraction2_quad is
+                  when "00" =>
+                     cos_mant_o     <= rotate(x, -calc_leading_x)(C_SIZE-1 downto C_SIZE-32);
+                     sin_mant_o     <= rotate(y, -calc_leading_y)(C_SIZE-1 downto C_SIZE-32);
+                     cos_exp_o      <= x"80" - calc_leading_x;
+                     sin_exp_o      <= x"80" - calc_leading_y;
+                     cos_mant_o(31) <= scale_sign;
+                     sin_mant_o(31) <= scale_sign;
+                  when "01" =>
+                     cos_mant_o     <= rotate(y, -calc_leading_y)(C_SIZE-1 downto C_SIZE-32);
+                     sin_mant_o     <= rotate(x, -calc_leading_x)(C_SIZE-1 downto C_SIZE-32);
+                     cos_exp_o      <= x"80" - calc_leading_y;
+                     sin_exp_o      <= x"80" - calc_leading_x;
+                     cos_mant_o(31) <= not scale_sign;
+                     sin_mant_o(31) <= scale_sign;
+                  when "10" =>
+                     cos_mant_o     <= rotate(x, -calc_leading_x)(C_SIZE-1 downto C_SIZE-32);
+                     sin_mant_o     <= rotate(y, -calc_leading_y)(C_SIZE-1 downto C_SIZE-32);
+                     cos_exp_o      <= x"80" - calc_leading_x;
+                     sin_exp_o      <= x"80" - calc_leading_y;
+                     cos_mant_o(31) <= not scale_sign;
+                     sin_mant_o(31) <= not scale_sign;
+                  when "11" =>
+                     cos_mant_o     <= rotate(y, -calc_leading_y)(C_SIZE-1 downto C_SIZE-32);
+                     sin_mant_o     <= rotate(x, -calc_leading_x)(C_SIZE-1 downto C_SIZE-32);
+                     cos_exp_o      <= x"80" - calc_leading_y;
+                     sin_exp_o      <= x"80" - calc_leading_x;
+                     cos_mant_o(31) <= scale_sign;
+                     sin_mant_o(31) <= not scale_sign;
+                  when others =>
+                     null;
+               end case;
                ready_o        <= '1';
-               cos_mant_o(31) <= scale_sign;
-               sin_mant_o(31) <= scale_sign;
                state          <= IDLE_ST;
 
          end case;
