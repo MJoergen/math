@@ -119,91 +119,66 @@ architecture synthesis of fast_sincos is
       return arg'length;
    end function count_leading_zeros;
 
-   pure function rotate (arg : fraction_type; ncount : integer) return
-   unsigned is
+   pure function rotate (arg : fraction_type; ncount : integer) return unsigned is
       variable res_v : fraction_type;
    begin
       if ncount > 0 then
          -- rotate right
          res_v                               := (others => arg(C_SIZE));
-         res_v(C_SIZE - 1 - ncount downto 0) := arg(C_SIZE - 1 downto ncount);
+         res_v(C_SIZE - ncount downto 0) := arg(C_SIZE downto ncount);
       else
          -- rotate left
          res_v                             := (others => '0');
-         res_v(C_SIZE - 1 downto - ncount) := arg(C_SIZE - 1 + ncount downto 0);
+         res_v(C_SIZE downto - ncount) := arg(C_SIZE + ncount downto 0);
       end if;
       return res_v;
    end function rotate;
 
+   pure function rotate_unsigned (arg : fraction_type; ncount : integer) return unsigned is
+      variable res_v : fraction_type;
+   begin
+      if ncount > 0 then
+         -- rotate right
+         res_v                               := (others => '0');
+         res_v(C_SIZE - ncount downto 0) := arg(C_SIZE downto ncount);
+      else
+         -- rotate left
+         res_v                             := (others => '0');
+         res_v(C_SIZE downto - ncount) := arg(C_SIZE + ncount downto 0);
+      end if;
+      return res_v;
+   end function rotate_unsigned;
+
+   type rom_type is array (0 to C_ANGLE_NUM-1) of fraction_type;
+
+   pure function calc_angles return rom_type is
+      variable res_v   : rom_type := (others => (others => '0'));
+      variable angle_v : real;
+   begin
+      for i in 0 to C_ANGLE_NUM-1 loop
+         angle_v  := arctan(0.5**i)/ (2.0*arctan(1.0)); -- In units of pi/2
+         res_v(i) := real2fraction(angle_v);
+         report "C_ANGLES(" & to_string(i) & ") = " & to_string(angle_v, 11) & " = 0x" & to_hstring(res_v(i));
+      end loop;
+      return res_v;
+   end function calc_angles;
+
+   constant C_ANGLES : rom_type := calc_angles;
+
 begin
 
-   fast_sincos_rom_inst : entity work.fast_sincos_rom
-      generic map (
-         G_ANGLE_NUM => C_ANGLE_NUM
-      )
-      port map (
-         addr_i => count mod C_ANGLE_NUM,
-         data_o => diff
-      );
+   diff      <= C_ANGLES(count);
 
-   fast_sincos_rotate_x_inst : entity work.fast_sincos_rotate
-      generic map (
-         G_SIZE        => C_SIZE + 1,
-         G_SIGNED      => false,
-         G_SHIFT_RANGE => C_ANGLE_NUM
-      )
-      port map (
-         in_i    => x,
-         shift_i => count mod C_ANGLE_NUM,
-         out_o   => x_rot
-      );
+   x_rot     <= rotate_unsigned(x, count);
+   y_rot     <= rotate(y, count);
 
-   fast_sincos_rotate_y_inst : entity work.fast_sincos_rotate
-      generic map (
-         G_SIZE        => C_SIZE + 1,
-         G_SIGNED      => true,
-         G_SHIFT_RANGE => C_ANGLE_NUM
-      )
-      port map (
-         in_i    => y,
-         shift_i => count mod C_ANGLE_NUM,
-         out_o   => y_rot
-      );
-
-   fast_sincos_addsub_x_inst : entity work.fast_sincos_addsub
-      generic map (
-         G_SIZE => C_SIZE + 1
-      )
-      port map (
-         a_i      => x,
-         b_i      => y_rot,
-         do_sub_i => do_sub,
-         out_o    => new_x
-      );
-
-   fast_sincos_addsub_y_inst : entity work.fast_sincos_addsub
-      generic map (
-         G_SIZE => C_SIZE + 1
-      )
-      port map (
-         a_i      => y,
-         b_i      => x_rot,
-         do_sub_i => not do_sub,
-         out_o    => new_y
-      );
-
-   fast_sincos_addsub_angle_inst : entity work.fast_sincos_addsub
-      generic map (
-         G_SIZE => C_SIZE + 1
-      )
-      port map (
-         a_i      => angle,
-         b_i      => diff,
-         do_sub_i => do_sub,
-         out_o    => new_angle
-      );
-
-   do_sub <= not angle(angle'left);
+   do_sub    <= not angle(angle'left);
+   new_x     <= x - y_rot when do_sub = '1' else
+                x + y_rot;
+   new_y     <= y - x_rot when do_sub = '0' else
+                y + x_rot;
+   new_angle <= angle - diff when do_sub = '1' else
+                angle + diff;
 
    fsm_proc : process (clk_i)
       variable tmp_v : unsigned(C_SIZE + 32 downto 0);
