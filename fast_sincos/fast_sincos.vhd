@@ -139,7 +139,6 @@ begin
          G_ANGLE_NUM => C_ANGLE_NUM
       )
       port map (
-         clk_i  => clk_i,
          addr_i => count mod C_ANGLE_NUM,
          data_o => diff
       );
@@ -151,7 +150,7 @@ begin
       )
       port map (
          in_i    => x,
-         shift_i => (count-1) mod C_ANGLE_NUM,
+         shift_i => count mod C_ANGLE_NUM,
          out_o   => x_rot
       );
 
@@ -162,7 +161,7 @@ begin
       )
       port map (
          in_i    => y,
-         shift_i => (count-1) mod C_ANGLE_NUM,
+         shift_i => count mod C_ANGLE_NUM,
          out_o   => y_rot
       );
 
@@ -235,14 +234,13 @@ begin
                -- Prepare first iteration
                x     <= C_SCALE;
                y     <= (others => '0');
-               count <= 0;
                state <= FRACTION2_ST;
 
             when FRACTION2_ST =>
                report "fraction_angle = " & to_string(fraction2real(fraction_angle), 11) & " * 2pi";
                fraction2_quad  <= fraction_angle(C_SIZE - 1 downto C_SIZE - 2);
                angle <= fraction_angle(C_SIZE - 3 downto 0) & "00";
-               count <= count + 1;
+               count <= 0;
                state <= CALC_ST;
 
             when CALC_ST =>
@@ -254,7 +252,7 @@ begin
                report "y_rot  = " & to_string(fraction2real(y_rot), 11);
                report "diff   = " & to_string(fraction2real(diff), 11);
                report "do_sub = " & to_string(do_sub);
-               if count = C_ANGLE_NUM or angle = 0 then
+               if count = C_ANGLE_NUM-1 or angle = 0 then
                   calc_leading_x <= count_leading_zeros(x);
                   calc_leading_y <= count_leading_zeros(y);
                   state          <= NORMALIZE_ST;

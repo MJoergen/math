@@ -11,7 +11,6 @@ entity fast_sincos_rom is
       G_ANGLE_NUM : natural
    );
    port (
-      clk_i  : in  std_logic;
       addr_i : in  natural range 0 to G_ANGLE_NUM-1;
       data_o : out fraction_type
    );
@@ -26,25 +25,18 @@ architecture synthesis of fast_sincos_rom is
       variable angle_v : real;
    begin
       for i in 0 to G_ANGLE_NUM-1 loop
-         angle_v  := 0.5*arctan(1.0 / (2.0**i))/arctan(1.0); -- In units of pi/2
+         angle_v  := arctan(0.5**i)/ (2.0*arctan(1.0)); -- In units of pi/2
          res_v(i) := real2fraction(angle_v);
          report "C_ANGLES(" & to_string(i) & ") = " & to_string(angle_v, 11) & " = 0x" & to_hstring(res_v(i));
       end loop;
       return res_v;
    end function calc_angles;
 
-   attribute ram_style : string;
    signal C_ANGLES : rom_type := calc_angles;
-   attribute ram_style of C_ANGLES : signal is "distributed";
 
 begin
 
-   fsm_proc : process (clk_i)
-   begin
-      if rising_edge(clk_i) then
-         data_o <= C_ANGLES(addr_i);
-      end if;
-   end process fsm_proc;
+   data_o <= C_ANGLES(addr_i);
 
 end architecture synthesis;
 
