@@ -1,7 +1,7 @@
 # This file is specific for the Nexys 4 DDR board.
 
 # Clock definition
-create_clock -name sys_clk -period 6.5 [get_ports {clk_i}]; # 154 MHz
+create_clock -name sys_clk -period 6.2 [get_ports {clk_i}]; # 161 MHz
 
 # Configuration Bank Voltage Select
 set_property CFGBVS VCCO [current_design]

@@ -91,15 +91,15 @@ architecture synthesis of fast_sincos is
    signal   scale2_quad    : unsigned(1 downto 0);
    signal   scale2_reflect : std_logic;
 
-   signal   x        : fraction_type;
-   signal   y        : fraction_type;
-   signal   count    : natural range 0 to C_ANGLE_NUM;
-   signal   angle    : fraction_type;
+   signal   x     : fraction_type;
+   signal   y     : fraction_type;
+   signal   count : natural range 0 to C_ANGLE_NUM;
+   signal   angle : fraction_type;
+
    signal   rotate_x : fraction_type;
    signal   rotate_y : fraction_type;
-
-   signal   exp_x : unsigned(7 downto 0);
-   signal   exp_y : unsigned(7 downto 0);
+   signal   exp_x    : unsigned(7 downto 0);
+   signal   exp_y    : unsigned(7 downto 0);
 
    pure function count_leading_zeros (arg : fraction_type) return natural is
    begin
@@ -166,9 +166,10 @@ architecture synthesis of fast_sincos is
    constant C_ANGLES : rom_type           := calc_angles;
 
 begin
+
    scale_angle <= rotate(arg_mant_prod_d(C_SIZE + 32 downto 32), scale_shift);
 
-   fsm_proc : process (clk_i)
+   stage1_proc : process (clk_i)
    begin
       if rising_edge(clk_i) then
          -- This adds a register to the DSP output
@@ -180,14 +181,24 @@ begin
          if arg_exp > x"62" and arg_exp <= x"A3" then
             scale_shift <= 130 - to_integer(arg_exp);
          end if;
+      end if;
+   end process stage1_proc;
 
+   stage2_proc : process (clk_i)
+   begin
+      if rising_edge(clk_i) then
          scale2_quad    <= scale_angle(C_SIZE - 1 downto C_SIZE - 2);
          scale2_reflect <= scale_angle(C_SIZE - 3);
+      end if;
+   end process stage2_proc;
 
-         exp_x          <= x"81" - count_leading_zeros(x);
-         exp_y          <= x"81" - count_leading_zeros(y);
-         rotate_x       <= rotate_left(x, count_leading_zeros(x));
-         rotate_y       <= rotate_left(y, count_leading_zeros(y));
+   fsm_proc : process (clk_i)
+   begin
+      if rising_edge(clk_i) then
+         exp_x    <= x"81" - count_leading_zeros(x);
+         exp_y    <= x"81" - count_leading_zeros(y);
+         rotate_x <= rotate_left(x, count_leading_zeros(x));
+         rotate_y <= rotate_left(y, count_leading_zeros(y));
 
          case state is
 
@@ -199,8 +210,6 @@ begin
                state <= SCALE2_ST;
 
             when SCALE2_ST =>
-               report "scale_angle = " & to_string(fraction2real(scale_angle), 11) & " * 2pi";
-
                if scale_angle(C_SIZE - 3) = '1' then
                   angle <= "0" & (not scale_angle(C_SIZE - 3 downto 0)) & "11";
                else
@@ -211,7 +220,6 @@ begin
                x     <= C_SCALE;
                y     <= (others => '0');
                count <= 0;
-
                state <= CALC_ST;
 
             when CALC_ST =>
