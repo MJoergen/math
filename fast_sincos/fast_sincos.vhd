@@ -50,7 +50,7 @@ end entity fast_sincos;
 architecture synthesis of fast_sincos is
 
    -- C_ANGLE_NUM is the number of CORDIC iterations.
-   constant C_ANGLE_NUM : natural                          := 35;
+   constant C_ANGLE_NUM : natural         := 35;
 
    -- This calculates the scaling used in the CORDIC algorithm
 
@@ -67,42 +67,42 @@ architecture synthesis of fast_sincos is
 
 
 
-   constant C_SCALE       : fraction_type                  := calc_scaling;
-   constant C_TWO_OVER_PI : fraction_type                  := real2fraction(0.6366197723675814);
+   constant C_SCALE       : fraction_type := calc_scaling;
+   constant C_TWO_OVER_PI : fraction_type := real2fraction(0.6366197723675814);
 
    type     state_type is (
-      IDLE_ST, SCALE_ST, SCALE2_ST, FRACTION_ST, FRACTION2_ST,
+      IDLE_ST, SCALE_ST, SCALE2_ST, FRACTION2_ST,
       CALC_ST, NORMALIZE_ST
    );
-   signal   state : state_type                             := IDLE_ST;
+   signal   state : state_type            := IDLE_ST;
 
    -- x and y take on values in the range 0 to 1.7. So they are encoded as
    -- unsigned fixed point 1.C_SIZE-1.
    -- angle takes on values in the range -0.8 to 0.8. So that is encoded
    -- signed fixed point 1.C_SIZE-1.
-   signal   arg_exp  : unsigned( 7 downto 0)               := (others => '0'); -- Exponent
-   signal   arg_mant : unsigned(31 downto 0)               := (others => '0'); -- Mantissa
+   signal   arg_exp  : unsigned( 7 downto 0);                -- Exponent
+   signal   arg_mant : unsigned(31 downto 0);                -- Mantissa
 
-   signal   scale_sign : std_logic                         := '0';
-   signal   scale_mant : fraction_type                     := (others => '0');
+   signal   scale_sign : std_logic;
+   signal   scale_mant : fraction_type;
 
-   signal   scale2_mant  : fraction_type                   := (others => '0');
-   signal   scale2_shift : integer range -C_SIZE to C_SIZE := 0;
+   signal   scale_shift : integer range -C_SIZE to C_SIZE;
 
-   signal   fraction_angle : fraction_type                 := (others => '0');
+   signal   fraction_angle     : fraction_type;
+   signal   fraction_angle_tmp : fraction_type;
 
-   signal   x                 : fraction_type              := (others => '0');
-   signal   y                 : fraction_type              := (others => '0');
+   signal   x                 : fraction_type;
+   signal   y                 : fraction_type;
    signal   count             : natural range 0 to C_ANGLE_NUM;
-   signal   fraction2_quad    : unsigned(1 downto 0)       := (others => '0');
+   signal   fraction2_quad    : unsigned(1 downto 0);
    signal   fraction2_reflect : std_logic;
-   signal   angle             : fraction_type              := (others => '0');
+   signal   angle             : fraction_type;
 
    signal   diff      : fraction_type;
    signal   x_rot     : fraction_type;
    signal   y_rot     : fraction_type;
    signal   do_sub    : std_logic;
-   signal   new_angle : fraction_type                      := (others => '0');
+   signal   new_angle : fraction_type;
    signal   new_x     : fraction_type;
    signal   new_y     : fraction_type;
 
@@ -124,11 +124,11 @@ architecture synthesis of fast_sincos is
    begin
       if ncount > 0 then
          -- rotate right
-         res_v                               := (others => arg(C_SIZE));
+         res_v                           := (others => arg(C_SIZE));
          res_v(C_SIZE - ncount downto 0) := arg(C_SIZE downto ncount);
       else
          -- rotate left
-         res_v                             := (others => '0');
+         res_v                         := (others => '0');
          res_v(C_SIZE downto - ncount) := arg(C_SIZE + ncount downto 0);
       end if;
       return res_v;
@@ -139,31 +139,31 @@ architecture synthesis of fast_sincos is
    begin
       if ncount > 0 then
          -- rotate right
-         res_v                               := (others => '0');
+         res_v                           := (others => '0');
          res_v(C_SIZE - ncount downto 0) := arg(C_SIZE downto ncount);
       else
          -- rotate left
-         res_v                             := (others => '0');
+         res_v                         := (others => '0');
          res_v(C_SIZE downto - ncount) := arg(C_SIZE + ncount downto 0);
       end if;
       return res_v;
    end function rotate_unsigned;
 
-   type rom_type is array (0 to C_ANGLE_NUM-1) of fraction_type;
+   type     rom_type is array (0 to C_ANGLE_NUM - 1) of fraction_type;
 
    pure function calc_angles return rom_type is
       variable res_v   : rom_type := (others => (others => '0'));
       variable angle_v : real;
    begin
-      for i in 0 to C_ANGLE_NUM-1 loop
-         angle_v  := arctan(0.5**i)/ (2.0*arctan(1.0)); -- In units of pi/2
+      for i in 0 to C_ANGLE_NUM - 1 loop
+         angle_v  := arctan(0.5 ** i) / (2.0 * arctan(1.0)); -- In units of pi/2
          res_v(i) := real2fraction(angle_v);
          report "C_ANGLES(" & to_string(i) & ") = " & to_string(angle_v, 11) & " = 0x" & to_hstring(res_v(i));
       end loop;
       return res_v;
    end function calc_angles;
 
-   constant C_ANGLES : rom_type := calc_angles;
+   constant C_ANGLES : rom_type           := calc_angles;
 
 begin
 
@@ -184,6 +184,8 @@ begin
       variable tmp_v : unsigned(C_SIZE + 32 downto 0);
    begin
       if rising_edge(clk_i) then
+         tmp_v      := (arg_mant or x"80000000") * C_TWO_OVER_PI;
+         scale_mant <= tmp_v(C_SIZE + 32 downto 32);
 
          case state is
 
@@ -192,29 +194,25 @@ begin
 
             when SCALE_ST =>
                -- Store the sign
-               scale_sign <= arg_mant(31);
+               scale_sign  <= arg_mant(31);
 
-               -- Take absolute value and multiply by 2/pi
-               tmp_v      := (arg_mant or x"80000000") * C_TWO_OVER_PI;
-               scale_mant <= tmp_v(C_SIZE + 32 downto 32);
-               state      <= SCALE2_ST;
-
-            when SCALE2_ST =>
-               scale2_mant  <= scale_mant; -- Pipeline the previous multiplier
-               report "scale_mant = " & to_string(fraction2real(scale_mant), 11);
-               scale2_shift <= C_SIZE;
+               scale_shift <= C_SIZE;
                if arg_exp > x"62" and arg_exp <= x"A3" then
-                  scale2_shift <= 130 - to_integer(arg_exp);
+                  scale_shift <= 130 - to_integer(arg_exp);
                end if;
 
-               state <= FRACTION_ST;
+               -- Take absolute value and multiply by 2/pi
+               state <= SCALE2_ST;
 
-            when FRACTION_ST =>
-               fraction_angle <= rotate(scale2_mant, scale2_shift);
+            when SCALE2_ST =>
+               report "scale_mant = " & to_string(fraction2real(scale_mant), 11);
+
+               fraction_angle <= rotate(scale_mant, scale_shift);
 
                -- Prepare first iteration
                x              <= C_SCALE;
                y              <= (others => '0');
+               count          <= 0;
                state          <= FRACTION2_ST;
 
             when FRACTION2_ST =>
@@ -235,7 +233,6 @@ begin
 
                end case;
 
-               count <= 0;
                state <= CALC_ST;
 
             when CALC_ST =>
