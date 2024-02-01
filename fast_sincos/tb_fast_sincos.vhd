@@ -1,28 +1,28 @@
 library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-use ieee.math_real.all;
+   use ieee.std_logic_1164.all;
+   use ieee.numeric_std.all;
+   use ieee.math_real.all;
 
 entity tb_fast_sincos is
 end entity tb_fast_sincos;
 
 architecture simulation of tb_fast_sincos is
 
-   type float_type is record
+   type   float_type is record
       exp  : unsigned( 7 downto 0);
       mant : unsigned(31 downto 0);
    end record float_type;
 
-   signal running       : std_logic := '1';
-   signal clk           : std_logic := '1';
-   signal start         : std_logic;
-   signal ready         : std_logic;
-   signal float_in      : float_type;
-   signal float_out_cos : float_type;
-   signal float_out_sin : float_type;
-   signal count         : natural := 0;
-   signal max_error_cos : real := 0.0;
-   signal max_error_sin : real := 0.0;
+   signal running             : std_logic := '1';
+   signal clk                 : std_logic := '1';
+   signal start               : std_logic;
+   signal ready               : std_logic;
+   signal float_in            : float_type;
+   signal float_out_cos       : float_type;
+   signal float_out_sin       : float_type;
+   signal count               : natural   := 0;
+   signal max_error_cos       : real      := 0.0;
+   signal max_error_sin       : real      := 0.0;
    signal max_error_cos_angle : real;
    signal max_error_sin_angle : real;
 
@@ -44,17 +44,17 @@ begin
       ); -- fast_sqrt_inst
 
    test_proc : process
-      pure function to_hstring(arg : float_type) return string is
+      pure function to_hstring (arg : float_type) return string is
       begin
          return to_hstring(arg.exp) & ":" & to_hstring(arg.mant);
       end function to_hstring;
 
-      pure function real2float(arg : real) return float_type is
-         variable float : float_type;
-         variable sign  : std_logic;
+      pure function real2float (arg : real) return float_type is
+         variable float   : float_type;
+         variable sign    : std_logic;
          variable arg_pos : real;
       begin
-         --report "+real2float: arg=" & to_string(arg);
+         -- report "+real2float: arg=" & to_string(arg);
          float.exp  := X"00";
          float.mant := X"00000000";
          if arg = 0.0 then
@@ -62,30 +62,30 @@ begin
          end if;
          if arg < 0.0 then
             arg_pos := -arg;
-            sign := '1';
+            sign    := '1';
          else
             arg_pos := arg;
-            sign := '0';
+            sign    := '0';
          end if;
-         float.exp := to_unsigned(integer(floor(log2(arg_pos)))+129, 8);
-         arg_pos := arg_pos / (2.0**(to_integer(float.exp)-128));
+         float.exp := to_unsigned(integer(floor(log2(arg_pos))) + 129, 8);
+         arg_pos   := arg_pos / (2.0 ** (to_integer(float.exp) - 128));
          assert arg_pos >= 0.5 and arg_pos < 1.0;
          if arg_pos = 0.5 then
             float.mant := X"80000000";
          else
-            float.mant := 0-to_unsigned(integer((1.0-arg_pos)*(2.0**32)), 32);
+            float.mant := 0 - to_unsigned(integer((1.0 - arg_pos) * (2.0 ** 32)), 32);
          end if;
          float.mant(31) := sign;
-         --report "-real2float: res=" & to_hstring(float);
+         -- report "-real2float: res=" & to_hstring(float);
          return float;
       end function real2float;
 
-      pure function float2real(arg : float_type) return real is
+      pure function float2real (arg : float_type) return real is
          variable res  : real := 0.0;
          variable sign : real := 1.0;
          variable mant : unsigned(31 downto 0);
       begin
-         --report "+float2real: arg=" & to_hstring(arg);
+         -- report "+float2real: arg=" & to_hstring(arg);
          if arg.exp = X"00" then
             return res;
          end if;
@@ -98,14 +98,14 @@ begin
          if mant = X"80000000" then
             res := 0.5;
          else
-            res :=  1.0-real(to_integer(0-mant))/(2.0**32);
+            res := 1.0 - real(to_integer(0 - mant)) / (2.0 ** 32);
          end if;
-         res := sign * res * (2.0**(to_integer(arg.exp)-128));
-         --report "-float2real: res=" & to_string(res);
+         res := sign * res * (2.0 ** (to_integer(arg.exp) - 128));
+         -- report "-float2real: res=" & to_string(res);
          return res;
       end function float2real;
 
-      procedure verify_sincos(real_val : real) is
+      procedure verify_sincos (real_val : real) is
          variable float_arg : float_type;
          variable real_arg : real;
          variable exp_cos  : float_type;
@@ -113,17 +113,17 @@ begin
          variable diff_cos_v : real;
          variable diff_sin_v : real;
       begin
-         count <= count + 1;
+         count     <= count + 1;
          float_arg := real2float(real_val);
          real_arg  := float2real(float_arg);
          exp_cos   := real2float(cos(real_arg));
          exp_sin   := real2float(sin(real_arg));
-         report "Testing " & to_string(real_arg, 11) & " = " & to_string(real_arg/6.283185307179586, 11) & " * 2pi";
+         report "Testing " & to_string(real_arg, 11) & " = " & to_string(real_arg / 6.283185307179586, 11) & " * 2pi";
 
-         float_in <= float_arg;
-         start    <= '1';
+         float_in  <= float_arg;
+         start     <= '1';
          wait until rising_edge(clk);
-         start    <= '0';
+         start     <= '0';
          wait until rising_edge(clk);
          while ready = '0' loop
             wait until rising_edge(clk);
@@ -131,24 +131,24 @@ begin
 
          assert float_out_cos = exp_cos
             report "cos(" & to_string(real_arg, 11) & ") = " &
-            to_string(cos(real_arg), 11) &
-               ", got " & to_string(float2real(float_out_cos), 11);
+                   to_string(cos(real_arg), 11) &
+                   ", got " & to_string(float2real(float_out_cos), 11);
 
          assert float_out_sin = exp_sin
             report "sin(" & to_string(real_arg, 11) & ") = " &
-            to_string(sin(real_arg), 11) &
-               ", got " & to_string(float2real(float_out_sin), 11);
+                   to_string(sin(real_arg), 11) &
+                   ", got " & to_string(float2real(float_out_sin), 11);
 
          diff_cos_v := abs(float2real(float_out_cos) - cos(real_arg));
          diff_sin_v := abs(float2real(float_out_sin) - sin(real_arg));
 
          if diff_cos_v > max_error_cos then
-            max_error_cos <= diff_cos_v;
+            max_error_cos       <= diff_cos_v;
             max_error_cos_angle <= real_val;
          end if;
 
          if diff_sin_v > max_error_sin then
-            max_error_sin <= diff_sin_v;
+            max_error_sin       <= diff_sin_v;
             max_error_sin_angle <= real_val;
          end if;
 
@@ -159,36 +159,36 @@ begin
       variable start_time : time;
       variable end_time   : time;
 
-      constant MAX_VAL : natural := 1;
-      variable arg : real;
+      constant MAX_VAL    : natural := 1;
+      variable arg        : real;
 
    begin
-      start <= '0';
+      start      <= '0';
       wait for 100 ns;
       wait until rising_edge(clk);
       start_time := now;
       report "Test started";
-      verify_sincos(4.0*0.5235987755982988); -- 5pi/6
---      verify_sincos(0.7853981633974483); -- pi/4
---      verify_sincos(0.0);
---      verify_sincos(1.0);
---      verify_sincos(2.0);
---      verify_sincos(3.0);
---      verify_sincos(4.0);
---      verify_sincos(0.5);
---      verify_sincos(-1.0);
---      for vali in -24 to 24 loop
---         arg := (real(vali)/12.0)*3.141592653589793;
---         verify_sincos(arg);
---      end loop;
+      --      verify_sincos(-84.0/48.0*3.141592653589793);
+      --      verify_sincos(4.0*0.5235987755982988); -- 5pi/6
+      --      verify_sincos(0.0);
+      --      verify_sincos(1.0);
+      --      verify_sincos(2.0);
+      --      verify_sincos(3.0);
+      --      verify_sincos(4.0);
+      --      verify_sincos(0.5);
+      --      verify_sincos(-1.0);
+      for vali in -96 to 96 loop
+         arg := (real(vali) / 48.0) * 3.141592653589793;
+         verify_sincos(arg);
+      end loop;
       end_time := now;
       report "Test finished, " &
-         to_string(real((end_time-start_time) / 10 ns) / real(count)) &
-         " clock cycles per calculation";
+             to_string(real((end_time - start_time) / 10 ns) / real(count)) &
+             " clock cycles per calculation";
       report "max_error_cos=" & to_string(max_error_cos, 11) & " at " & to_string(max_error_cos_angle, 11);
       report "max_error_sin=" & to_string(max_error_sin, 11) & " at " & to_string(max_error_sin_angle, 11);
       wait until rising_edge(clk);
-      running <= '0';
+      running  <= '0';
    end process test_proc;
 
 end architecture simulation;
