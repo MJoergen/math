@@ -177,7 +177,7 @@ begin
       --      verify_sincos(4.0);
       --      verify_sincos(0.5);
       --      verify_sincos(-1.0);
-      for vali in -200 to 200 loop
+      for vali in -500 to 500 loop
          arg := (real(vali) / 48.0) * 3.141592653589793;
          verify_sincos(arg);
       end loop;
