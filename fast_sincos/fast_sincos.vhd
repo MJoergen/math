@@ -55,7 +55,7 @@ end entity fast_sincos;
 architecture synthesis of fast_sincos is
 
    -- C_ANGLE_NUM is the number of CORDIC iterations.
-   constant C_ANGLE_NUM : natural         := 35;
+   constant C_ANGLE_NUM : natural         := 29;
 
    -- This calculates the scaling used in the CORDIC algorithm.
    -- The returned value is approximately 0.6072529350088812, in the limit
@@ -89,10 +89,19 @@ architecture synthesis of fast_sincos is
    signal   stage1_angle         : fraction_type;
    signal   stage1_octant        : unsigned(2 downto 0);
 
+   -- The angle starts out as a value in [0.0, 0.5], representing an angle
+   -- in [0, pi/4].
+   -- During calculation, the value may stray slightly outside the initial interval,
+   -- but it will always represent a signed value in [-1.0, 1.0[, i.e. an angle in
+   -- [-pi/2, pi/2[.
+   signal   angle : fraction_type;
+
+   -- x and y will eventually become the result of sine and cosine.
+   -- The value of x represents an unsigned value in [0.0, 2.0[.
+   -- The value of y represents a signed value in [-1.0, 1.0[.
    signal   x     : fraction_type;
    signal   y     : fraction_type;
    signal   count : natural range 0 to C_ANGLE_NUM;
-   signal   angle : fraction_type;
 
    signal   rotate_x : fraction_type;
    signal   rotate_y : fraction_type;
@@ -199,6 +208,17 @@ begin
          rotate_x <= rotate_left(x, count_leading_zeros(x));
          rotate_y <= rotate_left(y, count_leading_zeros(y));
 
+         -- x must never be greater than 1
+         if x(x'left) = '1' then
+            rotate_x <= (x'left => '1', others => '0');
+         end if;
+
+         -- y must never be less than 0
+         if y(y'left) = '1' then
+            rotate_y <= (others => '0');
+            exp_y    <= x"00";
+         end if;
+
          case state is
 
             when STAGE1_ST =>
@@ -222,8 +242,8 @@ begin
                if G_DEBUG then
                   report "count = " & to_string(count);
                   report "angle = " & to_string(fraction2real(angle), 11) & " * pi/2";
-                  report "x     = " & to_string(fraction2real(x), 11);
-                  report "y     = " & to_string(fraction2real(y), 11);
+                  report "x     = 0x" & to_hstring(x) & " = " & to_string(fraction2real(x), 11);
+                  report "y     = 0x" & to_hstring(y) & " = " & to_string(fraction2real(y), 11);
                end if;
 
                if angle(angle'left) = '0' then
@@ -331,7 +351,8 @@ begin
          if start_i = '1' then
             if G_DEBUG then
                report "arg_exp_i     = 0x" & to_hstring(arg_exp_i);
-               report "arg_mant_i    = " & to_string(fraction2real("0" & (arg_mant_i or x"80000000") & "0000"), 11);
+               report "arg_mant_i    = " &
+                      to_string(fraction2real("0" & (arg_mant_i or x"80000000") & "0000000"), 11);
                report "C_SCALE       = " & to_string(fraction2real(C_SCALE), 11);
                report "C_TWO_OVER_PI = " & to_string(fraction2real(C_TWO_OVER_PI), 11);
             end if;

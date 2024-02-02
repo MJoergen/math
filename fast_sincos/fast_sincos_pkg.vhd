@@ -11,7 +11,7 @@ package fast_sincos_pkg is
    -- The nominal precision of the fraction_type is 32 bits.
    -- However, to avoid accumulation of rounding errors, some
    -- additional guard bits are added.
-   constant C_GUARD_BITS : natural := 4;
+   constant C_GUARD_BITS : natural := 7;
    constant C_SIZE       : natural := 32 + C_GUARD_BITS;
 
    subtype  fraction_type is unsigned(C_SIZE downto 0);

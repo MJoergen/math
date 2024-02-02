@@ -184,16 +184,16 @@ begin
       wait until rising_edge(clk);
       start_time_v := now;
       report "Test started";
-      for vali in -500 to 500 loop
-         arg_v := (real(vali) / 48.0) * C_PI;
+      for vali in 0 to 120 loop
+         arg_v := (real(vali) / 480.0) * C_PI;
          verify_sincos(arg_v);
       end loop;
       end_time_v := now;
       report "Test finished, " &
              to_string(real((end_time_v - start_time_v) / 10 ns) / real(count)) &
              " clock cycles per calculation";
-      report "max_error_cos=" & to_string(max_error_cos, 11) & " at " & to_string(max_error_cos_angle, 11);
-      report "max_error_sin=" & to_string(max_error_sin, 11) & " at " & to_string(max_error_sin_angle, 11);
+      report "log2(max_error_cos)=" & to_string(log(max_error_cos)/log(2.0), 2) & " at " & to_string(max_error_cos_angle, 11);
+      report "log2(max_error_sin)=" & to_string(log(max_error_sin)/log(2.0), 2) & " at " & to_string(max_error_sin_angle, 11);
       wait until rising_edge(clk);
       running    <= '0';
    end process test_proc;
