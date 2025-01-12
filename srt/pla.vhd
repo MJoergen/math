@@ -49,9 +49,6 @@ architecture synthesis of pla is
       return res_v;
    end function get_q;
 
-   signal arg_n : std_logic_vector(7 downto 0) := (others => '0');
-   signal arg_d : std_logic_vector(7 downto 0) := X"10";
-
    type   ram_type is array (natural range <>) of std_logic_vector(1 downto 0);
 
    pure function init_ram return ram_type is
@@ -79,9 +76,6 @@ architecture synthesis of pla is
    signal pla_data : std_logic_vector(1 downto 0);
 
 begin
-
-   arg_n <= n_i(31 downto 25) & "0";
-   arg_d <= d_i(31 downto 24);
 
    pla_addr_proc : process (all)
       variable n_v   : natural range 0 to 2 ** 7 - 1;
@@ -118,8 +112,6 @@ begin
       end if;
       q_o <= q_v;
    end process q_v_proc;
-
--- q_o   <= get_q(arg_n, arg_d);
 
 end architecture synthesis;
 

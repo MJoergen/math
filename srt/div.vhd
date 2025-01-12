@@ -9,7 +9,7 @@ library ieee;
 
 entity div is
    generic (
-      G_DEBUG : boolean := false
+      G_DEBUG : boolean
    );
    port (
       clk_i   : in    std_logic;
@@ -31,7 +31,6 @@ architecture synthesis of div is
 
    signal   n     : std_logic_vector(31 downto 0) := (others => '0');
    signal   d     : std_logic_vector(31 downto 0) := X"10000000";
-   signal   q     : integer range -2 to 2;
    signal   res_p : std_logic_vector(67 downto 0);
    signal   res_n : std_logic_vector(67 downto 0);
 
