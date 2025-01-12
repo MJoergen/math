@@ -1,0 +1,46 @@
+[*]
+[*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
+[*] Sun Jan 12 20:41:46 2025
+[*]
+[dumpfile] "/home/mike/git/MJoergen/math/srt/div_cover/engine_0/trace0.vcd"
+[dumpfile_mtime] "Sun Jan 12 20:38:25 2025"
+[dumpfile_size] 4910
+[savefile] "/home/mike/git/MJoergen/math/srt/div.gtkw"
+[timestart] 0
+[size] 1267 600
+[pos] -1 -1
+*-4.152785 36 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] div.
+[sst_width] 249
+[signals_width] 233
+[sst_expanded] 1
+[sst_vpaned_height] 143
+@800200
+-div
+@28
+div.clk_i
+@22
+div.d_i[31:0]
+div.n_i[31:0]
+@28
+div.start_i
+@22
+div.q_o[67:0]
+@28
+div.busy_o
+@23
+div.iter[5:0]
+@22
+div.d[31:0]
+div.n[31:0]
+@28
+div.pla_q[2:0]
+@22
+div.res_n[67:0]
+div.res_p[67:0]
+@28
+div.state
+@1000200
+-div
+[pattern_trace] 1
+[pattern_trace] 0

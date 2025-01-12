@@ -1,0 +1,29 @@
+vunit div_inst (div(synthesis))
+{
+   -- set all declarations to run on clk_i
+   default clock is rising_edge(clk_i);
+
+
+   -----------------------------
+   -- ASSERTIONS ABOUT OUTPUTS
+   -----------------------------
+
+   -----------------------------
+   -- ASSUMPTIONS ABOUT INPUTS
+   -----------------------------
+
+   -- Require reset at startup.
+   f_reset : assume {start_i};
+
+   -- Require valid input
+   f_valid : assume always {start_i} |-> {n_i(G_SIZE-1 downto G_SIZE-4) = "0001" and d_i(G_SIZE-1 downto G_SIZE-4) = "0001"};
+
+   --------------------------------------------
+   -- COVER STATEMENTS TO VERIFY REACHABILITY
+   --------------------------------------------
+
+   -- Just a simple cover statement
+   f_n : cover {n(G_SIZE-1 downto G_SIZE-3) = "010"};
+
+} -- vunit div_inst (div(synthesis))
+

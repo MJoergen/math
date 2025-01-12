@@ -1,0 +1,22 @@
+[tasks]
+cover
+bmc
+
+[options]
+cover: mode cover
+cover: depth 10
+bmc: mode bmc
+bmc: depth 10
+
+[engines]
+smtbmc
+
+[script]
+ghdl --std=08 -gG_SIZE=10 div.vhd div.psl pla.vhd -e div
+prep -top div
+
+[files]
+div.psl
+div.vhd
+pla.vhd
+

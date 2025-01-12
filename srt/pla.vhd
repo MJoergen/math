@@ -4,11 +4,12 @@ library ieee;
 
 entity pla is
    generic (
+      G_SIZE  : natural;
       G_DEBUG : boolean
    );
    port (
-      n_i : in    std_logic_vector(31 downto 0); -- dividend
-      d_i : in    std_logic_vector(31 downto 0); -- divisor
+      n_i : in    std_logic_vector(G_SIZE-1 downto 0); -- dividend
+      d_i : in    std_logic_vector(G_SIZE-1 downto 0); -- divisor
       q_o : out   integer range -2 to 2
    );
 end entity pla;
@@ -66,7 +67,7 @@ architecture synthesis of pla is
       return ram_v;
    end function init_ram;
 
-   signal pla_ram : ram_type(0 to 2047)        := init_ram;
+   constant pla_ram : ram_type(0 to 2047)        := init_ram;
    -- Vivado will not implement this using LUTRAM,
    -- despite being instructed to do so.
    -- attribute ram_style : string;
@@ -82,8 +83,8 @@ begin
       variable d_v   : natural range 0 to 2 ** 4 - 1;
       variable idx_v : natural range 0 to 2047;
    begin
-      n_v      := to_integer(n_i(31 downto 25));
-      d_v      := to_integer(d_i(27 downto 24));
+      n_v      := to_integer(n_i(G_SIZE-1 downto G_SIZE-7));
+      d_v      := to_integer(d_i(G_SIZE-5 downto G_SIZE-8));
       idx_v    := n_v * 16 + d_v;
       pla_addr <= to_stdlogicvector(idx_v, 11);
 
@@ -103,7 +104,7 @@ begin
       variable q_v : integer;
    begin
       q_v := to_integer(pla_data);
-      if n_i(31) = '1' then
+      if n_i(G_SIZE-1) = '1' then
          q_v := -q_v;
       end if;
 

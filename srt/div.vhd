@@ -9,46 +9,55 @@ library ieee;
 
 entity div is
    generic (
+      G_SIZE  : natural;
       G_DEBUG : boolean
    );
    port (
       clk_i   : in    std_logic;
-      n_i     : in    std_logic_vector(31 downto 0); -- dividend
-      d_i     : in    std_logic_vector(31 downto 0); -- divisor
+      n_i     : in    std_logic_vector(G_SIZE-1 downto 0); -- dividend
+      d_i     : in    std_logic_vector(G_SIZE-1 downto 0); -- divisor
       start_i : in    std_logic;
-      q_o     : out   std_logic_vector(67 downto 0); -- quotient
+      q_o     : out   std_logic_vector(2*G_SIZE+3 downto 0); -- quotient
       busy_o  : out   std_logic
    );
 end entity div;
 
 architecture synthesis of div is
 
-   constant C_NUM_ITERS : natural                 := 34;
+   constant C_NUM_ITERS : natural                 := G_SIZE+2;
 
    signal   iter : natural range 0 to C_NUM_ITERS;
 
    signal   pla_q : integer range -2 to 2;
 
-   signal   n     : std_logic_vector(31 downto 0) := (others => '0');
-   signal   d     : std_logic_vector(31 downto 0) := X"10000000";
-   signal   res_p : std_logic_vector(67 downto 0);
-   signal   res_n : std_logic_vector(67 downto 0);
+   function get_init_d return std_logic_vector is
+      variable res_v : std_logic_vector(G_SIZE-1 downto 0);
+   begin
+      res_v := (others => '0');
+      res_v(G_SIZE-4) := '1';
+      return res_v;
+   end function get_init_d;
+
+   signal   n     : std_logic_vector(G_SIZE-1 downto 0) := (others => '0');
+   signal   d     : std_logic_vector(G_SIZE-1 downto 0) := get_init_d;
+   signal   res_p : std_logic_vector(2*G_SIZE+3 downto 0);
+   signal   res_n : std_logic_vector(2*G_SIZE+3 downto 0);
 
    type     state_type is (IDLE_ST, BUSY_ST);
    signal   state : state_type                    := IDLE_ST;
 
    pure function get_n (
-      arg_n : std_logic_vector(31 downto 0);
-      arg_d : std_logic_vector(31 downto 0);
+      arg_n : std_logic_vector(G_SIZE-1 downto 0);
+      arg_d : std_logic_vector(G_SIZE-1 downto 0);
       arg_q : integer range -2 to 2
    ) return std_logic_vector is
-      variable tmp_v : std_logic_vector(31 downto 0);
+      variable tmp_v : std_logic_vector(G_SIZE-1 downto 0);
    begin
       --
       case arg_q is
 
          when -2 =>
-            tmp_v := arg_n + (arg_d(30 downto 0) & "0");
+            tmp_v := arg_n + (arg_d(G_SIZE-2 downto 0) & "0");
 
          when -1 =>
             tmp_v := arg_n + arg_d;
@@ -60,7 +69,7 @@ architecture synthesis of div is
             tmp_v := arg_n - arg_d;
 
          when 2 =>
-            tmp_v := arg_n - (arg_d(30 downto 0) & "0");
+            tmp_v := arg_n - (arg_d(G_SIZE-2 downto 0) & "0");
 
          when others =>
             tmp_v := arg_n;
@@ -71,9 +80,9 @@ architecture synthesis of div is
          report "get_n: tmp_v=0x" & to_hstring(tmp_v);
       end if;
 
-      assert tmp_v(31 downto 29) = "000" or tmp_v(31 downto 29) = "111"
+      f_74 : assert tmp_v(G_SIZE-1 downto G_SIZE-3) = "000" or tmp_v(G_SIZE-1 downto G_SIZE-3) = "111"
          report "tmp_v=0x" & to_hstring(tmp_v);
-      return tmp_v(29 downto 0) & "00";
+      return tmp_v(G_SIZE-3 downto 0) & "00";
    end function get_n;
 
 begin
@@ -100,11 +109,11 @@ begin
 
                n <= get_n(n, d, pla_q);
                if pla_q > 0 then
-                  res_p <= res_p(65 downto 0) & to_stdlogicvector(pla_q, 2);
-                  res_n <= res_n(65 downto 0) & "00";
+                  res_p <= res_p(2*G_SIZE+1 downto 0) & to_stdlogicvector(pla_q, 2);
+                  res_n <= res_n(2*G_SIZE+1 downto 0) & "00";
                else
-                  res_p <= res_p(65 downto 0) & "00";
-                  res_n <= res_n(65 downto 0) & to_stdlogicvector(-pla_q, 2);
+                  res_p <= res_p(2*G_SIZE+1 downto 0) & "00";
+                  res_n <= res_n(2*G_SIZE+1 downto 0) & to_stdlogicvector(-pla_q, 2);
                end if;
                if iter < C_NUM_ITERS then
                   iter <= iter + 1;
@@ -116,8 +125,8 @@ begin
          end case;
 
          if start_i then
-            assert n_i(31 downto 28) = "0001";
-            assert d_i(31 downto 28) = "0001";
+            f_119 : assert n_i(G_SIZE-1 downto G_SIZE-4) = "0001";
+            f_120 : assert d_i(G_SIZE-1 downto G_SIZE-4) = "0001";
             n     <= n_i;
             d     <= d_i;
             iter  <= 0;
@@ -130,6 +139,7 @@ begin
 
    pla_inst : entity work.pla
       generic map (
+         G_SIZE  => G_SIZE,
          G_DEBUG => G_DEBUG
       )
       port map (

@@ -90,6 +90,7 @@ begin
 
    div_inst : entity work.div
       generic map (
+         G_SIZE  => 32,
          G_DEBUG => G_DEBUG
       )
       port map (
