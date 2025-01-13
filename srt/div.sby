@@ -12,7 +12,7 @@ bmc: depth 10
 smtbmc
 
 [script]
-ghdl --std=08 -gG_SIZE=10 div.vhd div.psl pla.vhd -e div
+ghdl --std=08 -gG_SIZE=16 div.vhd div.psl pla.vhd -e div
 prep -top div
 
 [files]

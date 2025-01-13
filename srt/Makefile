@@ -21,7 +21,7 @@ $(DUT)_cover/PASS: $(DUT).sby $(DUT).psl $(SRC)
 	sby --yosys "yosys -m ghdl" -f $(DUT).sby
 
 show_bmc:
-	gtkwave $(DUT)_bmc/engine_0/trace_induct.vcd $(DUT).gtkw
+	gtkwave $(DUT)_bmc/engine_0/trace.vcd $(DUT).gtkw
 
 show_cover:
 	gtkwave $(DUT)_cover/engine_0/trace0.vcd $(DUT).gtkw

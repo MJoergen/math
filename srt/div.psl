@@ -23,7 +23,15 @@ vunit div_inst (div(synthesis))
    --------------------------------------------
 
    -- Just a simple cover statement
-   f_n : cover {n(G_SIZE-1 downto G_SIZE-3) = "010"};
+   -- Verify that n=-4 can be reached
+   -- Verify that n=4.246 can be reached
+   f_large_n : cover {n(G_SIZE-1 downto G_SIZE-12) = "010000111111"}; -- reached in step 3
+   f_small_n : cover {n(G_SIZE-1 downto G_SIZE-12) = "110000000000"}; -- reached in step 2
+
+   -- Verify that -4 <= n < 4.25
+   f_range_n : assert n(G_SIZE-1 downto G_SIZE-12) >= X"C00" or
+                      n(G_SIZE-1 downto G_SIZE-12) < X"440";
+
 
 } -- vunit div_inst (div(synthesis))
 

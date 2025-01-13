@@ -14,50 +14,74 @@ entity div is
    );
    port (
       clk_i   : in    std_logic;
-      n_i     : in    std_logic_vector(G_SIZE-1 downto 0); -- dividend
-      d_i     : in    std_logic_vector(G_SIZE-1 downto 0); -- divisor
+      n_i     : in    std_logic_vector(G_SIZE - 1 downto 0);     -- dividend
+      d_i     : in    std_logic_vector(G_SIZE - 1 downto 0);     -- divisor
       start_i : in    std_logic;
-      q_o     : out   std_logic_vector(2*G_SIZE+3 downto 0); -- quotient
+      q_o     : out   std_logic_vector(2 * G_SIZE + 3 downto 0); -- quotient
       busy_o  : out   std_logic
    );
 end entity div;
 
 architecture synthesis of div is
 
-   constant C_NUM_ITERS : natural                 := G_SIZE+2;
+   constant C_NUM_ITERS : natural                         := G_SIZE + 2;
 
    signal   iter : natural range 0 to C_NUM_ITERS;
 
    signal   pla_q : integer range -2 to 2;
 
    function get_init_d return std_logic_vector is
-      variable res_v : std_logic_vector(G_SIZE-1 downto 0);
+      variable res_v : std_logic_vector(G_SIZE - 1 downto 0);
    begin
-      res_v := (others => '0');
-      res_v(G_SIZE-4) := '1';
+      res_v             := (others => '0');
+      res_v(G_SIZE - 4) := '1';
       return res_v;
    end function get_init_d;
 
-   signal   n     : std_logic_vector(G_SIZE-1 downto 0) := (others => '0');
-   signal   d     : std_logic_vector(G_SIZE-1 downto 0) := get_init_d;
-   signal   res_p : std_logic_vector(2*G_SIZE+3 downto 0);
-   signal   res_n : std_logic_vector(2*G_SIZE+3 downto 0);
+   signal   n     : std_logic_vector(G_SIZE - 1 downto 0) := (others => '0');
+   signal   d     : std_logic_vector(G_SIZE - 1 downto 0) := get_init_d;
+   signal   res_p : std_logic_vector(2 * G_SIZE + 3 downto 0);
+   signal   res_n : std_logic_vector(2 * G_SIZE + 3 downto 0);
 
    type     state_type is (IDLE_ST, BUSY_ST);
-   signal   state : state_type                    := IDLE_ST;
+   signal   state : state_type                            := IDLE_ST;
+
+   pure function abs_slv (
+      arg : std_logic_vector
+   ) return std_logic_vector is
+   begin
+      if arg(arg'left) = '0' then
+         return arg;
+      else
+         return 1 + not arg;
+      end if;
+   end function abs_slv;
+
 
    pure function get_n (
-      arg_n : std_logic_vector(G_SIZE-1 downto 0);
-      arg_d : std_logic_vector(G_SIZE-1 downto 0);
+      arg_n : std_logic_vector(G_SIZE - 1 downto 0);
+      arg_d : std_logic_vector(G_SIZE - 1 downto 0);
       arg_q : integer range -2 to 2
    ) return std_logic_vector is
-      variable tmp_v : std_logic_vector(G_SIZE-1 downto 0);
+      variable tmp_v   : std_logic_vector(G_SIZE - 1 downto 0);
+      variable neg_v   : std_logic_vector(G_SIZE - 1 downto 0);
+      variable tmp3_v  : std_logic_vector(G_SIZE + 1 downto 0);
+      variable argn3_v : std_logic_vector(G_SIZE + 1 downto 0);
    begin
+      argn3_v := ("00" & abs_slv(arg_n)) + ("0" & abs_slv(arg_n) & "0");
+
+      -- Verify that n/d < 8/3, i.e. 3*n < 8*d
+      f_74 : assert argn3_v(G_SIZE + 1 downto G_SIZE) = "00" and
+                    argn3_v(G_SIZE - 1 downto 0) < arg_d(G_SIZE - 4 downto 0) & "000"
+         report "argn3_v=0x" & to_hstring(argn3_v) &
+                ", arg_n=0x" & to_hstring(arg_n) &
+                ", arg_d=0x" & to_hstring(arg_d);
+
       --
       case arg_q is
 
          when -2 =>
-            tmp_v := arg_n + (arg_d(G_SIZE-2 downto 0) & "0");
+            tmp_v := arg_n + (arg_d(G_SIZE - 2 downto 0) & "0");
 
          when -1 =>
             tmp_v := arg_n + arg_d;
@@ -69,7 +93,7 @@ architecture synthesis of div is
             tmp_v := arg_n - arg_d;
 
          when 2 =>
-            tmp_v := arg_n - (arg_d(G_SIZE-2 downto 0) & "0");
+            tmp_v := arg_n - (arg_d(G_SIZE - 2 downto 0) & "0");
 
          when others =>
             tmp_v := arg_n;
@@ -80,9 +104,17 @@ architecture synthesis of div is
          report "get_n: tmp_v=0x" & to_hstring(tmp_v);
       end if;
 
-      f_74 : assert tmp_v(G_SIZE-1 downto G_SIZE-3) = "000" or tmp_v(G_SIZE-1 downto G_SIZE-3) = "111"
+      tmp3_v := ("00" & abs_slv(tmp_v)) + ("0" & abs_slv(tmp_v) & "0");
+
+      f_107 : assert tmp3_v(G_SIZE + 1 downto G_SIZE - 2) = "0000"
+         report "tmp_v=0x" & to_hstring(tmp_v) &
+                ", tmp3_v=0x" & to_hstring(tmp3_v) &
+                ", arg_d=0x" & to_hstring(arg_d);
+
+      f_114 : assert tmp_v(G_SIZE - 1 downto G_SIZE - 3) = "000" or
+                     tmp_v(G_SIZE - 1 downto G_SIZE - 3) = "111"
          report "tmp_v=0x" & to_hstring(tmp_v);
-      return tmp_v(G_SIZE-3 downto 0) & "00";
+      return tmp_v(G_SIZE - 3 downto 0) & "00";
    end function get_n;
 
 begin
@@ -109,11 +141,11 @@ begin
 
                n <= get_n(n, d, pla_q);
                if pla_q > 0 then
-                  res_p <= res_p(2*G_SIZE+1 downto 0) & to_stdlogicvector(pla_q, 2);
-                  res_n <= res_n(2*G_SIZE+1 downto 0) & "00";
+                  res_p <= res_p(2 * G_SIZE + 1 downto 0) & to_stdlogicvector(pla_q, 2);
+                  res_n <= res_n(2 * G_SIZE + 1 downto 0) & "00";
                else
-                  res_p <= res_p(2*G_SIZE+1 downto 0) & "00";
-                  res_n <= res_n(2*G_SIZE+1 downto 0) & to_stdlogicvector(-pla_q, 2);
+                  res_p <= res_p(2 * G_SIZE + 1 downto 0) & "00";
+                  res_n <= res_n(2 * G_SIZE + 1 downto 0) & to_stdlogicvector(-pla_q, 2);
                end if;
                if iter < C_NUM_ITERS then
                   iter <= iter + 1;
@@ -125,8 +157,8 @@ begin
          end case;
 
          if start_i then
-            f_119 : assert n_i(G_SIZE-1 downto G_SIZE-4) = "0001";
-            f_120 : assert d_i(G_SIZE-1 downto G_SIZE-4) = "0001";
+            f_119 : assert n_i(G_SIZE - 1 downto G_SIZE - 4) = "0001";
+            f_120 : assert d_i(G_SIZE - 1 downto G_SIZE - 4) = "0001";
             n     <= n_i;
             d     <= d_i;
             iter  <= 0;
