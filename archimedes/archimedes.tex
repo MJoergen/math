@@ -1,0 +1,284 @@
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc} % Lærer LaTeX at forstå unicode - HUSK at filen skal
+% være unicode (UTF-8), standard i Linux, ikke i
+% Win.
+
+%\usepackage[danish]{babel} % Så der fx står Figur og ikke Figure, Resumé og ikke
+% Abstract etc. (god at have).
+
+%\usepackage{graphicx}
+\usepackage{amsfonts}
+\usepackage{amsthm}        % Theorems
+\usepackage{amsmath}
+\usepackage{tcolorbox}
+%\usepackage{hyperref}
+
+%\renewcommand{\mid}[1]{{\rm E}\!\left[#1\right]}
+\newcommand{\Z}[1]{{\mathbb{Z}}\!\left[#1\right]}
+
+%\DeclareMathSymbol{,}{\mathord}{letters}{"3B}
+
+\title{Archimedes approximation of $\pi$}
+\date{August 2026}
+\author{Michael Jørgensen}
+
+\begin{document}
+
+\maketitle
+
+\section{Archimedes}
+We want to replicate Archimedes' calculation of $\pi$ using modern tools and notation. For each estimated value $v$ we also
+calculate the logarithmic accuracy $e_v = -\log_{10} |v - \pi|$.
+
+Define two sequences of numbers, $A_k$ and $B_k$, for $k=1, 2, \ldots$. They are defined geometrically as follows:
+$A_k$ is the semi-perimeter of the regular circumscribed polygon (with $3\cdot2^k$ sides) of a circle with radius one.
+$B_k$ is the semi-perimeter of the regular inscribed polygon.
+The first few values are
+$$
+\begin{array}{r|c|l|l|l|l|l}
+    k & A_k & B_k & A_k & B_k & e_{A_k} & e_{B_k} \\ \hline
+    1 & 2\sqrt{3} & 3 & 3.464101615 & 3.000000000 & 0.49 & 0.85 \\ \hline
+    2 & 12\cdot(2-\sqrt{3}) & 6\sqrt{2-\sqrt{3}} & 3.215390309 & 3.105828541 & 1.13 & 1.45 \\ \hline
+    3 & & & 3.159659942 & 3.132628613 & 1.74 & 2.05 \\ \hline
+    4 & & & 3.146086215 & 3.139350203 & 2.35 & 2.65 \\ \hline
+    5 & & & 3.142714600 & 3.141031951 & 2.95 & 3.25 \\ \hline
+    6 & & & 3.141873050 & 3.141452472 & 3.55 & 3.85 \\ \hline
+    7 & & & 3.141662747 & 3.141557608 & 4.15 & 4.46
+\end{array}
+$$
+We see that the logarithmic accuracy increases with about $0.6$ in each iteration.
+
+It can be shown from geometrical arguments that these two sequences satisfy the following recurrence relations:
+\begin{eqnarray}
+    A_{k+1} &=& \frac{2 A_k B_k}{A_k + B_k} \label{eq_ak}\\
+    B_{k+1} &=& \sqrt{A_{k+1} B_k} \label{eq_bk}
+\end{eqnarray}
+
+The above is the starting point. In the following we examine the properties of these two sequences, and how they
+can be used to calculate $\pi$, although at this point it is just a symbol without a value.
+
+\section{Properties}
+It can be shown from the recurrence relations that
+$$
+A_k > A_{k+1} > B_{k+1} > B_k
+$$
+for all $k$.
+This implies that the sequence $A_k$ is decreasing and bounded below, while the sequence $B_k$ is increasing and bounded
+above. Therefore, both sequences converge in the limit of large $k$ to $A_\infty$ and $B_\infty$, respectively.
+
+\section{Simplification}
+We now introduce a new sequence $\alpha_k = B_k/A_k$.
+From the above we get the following calculation:
+\begin{eqnarray*}
+    \alpha_{k+1} &=& \frac{B_{k+1}}{A_{k+1}} \\
+    &=& \sqrt{\frac{B_k}{A_{k+1}}} \\
+    &=& \sqrt{B_k \frac{A_k+B_k}{2A_kB_k}} \\
+    &=& \sqrt{\frac{A_k+B_k}{2A_k}} \\
+    &=& \sqrt{\frac{1+\alpha_k}{2}}
+\end{eqnarray*}
+So we have found a simple recurrence relation for the sequence $\alpha_k$. The first few values are:
+$$
+\begin{array}{r|c|l}
+    k & \alpha_k & \alpha_k \\ \hline
+    1 & \frac12 \sqrt{3} & 0.866025404 \\ \hline
+    2 & \frac12 \sqrt{2+\sqrt3} & 0.965925826 \\ \hline
+    3 & & 0.991444861 \\ \hline
+    4 & & 0.997858923 \\ \hline
+    5 & & 0.999464587 \\ \hline
+    6 & & 0.999866138 \\ \hline
+    7 & & 0.999966534
+\end{array}
+$$
+
+It can be shown from the recurrence relation that
+$$
+1 > \alpha_{k+1} > \alpha_k
+$$
+Therefore, the sequence $\alpha_k$ is increasing and bounded above, and hence converges in the limit of large $k$.
+It is easy to verify that this limit is $1$.
+
+From all this we conclude that the sequences $A_k$ and $B_k$ converge to the same limit. We call this common limit
+$\pi$.
+
+\section{Rate of convergence}
+The rate of convergence can be determined easily by setting $\alpha_k = 1 - \epsilon_k$ where $\epsilon_k << 1$. Then we
+find
+
+\begin{eqnarray*}
+    \epsilon_{k+1} &=& 1 - \alpha_{k+1} \\
+    &\approx& 1 - (1 - \epsilon_k/4) \\
+    &=& \epsilon_k/4
+\end{eqnarray*}
+
+So the convergence is linear, with a factor of $4$.
+
+\section{Common Limit}
+We have shown that $A_k$ converges from above and $B_k$ converges from below to the value of $\pi$, and both converge
+with a linear rate of $4$.
+We now wish to establish that a certain linear relation between $A_k$ and $B_k$ converges even faster.
+
+We introduce two new sequences $a_k$ and $b_k$ by the relation
+\begin{eqnarray*}
+    A_k = A_\infty + a_k \\
+    B_k = B_\infty - b_k
+\end{eqnarray*}
+and assume that $a_k << 1$ and $b_k << 1$ as well as $A_\infty = B_\infty$.
+Inserting into the original recurrence relations and simplifying gives:
+\begin{eqnarray*}
+    a_{k+1} &\approx& (a_k - b_k)/2 \\
+    b_{k+1} &\approx& (3b_k - a_k)/4
+\end{eqnarray*}
+Using the rate of convergence $4$ we set $a_{k+1} \approx a_k / 4$ and $b_{k+1} \approx b_k / 4$.
+This gives $a_k \approx 2 b_k$.
+
+We therefore define a new sequence $C_k$ as follows
+$$
+C_k = \frac{A_k + 2B_k}{3}
+$$
+This converges much faster to $\pi$  as seen in the table below:
+
+$$
+\begin{array}{r|c|l|l|l|l}
+    k & C_k & e_{C_k}\\ \hline
+    1 & 3.154700538 & 1.88 \\ \hline
+    2 & 3.142349131 & 3.12 \\ \hline
+    3 & 3.141639056 & 4.33 \\ \hline
+    4 & 3.141595540 & 5.54 \\ \hline
+    5 & 3.141592834 & 6.74 \\ \hline
+    6 & 3.141592665 & 7.95 \\ \hline
+    7 & 3.141592654 & 9.15
+\end{array}
+$$
+
+A second approach of improving the convergence is to make use of the approximation
+$$
+B_k \approx B_\infty + c_1\cdot \left(\frac14\right)^k
+$$
+
+Combine $B_k$ and $B_{k-1}$ as follows eliminates the $c_1$ term:
+$$
+D_k = (4 B_k - B_{k-1})/3
+$$
+which gives the following table
+$$
+\begin{array}{r|c|l|l|l|l}
+    k & D_k & e_{D_k}\\ \hline
+    2 & 3.141104722 & 3.31 \\ \hline
+    3 & 3.141561971 & 4.51 \\ \hline
+    4 & 3.141590733 & 5.72 \\ \hline
+    5 & 3.141592534 & 6.92 \\ \hline
+    6 & 3.141592646 & 8.12 \\ \hline
+    7 & 3.141592653 & 9.33
+\end{array}
+$$
+For both $C_k$ and $D_k$ we see the logarithmic accuracy increases by about $1.2$ on each iteration, corresponding to a
+convergence rate of $16$.
+
+Repeating the last calculation we may set
+$$
+D_k \approx D_\infty + c_2 \left(\frac{1}{16}\right)^k
+$$
+Combining $D_k$ and $D_{k-1}$ can eliminate the $c_2$ term as follows:
+$$
+E_k = (16 D_k - D_{k-1}) / 15
+$$
+which gives the following table
+$$
+\begin{array}{r|c|l|l|l|l}
+    k & E_k & e_{E_k}\\ \hline
+    3 & 3.141592454 & 6.70 \\ \hline
+    4 & 3.141592650 & 8.50 \\ \hline
+    5 & 3.141592654 & 10.31 \\ \hline
+    6 & 3.141592654 & 12.12 \\ \hline
+    7 & 3.141592654 & 13.92
+\end{array}
+$$
+Here the logarithmic accuracy increases by $1.8$ on every iteration, corresponding to a convergence rate of 64.
+
+In all the above equations we need to evaluate the sequence $B_k$. We will look at an approach to do this in the
+following.
+
+\section{Finite Product}
+We rearrange equation~(\ref{eq_bk}) as follows:
+
+\begin{eqnarray*}
+    A_{k+1} &=& \frac{B_{k+1}^2}{B_k} \\
+    &=& \frac{\alpha_{k+1}^2 A_{k+1}^2}{A_k \alpha_k}
+\end{eqnarray*}
+From this we get
+$$
+\frac{A_k}{A_{k+1}} = \frac{\alpha_{k+1}^2}{\alpha_k}
+$$
+Rewriting this in terms of $B_k$ gives
+$$
+\frac{B_k}{B_{k+1}} = \alpha_{k+1}
+$$
+Multiplying this equation with itself for decreasing values of $k$ we get
+$$
+\frac{B_1}{B_k} = \alpha_2 \alpha_3 \cdots \alpha_k
+$$
+This gives each $B_k$ in terms of a finite product of the $\alpha_k$.
+
+\section{Investigating the Finite Product}
+Rewriting the recurrence relation for $\alpha_k$ gives:
+
+$$
+1 - \alpha_{k+1}^2 = \frac{1-\alpha_k}{2}
+$$
+Hence we have
+\begin{eqnarray*}
+    \alpha_{k+1} &=& \sqrt\frac{1+\alpha_k}{2} \\
+    &=& \frac12 \sqrt{2(1+\alpha_k)} \\
+    &=& \frac12 \sqrt{\frac{2(1-\alpha_k^2)}{1-\alpha_k}} \\
+    &=& \frac12 \sqrt{\frac{1-\alpha_k^2}{1 - \alpha_{k+1}^2}}
+\end{eqnarray*}
+The finite product of $\alpha_k$ can thus be written as:
+$$
+\alpha_2\cdots\alpha_k = \frac{1}{2^{k-1}} \sqrt{\frac{1-\alpha_1^2}{1-\alpha_k^2}}
+$$
+Combining this with the result from the previous section we find
+$$
+\frac{B_1}{B_k} = \frac{\sqrt{1-\alpha_1^2}}{2^{k-1} \sqrt{1-\alpha_k^2}}
+$$
+which simplifies to
+$$
+B_k = 3 \cdot 2^k \cdot \sqrt{1-\alpha_k^2}
+$$
+
+Introducing $u_k = B_k / (3\cdot 2^k)$ we have
+$$
+u_k = \sqrt{1-\alpha_k^2}
+$$
+A recurrence relation is found to be
+$$
+u_{k+1} = \sqrt{\frac{1-\sqrt{1-u_k^2}}{2}}
+$$
+with $u_1 = \frac12$.
+A numerically more stable recurrence relation is
+$$
+u_{k+1} = \frac{u_k}{2} \cdot \sqrt{\frac{2}{1+\sqrt{1-u_k^2}}}
+$$
+
+\section{Trigonometric substitution}
+
+Evaluating this limit we may substitute $u_k = \sin\theta_k$. Then we find
+$$
+\sin\theta_{k+1} = \sin(\theta_k / 2)
+$$
+which gives
+$$
+\theta_k = \theta_1 / 2^{k-1}
+$$
+Furthermore, since $u_k/\theta_k \rightarrow 1$ we have
+\begin{eqnarray*}
+    B_\infty &=& 3 \lim_{k\rightarrow\infty} 2^k u_k \\
+    &=& 3 \lim_{k\rightarrow\infty} 2^k \theta_k \\
+    &=& 6 \cdot \theta_1 \\
+    &=& 6 \cdot \sin^{-1} \left(\frac12\right)
+\end{eqnarray*}
+
+
+
+\end{document}
+
