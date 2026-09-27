@@ -102,15 +102,6 @@ architecture synthesis of tan_cordic is
 
    constant C_ANGLES : rom_t := calc_angles;
 
-   -- Multiply (or divide) a vec_t value by a power of two, by reinterpreting the
-   -- same bit pattern with the binary point moved. This is exact (no rounding).
-   pure function scale_vec (arg : vec_t; n : integer) return vec_t is
-      variable slv_v : std_logic_vector(vec_t'length - 1 downto 0);
-   begin
-      slv_v := to_slv(arg);
-      return resize(to_sfixed(slv_v, vec_t'high - n, vec_t'low - n), vec_t'high, vec_t'low);
-   end function scale_vec;
-
 begin
 
    fsm_proc : process (clk_i)
@@ -171,8 +162,8 @@ begin
                -- +arctan(2**-count) whenever bits(count) = '1', and leave it unchanged
                -- otherwise.
                if bits(count) = '1' then
-                  x <= resize(x - scale_vec(y, count), vec_t'high, vec_t'low);
-                  y <= resize(y + scale_vec(x, count), vec_t'high, vec_t'low);
+                  x <= resize(x - (y sra count), vec_t'high, vec_t'low);
+                  y <= resize(y + (x sra count), vec_t'high, vec_t'low);
                end if;
 
                if count = 0 then
