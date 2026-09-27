@@ -1,11 +1,177 @@
 -- Formal verification of div.vhd. Run with "make formal".
 -- In addition to the properties in this file, the assertions inside div.vhd
 -- (e.g. in the function get_n) are verified too.
+--
+-- Why bounded model checking is enough here: Every division starts by
+-- loading all the state (n, d, iter, res_p, res_n) from the inputs. So the
+-- behaviour of a division depends only on n_i and d_i, and not on anything
+-- that happened before. The BMC depth in div.sby is long enough to cover a
+-- complete division, and n_i and d_i are unconstrained (apart from being
+-- normalized), so this checks every possible division.
 
 vunit div_inst (div(synthesis))
 {
    -- set all declarations to run on clk_i
    default clock is rising_edge(clk_i);
+
+   -----------------------------
+   -- AUXILIARY SIGNALS
+   -----------------------------
+
+   -- In the following n, d, and q are treated as integers, i.e. the fixed
+   -- point values scaled by 2^(G_SIZE-4), 2^(G_SIZE-4), and 2^(2*G_SIZE+2).
+   -- The dividend of the current division is called N.
+   --
+   -- To verify the result, we want to check that N*2^(2*G_SIZE+2) - q*d is
+   -- small. However, the SMT solvers are very slow at multiplication. Instead,
+   -- the signals f_q and f_qd below are updated alongside the divider, using
+   -- the same quotient digits:
+   --    f_q  := 4*f_q  + digit
+   --    f_qd := 4*f_qd + digit*d
+   -- So by construction f_qd = f_q*d. Since digit*d is just a shift of d,
+   -- this uses only additions. We then check that q_o = f_q, and that
+   -- N*2^(2*G_SIZE+2) - f_qd is small.
+   --
+   -- To help the solver, we also check in every clock cycle that the partial
+   -- remainder satisfies
+   --    n = f_n4 - 4*f_qd, where f_n4 = N*4^k
+   -- after k iterations. This follows by induction from n := 4*(n - digit*d).
+   -- The solver assumes that the assertions hold in all previous clock
+   -- cycles, so each clock cycle is a small local check. For the same reason,
+   -- the final result is checked one clock cycle after the division is
+   -- finished.
+
+   constant C_W : natural := 3 * G_SIZE + 6;
+
+   -- Copy of the dividend of the current division
+   signal f_n  : std_logic_vector(G_SIZE - 1 downto 0);
+
+   -- The dividend times 4^k
+   signal f_n4 : std_logic_vector(C_W - 1 downto 0);
+
+   -- The quotient calculated from the digits, and the quotient times d.
+   -- f_qd is two's complement.
+   signal f_q  : std_logic_vector(2 * G_SIZE + 3 downto 0);
+   signal f_qd : std_logic_vector(C_W - 1 downto 0);
+
+   -- Set after the first clock cycle, when the above signals are valid
+   signal f_started : std_logic := '0';
+
+   -- Whether f_n4 = N*4^k
+   signal f_n4_ok : boolean;
+
+   -- Whether the partial remainder satisfies n = f_n4 - 4*f_qd
+   signal f_inv_ok : boolean;
+
+   -- Whether the partial remainder satisfies |n/d| < 8/3, i.e. 3*|n| < 8*d
+   signal f_rem_ok : boolean;
+
+   -- Whether the quotient is correct, i.e. whether 3*|err| < 2*d, where
+   -- err = N*2^(2*G_SIZE+2) - q*d. This means that the quotient differs from
+   -- the exact value N/d by less than 2/3 of the least significant bit of q_o.
+   signal f_res_ok : boolean;
+
+   f_track_proc : process (clk_i)
+      variable q_v  : std_logic_vector(2 * G_SIZE + 3 downto 0);
+      variable qd_v : std_logic_vector(C_W - 1 downto 0);
+   begin
+      if rising_edge(clk_i) then
+         if busy_o = '1' then
+            f_n4 <= f_n4(C_W - 3 downto 0) & "00";
+
+            q_v  := f_q(2 * G_SIZE + 1 downto 0) & "00";
+            qd_v := f_qd(C_W - 3 downto 0) & "00";
+
+            case pla_q is
+
+               when -2 =>
+                  f_q  <= q_v - 2;
+                  f_qd <= qd_v - (d & "0");
+
+               when -1 =>
+                  f_q  <= q_v - 1;
+                  f_qd <= qd_v - d;
+
+               when 1 =>
+                  f_q  <= q_v + 1;
+                  f_qd <= qd_v + d;
+
+               when 2 =>
+                  f_q  <= q_v + 2;
+                  f_qd <= qd_v + (d & "0");
+
+               when others =>
+                  f_q  <= q_v;
+                  f_qd <= qd_v;
+
+            end case;
+
+         end if;
+
+         if start_i = '1' then
+            f_n  <= n_i;
+            f_n4 <= (C_W - 1 downto G_SIZE => '0') & n_i;
+            f_q  <= (others => '0');
+            f_qd <= (others => '0');
+         end if;
+
+         f_started <= '1';
+      end if;
+   end process f_track_proc;
+
+   f_check_proc : process (all)
+      variable n_ext_v : std_logic_vector(C_W + 2 downto 0);
+      variable n_abs_v : std_logic_vector(G_SIZE - 1 downto 0);
+      variable err_v   : std_logic_vector(C_W - 1 downto 0);
+      variable abs_v   : std_logic_vector(C_W - 1 downto 0);
+   begin
+      -- Check f_n4. During a division k = iter, and after the division
+      -- k = C_NUM_ITERS.
+      if busy_o = '1' then
+         f_n4_ok <= f_n4 = ((C_W - 1 downto G_SIZE => '0') & f_n) sll (2 * iter);
+      else
+         f_n4_ok <= f_n4 = ((C_W - 1 downto G_SIZE => '0') & f_n) sll (2 * C_NUM_ITERS);
+      end if;
+
+      -- Check n = f_n4 - 4*f_qd. This is calculated with three extra bits,
+      -- so there is no overflow.
+      n_ext_v  := (C_W + 2 downto G_SIZE => n(G_SIZE - 1)) & n;
+      f_inv_ok <= n_ext_v = ("000" & f_n4) - (f_qd(C_W - 1) & f_qd & "00");
+
+      -- Check 3*|n| < 8*d
+      n_abs_v  := abs_slv(n);
+      f_rem_ok <= ("00" & n_abs_v) + ("0" & n_abs_v & "0") < (d & "000");
+
+      -- Check 3*|err| < 2*d
+      err_v := ("0000" & f_n & (2 * G_SIZE + 1 downto 0 => '0')) - f_qd;
+      if err_v(err_v'left) = '0' then
+         abs_v := err_v;
+      else
+         abs_v := 0 - err_v;
+      end if;
+      f_res_ok <= ("0" & abs_v & "0") + ("00" & abs_v) < (d & "0");
+   end process f_check_proc;
+
+
+   -----------------------------
+   -- ASSERTIONS ABOUT OUTPUTS
+   -----------------------------
+
+   -- Verify the helper signals in every clock cycle
+   f_n4_check  : assert always f_started = '1' -> f_n4_ok;
+   f_invariant : assert always f_started = '1' -> f_inv_ok;
+   f_remainder : assert always f_started = '1' -> f_rem_ok;
+   f_digits    : assert always f_started = '1' -> res_p - res_n = f_q;
+
+   -- When a division finishes, verify that the quotient matches the digits.
+   -- This is modulo 2^(2*G_SIZE+4), but f_result below shows that the true
+   -- quotient is less than 2, so there is no overflow.
+   f_quotient : assert always {busy_o; not busy_o} |-> {q_o = f_q};
+
+   -- One clock cycle after a division finishes, verify that the quotient is
+   -- correct
+   f_result : assert always {busy_o; not busy_o; not busy_o} |-> {f_res_ok};
+
 
    -----------------------------
    -- ASSUMPTIONS ABOUT INPUTS
@@ -14,8 +180,12 @@ vunit div_inst (div(synthesis))
    -- Require reset at startup.
    f_reset : assume {start_i};
 
-   -- Require valid input
-   f_valid : assume always {start_i} |-> {n_i(G_SIZE-1 downto G_SIZE-4) = "0001" and d_i(G_SIZE-1 downto G_SIZE-4) = "0001"};
+   -- Require valid input: The divisor must be normalized, and the dividend
+   -- must be either normalized or zero.
+   f_valid : assume always {start_i} |->
+      {(n_i(G_SIZE-1 downto G_SIZE-4) = "0001" or n_i = 0) and
+        d_i(G_SIZE-1 downto G_SIZE-4) = "0001"};
+
 
    --------------------------------------------
    -- COVER STATEMENTS TO VERIFY REACHABILITY
@@ -30,6 +200,13 @@ vunit div_inst (div(synthesis))
    -- Verify that n=-4 (= 1100.00000000) can be reached. Reached in step 2.
    f_small_n : cover {n(G_SIZE-1 downto G_SIZE-12) = "110000000000"};
 
+   -- Verify that a division can complete, so f_result is not vacuous
+   f_done : cover {busy_o; not busy_o};
+
+   -- Verify that a division with a zero dividend can complete
+   f_done_zero : cover {busy_o; busy_o = '0' and f_n = 0};
+
+
    --------------------------------------------
    -- ASSERTIONS ABOUT INTERNAL STATE
    --------------------------------------------
@@ -38,7 +215,6 @@ vunit div_inst (div(synthesis))
    -- Together with the covers above, this shows that the range is nearly tight.
    f_range_n : assert n(G_SIZE-1 downto G_SIZE-12) >= X"C00" or
                       n(G_SIZE-1 downto G_SIZE-12) < X"440";
-
 
 } -- vunit div_inst (div(synthesis))
 

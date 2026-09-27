@@ -101,21 +101,15 @@ architecture synthesis of pla is
 
 begin
 
-   -- Extract the table index from the top bits of n and d
+   -- The table index is the top 7 bits of n followed by the 4 bits of d just
+   -- after the leading "0001".
    pla_addr_proc : process (all)
-      variable n_v   : natural range 0 to 2 ** 7 - 1;
-      variable d_v   : natural range 0 to 2 ** 4 - 1;
-      variable idx_v : natural range 0 to 2047;
    begin
-      n_v      := to_integer(n_i(G_SIZE-1 downto G_SIZE-7));
-      d_v      := to_integer(d_i(G_SIZE-5 downto G_SIZE-8));
-      idx_v    := n_v * 16 + d_v;
-      pla_addr <= to_stdlogicvector(idx_v, 11);
+      pla_addr <= n_i(G_SIZE-1 downto G_SIZE-7) & d_i(G_SIZE-5 downto G_SIZE-8);
 
       if G_DEBUG then
-         report "n_v=" & to_string(n_v) &
-                ", d_v=" & to_string(d_v) &
-                " => idx_v=" & to_string(to_stdlogicvector(idx_v, 11));
+         report "n=" & to_string(n_i(G_SIZE-1 downto G_SIZE-7)) &
+                ", d=" & to_string(d_i(G_SIZE-5 downto G_SIZE-8));
       end if;
    end process pla_addr_proc;
 
