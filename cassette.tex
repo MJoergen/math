@@ -1,0 +1,324 @@
+\documentclass[12pt,oneside,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+
+\usepackage{amsfonts}
+\usepackage{amsthm}        % Theorems
+\usepackage{amsmath}
+
+\newcommand{\bas}{\begin{eqnarray*}}
+\newcommand{\eas}{\end{eqnarray*}}
+\newcommand{\be}{\begin{equation}}
+\newcommand{\ee}{\end{equation}}
+\newcommand{\bea}{\begin{eqnarray}}
+\newcommand{\eea}{\end{eqnarray}}
+
+\title{Cassette Tape Counter and Playing Time}
+\date{September 2026}
+\author{Michael Jørgensen}
+
+\begin{document}
+
+\maketitle
+
+\section{Problem}
+
+On a cassette tape, the tape unwinds from one reel and winds onto the
+other while passing the read head at a constant linear speed. Because
+the amount of tape on each reel changes with time, the radius of each
+wound pack --- and hence the angular velocity of each reel --- varies
+during playback. Most tape decks have a mechanical or electronic
+counter that records the total number of rotations of one of the
+reels. We derive the relationship between the counter reading and the
+elapsed playing time, and then discuss how to fit the resulting model
+to experimental measurements.
+
+\section{Physical model}
+
+Let the tape move past the head with constant linear speed $v$. Track
+the take-up reel, onto which tape winds starting from an (almost)
+bare hub; the same argument applies to the supply reel with tape
+unwinding, run in reverse.
+
+Let
+\begin{itemize}
+\item $r_0$ be the radius of the bare hub,
+\item $h$ be the effective thickness of a single wrap of tape (tape
+  thickness together with whatever additional gap the winding
+  process leaves between layers),
+\item $R(t)$ be the outer radius of the wound tape pack at time $t$,
+\item $\omega(t)$ be the angular velocity of the reel,
+\item $N(t)$ be the counter reading, i.e.\ the total number of
+  rotations completed by time $t$.
+\end{itemize}
+
+We assume the tape is thin, inextensible, and wound tightly with no
+slip, so that the cross-sectional area of the pack grows in direct
+proportion to the length of tape wound onto it.
+
+\subsection{Radius as a function of time}
+
+The length of tape wound onto the reel by time $t$ is $L(t) = vt$.
+Modelling the pack as an annulus of tape of thickness $h$,
+\be
+\pi\bigl(R(t)^2 - r_0^2\bigr) = h\,L(t) = h v t,
+\ee
+so that
+\be
+R(t) = \sqrt{r_0^2 + \frac{hv}{\pi}\,t}\,.
+\label{eq:radius}
+\ee
+
+\subsection{Angular velocity and total rotation}
+
+The no-slip condition at the tape/pack interface means the rim speed
+of the pack equals the tape speed, so
+\be
+\omega(t) = \frac{v}{R(t)} = \frac{v}{\sqrt{r_0^2 + \dfrac{hv}{\pi}t}}\,.
+\ee
+Integrating gives the total angle turned,
+\bea
+\theta(t) &=& \int_0^t \omega(t')\,dt' \nonumber\\
+          &=& v\int_0^t \frac{dt'}{\sqrt{r_0^2 + \frac{hv}{\pi}t'}} \nonumber\\
+          &=& \frac{2\pi}{h}\left(\sqrt{r_0^2+\frac{hv}{\pi}t} - r_0\right),
+\eea
+and the counter reading is $N(t) = \theta(t)/2\pi$:
+\be
+N(t) = \frac{1}{h}\left(\sqrt{r_0^2 + \frac{hv}{\pi}\,t}\; -\; r_0\right).
+\label{eq:Noft}
+\ee
+
+\subsection{Time as a function of the counter reading}
+
+Solving equation~(\ref{eq:Noft}) for $t$,
+\be
+\bigl(hN + r_0\bigr)^2 = r_0^2 + \frac{hv}{\pi}\,t,
+\ee
+which gives the key result:
+\be
+t(N) = \frac{2\pi r_0}{v}\,N \;+\; \frac{\pi h}{v}\,N^2.
+\label{eq:tofN}
+\ee
+Playing time is a \emph{quadratic}, not linear, function of the
+counter reading.
+
+\subsection{Consistency checks}
+
+Differentiating equation~(\ref{eq:tofN}),
+\be
+\frac{dt}{dN} = \frac{2\pi(r_0+hN)}{v} = \frac{2\pi R(t)}{v} = \frac{2\pi}{\omega(t)},
+\ee
+which is exactly the instantaneous rotation period at time $t$, as it
+must be. At $N=0$, $dt/dN = 2\pi r_0/v$, the rotation period of the
+bare hub --- correct, since the pack radius is $r_0$ at the start.
+For large $N$ the quadratic term dominates and the counter advances
+more slowly per unit time, matching the familiar observation that a
+tape counter climbs quickly at first and more sluggishly later.
+
+\section{Fitting the model to experimental data}
+
+Equation~(\ref{eq:tofN}) is the model to be fitted to measured pairs
+$(N_i, t_i)$.
+
+\subsection{Choice of regression direction}
+
+Two data-collection strategies are possible, and the correct
+regression direction depends on which variable is actually measured
+with negligible error and which one carries the noise.
+\begin{itemize}
+\item \textbf{Reading the counter at chosen times} (e.g.\ every 30 s):
+  here $t$ is controlled by a clock and $N$ carries the noise
+  (parallax, gear backlash). One should regress $N$ as a function of
+  $t$ using the inverse form~(\ref{eq:Noft}), which is nonlinear in
+  $r_0,h$ and requires an iterative (e.g.\ Levenberg--Marquardt)
+  solver.
+\item \textbf{Stopping the tape at chosen counter values} (e.g.\
+  every 100 counts, timing with a stopwatch): here $N$ is controlled
+  precisely and $t$ carries the noise. Equation~(\ref{eq:tofN}) is
+  the correct regression direction, and, importantly, it is
+  \emph{linear in the unknown parameters} $a = 2\pi r_0/v$ and
+  $b = \pi h/v$, even though it is quadratic in $N$.
+\end{itemize}
+The second case is analytically simpler and is treated in detail
+below; the first uses the same reasoning but requires nonlinear
+least squares.
+
+\subsection{Linear least squares for $t = aN + bN^2$}
+
+Write
+\be
+t = c + aN + bN^2,
+\label{eq:fitmodel}
+\ee
+including a possible constant offset $c$ to account for a
+non-magnetic leader at the start of the tape or a counter not
+exactly zeroed at the start of the recorded region. Physically
+$c$ should be small and consistent with the leader length; if it is
+statistically indistinguishable from what the leader implies (or
+from zero, if there is no leader and the counter is zeroed exactly),
+it may be dropped. Forcing $c=0$ without checking can bias $\hat a$
+and $\hat b$.
+
+Although equation~(\ref{eq:fitmodel}) is quadratic in $N$, it is
+linear in the parameters $(c,a,b)$, since $N$ and $N^2$ can be
+treated as two ordinary predictor variables. With data
+$(N_i,t_i)$, $i=1,\dots,n$, form
+\be
+X=\begin{pmatrix}1 & N_1 & N_1^2\\ 1& N_2 & N_2^2\\ \vdots & \vdots& \vdots\\ 1& N_n & N_n^2\end{pmatrix},
+\qquad
+\mathbf t=\begin{pmatrix}t_1\\t_2\\\vdots\\t_n\end{pmatrix},
+\ee
+and solve the normal equations
+\be
+\hat{\boldsymbol\beta} = \begin{pmatrix}\hat c\\ \hat a\\ \hat b\end{pmatrix}
+  = \bigl(X^{\mathsf T}X\bigr)^{-1}X^{\mathsf T}\mathbf t.
+\ee
+This is an ordinary polynomial regression, available directly in most
+numerical packages (e.g.\ \texttt{numpy.linalg.lstsq},
+\texttt{polyfit}, or a spreadsheet's \texttt{LINEST}).
+
+\subsection{Uncertainty in the fitted coefficients}
+
+Assume the timing errors $\varepsilon_i = t_i - \hat t_i$ are
+independent and approximately Gaussian with common variance
+$\sigma^2$ (reasonable if every $t_i$ is a stopwatch reading with
+similar reaction-time error). Then
+\be
+\hat\sigma^2 = \frac{\mathrm{RSS}}{n-p}, \qquad
+\mathrm{RSS} = \sum_i \bigl(t_i - \hat t_i\bigr)^2,
+\ee
+with $p$ the number of fitted parameters (2 or 3), and
+\be
+\mathrm{Cov}(\hat{\boldsymbol\beta}) = \hat\sigma^2 \bigl(X^{\mathsf T}X\bigr)^{-1}.
+\ee
+The diagonal entries give $\mathrm{Var}(\hat a)$ and
+$\mathrm{Var}(\hat b)$; the off-diagonal entry gives
+$\mathrm{Cov}(\hat a,\hat b)$, which is generally large in magnitude,
+since $N$ and $N^2$ are strongly correlated over any single run of
+data. Approximate $(1-\alpha)$ confidence intervals follow from the
+Student-$t$ distribution with $n-p$ degrees of freedom,
+$\hat a \pm t_{\alpha/2,\,n-p}\,\mathrm{SE}(\hat a)$, and similarly
+for $\hat b$.
+
+A narrow range of sampled $N$ values makes $N$ and $N^2$ nearly
+proportional over that range, so $X^{\mathsf T}X$ becomes
+ill-conditioned and $\hat a,\hat b$ individually become poorly
+determined even though $\hat t(N)$ may still be well predicted
+\emph{within} that range. Spreading measurements across the full
+range of $N$ is the most effective way to control this.
+
+\subsection{Recovering the physical parameters}
+
+From the fitted coefficients,
+\be
+r_0 = \frac{av}{2\pi}, \qquad h = \frac{bv}{\pi}.
+\ee
+The timing data alone only ever constrain the two combinations
+$a = 2\pi r_0/v$ and $b = \pi h/v$: there are three physical
+unknowns $(r_0, h, v)$ but only two independent fitted numbers, so
+the system is degenerate and one quantity must be fixed
+independently. Two practical options are:
+\begin{itemize}
+\item take $v$ from the format specification (nominal compact
+  cassette speed $v = 4.76\ \mathrm{cm/s} = 1\tfrac{7}{8}\
+  \mathrm{in/s}$), or measure it directly by timing the full,
+  known length of tape printed on the cassette shell --- this also
+  checks whether the deck runs at nominal speed, since motor and
+  capstan tolerances commonly cause a percent-level deviation;
+\item measure $r_0$ directly with calipers on the bare hub (a
+  purely geometric measurement with essentially no timing error),
+  and/or take $h$ from the manufacturer's tape thickness
+  specification, then solve for the remaining unknown(s), with the
+  other equation serving as an internal consistency check.
+\end{itemize}
+
+If $v$ is taken as an exactly known constant, propagate only the fit
+uncertainty:
+\be
+\sigma_{r_0} = \frac{v}{2\pi}\,\mathrm{SE}(\hat a), \qquad
+\sigma_h = \frac{v}{\pi}\,\mathrm{SE}(\hat b).
+\ee
+If $v$ itself carries uncertainty $\sigma_v$ (e.g.\ from a motor
+speed tolerance), combine the relative uncertainties in quadrature,
+\be
+\left(\frac{\sigma_{r_0}}{r_0}\right)^2
+  = \left(\frac{\mathrm{SE}(\hat a)}{\hat a}\right)^2
+  + \left(\frac{\sigma_v}{v}\right)^2,
+\ee
+and similarly for $h$ from $b$. When several independently measured
+quantities are combined (e.g.\ a directly measured $r_0$ together
+with the fitted $a,b$ to solve for $v$), a full delta-method
+propagation using the Jacobian of $(r_0,h)$ with respect to
+$(a,b,v)$, together with the $a$--$b$ covariance from
+Section~3.3, is the rigorous approach.
+
+\subsection{Sources of error and model validation}
+
+\paragraph{Random errors} shrink with more or better data:
+stopwatch reaction time (of order $0.1$--$0.3$ s per press, halved by
+averaging repeated trials, or eliminated with an electronic timer);
+counter quantization and backlash; and small capstan speed jitter
+(wow and flutter).
+
+\paragraph{Systematic errors} bias the fitted parameters and do not
+shrink with more data of the same kind:
+\begin{itemize}
+\item \emph{Actual vs.\ nominal tape speed.} A deck running even a
+  percent off nominal speed rescales $v$ and hence biases $r_0$ and
+  $h$ together, though not $a$ and $b$ themselves. This is precisely
+  the degeneracy of Section~3.4, and an independent speed check is
+  the remedy.
+\item \emph{Non-uniform pack density.} The model assumes a solid
+  pack with uniform effective thickness $h$; uneven winding tension
+  can make the effective thickness vary slowly with $N$. This shows
+  up as systematic curvature in the residuals $t_i - \hat t_i$
+  plotted against $N_i$: pure noise should look structureless, while
+  a bowl or S-shape indicates the constant-$h$ assumption is
+  breaking down, calling for a generalized model (e.g.\ $h$ varying
+  with $N$, or an added cubic term).
+\item \emph{Counter gearing ratio.} Many decks gear the counter off
+  an idler rather than the reel itself, so the reading is
+  $N = k \times (\text{reel rotations})$ for an unknown constant
+  $k$. This preserves the quadratic form of $t(N)$ (rescaling $N$
+  rescales $a$ and $b$ together) but means $r_0$ and $h$ are only
+  recovered up to this ratio unless it is calibrated separately,
+  e.g.\ by counting reel turns by hand against counter ticks over a
+  short stretch of tape.
+\item \emph{Leader tape and counter zero offset}, addressed via the
+  intercept $c$ in Section~3.2.
+\end{itemize}
+
+\paragraph{Goodness of fit.} Report $R^2$ or, more usefully, the
+residual standard deviation $\hat\sigma$ in the same units as the
+timing precision, and compare it to the expected measurement noise;
+a much larger $\hat\sigma$ signals a systematic effect rather than
+random measurement error. Inspect the residual-vs-$N$ plot for
+trends or curvature. If repeated measurements were taken at the same
+$N$, their spread gives an independent estimate of pure measurement
+noise, which can be compared to the regression residuals to
+distinguish measurement noise from genuine model misspecification.
+
+\subsection{Recommendations for experimental design}
+
+\begin{itemize}
+\item Spread the sampled $N$ values across the whole tape rather
+  than clustering them near one end: points near $N=0$ anchor $a$
+  (where $bN^2 \ll aN$), and points at large $N$ pin down $b$ (where
+  the quadratic term dominates). This directly mitigates the
+  multicollinearity issue of Section~3.3.
+\item Replicate each measurement several times, rewinding to the
+  same counter value, and average; this reduces stopwatch noise
+  roughly as the inverse square root of the number of replicates.
+\item Use the cassette's rated total playing time and tape length as
+  an independent consistency check: $\hat t(N_{\max})$ should match
+  the rated time, and the tape speed back-computed from length and
+  time should match the assumed $v$.
+\item If separate, accurate values of $r_0$ and $h$ are wanted
+  rather than just the timing curve, obtain at least one independent
+  direct measurement (most easily $r_0$, via calipers on the bare
+  hub) rather than relying solely on the nominal tape speed --- this
+  generally yields substantially better accuracy than extracting all
+  three physical quantities from timing data alone.
+\end{itemize}
+
+\end{document}

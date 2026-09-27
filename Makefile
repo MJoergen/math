@@ -1,3 +1,4 @@
+names += cassette.tex
 names += elliptic.tex
 names += fjerde.tex
 names += pell.tex
