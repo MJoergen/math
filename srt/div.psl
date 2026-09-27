@@ -194,8 +194,10 @@ vunit div_inst (div(synthesis))
    -- The partial remainder n uses 4 integer bits (including the sign), so the
    -- top 12 bits are n truncated to a multiple of 1/256.
 
-   -- Verify that n=4.246 (= 0100.00111111) can be reached. Reached in step 3.
-   f_large_n : cover {n(G_SIZE-1 downto G_SIZE-12) = "010000111111"};
+   -- Verify that n=4.488 (= 0100.01111101) can be reached. This value was
+   -- found with the model srt.py, dividing 6154/7677 (with G_SIZE=16).
+   -- Reached in step 3.
+   f_large_n : cover {n(G_SIZE-1 downto G_SIZE-12) = "010001111101"};
 
    -- Verify that n=-4 (= 1100.00000000) can be reached. Reached in step 2.
    f_small_n : cover {n(G_SIZE-1 downto G_SIZE-12) = "110000000000"};
@@ -211,10 +213,10 @@ vunit div_inst (div(synthesis))
    -- ASSERTIONS ABOUT INTERNAL STATE
    --------------------------------------------
 
-   -- Verify that the partial remainder stays in the range -4 <= n < 4.25.
+   -- Verify that the partial remainder stays in the range -4 <= n < 4.5.
    -- Together with the covers above, this shows that the range is nearly tight.
-   f_range_n : assert n(G_SIZE-1 downto G_SIZE-12) >= X"C00" or
-                      n(G_SIZE-1 downto G_SIZE-12) < X"440";
+   f_range_n : assert always n(G_SIZE-1 downto G_SIZE-12) >= X"C00" or
+                             n(G_SIZE-1 downto G_SIZE-12) < X"480";
 
 } -- vunit div_inst (div(synthesis))
 

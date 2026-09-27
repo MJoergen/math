@@ -18,7 +18,7 @@ library ieee;
 --              1 <= n_i, d_i < 2. As a special case n_i = 0 is allowed.
 --   n        : The partial remainder. It stays within |n/d| < 8/3, which is
 --              the radix 4 times the redundancy factor 2/3 of the digit set.
---              Formal verification shows that -4 <= n < 4.25.
+--              Formal verification shows that -4 <= n < 4.5.
 --   q_o      : Unsigned, with 2 integer bits and 2*G_SIZE+2 fractional bits.
 --              The quotient digit from iteration k has weight 4^(-k). Since
 --              1/2 < n_i/d_i < 2 the first digit is always 1 or 2
