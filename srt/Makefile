@@ -30,11 +30,13 @@ show_debug:
 
 
 #######################
-# Reference model
+# Model
 #######################
 
-srt: srt.cpp
-	g++ -O2 -Wall srt.cpp -o srt
+# Check the quotient digit table, and test the bit-exact model
+.PHONY: model
+model:
+	./srt.py
 
 
 #######################
@@ -61,5 +63,5 @@ show_cover:
 
 .PHONY: clean
 clean:
-	rm -rf srt tb_srt srt.ghw work-obj08.cf *.o $(DUT)_cover $(DUT)_bmc
+	rm -rf __pycache__ tb_srt srt.ghw work-obj08.cf *.o $(DUT)_cover $(DUT)_bmc
 

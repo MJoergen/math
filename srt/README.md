@@ -34,7 +34,7 @@ only at the end.
 | `div.psl`, `div.sby` | Formal verification of `div`.
 | `div.gtkw`       | GTKWave setup for viewing the formal verification traces.
 | `srt.xpr`, `srt.xdc` | Vivado project (Artix-7 xc7a200tfbg484-2) and timing constraint (200 MHz), for synthesis.
-| `srt.py`, `srt.cpp` | Floating point reference models of the algorithm.
+| `srt.py`         | Bit-exact model of `srt_float`, and a checker for the quotient digit table.
 
 ## Interface of `srt_float`
 * `n_i`, `d_i`: Unsigned integers. They must be less than 2^29, and `d_i` must
@@ -51,7 +51,7 @@ only at the end.
 Internally (in `div.vhd` and `pla.vhd`) the values are two's complement with 4
 integer bits (including the sign). The inputs to `div` are normalized so the
 top nibble is `0001`, i.e. they are in the range [1, 2). The partial remainder
-`n` then stays in the range [-4, 4.25), as shown by the formal verification.
+`n` then stays in the range [-4, 4.5), as shown by the formal verification.
 
 ## Formal verification
 The formal verification (`div.psl`, `div.sby`) checks `div` with `G_SIZE=16`
@@ -83,8 +83,32 @@ division.
   the [Yices 2](https://github.com/SRI-CSL/yices2) solver. The BMC task takes
   about 25 minutes.
   Use `make show_bmc` or `make show_cover` to view the traces in GTKWave.
-* `make srt` builds the C++ reference model. `./srt.py` runs the Python model.
+* `make model` (or `./srt.py`) checks the quotient digit table, and tests the
+  model. See below.
 * `make clean` removes the generated files.
+
+## The model
+`srt.py` is a bit-exact model of `srt_float`, written in Python using
+integers. It builds the quotient digit table the same way as `pla.vhd`, so
+it calculates exactly the same quotient as the VHDL, including when the table is
+modified.
+
+* `./srt.py` checks every entry of the table: For all values of n and d that
+  map to the entry, and that satisfy |n/d| < 8/3, the next partial remainder
+  must satisfy this too. This check is slightly conservative: some entries near
+  the edge are never used. It then tests over 100000 divisions against the
+  exact result.
+* `./srt.py 1 3 --trace` calculates 1/3, and shows the partial remainder and
+  quotient digit of each iteration.
+* `./srt.py --remove 3.0:1.5` removes a table entry (sets it to zero, like the
+  five missing entries in the Pentium). It shows which entries now fail the
+  check, and searches for divisions that give a wrong result. Use
+  `--remove=-2.5:1.0` for a negative n.
+
+The search works backwards from the table entry to the dividend, because some
+table entries may be used by very few divisions. In the Pentium, about one
+division in nine billion used a missing entry. In this table, all the entries
+that are used at all are used often enough that random testing finds them too.
 
 ## Links
 * [http://degiorgi.math.hr/aaa_sem/Div/925-934.pdf](http://degiorgi.math.hr/aaa_sem/Div/925-934.pdf)
