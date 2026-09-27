@@ -33,6 +33,9 @@ architecture simulation of tb_booth is
 
    constant C_NUM_TESTS : natural := num_tests;
 
+   -- Expected number of clock cycles per result, when there are no stalls
+   constant C_ITERS     : natural := (G_DATA_SIZE + 1) / 2;
+
    signal   clk     : std_logic := '1';
    signal   rst     : std_logic := '1';
    signal   running : std_logic := '1';
@@ -167,11 +170,11 @@ begin
                    " gave 0x" & to_hstring(m_res) & ", expected 0x" & to_hstring(exp_v)
             severity failure;
 
-         -- Without any stalls, a new result must be produced every G_DATA_SIZE clock cycles
-         if G_VALID_PCT >= 100 and G_READY_PCT >= 100 and G_DATA_SIZE >= 2 and i > 0 then
-            assert now - last_v = G_DATA_SIZE * C_CLK_PERIOD
+         -- Without any stalls, a new result must be produced every ceil(G_DATA_SIZE/2) clock cycles
+         if G_VALID_PCT >= 100 and G_READY_PCT >= 100 and G_DATA_SIZE >= 3 and i > 0 then
+            assert now - last_v = C_ITERS * C_CLK_PERIOD
                report "Throughput: " & to_string((now - last_v) / C_CLK_PERIOD) &
-                      " clock cycles between results, expected " & to_string(G_DATA_SIZE)
+                      " clock cycles between results, expected " & to_string(C_ITERS)
                severity failure;
          end if;
          last_v := now;

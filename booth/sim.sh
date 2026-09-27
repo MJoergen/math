@@ -13,11 +13,12 @@ for size in 1 2 3 4 5 6 7; do
 done
 
 # Random tests for larger sizes, with random stalls
-for size in 16 32; do
+for size in 16 17 32; do
    ghdl -r --std=08 tb_booth -gG_DATA_SIZE=$size -gG_EXHAUSTIVE=false --assert-level=error
 done
 
-# Verify throughput without stalls
+# Verify throughput without stalls (for both even and odd sizes)
+ghdl -r --std=08 tb_booth -gG_DATA_SIZE=9 -gG_EXHAUSTIVE=false -gG_VALID_PCT=100 -gG_READY_PCT=100 --assert-level=error
 ghdl -r --std=08 tb_booth -gG_DATA_SIZE=8 -gG_EXHAUSTIVE=false -gG_VALID_PCT=100 -gG_READY_PCT=100 --assert-level=error
 
 # Only a slow consumer
