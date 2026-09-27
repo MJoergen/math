@@ -58,6 +58,11 @@ becomes the initial value of `x`. The division is deferred to the very end, wher
 single division replaces what would otherwise have taken many more CORDIC
 iterations.
 
+This phase is split across two clock cycles (`PADE_MUL_ST`, then `PADE_ST`): the
+multiplication `z*z` is registered on its own, before it is subtracted from `3` on
+the next cycle. This does not change the result; it exists purely to shorten the
+longest combinational path (see "Timing" below).
+
 ### Phase 3: Pseudo-multiplication
 The `(x, y)` vector is now rotated by exactly the special angles that were used
 during phase 1 (i.e. those recorded as `1` bits), applied smallest-angle-first:
@@ -107,6 +112,30 @@ is below `2**-22`, i.e. close to the full `G_FRAC_BITS` (24) of accuracy -- some
 better than the 8087's own "roughly 16 bits" for its 16-iteration CORDIC part, mostly
 thanks to the guard bits and to `G_FRAC_BITS` (24) being smaller than what the real
 8087 was aiming for (64 bits).
+
+## Timing
+A full calculation takes `2*G_ITERATIONS + G_FRAC_BITS + 5` clock cycles (61 for the
+default configuration): one cycle to accept the input, `G_ITERATIONS` for
+pseudo-division, two for the Padé approximation, `G_ITERATIONS` for
+pseudo-multiplication, one to load the divider, `G_FRAC_BITS` for the final division,
+and one to hold the result until it is consumed.
+
+Synthesized, placed and routed with Vivado 2025.1 for `xc7a200tfbg484-2` (the part
+used elsewhere in this repo), out-of-context, at the default configuration:
+
+| | Slice LUTs | Registers | DSP48E1 | Critical path | Fmax | Wall time/calc |
+| --- | --- | --- | --- | --- | --- | --- |
+| Original (single-cycle Padé) | 893 | 257 | 4 | 13.33 ns | ~75 MHz | ~800 ns |
+| Split Padé (`PADE_MUL_ST` + `PADE_ST`) | 914 | 333 | 4 | 10.82 ns | ~92 MHz | ~660 ns |
+
+Splitting the Padé phase across two cycles removes the multiplier from the same
+combinational path as the following 36-bit-wide subtraction, at the cost of one
+extra clock cycle. The net effect is a wall-time reduction of about 17%. In both
+cases the critical path runs into the `x`/`zz_reg` register, driven by the
+`DSP48E1` computing `z*z`.
+
+Utilization is well under 1% of the device either way, so none of this is about
+saving area -- it is purely about `Fmax` versus latency.
 
 ## Links
 * [https://www.righto.com/2026/09/8087-tangent-cordic.html](https://www.righto.com/2026/09/8087-tangent-cordic.html)

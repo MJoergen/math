@@ -68,7 +68,7 @@ architecture synthesis of tan_cordic is
    subtype  rem_t   is sfixed(4 downto -C_FRAC);
 
    type     state_t is (
-      IDLE_ST, REDUCE_ST, PADE_ST, ROTATE_ST, LOAD_DIV_ST, DIVIDE_ST, WAIT_ST
+      IDLE_ST, REDUCE_ST, PADE_MUL_ST, PADE_ST, ROTATE_ST, LOAD_DIV_ST, DIVIDE_ST, WAIT_ST
    );
    signal   state : state_t := IDLE_ST;
 
@@ -78,6 +78,10 @@ architecture synthesis of tan_cordic is
    -- Phase 1: pseudo-division.
    signal   angle : angle_t;
    signal   bits  : std_logic_vector(0 to G_ITERATIONS - 1);
+
+   -- Phase 2: Padé approximation (registered halfway through, see PADE_MUL_ST).
+   signal   zz_reg : vec_t;
+   signal   z_reg  : vec_t;
 
    -- Phase 3: pseudo-multiplication.
    signal   x     : vec_t;
@@ -135,23 +139,29 @@ begin
                end if;
 
                if count = G_ITERATIONS - 1 then
-                  state <= PADE_ST;
+                  state <= PADE_MUL_ST;
                else
                   count <= count + 1;
                end if;
 
-            when PADE_ST =>
+            when PADE_MUL_ST =>
                -- Padé approximant: tan(z) = 3z / (3 - z*z), for the tiny residual
                -- angle z. Rather than performing the division, the numerator
                -- becomes the initial y, and the denominator the initial x.
+               -- The multiply z*z is registered here, separately from the
+               -- subsequent subtraction in PADE_ST, so that each of the two
+               -- following clock cycles has a shorter combinational path.
                z_v  := angle;
                zz_v := z_v * z_v;
 
-               x <= resize(to_sfixed(3.0, vec_t'high, vec_t'low) -
-                           resize(zz_v, vec_t'high, vec_t'low), vec_t'high, vec_t'low);
-               y <= resize(resize(z_v, vec_t'high, vec_t'low) +
-                           resize(z_v, vec_t'high, vec_t'low) +
-                           resize(z_v, vec_t'high, vec_t'low), vec_t'high, vec_t'low);
+               zz_reg <= resize(zz_v, vec_t'high, vec_t'low);
+               z_reg  <= resize(z_v, vec_t'high, vec_t'low);
+
+               state <= PADE_ST;
+
+            when PADE_ST =>
+               x <= resize(to_sfixed(3.0, vec_t'high, vec_t'low) - zz_reg, vec_t'high, vec_t'low);
+               y <= resize(z_reg + z_reg + z_reg, vec_t'high, vec_t'low);
 
                count <= G_ITERATIONS - 1;
                state <= ROTATE_ST;
