@@ -63,6 +63,14 @@ multiplication `z*z` is registered on its own, before it is subtracted from `3` 
 the next cycle. This does not change the result; it exists purely to shorten the
 longest combinational path (see "Timing" below).
 
+`z` is also narrowed to `small_angle_t` before squaring it. After the last
+pseudo-division iteration, `z` is always strictly less than
+`arctan(2**-(G_ITERATIONS-1)) < 2**-(G_ITERATIONS-1)`, so its bits above that
+weight are provably always zero and can be dropped -- for the default
+configuration this shrinks the multiplier from 33x33 bits down to 18x18 bits,
+which fits in a single `DSP48E1` tile instead of a two-tile cascade. This too is
+lossless; it only removes bits that were always zero.
+
 ### Phase 3: Pseudo-multiplication
 The `(x, y)` vector is now rotated by exactly the special angles that were used
 during phase 1 (i.e. those recorded as `1` bits), applied smallest-angle-first:
@@ -127,15 +135,26 @@ used elsewhere in this repo), out-of-context, at the default configuration:
 | --- | --- | --- | --- | --- | --- | --- |
 | Original (single-cycle Padé) | 893 | 257 | 4 | 13.33 ns | ~75 MHz | ~800 ns |
 | Split Padé (`PADE_MUL_ST` + `PADE_ST`) | 914 | 333 | 4 | 10.82 ns | ~92 MHz | ~660 ns |
+| ...and narrowed `z*z` multiplier | 859 | 289 | 1 | 7.67 ns | ~130 MHz | ~468 ns |
 
 Splitting the Padé phase across two cycles removes the multiplier from the same
 combinational path as the following 36-bit-wide subtraction, at the cost of one
-extra clock cycle. The net effect is a wall-time reduction of about 17%. In both
-cases the critical path runs into the `x`/`zz_reg` register, driven by the
-`DSP48E1` computing `z*z`.
+extra clock cycle (60 -> 61). Narrowing `z` before squaring it then removes the
+two-tile `DSP48E1` cascade entirely (down to a single tile), at no extra cost in
+cycles, LUTs, or registers -- if anything it uses fewer of each, since the
+multiplier and its registers are themselves smaller. The two changes together
+bring wall time down by about 41%, while using less silicon, not more.
 
-Utilization is well under 1% of the device either way, so none of this is about
-saving area -- it is purely about `Fmax` versus latency.
+The remaining critical path still runs into `zz_reg`, but only just: the next
+cluster of near-critical paths (into `x_reg`/`y_reg`, i.e. the pseudo-multiplication
+add/subtract in `ROTATE_ST`) is now close behind, within about 1.3 ns. Closing that
+gap further would mean pipelining `ROTATE_ST` itself (e.g. splitting the shift and
+the add/subtract across two cycles), which -- unlike the changes above -- would add
+one extra cycle *per iteration* (`G_ITERATIONS` more cycles total), a much larger
+latency cost for a smaller, less clear-cut potential gain. That trade-off has not
+been attempted here.
+
+Utilization remains well under 1% of the device throughout.
 
 ## Links
 * [https://www.righto.com/2026/09/8087-tangent-cordic.html](https://www.righto.com/2026/09/8087-tangent-cordic.html)

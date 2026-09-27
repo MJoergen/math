@@ -58,6 +58,18 @@ architecture synthesis of tan_cordic is
    -- integer bit (the sign) is enough.
    subtype  angle_t is sfixed(0 downto -C_FRAC);
 
+   -- Holds the tiny residual angle left after REDUCE_ST, i.e. the "z" used by the
+   -- Padé approximation. After the last pseudo-division iteration (index
+   -- G_ITERATIONS-1), the residual is always strictly less than
+   -- arctan(2**-(G_ITERATIONS-1)) < 2**-(G_ITERATIONS-1), so all of its bits above
+   -- weight 2**(1-G_ITERATIONS) are provably zero and can be dropped before
+   -- squaring it -- this keeps the multiplier (and hence the number of DSP48E1
+   -- tiles it needs) as small as possible. The "maximum" guards against
+   -- G_ITERATIONS being so large (relative to C_FRAC) that no bits would be left;
+   -- in that corner case this is simply the same range as angle_t, i.e. no
+   -- narrowing takes place.
+   subtype  small_angle_t is sfixed(maximum(1 - G_ITERATIONS, -C_FRAC) downto -C_FRAC);
+
    -- Holds the (x, y) vector during pseudo-multiplication. The vector grows from
    -- its initial length of about 3.0 by at most the CORDIC gain of about 1.647,
    -- i.e. to at most about 5.0, so three integer bits (plus sign) are used.
@@ -109,8 +121,8 @@ architecture synthesis of tan_cordic is
 begin
 
    fsm_proc : process (clk_i)
-      variable z_v         : angle_t;
-      variable zz_v        : sfixed(2 * angle_t'high + 1 downto 2 * angle_t'low);
+      variable z_v         : small_angle_t;
+      variable zz_v        : sfixed(2 * small_angle_t'high + 1 downto 2 * small_angle_t'low);
       variable r_doubled_v : rem_t;
       variable trial_v     : rem_t;
       variable qbit_v      : std_logic;
@@ -150,8 +162,11 @@ begin
                -- becomes the initial y, and the denominator the initial x.
                -- The multiply z*z is registered here, separately from the
                -- subsequent subtraction in PADE_ST, so that each of the two
-               -- following clock cycles has a shorter combinational path.
-               z_v  := angle;
+               -- following clock cycles has a shorter combinational path. "angle"
+               -- is also narrowed to small_angle_t here (see its declaration):
+               -- this is lossless, and keeps the multiplier itself as small as
+               -- possible.
+               z_v  := resize(angle, small_angle_t'high, small_angle_t'low);
                zz_v := z_v * z_v;
 
                zz_reg <= resize(zz_v, vec_t'high, vec_t'low);
