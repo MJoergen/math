@@ -50,8 +50,8 @@ vunit div_inst (div(synthesis))
    signal f_n4 : std_logic_vector(C_W - 1 downto 0);
 
    -- The quotient calculated from the digits, and the quotient times d.
-   -- Both are two's complement with one extra bit.
-   signal f_q  : std_logic_vector(2 * G_SIZE + 4 downto 0);
+   -- f_qd is two's complement.
+   signal f_q  : std_logic_vector(2 * G_SIZE + 3 downto 0);
    signal f_qd : std_logic_vector(C_W - 1 downto 0);
 
    -- Set after the first clock cycle, when the above signals are valid
@@ -72,14 +72,14 @@ vunit div_inst (div(synthesis))
    signal f_res_ok : boolean;
 
    f_track_proc : process (clk_i)
-      variable q_v  : std_logic_vector(2 * G_SIZE + 4 downto 0);
+      variable q_v  : std_logic_vector(2 * G_SIZE + 3 downto 0);
       variable qd_v : std_logic_vector(C_W - 1 downto 0);
    begin
       if rising_edge(clk_i) then
          if busy_o = '1' then
             f_n4 <= f_n4(C_W - 3 downto 0) & "00";
 
-            q_v  := f_q(2 * G_SIZE + 2 downto 0) & "00";
+            q_v  := f_q(2 * G_SIZE + 1 downto 0) & "00";
             qd_v := f_qd(C_W - 3 downto 0) & "00";
 
             case pla_q is
@@ -161,10 +161,12 @@ vunit div_inst (div(synthesis))
    f_n4_check  : assert always f_started = '1' -> f_n4_ok;
    f_invariant : assert always f_started = '1' -> f_inv_ok;
    f_remainder : assert always f_started = '1' -> f_rem_ok;
+   f_digits    : assert always f_started = '1' -> res_p - res_n = f_q;
 
-   -- When a division finishes, verify that the quotient matches the digits
-   f_quotient : assert always {busy_o; not busy_o} |->
-      {q_o = f_q(2 * G_SIZE + 3 downto 0) and f_q(2 * G_SIZE + 4) = '0'};
+   -- When a division finishes, verify that the quotient matches the digits.
+   -- This is modulo 2^(2*G_SIZE+4), but f_result below shows that the true
+   -- quotient is less than 2, so there is no overflow.
+   f_quotient : assert always {busy_o; not busy_o} |-> {q_o = f_q};
 
    -- One clock cycle after a division finishes, verify that the quotient is
    -- correct
