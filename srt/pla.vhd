@@ -2,6 +2,22 @@ library ieee;
    use ieee.std_logic_1164.all;
    use ieee.numeric_std_unsigned.all;
 
+-- This is the quotient digit selection table of the SRT divider, corresponding
+-- to the PLA in the Pentium processor.
+--
+-- The table is indexed by only 11 bits, just like in the Pentium:
+-- * The top 7 bits of the partial remainder n (sign, 3 integer bits, and
+--   3 fractional bits). So n is truncated to a multiple of 1/8.
+-- * The 4 bits of the divisor d just after the leading "0001". So d is
+--   truncated to a multiple of 1/16.
+-- The table therefore has 2^11 = 2048 entries. Each entry stores |q|, and the
+-- sign of q is taken from the sign of n.
+--
+-- The input format is the same as in div.vhd: two's complement with 4 integer
+-- bits including the sign, and d must be normalized (1 <= d < 2).
+--
+-- This is a purely combinatorial block.
+
 entity pla is
    generic (
       G_SIZE  : natural;
@@ -16,6 +32,12 @@ end entity pla;
 
 architecture synthesis of pla is
 
+   -- Select the quotient digit by rounding n/d to the nearest integer, i.e.
+   --   |n| <  d/2        => |q| = 0
+   --   |n| <= d + d/2    => |q| = 1
+   --   otherwise         => |q| = 2
+   -- This is only used when generating the table, so it can afford to use
+   -- full comparators.
    pure function get_q (
       arg_n : std_logic_vector;
       arg_d : std_logic_vector
@@ -50,10 +72,13 @@ architecture synthesis of pla is
       return res_v;
    end function get_q;
 
-   type   ram_type is array (natural range <>) of std_logic_vector(1 downto 0);
+   type   rom_type is array (natural range <>) of std_logic_vector(1 downto 0);
 
-   pure function init_ram return ram_type is
-      variable ram_v : ram_type(0 to 2047) := (others => (others => '0'));
+   -- Build the table by evaluating get_q for each entry. The index is
+   -- n(7 bits) & d(4 bits). Here n and d are reconstructed as 8-bit values in
+   -- the same format as the inputs (4 integer bits and 4 fractional bits).
+   pure function init_rom return rom_type is
+      variable rom_v : rom_type(0 to 2047) := (others => (others => '0'));
       variable n_v   : std_logic_vector(7 downto 0);
       variable d_v   : std_logic_vector(7 downto 0);
    begin
@@ -61,23 +86,22 @@ architecture synthesis of pla is
       for i in 0 to 2047 loop
          n_v      := to_stdlogicvector(i / 16, 7) & "0";
          d_v      := "0001" & to_stdlogicvector(i mod 16, 4);
-         ram_v(i) := to_stdlogicvector(abs(get_q(n_v, d_v)), 2);
+         rom_v(i) := to_stdlogicvector(abs(get_q(n_v, d_v)), 2);
       end loop;
 
-      return ram_v;
-   end function init_ram;
+      return rom_v;
+   end function init_rom;
 
-   constant pla_ram : ram_type(0 to 2047)        := init_ram;
-   -- Vivado will not implement this using LUTRAM,
-   -- despite being instructed to do so.
-   -- attribute ram_style : string;
-   -- attribute ram_style of pla_ram : signal is "distributed";
+   -- Note: Vivado does not implement this table using LUTRAM, even when
+   -- instructed to do so with the "ram_style" attribute.
+   constant pla_rom : rom_type(0 to 2047)        := init_rom;
 
    signal pla_addr : std_logic_vector(10 downto 0);
    signal pla_data : std_logic_vector(1 downto 0);
 
 begin
 
+   -- Extract the table index from the top bits of n and d
    pla_addr_proc : process (all)
       variable n_v   : natural range 0 to 2 ** 7 - 1;
       variable d_v   : natural range 0 to 2 ** 4 - 1;
@@ -95,11 +119,12 @@ begin
       end if;
    end process pla_addr_proc;
 
-   ram_proc : process (all)
+   rom_proc : process (all)
    begin
-      pla_data <= pla_ram(to_integer(pla_addr));
-   end process ram_proc;
+      pla_data <= pla_rom(to_integer(pla_addr));
+   end process rom_proc;
 
+   -- Apply the sign of n to the quotient digit
    q_v_proc : process (all)
       variable q_v : integer;
    begin
