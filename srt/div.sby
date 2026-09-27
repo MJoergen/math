@@ -1,12 +1,18 @@
+# Formal verification of div.vhd, see div.psl.
+#
+# With G_SIZE=16 a division takes 18 iterations, and the result is ready in
+# step 19. The depth must be larger than that, so the BMC covers a complete
+# division.
+
 [tasks]
 cover
 bmc
 
 [options]
 cover: mode cover
-cover: depth 10
+cover: depth 22
 bmc: mode bmc
-bmc: depth 10
+bmc: depth 22
 
 [engines]
 smtbmc
@@ -19,4 +25,3 @@ prep -top div
 div.psl
 div.vhd
 pla.vhd
-

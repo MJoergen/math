@@ -51,7 +51,7 @@ architecture synthesis of div is
    -- Number of quotient digits. Each digit is two bits, so this fills q_o.
    constant C_NUM_ITERS : natural                         := G_SIZE + 2;
 
-   signal   iter : natural range 0 to C_NUM_ITERS;
+   signal   iter : natural range 0 to C_NUM_ITERS - 1;
 
    signal   pla_q : integer range -2 to 2;
 
@@ -84,6 +84,26 @@ architecture synthesis of div is
          return 1 + not arg;
       end if;
    end function abs_slv;
+
+   -- Convert the magnitude of a quotient digit to two bits
+   pure function digit_to_slv (
+      arg : natural range 0 to 2
+   ) return std_logic_vector is
+   begin
+      --
+      case arg is
+
+         when 1 =>
+            return "01";
+
+         when 2 =>
+            return "10";
+
+         when others =>
+            return "00";
+
+      end case;
+   end function digit_to_slv;
 
    -- Calculate the next partial remainder 4*(n - q*d).
    -- The assertions verify the invariants of the SRT algorithm, and are used
@@ -157,6 +177,8 @@ begin
              '0';
 
    div_proc : process (clk_i)
+      variable res_p_v : std_logic_vector(2 * G_SIZE + 3 downto 0);
+      variable res_n_v : std_logic_vector(2 * G_SIZE + 3 downto 0);
    begin
       if rising_edge(clk_i) then
 
@@ -177,20 +199,21 @@ begin
 
                -- Shift the new quotient digit into either res_p or res_n
                if pla_q > 0 then
-                  res_p <= res_p(2 * G_SIZE + 1 downto 0) & to_stdlogicvector(pla_q, 2);
-                  res_n <= res_n(2 * G_SIZE + 1 downto 0) & "00";
+                  res_p_v := res_p(2 * G_SIZE + 1 downto 0) & digit_to_slv(pla_q);
+                  res_n_v := res_n(2 * G_SIZE + 1 downto 0) & "00";
                else
-                  res_p <= res_p(2 * G_SIZE + 1 downto 0) & "00";
-                  res_n <= res_n(2 * G_SIZE + 1 downto 0) & to_stdlogicvector(-pla_q, 2);
+                  res_p_v := res_p(2 * G_SIZE + 1 downto 0) & "00";
+                  res_n_v := res_n(2 * G_SIZE + 1 downto 0) & digit_to_slv(-pla_q);
                end if;
-               -- Note: The last iteration (iter = C_NUM_ITERS) calculates one
-               -- digit too many. It is discarded, because q_o is assigned the
-               -- values of res_p and res_n from before this clock cycle.
-               -- This costs one extra clock cycle.
-               if iter < C_NUM_ITERS then
+               res_p <= res_p_v;
+               res_n <= res_n_v;
+
+               -- In the last iteration, the result includes the digit just
+               -- calculated.
+               if iter < C_NUM_ITERS - 1 then
                   iter <= iter + 1;
                else
-                  q_o   <= res_p - res_n;
+                  q_o   <= res_p_v - res_n_v;
                   state <= IDLE_ST;
                end if;
 

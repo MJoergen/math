@@ -21,7 +21,7 @@ library ieee;
 --
 -- Usage: Pulse start_over_i for one clock cycle. The inputs n_i and d_i are
 -- only sampled in that cycle. The result is valid on q_o when busy_o returns
--- low. A division takes 38 clock cycles.
+-- low. A division takes 37 clock cycles.
 
 entity srt_float is
    generic (
