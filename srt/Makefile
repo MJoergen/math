@@ -7,11 +7,26 @@ all: sim
 # Simulation
 #######################
 
+SIM_SRC = srt_float.vhd pla.vhd normalizer.vhd div.vhd shifter.vhd tb_srt.vhd
+
+# Run the complete testbench. No waveform is written, since a waveform of the
+# complete run is several GB, and makes GHDL crash.
 .PHONY: sim
-sim: srt_float.vhd pla.vhd normalizer.vhd div.vhd shifter.vhd tb_srt.vhd
+sim: $(SIM_SRC)
 	ghdl -i --std=08 --work=work $^
 	ghdl -m --std=08 -fexplicit tb_srt
-	ghdl -r --std=08 tb_srt --assert-level=error --wave=srt.ghw --stop-time=400ms
+	ghdl -r --std=08 tb_srt --assert-level=error --stop-time=400ms
+
+# Run only the first few divisions, and write a waveform to srt.ghw
+.PHONY: debug
+debug: $(SIM_SRC)
+	ghdl -i --std=08 --work=work $^
+	ghdl -m --std=08 -fexplicit tb_srt
+	ghdl -r --std=08 tb_srt --assert-level=error --wave=srt.ghw --stop-time=10us
+
+.PHONY: show_debug
+show_debug:
+	gtkwave srt.ghw
 
 
 #######################

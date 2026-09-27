@@ -55,6 +55,10 @@ top nibble is `0001`, i.e. they are in the range [1, 2). The partial remainder
 ## Running
 * `make sim` (the default) runs the testbench, which checks all divisions
   n/d with 1 <= n, d <= 1000. This requires [GHDL](https://github.com/ghdl/ghdl).
+  It takes about 20 minutes.
+* `make debug` runs only the first 10 us of the testbench (about 25 divisions),
+  and writes a waveform to `srt.ghw`. Use `make show_debug` to view it in
+  GTKWave.
 * `make formal` runs the formal verification. This requires
   [SymbiYosys](https://github.com/YosysHQ/sby) and the GHDL plugin for Yosys.
   Use `make show_bmc` or `make show_cover` to view the traces in GTKWave.
