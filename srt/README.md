@@ -60,6 +60,10 @@ for all normalized inputs, including a zero dividend:
 * The quotient is correct: it differs from the exact value n/d by less than
   2/3 of its least significant bit.
 
+SMT solvers are slow at multiplication, so instead of calculating q*d directly,
+`div.psl` tracks q*d alongside the divider using only additions, and checks a
+few invariants in every clock cycle. See the comments in `div.psl`.
+
 Bounded model checking is sufficient, because every division starts from a
 state that depends only on the inputs, and the depth covers a complete
 division.
@@ -75,7 +79,8 @@ division.
   GTKWave.
 * `make formal` runs the formal verification. This requires
   [SymbiYosys](https://github.com/YosysHQ/sby), the GHDL plugin for Yosys, and
-  the [Yices 2](https://github.com/SRI-CSL/yices2) solver.
+  the [Yices 2](https://github.com/SRI-CSL/yices2) solver. The BMC task takes
+  about 25 minutes.
   Use `make show_bmc` or `make show_cover` to view the traces in GTKWave.
 * `make srt` builds the C++ reference model. `./srt.py` runs the Python model.
 * `make clean` removes the generated files.
