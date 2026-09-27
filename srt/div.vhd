@@ -222,8 +222,10 @@ begin
          if start_i then
             -- The inputs must be normalized. A zero dividend is fine too,
             -- since the PLA will then select q = 0 in every iteration.
-            f_valid_n : assert n_i(G_SIZE - 1 downto G_SIZE - 4) = "0001" or n_i = 0;
-            f_valid_d : assert d_i(G_SIZE - 1 downto G_SIZE - 4) = "0001";
+            f_valid_n : assert n_i(G_SIZE - 1 downto G_SIZE - 4) = "0001" or n_i = 0
+               report "div: Dividend 0x" & to_hstring(n_i) & " is not normalized.";
+            f_valid_d : assert d_i(G_SIZE - 1 downto G_SIZE - 4) = "0001"
+               report "div: Divisor 0x" & to_hstring(d_i) & " is not normalized.";
             n     <= n_i;
             d     <= d_i;
             iter  <= 0;

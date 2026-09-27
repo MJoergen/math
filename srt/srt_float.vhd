@@ -18,6 +18,7 @@ library ieee;
 -- Limitations (see normalizer.vhd):
 -- * n_i and d_i must be less than 2^29.
 -- * d_i must be non-zero.
+-- Both are checked with assertions when a division is started.
 --
 -- Usage: Pulse start_over_i for one clock cycle. The inputs n_i and d_i are
 -- only sampled in that cycle. The result is valid on q_o when busy_o returns
@@ -63,6 +64,21 @@ architecture synthesis of srt_float is
 begin
 
    busy_o <= '1' when state /= IDLE_ST else '0';
+
+   -- Check the inputs when a division is started. These are concurrent
+   -- assertions, so they are checked as soon as start_over_i is asserted,
+   -- before the assertions inside div.
+   assert start_over_i /= '1' or n_i(31 downto 29) = "000"
+      report "srt_float: Dividend 0x" & to_hstring(n_i) & " is too large. Must be less than 2^29."
+      severity error;
+
+   assert start_over_i /= '1' or d_i(31 downto 29) = "000"
+      report "srt_float: Divisor 0x" & to_hstring(d_i) & " is too large. Must be less than 2^29."
+      severity error;
+
+   assert start_over_i /= '1' or d_i /= 0
+      report "srt_float: Division by zero."
+      severity error;
 
    srt_float_proc : process (clk_i)
       variable res_v   : std_logic_vector(67 downto 0);

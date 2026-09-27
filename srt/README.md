@@ -33,12 +33,13 @@ only at the end.
 | `tb_srt.vhd`     | Testbench for `srt_float`.
 | `div.psl`, `div.sby` | Formal verification of `div`.
 | `div.gtkw`       | GTKWave setup for viewing the formal verification traces.
-| `srt.xpr`, `srt.xdc` | Vivado project and timing constraint (200 MHz), for synthesis.
+| `srt.xpr`, `srt.xdc` | Vivado project (Artix-7 xc7a200tfbg484-2) and timing constraint (200 MHz), for synthesis.
 | `srt.py`, `srt.cpp` | Floating point reference models of the algorithm.
 
 ## Interface of `srt_float`
 * `n_i`, `d_i`: Unsigned integers. They must be less than 2^29, and `d_i` must
-  be non-zero.
+  be non-zero. In simulation, an assertion reports invalid inputs when a
+  division is started.
 * `q_o`: The quotient `n_i/d_i`, with 32 integer bits and 32 fractional bits,
   rounded to nearest.
 * Pulse `start_over_i` for one clock cycle to start a division. The inputs are

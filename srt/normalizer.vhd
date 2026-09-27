@@ -12,7 +12,9 @@ library ieee;
 --
 -- Limitations:
 -- * The top three bits of n_i and d_i must be zero, i.e. the values must be
---   less than 2^29. Otherwise the shift amount becomes negative.
+--   less than 2^29. Larger values are not shifted, so the result is wrong,
+--   but the simulation does not crash. srt_float checks this with an
+--   assertion.
 -- * d_i must be non-zero. If n_i is zero, then n_o is zero too.
 --
 -- This is a purely combinatorial block.
@@ -46,12 +48,27 @@ architecture synthesis of normalizer is
 begin
 
    norm_proc : process (all)
-      variable nz_v : natural range 0 to 32;
-      variable dz_v : natural range 0 to 31;
+      variable nlz_v : natural range 0 to 32;
+      variable dlz_v : natural range 0 to 32;
+      variable nz_v  : natural range 0 to 29;
+      variable dz_v  : natural range 0 to 29;
    begin
-      -- Number of positions to shift left
-      nz_v                := count_leading_zeros(n_i) - 3;
-      dz_v                := count_leading_zeros(d_i) - 3;
+      nlz_v := count_leading_zeros(n_i);
+      dlz_v := count_leading_zeros(d_i);
+
+      -- Number of positions to shift left. This is clamped at zero, so values
+      -- that are too large do not cause an error in simulation.
+      if nlz_v >= 3 then
+         nz_v := nlz_v - 3;
+      else
+         nz_v := 0;
+      end if;
+      if dlz_v >= 3 then
+         dz_v := dlz_v - 3;
+      else
+         dz_v := 0;
+      end if;
+
       exp_o               <= nz_v - dz_v;
       n_o                 <= (others => '0');
       d_o                 <= (others => '0');
