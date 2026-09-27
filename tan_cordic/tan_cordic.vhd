@@ -135,7 +135,14 @@ begin
          case state is
 
             when IDLE_ST =>
-               null;
+               if s_valid_i = '1' then
+                  -- s_angle_i is unsigned U0.G_FRAC_BITS; widen it with one (zero) sign bit,
+                  -- then extend it with additional (zero) guard fraction bits.
+                  angle <= resize(to_sfixed(to_ufixed(s_angle_i, -1, -G_FRAC_BITS)),
+                                   angle_t'high, angle_t'low);
+                  count <= 0;
+                  state <= REDUCE_ST;
+               end if;
 
             when REDUCE_ST =>
                -- Pseudo-division: if the current special angle fits inside the
@@ -234,15 +241,6 @@ begin
                end if;
 
          end case;
-
-         if s_valid_i = '1' and s_ready_o = '1' then
-            -- s_angle_i is unsigned U0.G_FRAC_BITS; widen it with one (zero) sign bit,
-            -- then extend it with additional (zero) guard fraction bits.
-            angle <= resize(to_sfixed(to_ufixed(s_angle_i, -1, -G_FRAC_BITS)),
-                             angle_t'high, angle_t'low);
-            count <= 0;
-            state <= REDUCE_ST;
-         end if;
 
          if rst_i = '1' then
             m_valid_o <= '0';
