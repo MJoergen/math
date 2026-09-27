@@ -1,12 +1,11 @@
+-- Formal verification of div.vhd. Run with "make formal".
+-- In addition to the properties in this file, the assertions inside div.vhd
+-- (e.g. in the function get_n) are verified too.
+
 vunit div_inst (div(synthesis))
 {
    -- set all declarations to run on clk_i
    default clock is rising_edge(clk_i);
-
-
-   -----------------------------
-   -- ASSERTIONS ABOUT OUTPUTS
-   -----------------------------
 
    -----------------------------
    -- ASSUMPTIONS ABOUT INPUTS
@@ -22,13 +21,21 @@ vunit div_inst (div(synthesis))
    -- COVER STATEMENTS TO VERIFY REACHABILITY
    --------------------------------------------
 
-   -- Just a simple cover statement
-   -- Verify that n=-4 can be reached
-   -- Verify that n=4.246 can be reached
-   f_large_n : cover {n(G_SIZE-1 downto G_SIZE-12) = "010000111111"}; -- reached in step 3
-   f_small_n : cover {n(G_SIZE-1 downto G_SIZE-12) = "110000000000"}; -- reached in step 2
+   -- The partial remainder n uses 4 integer bits (including the sign), so the
+   -- top 12 bits are n truncated to a multiple of 1/256.
 
-   -- Verify that -4 <= n < 4.25
+   -- Verify that n=4.246 (= 0100.00111111) can be reached. Reached in step 3.
+   f_large_n : cover {n(G_SIZE-1 downto G_SIZE-12) = "010000111111"};
+
+   -- Verify that n=-4 (= 1100.00000000) can be reached. Reached in step 2.
+   f_small_n : cover {n(G_SIZE-1 downto G_SIZE-12) = "110000000000"};
+
+   --------------------------------------------
+   -- ASSERTIONS ABOUT INTERNAL STATE
+   --------------------------------------------
+
+   -- Verify that the partial remainder stays in the range -4 <= n < 4.25.
+   -- Together with the covers above, this shows that the range is nearly tight.
    f_range_n : assert n(G_SIZE-1 downto G_SIZE-12) >= X"C00" or
                       n(G_SIZE-1 downto G_SIZE-12) < X"440";
 

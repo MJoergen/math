@@ -1,7 +1,16 @@
 library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std_unsigned.all;
-use ieee.math_real.all;
+   use ieee.std_logic_1164.all;
+   use ieee.numeric_std_unsigned.all;
+   use ieee.math_real.all;
+
+-- This is a testbench for srt_float.
+--
+-- It performs all divisions n/d with 1 <= n, d <= 1000, and compares the
+-- result against the expected value. The integer part is calculated using
+-- integer division, and the fractional part using real arithmetic.
+--
+-- At the end it reports the average number of clock cycles per division, and
+-- how many results had a fractional part that was too low or too high.
 
 entity tb_srt is
 end entity tb_srt;
@@ -34,6 +43,12 @@ begin
       );
 
    test_proc : process
+
+      -- Convert a real number 0 <= arg < 1 to a 32-bit fraction, rounded to
+      -- nearest. A VHDL integer can not hold values of 2^31 or more, so values
+      -- of 0.5 and above are calculated as 2^32 - (1-arg)*2^32 instead.
+      -- Note: This does not handle arg rounding up to 1.0, but that can not
+      -- happen when the divisor is small.
       pure function real2slv(arg : real) return std_logic_vector is
       begin
          if arg = 0.5 then
@@ -45,6 +60,7 @@ begin
          end if;
       end function real2slv;
 
+      -- Start a single division, wait for the result, and verify it.
       procedure verify_division(arg_n : natural; arg_d : natural) is
          variable exp_q_high : std_logic_vector(31 downto 0) := to_stdlogicvector(arg_n / arg_d, 32);
          variable exp_q_low  : std_logic_vector(31 downto 0) := real2slv(real(arg_n rem arg_d) / real(arg_d));
@@ -59,7 +75,6 @@ begin
          wait until rising_edge(clk);
          assert busy = '1';
          wait until busy = '0';
---         report to_hstring(q);
          assert q(63 downto 32) = exp_q_high
             report "HIGH: Calculating " & to_string(arg_n) & "/" & to_string(arg_d) &
                ". Got 0x" & to_hstring(q(63 downto 32)) & ", expected 0x" & to_hstring(exp_q_high);
@@ -67,6 +82,8 @@ begin
             report "LOW: Calculating " & to_string(arg_n) & "/" & to_string(arg_d) &
                ". Got 0x" & to_hstring(q(31 downto 0)) & ", expected 0x" & to_hstring(exp_q_low);
 
+         -- Count the rounding errors (only relevant if the asserts above are
+         -- not fatal)
          if q(31 downto 0) < exp_q_low then
             low_count <= low_count + 1;
          end if;

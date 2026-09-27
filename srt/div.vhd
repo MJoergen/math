@@ -4,8 +4,32 @@ library ieee;
 
 -- This divides two numbers using the SRT algorithm (with radix 4).
 -- It is inspired by this analysis: https://www.righto.com/2024/12/this-die-photo-of-pentium-shows.html
-
--- The values must be normalized on input and output.
+--
+-- Each iteration selects a quotient digit q in {-2, -1, 0, 1, 2} from a small
+-- lookup table (the "PLA", see pla.vhd), and then updates the partial
+-- remainder:
+--    n := 4*(n - q*d)
+-- The digit set is redundant, so the table only needs to look at the top few
+-- bits of n and d, and an imprecise choice of q is corrected by later digits.
+--
+-- Number formats (G_SIZE bits, two's complement with 4 integer bits including
+-- the sign, i.e. bit G_SIZE-4 has weight 1):
+--   n_i, d_i : Must be normalized, i.e. the top nibble must be "0001", so
+--              1 <= n_i, d_i < 2. As a special case n_i = 0 is allowed.
+--   n        : The partial remainder. It stays within |n/d| < 8/3, which is
+--              the radix 4 times the redundancy factor 2/3 of the digit set.
+--              Formal verification shows that -4 <= n < 4.25.
+--   q_o      : Unsigned, with 2 integer bits and 2*G_SIZE+2 fractional bits.
+--              The quotient digit from iteration k has weight 4^(-k). Since
+--              1/2 < n_i/d_i < 2 the first digit is always 1 or 2
+--              (unless n_i = 0).
+--
+-- The positive and negative quotient digits are accumulated in two separate
+-- registers (res_p and res_n), and subtracted only once at the end. This
+-- avoids a long carry chain in every iteration.
+--
+-- Usage: Pulse start_i for one clock cycle. The inputs n_i and d_i are only
+-- sampled in that cycle. The result is valid on q_o when busy_o returns low.
 
 entity div is
    generic (
@@ -14,8 +38,8 @@ entity div is
    );
    port (
       clk_i   : in    std_logic;
-      n_i     : in    std_logic_vector(G_SIZE - 1 downto 0);     -- dividend
-      d_i     : in    std_logic_vector(G_SIZE - 1 downto 0);     -- divisor
+      n_i     : in    std_logic_vector(G_SIZE - 1 downto 0);     -- dividend (normalized)
+      d_i     : in    std_logic_vector(G_SIZE - 1 downto 0);     -- divisor (normalized)
       start_i : in    std_logic;
       q_o     : out   std_logic_vector(2 * G_SIZE + 3 downto 0); -- quotient
       busy_o  : out   std_logic
@@ -24,12 +48,15 @@ end entity div;
 
 architecture synthesis of div is
 
+   -- Number of quotient digits. Each digit is two bits, so this fills q_o.
    constant C_NUM_ITERS : natural                         := G_SIZE + 2;
 
    signal   iter : natural range 0 to C_NUM_ITERS;
 
    signal   pla_q : integer range -2 to 2;
 
+   -- Any normalized value will do. This just keeps the PLA assertion happy
+   -- before the first division.
    function get_init_d return std_logic_vector is
       variable res_v : std_logic_vector(G_SIZE - 1 downto 0);
    begin
@@ -38,14 +65,15 @@ architecture synthesis of div is
       return res_v;
    end function get_init_d;
 
-   signal   n     : std_logic_vector(G_SIZE - 1 downto 0) := (others => '0');
-   signal   d     : std_logic_vector(G_SIZE - 1 downto 0) := get_init_d;
-   signal   res_p : std_logic_vector(2 * G_SIZE + 3 downto 0);
-   signal   res_n : std_logic_vector(2 * G_SIZE + 3 downto 0);
+   signal   n     : std_logic_vector(G_SIZE - 1 downto 0) := (others => '0'); -- Partial remainder
+   signal   d     : std_logic_vector(G_SIZE - 1 downto 0) := get_init_d;      -- Divisor
+   signal   res_p : std_logic_vector(2 * G_SIZE + 3 downto 0);                -- Positive digits
+   signal   res_n : std_logic_vector(2 * G_SIZE + 3 downto 0);                -- Negative digits
 
    type     state_type is (IDLE_ST, BUSY_ST);
    signal   state : state_type                            := IDLE_ST;
 
+   -- Absolute value of a two's complement number
    pure function abs_slv (
       arg : std_logic_vector
    ) return std_logic_vector is
@@ -57,7 +85,9 @@ architecture synthesis of div is
       end if;
    end function abs_slv;
 
-
+   -- Calculate the next partial remainder 4*(n - q*d).
+   -- The assertions verify the invariants of the SRT algorithm, and are used
+   -- during formal verification.
    pure function get_n (
       arg_n : std_logic_vector(G_SIZE - 1 downto 0);
       arg_d : std_logic_vector(G_SIZE - 1 downto 0);
@@ -71,13 +101,13 @@ architecture synthesis of div is
       argn3_v := ("00" & abs_slv(arg_n)) + ("0" & abs_slv(arg_n) & "0");
 
       -- Verify that n/d < 8/3, i.e. 3*n < 8*d
-      f_74 : assert argn3_v(G_SIZE + 1 downto G_SIZE) = "00" and
-                    argn3_v(G_SIZE - 1 downto 0) < arg_d(G_SIZE - 4 downto 0) & "000"
+      f_quotient_bound : assert argn3_v(G_SIZE + 1 downto G_SIZE) = "00" and
+                                argn3_v(G_SIZE - 1 downto 0) < arg_d(G_SIZE - 4 downto 0) & "000"
          report "argn3_v=0x" & to_hstring(argn3_v) &
                 ", arg_n=0x" & to_hstring(arg_n) &
                 ", arg_d=0x" & to_hstring(arg_d);
 
-      --
+      -- Calculate n - q*d. Multiplying by 2 is just a shift.
       case arg_q is
 
          when -2 =>
@@ -106,14 +136,18 @@ architecture synthesis of div is
 
       tmp3_v := ("00" & abs_slv(tmp_v)) + ("0" & abs_slv(tmp_v) & "0");
 
-      f_107 : assert tmp3_v(G_SIZE + 1 downto G_SIZE - 2) = "0000"
+      -- Verify that |n - q*d| < 4/3, i.e. 3*|n - q*d| < 4.
+      -- This follows from |n - q*d| <= 2/3*d and d < 2.
+      f_remainder_bound : assert tmp3_v(G_SIZE + 1 downto G_SIZE - 2) = "0000"
          report "tmp_v=0x" & to_hstring(tmp_v) &
                 ", tmp3_v=0x" & to_hstring(tmp3_v) &
                 ", arg_d=0x" & to_hstring(arg_d);
 
-      f_114 : assert tmp_v(G_SIZE - 1 downto G_SIZE - 3) = "000" or
-                     tmp_v(G_SIZE - 1 downto G_SIZE - 3) = "111"
+      -- Verify that |n - q*d| < 2, so that multiplying by 4 does not overflow.
+      f_no_overflow : assert tmp_v(G_SIZE - 1 downto G_SIZE - 3) = "000" or
+                             tmp_v(G_SIZE - 1 downto G_SIZE - 3) = "111"
          report "tmp_v=0x" & to_hstring(tmp_v);
+      -- Multiply by 4
       return tmp_v(G_SIZE - 3 downto 0) & "00";
    end function get_n;
 
@@ -140,6 +174,8 @@ begin
                end if;
 
                n <= get_n(n, d, pla_q);
+
+               -- Shift the new quotient digit into either res_p or res_n
                if pla_q > 0 then
                   res_p <= res_p(2 * G_SIZE + 1 downto 0) & to_stdlogicvector(pla_q, 2);
                   res_n <= res_n(2 * G_SIZE + 1 downto 0) & "00";
@@ -147,6 +183,10 @@ begin
                   res_p <= res_p(2 * G_SIZE + 1 downto 0) & "00";
                   res_n <= res_n(2 * G_SIZE + 1 downto 0) & to_stdlogicvector(-pla_q, 2);
                end if;
+               -- Note: The last iteration (iter = C_NUM_ITERS) calculates one
+               -- digit too many. It is discarded, because q_o is assigned the
+               -- values of res_p and res_n from before this clock cycle.
+               -- This costs one extra clock cycle.
                if iter < C_NUM_ITERS then
                   iter <= iter + 1;
                else
@@ -157,8 +197,10 @@ begin
          end case;
 
          if start_i then
-            f_119 : assert n_i(G_SIZE - 1 downto G_SIZE - 4) = "0001";
-            f_120 : assert d_i(G_SIZE - 1 downto G_SIZE - 4) = "0001";
+            -- The inputs must be normalized. A zero dividend is fine too,
+            -- since the PLA will then select q = 0 in every iteration.
+            f_valid_n : assert n_i(G_SIZE - 1 downto G_SIZE - 4) = "0001" or n_i = 0;
+            f_valid_d : assert d_i(G_SIZE - 1 downto G_SIZE - 4) = "0001";
             n     <= n_i;
             d     <= d_i;
             iter  <= 0;

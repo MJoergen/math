@@ -2,13 +2,28 @@ library ieee;
    use ieee.std_logic_1164.all;
    use ieee.numeric_std_unsigned.all;
 
+-- This normalizes the dividend and divisor before the division.
+--
+-- Each value is shifted left so that the top nibble becomes "0001". In the
+-- number format used by div.vhd this corresponds to 1 <= n_o, d_o < 2.
+--
+-- The shift amounts are combined into exp_o, such that the true quotient is:
+--    n_i/d_i = n_o/d_o * 2^(-exp_o)
+--
+-- Limitations:
+-- * The top three bits of n_i and d_i must be zero, i.e. the values must be
+--   less than 2^29. Otherwise the shift amount becomes negative.
+-- * d_i must be non-zero. If n_i is zero, then n_o is zero too.
+--
+-- This is a purely combinatorial block.
+
 entity normalizer is
    port (
       n_i   : in    std_logic_vector(31 downto 0); -- dividend
       d_i   : in    std_logic_vector(31 downto 0); -- divisor
-      n_o   : out   std_logic_vector(31 downto 0); -- dividend
-      d_o   : out   std_logic_vector(31 downto 0); -- divisor
-      exp_o : out   integer range -31 to 32
+      n_o   : out   std_logic_vector(31 downto 0); -- normalized dividend
+      d_o   : out   std_logic_vector(31 downto 0); -- normalized divisor
+      exp_o : out   integer range -31 to 32        -- shift of n minus shift of d
    );
 end entity normalizer;
 
@@ -34,6 +49,7 @@ begin
       variable nz_v : natural range 0 to 32;
       variable dz_v : natural range 0 to 31;
    begin
+      -- Number of positions to shift left
       nz_v                := count_leading_zeros(n_i) - 3;
       dz_v                := count_leading_zeros(d_i) - 3;
       exp_o               <= nz_v - dz_v;
