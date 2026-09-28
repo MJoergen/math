@@ -62,6 +62,49 @@ pla.svg: pla.pdf ## Build the diagram of the table, used in ALGORITHM.md
 
 
 #######################
+# Synthesis using Vivado
+#######################
+
+XILINX_DIR = /opt/Xilinx/2025.1/Vivado
+
+VIVADO_TOP  = srt_float
+VIVADO_PART = xc7a200tfbg484-2
+VIVADO_SRC  = pla.vhd normalizer.vhd div.vhd shifter.vhd srt_float.vhd
+
+# -mode batch, NOT -mode tcl. In tcl mode Vivado exits 0 even when the sourced
+# script raises an error, so an aborted build -- on the timing check below, or
+# inside synth_design/route_design -- would otherwise be reported as success
+# to make. Batch mode propagates the error as a non-zero exit status.
+.PHONY: vivado
+vivado: $(VIVADO_TOP).bit ## Run synthesis and implementation using Vivado (batch mode)
+
+$(VIVADO_TOP).bit: vivado_build.tcl $(VIVADO_SRC) srt.xdc
+	bash -c "source $(XILINX_DIR)/settings64.sh ; vivado -mode batch -source $<"
+
+# report_timing_summary writes timing_summary.rpt next to the bitstream, and
+# the check after it aborts the build on negative slack. write_bitstream
+# succeeds even when timing is violated, so without that check a bitstream is
+# not evidence that the design meets the 200 MHz constraint in srt.xdc.
+vivado_build.tcl: Makefile
+	echo "# This is a tcl command script for the Vivado tool chain" > $@
+	echo "read_vhdl -vhdl2008 { $(VIVADO_SRC) }" >> $@
+	echo "read_xdc srt.xdc" >> $@
+	echo "synth_design -top $(VIVADO_TOP) -part $(VIVADO_PART)" >> $@
+	echo "write_checkpoint -force post_synth.dcp" >> $@
+	echo "opt_design" >> $@
+	echo "place_design" >> $@
+	echo "phys_opt_design" >> $@
+	echo "route_design" >> $@
+	echo "phys_opt_design" >> $@
+	echo "write_checkpoint -force post_route.dcp" >> $@
+	echo "report_timing_summary -file timing_summary.rpt" >> $@
+	echo "report_utilization -file utilization.rpt" >> $@
+	echo "if {[get_property SLACK [get_timing_paths]] < 0} { puts {TIMING VIOLATED -- see timing_summary.rpt} ; exit 1 }" >> $@
+	echo "write_bitstream -force $(VIVADO_TOP).bit" >> $@
+	echo "exit" >> $@
+
+
+#######################
 # Formal verification
 #######################
 
@@ -90,4 +133,7 @@ show_cover: ## Show the cover trace from "make formal" in GTKWave
 .PHONY: clean
 clean: ## Remove the generated files
 	rm -rf __pycache__ pla.pdf pla.aux pla.log pla.fls pla.fdb_latexmk tb_srt srt.ghw work-obj08.cf *.o $(DUT)_cover $(DUT)_prove $(DUT)_prove32
+	rm -rf vivado_build.tcl post_synth.dcp post_route.dcp timing_summary.rpt utilization.rpt $(VIVADO_TOP).bit
+	rm -rf vivado*.jou vivado*.log usage_statistics_webtalk* .Xil
+	rm -rf clockInfo.txt tight_setup_hold_pins.txt
 
