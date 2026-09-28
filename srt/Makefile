@@ -91,6 +91,11 @@ $(VIVADO_TOP).bit: vivado_build.tcl $(VIVADO_SRC) srt.xdc
 # the check after it aborts the build on negative slack. write_bitstream
 # succeeds even when timing is violated, so without that check a bitstream is
 # not evidence that the design meets the 200 MHz constraint in srt.xdc.
+#
+# No I/O pins are assigned (see srt.xdc), so the DRCs for missing pin
+# locations (UCIO-1) and I/O standards (NSTD-1) are reduced to warnings.
+# Otherwise write_bitstream fails. The bitstream is therefore not meant to be
+# loaded into a board.
 vivado_build.tcl: Makefile
 	echo "# This is a tcl command script for the Vivado tool chain" > $@
 	echo "read_vhdl -vhdl2008 { $(VIVADO_SRC) }" >> $@
@@ -106,6 +111,7 @@ vivado_build.tcl: Makefile
 	echo "report_timing_summary -file timing_summary.rpt" >> $@
 	echo "report_utilization -file utilization.rpt" >> $@
 	echo "if {[get_property SLACK [get_timing_paths]] < 0} { puts {TIMING VIOLATED -- see timing_summary.rpt} ; exit 1 }" >> $@
+	echo "set_property SEVERITY {Warning} [get_drc_checks {NSTD-1 UCIO-1}]" >> $@
 	echo "write_bitstream -force $(VIVADO_TOP).bit" >> $@
 	echo "exit" >> $@
 

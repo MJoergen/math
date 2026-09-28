@@ -2,6 +2,9 @@ library ieee;
    use ieee.std_logic_1164.all;
    use ieee.numeric_std_unsigned.all;
 
+library work;
+   use work.pla_pkg.all;
+
 -- This divides two numbers using the SRT algorithm (with radix 4).
 -- It is inspired by this analysis: https://www.righto.com/2024/12/this-die-photo-of-pentium-shows.html
 --
@@ -33,7 +36,10 @@ library ieee;
 -- of the new carries, which is otherwise 0. For the table lookup only the top
 -- 7 bits of n_s and n_c are added. This ignores the carries from the lower
 -- bits, so the table may see n one row too low (1/8 less). The table in
--- pla.vhd allows for this, see there.
+-- pla.vhd allows for this, see there. The divisor does not change during a
+-- division, so the thresholds of its column of the table are stored in col
+-- when the division starts. Then each iteration only compares the estimate of
+-- n against them, see pla.vhd.
 --
 -- The quotient digits are converted to an ordinary binary number on the fly,
 -- without any carry chain: Two registers hold the quotient so far (quot) and
@@ -41,8 +47,13 @@ library ieee;
 -- q is then handled by appending (4 + q) to quot_m1, since
 --    4*quot + q = 4*quot_m1 + (4 + q)
 -- So each iteration only selects one of the two registers and appends two
--- bits, and after the last iteration quot is the result. See the table in
--- div_proc.
+-- bits. See the table in append_proc.
+--
+-- Each digit is first stored in the register digit, and only appended to
+-- quot in the next iteration. This keeps the quotient registers (about 140
+-- loads) off the output of the PLA, which is on the critical path. The
+-- quotient q_o is quot with the last digit appended, so it is still valid
+-- in the same clock cycle as before.
 --
 -- The generic G_PLA selects the quotient digit table:
 --   "srt"           : pla.vhd (the default).
@@ -52,9 +63,13 @@ library ieee;
 -- With the Pentium tables the partial remainder has a larger range, see
 -- pla_pentium.vhd. With the original Pentium table, this divider has the FDIV
 -- bug, e.g. for 4195835/3145727. The formal verification only covers pla.vhd.
+-- The original Pentium table cannot be expressed with two thresholds per
+-- column (it holds 0 above the q = 2 region), so the Pentium tables use a
+-- lookup in the table instead. They are only meant for simulation.
 --
 -- Usage: Pulse start_i for one clock cycle. The inputs n_i and d_i are only
--- sampled in that cycle. The result is valid on q_o when busy_o returns low.
+-- sampled in that cycle. The result is valid on q_o when busy_o returns low,
+-- until the next division is started.
 
 entity div is
    generic (
@@ -79,9 +94,12 @@ architecture synthesis of div is
 
    signal   iter : natural range 0 to C_NUM_ITERS - 1;
 
-   signal   pla_q : integer range -2 to 2;
+   -- The quotient digit selected by the PLA: its magnitude, and the digit
+   -- itself (with the sign of the estimate of n)
+   signal   pla_mag : mag_type;
+   signal   pla_q   : integer range -2 to 2;
 
-   -- Any normalized value will do. This just keeps the PLA assertion happy
+   -- Any normalized value will do. This just keeps the assertions happy
    -- before the first division.
    function get_init_d return std_logic_vector is
       variable res_v : std_logic_vector(G_SIZE - 1 downto 0);
@@ -90,6 +108,16 @@ architecture synthesis of div is
       res_v(G_SIZE - 4) := '1';
       return res_v;
    end function get_init_d;
+
+   constant C_INIT_D : std_logic_vector(G_SIZE - 1 downto 0) := get_init_d;
+
+   -- The 4 bits of d that select the column of the table
+   pure function get_d4 (
+      arg_d : std_logic_vector(G_SIZE - 1 downto 0)
+   ) return std_logic_vector is
+   begin
+      return arg_d(G_SIZE - 5 downto G_SIZE - 8);
+   end function get_d4;
 
    -- The partial remainder in carry-save form, n = n_s + n_c
    signal   n_s   : std_logic_vector(G_SIZE - 1 downto 0) := (others => '0'); -- Sums
@@ -104,9 +132,15 @@ architecture synthesis of div is
    -- 7 bits of n_s and n_c. The lower bits are zero.
    signal   n_est : std_logic_vector(G_SIZE - 1 downto 0);
 
-   signal   d     : std_logic_vector(G_SIZE - 1 downto 0) := get_init_d;      -- Divisor
+   signal   d     : std_logic_vector(G_SIZE - 1 downto 0) := C_INIT_D;        -- Divisor
+   signal   col   : col_type := get_col(get_d4(C_INIT_D));                     -- Column of d
    signal   quot    : std_logic_vector(2 * G_SIZE + 3 downto 0);              -- Quotient so far
    signal   quot_m1 : std_logic_vector(2 * G_SIZE + 3 downto 0);              -- quot - 1
+   signal   digit   : integer range -2 to 2;                                  -- Not yet appended to quot
+
+   -- quot and quot_m1 with digit appended
+   signal   new_quot    : std_logic_vector(2 * G_SIZE + 3 downto 0);
+   signal   new_quot_m1 : std_logic_vector(2 * G_SIZE + 3 downto 0);
 
    type     state_type is (IDLE_ST, BUSY_ST);
    signal   state : state_type                            := IDLE_ST;
@@ -138,16 +172,21 @@ architecture synthesis of div is
    end function abs_slv;
 
    -- Calculate the next partial remainder 4*(n - q*d) in carry-save form,
-   -- from n = arg_s + arg_c. Returns the new sums and carries, concatenated.
+   -- from n = arg_s + arg_c. The quotient digit q has the magnitude arg_mag
+   -- (see pla.vhd), and it is negative if arg_neg is set. Returns the new sums
+   -- and carries, concatenated.
    -- The assertions verify the invariants of the SRT algorithm, and are used
    -- during formal verification. They use the exact values of the partial
    -- remainder, which are not needed otherwise.
    pure function get_n (
-      arg_s : std_logic_vector(G_SIZE - 1 downto 0);
-      arg_c : std_logic_vector(G_SIZE - 1 downto 0);
-      arg_d : std_logic_vector(G_SIZE - 1 downto 0);
-      arg_q : integer range -2 to 2
+      arg_s   : std_logic_vector(G_SIZE - 1 downto 0);
+      arg_c   : std_logic_vector(G_SIZE - 1 downto 0);
+      arg_d   : std_logic_vector(G_SIZE - 1 downto 0);
+      arg_neg : std_logic;
+      arg_mag : mag_type
    ) return std_logic_vector is
+      variable mult_v  : std_logic_vector(G_SIZE - 1 downto 0);
+      variable sub_v   : std_logic;
       variable y_v     : std_logic_vector(G_SIZE - 1 downto 0);
       variable cin_v   : std_logic;
       variable sum_v   : std_logic_vector(G_SIZE - 1 downto 0);
@@ -168,31 +207,24 @@ architecture synthesis of div is
                 ", arg_d=0x" & to_hstring(arg_d)
          severity C_SEVERITY;
 
-      -- The value y = -q*d to add. Multiplying by 2 is just a shift. For a
-      -- positive q, -q*d = not(q*d) + 1, where the 1 is added as cin_v.
-      case arg_q is
+      -- Calculate |q|*d. Multiplying by 2 is just a shift.
+      if arg_mag(1) = '1' then
+         mult_v := arg_d(G_SIZE - 2 downto 0) & "0";
+      elsif arg_mag(0) = '1' then
+         mult_v := arg_d;
+      else
+         mult_v := (others => '0');
+      end if;
 
-         when -2 =>
-            y_v   := arg_d(G_SIZE - 2 downto 0) & "0";
-            cin_v := '0';
-
-         when -1 =>
-            y_v   := arg_d;
-            cin_v := '0';
-
-         when 1 =>
-            y_v   := not arg_d;
-            cin_v := '1';
-
-         when 2 =>
-            y_v   := not (arg_d(G_SIZE - 2 downto 0) & "0");
-            cin_v := '1';
-
-         when others =>
-            y_v   := (others => '0');
-            cin_v := '0';
-
-      end case;
+      -- The value y = -q*d to add, i.e. y = |q|*d for a negative q. For a
+      -- positive q, -q*d = not(|q|*d) + 1, where the 1 is added as cin_v. For
+      -- q = 0, y = 0 (and not "all ones plus one"), so that the sums and
+      -- carries are the same as in the model srt.py. The table lookup only
+      -- sees the top bits of the sums and carries, so they must match the
+      -- model exactly, and not just their sum.
+      sub_v := not arg_neg and arg_mag(0);
+      y_v   := mult_v xor (mult_v'range => sub_v);
+      cin_v := sub_v;
 
       -- Carry-save adder: n - q*d = sum_v + carry_v
       sum_v   := arg_s xor arg_c xor y_v;
@@ -234,12 +266,54 @@ begin
    n_est <= (n_s(G_SIZE - 1 downto G_SIZE - 7) + n_c(G_SIZE - 1 downto G_SIZE - 7)) &
             (G_SIZE - 8 downto 0 => '0');
 
-   div_proc : process (clk_i)
+   -- Append the stored quotient digit q (on-the-fly conversion). The new
+   -- values are 4*quot + q and 4*quot + q - 1, where
+   -- 4*quot = quot & "00", and 4*quot = quot_m1 & "00" + 4.
+   --    q  | new quot       | new quot_m1
+   --    2  | quot    & "10" | quot    & "01"
+   --    1  | quot    & "01" | quot    & "00"
+   --    0  | quot    & "00" | quot_m1 & "11"
+   --   -1  | quot_m1 & "11" | quot_m1 & "10"
+   --   -2  | quot_m1 & "10" | quot_m1 & "01"
+   append_proc : process (all)
       variable quot_v    : std_logic_vector(2 * G_SIZE + 1 downto 0);
       variable quot_m1_v : std_logic_vector(2 * G_SIZE + 1 downto 0);
-      variable new_v     : std_logic_vector(2 * G_SIZE + 3 downto 0);
-      variable new_m1_v  : std_logic_vector(2 * G_SIZE + 3 downto 0);
-      variable next_v    : std_logic_vector(2 * G_SIZE - 1 downto 0);
+   begin
+      quot_v    := quot(2 * G_SIZE + 1 downto 0);
+      quot_m1_v := quot_m1(2 * G_SIZE + 1 downto 0);
+
+      case digit is
+
+         when 2 =>
+            new_quot    <= quot_v & "10";
+            new_quot_m1 <= quot_v & "01";
+
+         when 1 =>
+            new_quot    <= quot_v & "01";
+            new_quot_m1 <= quot_v & "00";
+
+         when -1 =>
+            new_quot    <= quot_m1_v & "11";
+            new_quot_m1 <= quot_m1_v & "10";
+
+         when -2 =>
+            new_quot    <= quot_m1_v & "10";
+            new_quot_m1 <= quot_m1_v & "01";
+
+         when others =>
+            new_quot    <= quot_v & "00";
+            new_quot_m1 <= quot_m1_v & "11";
+
+      end case;
+
+   end process append_proc;
+
+   -- After the last iteration, digit holds the last digit, and quot holds
+   -- all the digits before it.
+   q_o <= new_quot;
+
+   div_proc : process (clk_i)
+      variable next_v : std_logic_vector(2 * G_SIZE - 1 downto 0);
    begin
       if rising_edge(clk_i) then
 
@@ -257,55 +331,20 @@ begin
                          ", pla_q=" & to_string(pla_q);
                end if;
 
-               next_v := get_n(n_s, n_c, d, pla_q);
+               next_v := get_n(n_s, n_c, d, n_est(G_SIZE - 1), pla_mag);
                n_s    <= next_v(2 * G_SIZE - 1 downto G_SIZE);
                n_c    <= next_v(G_SIZE - 1 downto 0);
 
-               -- Append the new quotient digit q (on-the-fly conversion). The
-               -- new values are 4*quot + q and 4*quot + q - 1, where
-               -- 4*quot = quot & "00", and 4*quot = quot_m1 & "00" + 4.
-               --    q  | new quot       | new quot_m1
-               --    2  | quot    & "10" | quot    & "01"
-               --    1  | quot    & "01" | quot    & "00"
-               --    0  | quot    & "00" | quot_m1 & "11"
-               --   -1  | quot_m1 & "11" | quot_m1 & "10"
-               --   -2  | quot_m1 & "10" | quot_m1 & "01"
-               quot_v    := quot(2 * G_SIZE + 1 downto 0);
-               quot_m1_v := quot_m1(2 * G_SIZE + 1 downto 0);
+               -- Store the new digit, and append the previous one. In the
+               -- first iteration, the previous digit is a leading zero,
+               -- which leaves quot and quot_m1 unchanged.
+               digit   <= pla_q;
+               quot    <= new_quot;
+               quot_m1 <= new_quot_m1;
 
-               case pla_q is
-
-                  when 2 =>
-                     new_v    := quot_v & "10";
-                     new_m1_v := quot_v & "01";
-
-                  when 1 =>
-                     new_v    := quot_v & "01";
-                     new_m1_v := quot_v & "00";
-
-                  when -1 =>
-                     new_v    := quot_m1_v & "11";
-                     new_m1_v := quot_m1_v & "10";
-
-                  when -2 =>
-                     new_v    := quot_m1_v & "10";
-                     new_m1_v := quot_m1_v & "01";
-
-                  when others =>
-                     new_v    := quot_v & "00";
-                     new_m1_v := quot_m1_v & "11";
-
-               end case;
-
-               quot    <= new_v;
-               quot_m1 <= new_m1_v;
-
-               -- In the last iteration, the result includes the digit just
-               -- calculated.
                if iter < C_NUM_ITERS - 1 then
                   iter <= iter + 1;
                else
-                  q_o   <= new_v;
                   state <= IDLE_ST;
                end if;
 
@@ -321,14 +360,23 @@ begin
             n_s     <= n_i;
             n_c     <= (others => '0');
             d       <= d_i;
+            col     <= get_col(get_d4(d_i));
             iter    <= 0;
             quot    <= (others => '0');                -- 0
             quot_m1 <= (others => '1');                -- -1
+            digit   <= 0;
             state   <= BUSY_ST;
          end if;
       end if;
    end process div_proc;
 
+   -- col is loaded together with d. This is also needed for the induction in
+   -- the formal verification.
+   f_col : assert col = get_col(get_d4(d))
+      report "col does not match d=0x" & to_hstring(d);
+
+   -- Select the magnitude of the quotient digit. The sign of the digit is the
+   -- sign of the estimate of n.
    pla_gen : if G_PLA = "srt" generate
 
       pla_inst : entity work.pla
@@ -337,12 +385,16 @@ begin
             G_DEBUG => G_DEBUG
          )
          port map (
-            n_i => n_est,
-            d_i => d,
-            q_o => pla_q
+            n_i   => n_est,
+            col_i => col,
+            mag_o => pla_mag
          ); -- pla_inst
 
    elsif G_PLA = "pentium" or G_PLA = "pentium_fixed" generate
+
+      signal pentium_q : integer range -2 to 2;
+
+   begin
 
       pla_pentium_inst : entity work.pla_pentium
          generic map (
@@ -353,8 +405,13 @@ begin
          port map (
             n_i => n_est,
             d_i => d,
-            q_o => pla_q
+            q_o => pentium_q
          ); -- pla_pentium_inst
+
+      -- Convert the digit to the same format as mag_o of pla, see get_mag
+      pla_mag <= "11" when abs(pentium_q) = 2 else
+                 "01" when abs(pentium_q) = 1 else
+                 "00";
 
    else generate
 
@@ -363,6 +420,8 @@ begin
          severity failure;
 
    end generate pla_gen;
+
+   pla_q <= get_digit(n_est(G_SIZE - 1), pla_mag);
 
 end architecture synthesis;
 

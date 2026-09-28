@@ -9,10 +9,12 @@
 # With G_SIZE=16 a division takes 18 iterations, and the result is ready in
 # step 19, so the depth must be larger than that.
 #
-# "memory_map -rom-only" turns the quotient digit table (a ROM) into logic.
-# The initial contents of a memory only hold in the first clock cycle, but
-# induction starts from an arbitrary clock cycle, and could otherwise use
-# any table contents.
+# "memory_map -rom-only" turns the thresholds of the columns of the quotient
+# digit table (a ROM, see get_col in pla.vhd) into logic. The initial contents
+# of a memory only hold in the first clock cycle, but induction starts from an
+# arbitrary clock cycle, and could otherwise use any contents.
+#
+# pla.vhd is read first, since div.vhd uses its package pla_pkg.
 
 [tasks]
 cover

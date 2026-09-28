@@ -61,6 +61,11 @@ Here & means appending two bits. So each iteration only selects one of the two
 registers and appends two bits, without any carry chain, and after the last
 iteration $Q$ is the quotient.
 
+In `div.vhd` each digit is first stored in a register, and only appended in
+the next iteration, and the quotient output is $Q$ with the stored digit
+appended. This keeps the many quotient registers off the output of the table,
+which is on the critical path.
+
 ## Why the partial remainder stays bounded
 **Claim:** If $|n| \le \frac{8}{3}d$, then there is a digit $q$ such that the
 next partial remainder $n' = 4(n - qd)$ also satisfies $|n'| \le \frac{8}{3}d$.
@@ -253,6 +258,38 @@ The range also shows which table entries are never used: those outside the
 range of their column. This is why the table check in `srt.py`, which only
 uses the bound $|n| \le \frac{8}{3}d$, flags some entries near the edge that
 are never used.
+
+## Implementing the table
+The thresholds $t_k$ above also give a faster way to implement the table. The
+table rounds $(n_0 + \frac{1}{8})/d$, where $n_0$ is the value of $n$ that it
+sees, for positive and negative $n_0$ alike. So in every column
+$t_{-1} = -t_0 - \frac{1}{8}$ and $t_{-2} = -t_1 - \frac{1}{8}$ (e.g. in the
+last column $t_0 = \frac{7}{8}$ and $t_{-1} = -1$), and within a column, the
+magnitude of the digit only depends on $m = |n_0 + \frac{1}{8}|$:
+```math
+|q| = \begin{cases}
+0 & \text{for } m < t_0 + \frac{1}{8} \\
+1 & \text{for } t_0 + \frac{1}{8} \le m < t_1 + \frac{1}{8} \\
+2 & \text{for } t_1 + \frac{1}{8} \le m
+\end{cases}
+```
+and its sign is the sign of $n_0$. In units of $\frac{1}{8}$, $m = n_0 + 1$
+for $n_0 \ge 0$, and $m = -n_0 - 1$ (the one's complement of $n_0$) for
+$n_0 < 0$.
+
+The divisor does not change during a division, so `div.vhd` looks up $t_0$
+and $t_1$ for its column when the division starts, and stores them in a
+register. Each iteration then only compares $m$ against these two values.
+In the FPGA, each comparison is a short carry chain on the 7 bits of $n_0$,
+with the inverted sign as carry in, which is much faster than a lookup that
+depends on all 11 bits. The digit selection and the update of the partial
+remainder must both fit in one clock cycle, so this matters for the clock
+frequency. `pla.vhd` checks that the comparisons give the same digit as the
+table for all 2048 entries.
+
+The original Pentium table cannot be implemented like this, since it holds 0
+above the $q = 2$ region, and its upper edge is not the same for positive and
+negative $n$. So `pla_pentium.vhd` (see below) uses a lookup in the table.
 
 ## The Pentium FDIV bug
 In the Pentium this table was implemented as a PLA. The table's unused
