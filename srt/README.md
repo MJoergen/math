@@ -74,7 +74,8 @@ state that depends only on the inputs, and the depth covers a complete
 division.
 
 ## Running
-* `make sim` (the default) runs the testbench. It checks a number of edge cases
+Type `make` to list the supported targets. The most important ones are:
+* `make sim` runs the testbench. It checks a number of edge cases
   (zero dividend, the largest inputs, and every normalization shift), and then
   all divisions n/d with 1 <= n, d <= 1000. The expected results are calculated
   exactly, including the rounding. This requires
