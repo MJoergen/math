@@ -108,15 +108,23 @@ architecture synthesis of div is
    -- Calculate the next partial remainder 4*(n - q*d).
    -- The assertions verify the invariants of the SRT algorithm, and are used
    -- during formal verification.
+   --
+   -- For timing, the four sums n + 2d, n + d, n - d, and n - 2d are all
+   -- calculated first, in parallel with the table lookup of q, and q then
+   -- only selects one of them. Doing the addition after the table lookup, as
+   -- in n - q*d, is too slow for 200 MHz.
    pure function get_n (
       arg_n : std_logic_vector(G_SIZE - 1 downto 0);
       arg_d : std_logic_vector(G_SIZE - 1 downto 0);
       arg_q : integer range -2 to 2
    ) return std_logic_vector is
-      variable tmp_v   : std_logic_vector(G_SIZE - 1 downto 0);
-      variable neg_v   : std_logic_vector(G_SIZE - 1 downto 0);
-      variable tmp3_v  : std_logic_vector(G_SIZE + 1 downto 0);
-      variable argn3_v : std_logic_vector(G_SIZE + 1 downto 0);
+      variable tmp_v    : std_logic_vector(G_SIZE - 1 downto 0);
+      variable plus2_v  : std_logic_vector(G_SIZE - 1 downto 0);
+      variable plus1_v  : std_logic_vector(G_SIZE - 1 downto 0);
+      variable minus1_v : std_logic_vector(G_SIZE - 1 downto 0);
+      variable minus2_v : std_logic_vector(G_SIZE - 1 downto 0);
+      variable tmp3_v   : std_logic_vector(G_SIZE + 1 downto 0);
+      variable argn3_v  : std_logic_vector(G_SIZE + 1 downto 0);
    begin
       argn3_v := ("00" & abs_slv(arg_n)) + ("0" & abs_slv(arg_n) & "0");
 
@@ -127,23 +135,27 @@ architecture synthesis of div is
                 ", arg_n=0x" & to_hstring(arg_n) &
                 ", arg_d=0x" & to_hstring(arg_d);
 
-      -- Calculate n - q*d. Multiplying by 2 is just a shift.
+      -- Calculate n - q*d for all values of q. Multiplying by 2 is just a
+      -- shift.
+      plus2_v  := arg_n + (arg_d(G_SIZE - 2 downto 0) & "0");
+      plus1_v  := arg_n + arg_d;
+      minus1_v := arg_n - arg_d;
+      minus2_v := arg_n - (arg_d(G_SIZE - 2 downto 0) & "0");
+
+      -- Select the one for the actual value of q
       case arg_q is
 
          when -2 =>
-            tmp_v := arg_n + (arg_d(G_SIZE - 2 downto 0) & "0");
+            tmp_v := plus2_v;
 
          when -1 =>
-            tmp_v := arg_n + arg_d;
-
-         when 0 =>
-            tmp_v := arg_n;
+            tmp_v := plus1_v;
 
          when 1 =>
-            tmp_v := arg_n - arg_d;
+            tmp_v := minus1_v;
 
          when 2 =>
-            tmp_v := arg_n - (arg_d(G_SIZE - 2 downto 0) & "0");
+            tmp_v := minus2_v;
 
          when others =>
             tmp_v := arg_n;
