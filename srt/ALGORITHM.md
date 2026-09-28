@@ -61,7 +61,7 @@ Here & means appending two bits. So each iteration only selects one of the two
 registers and appends two bits, without any carry chain, and after the last
 iteration $Q$ is the quotient.
 
-In `div.vhd` each digit is first stored in a register, and only appended in
+In `srt_core.vhd` each digit is first stored in a register, and only appended in
 the next iteration, and the quotient output is $Q$ with the stored digit
 appended. This keeps the many quotient registers off the output of the table,
 which is on the critical path.
@@ -277,7 +277,7 @@ and its sign is the sign of $n_0$. In units of $\frac{1}{8}$, $m = n_0 + 1$
 for $n_0 \ge 0$, and $m = -n_0 - 1$ (the one's complement of $n_0$) for
 $n_0 < 0$.
 
-The divisor does not change during a division, so `div.vhd` looks up $t_0$
+The divisor does not change during a division, so `srt_core.vhd` looks up $t_0$
 and $t_1$ for its column when the division starts, and stores them in a
 register. Each iteration then only compares $m$ against these two values.
 In the FPGA, each comparison is a short carry chain on the 7 bits of $n_0$,
@@ -311,11 +311,11 @@ $q = -2$ region with 2, which also made the PLA smaller.
 ### Both Pentium tables in this divider
 [`pla_pentium.vhd`](pla_pentium.vhd) holds the Pentium's table, both the
 original and the fixed version, copied from the article. It can replace
-`pla.vhd` with the generic `G_PLA` of `div.vhd`, e.g. `make sim PLA=pentium`.
+`pla.vhd` with the generic `G_PLA` of `srt_core.vhd`, e.g. `make sim PLA=pentium`.
 The Pentium's table picks the larger digit where both are allowed, so the
 partial remainder has a larger range: $-5 < n < 5$.
 
-Since `div.vhd` keeps the partial remainder in carry-save form like the
+Since `srt_core.vhd` keeps the partial remainder in carry-save form like the
 Pentium, the original table gives this divider the FDIV bug too. With
 `PLA=pentium`, the testbench verifies that 4195835/3145727 gives
 $1.3337390688$ instead of $1.3338204492$, the famous wrong result of the

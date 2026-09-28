@@ -71,7 +71,7 @@ library work;
 -- sampled in that cycle. The result is valid on q_o when busy_o returns low,
 -- until the next division is started.
 
-entity div is
+entity srt_core is
    generic (
       G_SIZE  : natural;
       G_DEBUG : boolean;
@@ -85,9 +85,9 @@ entity div is
       q_o     : out   std_logic_vector(2 * G_SIZE + 3 downto 0); -- quotient
       busy_o  : out   std_logic
    );
-end entity div;
+end entity srt_core;
 
-architecture synthesis of div is
+architecture synthesis of srt_core is
 
    -- Number of quotient digits. Each digit is two bits, so this fills q_o.
    constant C_NUM_ITERS : natural                         := G_SIZE + 2;
@@ -124,8 +124,8 @@ architecture synthesis of div is
    signal   n_c   : std_logic_vector(G_SIZE - 1 downto 0) := (others => '0'); -- Carries
 
    -- The partial remainder as a single number. This is only used for
-   -- verification (the assertions below, and div.psl) and debugging. It is
-   -- not used by the divider, so synthesis removes it.
+   -- verification (the assertions below, and srt_core.psl) and debugging. It
+   -- is not used by the divider, so synthesis removes it.
    signal   n     : std_logic_vector(G_SIZE - 1 downto 0);
 
    -- The estimate of n that is used for the table lookup: The sum of the top
@@ -312,7 +312,7 @@ begin
    -- all the digits before it.
    q_o <= new_quot;
 
-   div_proc : process (clk_i)
+   srt_core_proc : process (clk_i)
       variable next_v : std_logic_vector(2 * G_SIZE - 1 downto 0);
    begin
       if rising_edge(clk_i) then
@@ -354,9 +354,9 @@ begin
             -- The inputs must be normalized. A zero dividend is fine too,
             -- since the PLA will then select q = 0 in every iteration.
             f_valid_n : assert n_i(G_SIZE - 1 downto G_SIZE - 4) = "0001" or n_i = 0
-               report "div: Dividend 0x" & to_hstring(n_i) & " is not normalized.";
+               report "srt_core: Dividend 0x" & to_hstring(n_i) & " is not normalized.";
             f_valid_d : assert d_i(G_SIZE - 1 downto G_SIZE - 4) = "0001"
-               report "div: Divisor 0x" & to_hstring(d_i) & " is not normalized.";
+               report "srt_core: Divisor 0x" & to_hstring(d_i) & " is not normalized.";
             n_s     <= n_i;
             n_c     <= (others => '0');
             d       <= d_i;
@@ -368,7 +368,7 @@ begin
             state   <= BUSY_ST;
          end if;
       end if;
-   end process div_proc;
+   end process srt_core_proc;
 
    -- col is loaded together with d. This is also needed for the induction in
    -- the formal verification.
@@ -416,7 +416,7 @@ begin
    else generate
 
       assert false
-         report "div: Unknown G_PLA """ & G_PLA & """"
+         report "srt_core: Unknown G_PLA """ & G_PLA & """"
          severity failure;
 
    end generate pla_gen;

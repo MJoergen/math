@@ -3,7 +3,7 @@ library ieee;
    use ieee.numeric_std_unsigned.all;
    use ieee.math_real.all;
 
--- This is a testbench for srt_float.
+-- This is a testbench for srt.
 --
 -- It first tests a number of edge cases: Invalid inputs (division by zero, and
 -- inputs of 2^29 or more), a zero dividend, the largest valid inputs
@@ -15,8 +15,8 @@ library ieee;
 -- bits (up to 29), so they cover the whole range of valid inputs, including
 -- every normalization shift and all bit patterns of the quotient.
 --
--- The divider itself (div.vhd) is formally verified for all inputs, so this
--- testbench mainly verifies srt_float around it: normalization, rounding,
+-- The divider itself (srt_core.vhd) is formally verified for all inputs, so
+-- this testbench mainly verifies srt around it: normalization, rounding,
 -- invalid inputs, and the handshake.
 --
 -- Each result is compared against the expected value. The integer part is
@@ -26,7 +26,7 @@ library ieee;
 -- At the end it reports the average number of clock cycles per division, and
 -- how many results had a fractional part that was too low or too high.
 --
--- The generic G_PLA selects the quotient digit table, see div.vhd. For
+-- The generic G_PLA selects the quotient digit table, see srt_core.vhd. For
 -- instance, "make sim PLA=pentium" runs the testbench with the original
 -- Pentium table. Then the divider has the Pentium's FDIV bug, and the
 -- testbench verifies that 4195835/3145727 gives the Pentium's wrong result.
@@ -56,7 +56,7 @@ begin
 
    clk <= running and not clk after 5 ns;
 
-   srt_float_inst : entity work.srt_float
+   srt_inst : entity work.srt
       generic map (
          G_PLA => G_PLA
       )
@@ -189,7 +189,7 @@ begin
       constant MAX_D : natural := 100;
       constant MAX_N : natural := 100;
 
-      -- The largest input value supported by srt_float
+      -- The largest input value supported by srt
       constant C_MAX : natural := 2 ** 29 - 1;
 
       -- The number of random divisions, and the random seeds (fixed, so the

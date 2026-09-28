@@ -11,7 +11,7 @@ library ieee;
 --
 -- The division proceeds in three stages, much like a floating point divider:
 -- 1. normalizer : Shift n_i and d_i so they are both in the range [1, 2).
--- 2. div        : Divide the normalized values using SRT.
+-- 2. srt_core   : Divide the normalized values using SRT.
 -- 3. shifter    : Shift the quotient back to undo the normalization.
 -- Finally, the result is rounded.
 --
@@ -25,10 +25,10 @@ library ieee;
 -- busy_o returns low. A division takes 37 clock cycles (3 clock cycles for
 -- invalid inputs).
 
-entity srt_float is
+entity srt is
    generic (
       G_DEBUG : boolean := false;
-      G_PLA   : string  := "srt"     -- The quotient digit table, see div.vhd
+      G_PLA   : string  := "srt"     -- The quotient digit table, see srt_core.vhd
    );
    port (
       clk_i         : in    std_logic;
@@ -39,18 +39,18 @@ entity srt_float is
       start_over_i  : in    std_logic;
       busy_o        : out   std_logic
    );
-end entity srt_float;
+end entity srt;
 
-architecture synthesis of srt_float is
+architecture synthesis of srt is
 
    signal norm_n   : std_logic_vector(31 downto 0) := (others => '0');
    signal norm_d   : std_logic_vector(31 downto 0) := X"10000000";
    signal norm_exp : integer range -29 to 29;
 
-   -- The quotient from div, with 2 integer bits and 66 fractional bits
-   signal div_start : std_logic;
-   signal div_q     : std_logic_vector(67 downto 0);
-   signal div_busy  : std_logic;
+   -- The quotient from srt_core, with 2 integer bits and 66 fractional bits
+   signal core_start : std_logic;
+   signal core_q     : std_logic_vector(67 downto 0);
+   signal core_busy  : std_logic;
 
    -- Whether the inputs are valid, and whether the inputs of the current
    -- division were invalid
@@ -62,9 +62,9 @@ architecture synthesis of srt_float is
    signal shifter_q : std_logic_vector(67 downto 0);
    signal shifted   : std_logic_vector(67 downto 0);
 
-   -- Number of positions to shift div_q right. The quotient from div has 66
-   -- fractional bits, and we want 36 fractional bits, so the shift is 30 plus
-   -- the normalization exponent.
+   -- Number of positions to shift core_q right. The quotient from srt_core has
+   -- 66 fractional bits, and we want 36 fractional bits, so the shift is 30
+   -- plus the normalization exponent.
    signal exp : natural range 1 to 59              := 30;
 
    type   state_type is (IDLE_ST, BUSY_ST, ROUND_ST);
@@ -77,7 +77,7 @@ begin
    -- Both inputs must be less than 2^29, and the divisor must not be zero
    inputs_valid <= n_i(31 downto 29) = "000" and d_i(31 downto 29) = "000" and d_i /= 0;
 
-   srt_float_proc : process (clk_i)
+   srt_proc : process (clk_i)
       variable res_v   : std_logic_vector(67 downto 0);
       -- Half of the LSB of q_o. Adding this before truncating the 4 extra
       -- fractional bits rounds to nearest.
@@ -91,8 +91,8 @@ begin
                null;
 
             when BUSY_ST =>
-               -- Wait for div to finish
-               if div_busy = '0' then
+               -- Wait for srt_core to finish
+               if core_busy = '0' then
                   shifted <= shifter_q;
                   state   <= ROUND_ST;
                end if;
@@ -109,8 +109,8 @@ begin
 
          end case;
 
-         -- Start a new division. The div instance is started in the same
-         -- clock cycle (unless the inputs are invalid), see div_start below.
+         -- Start a new division. The srt_core instance is started in the same
+         -- clock cycle (unless the inputs are invalid), see core_start below.
          if start_over_i then
             exp   <= 30 + norm_exp;
             if inputs_valid then
@@ -121,14 +121,14 @@ begin
             state <= BUSY_ST;
          end if;
       end if;
-   end process srt_float_proc;
+   end process srt_proc;
 
-   -- Don't start div for invalid inputs, since they can then not be
-   -- normalized. BUSY_ST then only waits until div is idle, which it normally
-   -- is already, so it ends after one clock cycle. The result from div is
-   -- ignored, since q_o is set to all ones.
-   div_start <= start_over_i when inputs_valid else
-                '0';
+   -- Don't start srt_core for invalid inputs, since they can then not be
+   -- normalized. BUSY_ST then only waits until srt_core is idle, which it
+   -- normally is already, so it ends after one clock cycle. The result from
+   -- srt_core is ignored, since q_o is set to all ones.
+   core_start <= start_over_i when inputs_valid else
+                 '0';
 
    normalizer_inst : entity work.normalizer
       port map (
@@ -139,7 +139,7 @@ begin
          exp_o => norm_exp
       ); -- normalizer_inst
 
-   div_inst : entity work.div
+   srt_core_inst : entity work.srt_core
       generic map (
          G_SIZE  => 32,
          G_DEBUG => G_DEBUG,
@@ -147,16 +147,16 @@ begin
       )
       port map (
          clk_i   => clk_i,
-         start_i => div_start,
+         start_i => core_start,
          n_i     => norm_n,
          d_i     => norm_d,
-         q_o     => div_q,
-         busy_o  => div_busy
-      ); -- div_inst
+         q_o     => core_q,
+         busy_o  => core_busy
+      ); -- srt_core_inst
 
    shifter_inst : entity work.shifter
       port map (
-         p_i   => div_q,
+         p_i   => core_q,
          exp_i => exp,
          q_o   => shifter_q
       ); -- shifter_inst

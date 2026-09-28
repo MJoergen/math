@@ -2,11 +2,11 @@
 
 # Bit-exact model of the SRT divider in this directory.
 #
-# This models srt_float.vhd (with div.vhd, pla.vhd, normalizer.vhd, and
+# This models srt.vhd (with srt_core.vhd, pla.vhd, normalizer.vhd, and
 # shifter.vhd) using integers, so the quotient is exactly the same as the one
 # calculated by the VHDL. The quotient digit table is built the same way as in
 # pla.vhd, and the partial remainder is kept in carry-save form, like in
-# div.vhd. Alternatively, the Pentium's table can be used (pla_pentium.vhd),
+# srt_core.vhd. Alternatively, the Pentium's table can be used (pla_pentium.vhd),
 # which reproduces the FDIV bug, and the partial remainder can be calculated
 # exactly instead (--exact).
 #
@@ -40,8 +40,8 @@ import re
 import sys
 from fractions import Fraction
 
-G_SIZE = 32                       # The value of G_SIZE used by srt_float
-MAX_INPUT = 2**29 - 1             # Largest input value supported by srt_float
+G_SIZE = 32                       # The value of G_SIZE used by srt
+MAX_INPUT = 2**29 - 1             # Largest input value supported by srt
 
 
 def to_signed(x, bits):
@@ -124,7 +124,7 @@ def pla(n, d, table, g=G_SIZE):
 
 
 # -------------------------------------------------------------------------
-# The divider (div.vhd)
+# The divider (srt_core.vhd)
 # -------------------------------------------------------------------------
 
 # Divide the normalized g-bit values n and d, and return the quotient with 2
@@ -133,13 +133,13 @@ def pla(n, d, table, g=G_SIZE):
 # of each iteration are appended to it.
 #
 # With carry_save, the partial remainder is kept in carry-save form, like in
-# div.vhd and in the Pentium: n = s + c. Then n - q*d is calculated with a carry-save adder,
+# srt_core.vhd and in the Pentium: n = s + c. Then n - q*d is calculated with a carry-save adder,
 # without propagating any carries. A positive q*d is subtracted by adding its
 # complement, and adding the 1 as the lowest bit of the carries. For the table
 # lookup, only the top 7 bits of s and c are added. This ignores the carries
 # from the lower bits, so the lookup can use the table row just below n. With
 # the original Pentium table, this very rarely reaches a missing entry.
-def div(n, d, table, g=G_SIZE, trace=None, carry_save=True):
+def srt_core(n, d, table, g=G_SIZE, trace=None, carry_save=True):
     mask = (1 << g) - 1
     s, c = n, 0
     q = 0
@@ -166,7 +166,7 @@ def div(n, d, table, g=G_SIZE, trace=None, carry_save=True):
 
 
 # -------------------------------------------------------------------------
-# The complete divider (srt_float.vhd, normalizer.vhd, and shifter.vhd)
+# The complete divider (srt.vhd, normalizer.vhd, and shifter.vhd)
 # -------------------------------------------------------------------------
 
 # Shift x left so the top nibble is "0001". Return the shifted value and the
@@ -178,12 +178,12 @@ def normalize(x):
 
 # Divide two unsigned integers, and return the quotient with 32 integer bits
 # and 32 fractional bits, rounded to nearest.
-def srt_float(n_i, d_i, table, trace=None, carry_save=True):
+def srt(n_i, d_i, table, trace=None, carry_save=True):
     if not valid_inputs(n_i, d_i):
         return (1 << 64) - 1                    # Invalid inputs: all ones
     n, nz = normalize(n_i)
     d, dz = normalize(d_i)
-    q = div(n, d, table, trace=trace, carry_save=carry_save)
+    q = srt_core(n, d, table, trace=trace, carry_save=carry_save)
     shifted = q >> (30 + nz - dz)
     return ((shifted + 8) & ((1 << 68) - 1)) >> 4
 
@@ -194,7 +194,7 @@ def valid_inputs(n_i, d_i):
 
 
 # The exact quotient, rounded to nearest. There are no ties when d_i < 2^29.
-# For invalid inputs, srt_float returns all ones.
+# For invalid inputs, srt returns all ones.
 def expected(n_i, d_i):
     if not valid_inputs(n_i, d_i):
         return (1 << 64) - 1
@@ -394,7 +394,7 @@ def print_tikz(table):
 #
 # The values are G-bit integers (i.e. scaled by 2^(G_SIZE-4)), so everything
 # is exact. Since the result is normalized already, it can be used directly as
-# the inputs of srt_float. Returns (n_i, d_i), or None if nothing was found.
+# the inputs of srt. Returns (n_i, d_i), or None if nothing was found.
 def find_input(idx, table, max_depth=10, tries=2000, seed=1):
     rng = random.Random(seed)
     g = G_SIZE
@@ -463,7 +463,7 @@ def test(table, count, bad_cells=(), max_errors=5, carry_save=True):
 
     errors = 0
     for n, d in cases:
-        got = srt_float(n, d, table, carry_save=carry_save)
+        got = srt(n, d, table, carry_save=carry_save)
         exp = expected(n, d)
         if got != exp:
             errors += 1
@@ -475,7 +475,7 @@ def test(table, count, bad_cells=(), max_errors=5, carry_save=True):
 
 def show_division(n, d, table, trace, carry_save=True):
     steps = []
-    q = srt_float(n, d, table, trace=steps, carry_save=carry_save)
+    q = srt(n, d, table, trace=steps, carry_save=carry_save)
     if trace:
         scale = 2**(G_SIZE - 4)
         for k, (r, r_lookup, digit) in enumerate(steps):
@@ -504,7 +504,7 @@ def main():
                              "original or fixed table from pla_pentium.vhd")
     parser.add_argument("--exact", action="store_true",
                         help="calculate the partial remainder exactly, instead of in carry-save "
-                             "form like div.vhd")
+                             "form like srt_core.vhd")
     args = parser.parse_args()
 
     removed = [table_index(*map(Fraction, r.split(":"))) for r in args.remove]

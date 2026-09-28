@@ -4,7 +4,8 @@ library ieee;
 
 -- This is the quotient digit selection table (the PLA) of the Intel Pentium,
 -- both the original version with the FDIV bug and the later, fixed version.
--- It can be used in div.vhd instead of pla.vhd, see the generic G_PLA there.
+-- It can be used in srt_core.vhd instead of pla.vhd, see the generic G_PLA
+-- there.
 --
 -- The table contents are taken from Ken Shirriff's analysis of the PLA on the
 -- Pentium die: https://www.righto.com/2024/12/this-die-photo-of-pentium-shows.html
@@ -20,10 +21,10 @@ library ieee;
 -- below the -2 region also hold 0. In the fixed table (G_FIXED = true), all of
 -- these entries hold 2. Otherwise the two tables are identical.
 --
--- div.vhd keeps the partial remainder n in carry-save form, like the Pentium,
--- so the table lookup may see n one row too low. With the original table this
--- in rare cases leads to a missing entry, and a wrong result: div.vhd then has
--- the Pentium's FDIV bug, e.g. for 4195835/3145727 (see tb_srt.vhd, and
+-- srt_core.vhd keeps the partial remainder n in carry-save form, like the
+-- Pentium, so the table lookup may see n one row too low. With the original
+-- table this in rare cases leads to a missing entry, and a wrong result:
+-- srt_core.vhd then has the Pentium's FDIV bug, e.g. for 4195835/3145727 (see tb_srt.vhd, and
 -- "./srt.py 4195835 3145727 --pla pentium"). If n were calculated exactly,
 -- the missing entries would never be used (see "./srt.py --pla pentium
 -- --exact").
