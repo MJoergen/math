@@ -4,9 +4,10 @@ library ieee;
 
 -- This is a testbench for srt_float.
 --
--- It first tests a number of edge cases: A zero dividend, the largest allowed
--- inputs (2^29 - 1), and all combinations of powers of two, which exercise
--- every possible normalization shift.
+-- It first tests a number of edge cases: Invalid inputs (division by zero, and
+-- inputs of 2^29 or more), a zero dividend, the largest valid inputs
+-- (2^29 - 1), and all combinations of powers of two, which exercise every
+-- possible normalization shift.
 --
 -- Then it performs all divisions n/d with 1 <= n, d <= 1000.
 --
@@ -22,16 +23,17 @@ end entity tb_srt;
 
 architecture simulation of tb_srt is
 
-   signal running    : std_logic := '1';
-   signal clk        : std_logic := '1';
-   signal n          : std_logic_vector(31 downto 0);
-   signal d          : std_logic_vector(31 downto 0);
-   signal q          : std_logic_vector(63 downto 0);
-   signal start_over : std_logic;
-   signal busy       : std_logic;
+   signal running     : std_logic := '1';
+   signal clk         : std_logic := '1';
+   signal n           : std_logic_vector(31 downto 0);
+   signal d           : std_logic_vector(31 downto 0);
+   signal q           : std_logic_vector(63 downto 0);
+   signal invalid     : std_logic;
+   signal start_over  : std_logic;
+   signal busy        : std_logic;
 
-   signal low_count  : natural := 0;
-   signal high_count : natural := 0;
+   signal low_count   : natural := 0;
+   signal high_count  : natural := 0;
 
 begin
 
@@ -39,12 +41,13 @@ begin
 
    srt_float_inst : entity work.srt_float
       port map (
-         clk_i        => clk,
-         n_i          => n,
-         d_i          => d,
-         q_o          => q,
-         start_over_i => start_over,
-         busy_o       => busy
+         clk_i         => clk,
+         n_i           => n,
+         d_i           => d,
+         q_o           => q,
+         invalid_o     => invalid,
+         start_over_i  => start_over,
+         busy_o        => busy
       );
 
    test_proc : process
@@ -95,6 +98,9 @@ begin
          assert q(31 downto 0)  = exp_q_low
             report "LOW: Calculating " & to_string(arg_n) & "/" & to_string(arg_d) &
                ". Got 0x" & to_hstring(q(31 downto 0)) & ", expected 0x" & to_hstring(exp_q_low);
+         assert invalid = '0'
+            report "Calculating " & to_string(arg_n) & "/" & to_string(arg_d) &
+               ". invalid_o is set";
 
          -- Count the rounding errors (only relevant if the asserts above are
          -- not fatal)
@@ -105,6 +111,30 @@ begin
             high_count <= high_count + 1;
          end if;
       end procedure verify_division;
+
+      -- Start a division with invalid inputs, and verify that the result is
+      -- all ones, and that invalid_o is set. The inputs are given as vectors,
+      -- since a natural can not hold values of 2^31 or more.
+      procedure verify_invalid(arg_n : std_logic_vector(31 downto 0);
+                               arg_d : std_logic_vector(31 downto 0)) is
+      begin
+         report "verify: n=0x" & to_hstring(arg_n) & ", d=0x" & to_hstring(arg_d);
+
+         n          <= arg_n;
+         d          <= arg_d;
+         start_over <= '1';
+         wait until rising_edge(clk);
+         start_over <= '0';
+         wait until rising_edge(clk);
+         assert busy = '1';
+         wait until busy = '0';
+         assert q = X"FFFFFFFFFFFFFFFF"
+            report "Calculating 0x" & to_hstring(arg_n) & "/0x" & to_hstring(arg_d) &
+               ". Got 0x" & to_hstring(q) & ", expected 0xFFFFFFFFFFFFFFFF";
+         assert invalid = '1'
+            report "Calculating 0x" & to_hstring(arg_n) & "/0x" & to_hstring(arg_d) &
+               ". invalid_o is not set";
+      end procedure verify_invalid;
 
       variable start_time : time;
       variable end_time   : time;
@@ -119,6 +149,17 @@ begin
       wait until rising_edge(clk);
 
       report "Testing edge cases";
+
+      -- Invalid inputs: Division by zero, and inputs of 2^29 or more. The next
+      -- division checks that invalid_o is cleared again.
+      verify_invalid(X"00000000", X"00000000");
+      verify_invalid(X"00000001", X"00000000");
+      verify_invalid(X"1FFFFFFF", X"00000000");
+      verify_invalid(X"20000000", X"00000001");
+      verify_invalid(X"00000001", X"20000000");
+      verify_invalid(X"FFFFFFFF", X"00000003");
+      verify_invalid(X"FFFFFFFF", X"FFFFFFFF");
+      verify_invalid(X"FFFFFFFF", X"00000000");
 
       -- Zero dividend
       verify_division(0, 1);

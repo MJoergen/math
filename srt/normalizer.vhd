@@ -13,9 +13,10 @@ library ieee;
 -- Limitations:
 -- * The top three bits of n_i and d_i must be zero, i.e. the values must be
 --   less than 2^29. Larger values are not shifted, so the result is wrong,
---   but the simulation does not crash. srt_float checks this with an
---   assertion.
--- * d_i must be non-zero. If n_i is zero, then n_o is zero too.
+--   but the simulation does not crash. srt_float reports such inputs as
+--   invalid.
+-- * If n_i is zero, then n_o is zero too. Likewise for d_i. srt_float handles
+--   a zero divisor separately.
 --
 -- This is a purely combinatorial block.
 
@@ -25,7 +26,7 @@ entity normalizer is
       d_i   : in    std_logic_vector(31 downto 0); -- divisor
       n_o   : out   std_logic_vector(31 downto 0); -- normalized dividend
       d_o   : out   std_logic_vector(31 downto 0); -- normalized divisor
-      exp_o : out   integer range -31 to 32        -- shift of n minus shift of d
+      exp_o : out   integer range -29 to 29        -- shift of n minus shift of d
    );
 end entity normalizer;
 

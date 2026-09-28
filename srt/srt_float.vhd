@@ -15,26 +15,28 @@ library ieee;
 -- 3. shifter    : Shift the quotient back to undo the normalization.
 -- Finally, the result is rounded.
 --
--- Limitations (see normalizer.vhd):
--- * n_i and d_i must be less than 2^29.
--- * d_i must be non-zero.
--- Both are checked with assertions when a division is started.
+-- Invalid inputs: The inputs are valid if n_i and d_i are both less than 2^29
+-- (see normalizer.vhd), and d_i is not zero. For invalid inputs, invalid_o is
+-- set, and q_o is all ones (the largest value). Otherwise invalid_o is
+-- cleared.
 --
 -- Usage: Pulse start_over_i for one clock cycle. The inputs n_i and d_i are
--- only sampled in that cycle. The result is valid on q_o when busy_o returns
--- low. A division takes 37 clock cycles.
+-- only sampled in that cycle. The result is valid on q_o and invalid_o when
+-- busy_o returns low. A division takes 37 clock cycles (3 clock cycles for
+-- invalid inputs).
 
 entity srt_float is
    generic (
       G_DEBUG : boolean := false
    );
    port (
-      clk_i        : in    std_logic;
-      n_i          : in    std_logic_vector(31 downto 0); -- dividend
-      d_i          : in    std_logic_vector(31 downto 0); -- divisor
-      q_o          : out   std_logic_vector(63 downto 0); -- quotient (32.32 fixed point)
-      start_over_i : in    std_logic;
-      busy_o       : out   std_logic
+      clk_i         : in    std_logic;
+      n_i           : in    std_logic_vector(31 downto 0); -- dividend
+      d_i           : in    std_logic_vector(31 downto 0); -- divisor
+      q_o           : out   std_logic_vector(63 downto 0); -- quotient (32.32 fixed point)
+      invalid_o     : out   std_logic;                     -- inputs were invalid
+      start_over_i  : in    std_logic;
+      busy_o        : out   std_logic
    );
 end entity srt_float;
 
@@ -42,11 +44,17 @@ architecture synthesis of srt_float is
 
    signal norm_n   : std_logic_vector(31 downto 0) := (others => '0');
    signal norm_d   : std_logic_vector(31 downto 0) := X"10000000";
-   signal norm_exp : integer range -31 to 32;
+   signal norm_exp : integer range -29 to 29;
 
    -- The quotient from div, with 2 integer bits and 66 fractional bits
-   signal div_q    : std_logic_vector(67 downto 0);
-   signal div_busy : std_logic;
+   signal div_start : std_logic;
+   signal div_q     : std_logic_vector(67 downto 0);
+   signal div_busy  : std_logic;
+
+   -- Whether the inputs are valid, and whether the inputs of the current
+   -- division were invalid
+   signal inputs_valid : boolean;
+   signal invalid      : std_logic                 := '0';
 
    -- The un-normalized quotient, with 32 integer bits and 36 fractional bits.
    -- The 4 extra fractional bits are used for rounding.
@@ -56,7 +64,7 @@ architecture synthesis of srt_float is
    -- Number of positions to shift div_q right. The quotient from div has 66
    -- fractional bits, and we want 36 fractional bits, so the shift is 30 plus
    -- the normalization exponent.
-   signal exp : natural range 0 to 67              := 0;
+   signal exp : natural range 1 to 59              := 30;
 
    type   state_type is (IDLE_ST, BUSY_ST, ROUND_ST);
    signal state : state_type                       := IDLE_ST;
@@ -65,20 +73,8 @@ begin
 
    busy_o <= '1' when state /= IDLE_ST else '0';
 
-   -- Check the inputs when a division is started. These are concurrent
-   -- assertions, so they are checked as soon as start_over_i is asserted,
-   -- before the assertions inside div.
-   assert start_over_i /= '1' or n_i(31 downto 29) = "000"
-      report "srt_float: Dividend 0x" & to_hstring(n_i) & " is too large. Must be less than 2^29."
-      severity error;
-
-   assert start_over_i /= '1' or d_i(31 downto 29) = "000"
-      report "srt_float: Divisor 0x" & to_hstring(d_i) & " is too large. Must be less than 2^29."
-      severity error;
-
-   assert start_over_i /= '1' or d_i /= 0
-      report "srt_float: Division by zero."
-      severity error;
+   -- Both inputs must be less than 2^29, and the divisor must not be zero
+   inputs_valid <= n_i(31 downto 29) = "000" and d_i(31 downto 29) = "000" and d_i /= 0;
 
    srt_float_proc : process (clk_i)
       variable res_v   : std_logic_vector(67 downto 0);
@@ -102,19 +98,36 @@ begin
 
             when ROUND_ST =>
                res_v := shifted + C_ROUND;
-               q_o   <= res_v(67 downto 4);
-               state <= IDLE_ST;
+               if invalid = '1' then
+                  q_o <= (others => '1');
+               else
+                  q_o <= res_v(67 downto 4);
+               end if;
+               invalid_o <= invalid;
+               state     <= IDLE_ST;
 
          end case;
 
          -- Start a new division. The div instance is started in the same
-         -- clock cycle, since it is connected directly to start_over_i.
+         -- clock cycle (unless the inputs are invalid), see div_start below.
          if start_over_i then
             exp   <= 30 + norm_exp;
+            if inputs_valid then
+               invalid <= '0';
+            else
+               invalid <= '1';
+            end if;
             state <= BUSY_ST;
          end if;
       end if;
    end process srt_float_proc;
+
+   -- Don't start div for invalid inputs, since they can then not be
+   -- normalized. BUSY_ST then only waits until div is idle, which it normally
+   -- is already, so it ends after one clock cycle. The result from div is
+   -- ignored, since q_o is set to all ones.
+   div_start <= start_over_i when inputs_valid else
+                '0';
 
    normalizer_inst : entity work.normalizer
       port map (
@@ -132,7 +145,7 @@ begin
       )
       port map (
          clk_i   => clk_i,
-         start_i => start_over_i,
+         start_i => div_start,
          n_i     => norm_n,
          d_i     => norm_d,
          q_o     => div_q,

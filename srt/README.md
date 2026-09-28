@@ -39,15 +39,17 @@ partial remainder, and the Pentium bug. It also has a diagram of the table.
 | `ALGORITHM.md`   | Detailed explanation of the algorithm.
 
 ## Interface of `srt_float`
-* `n_i`, `d_i`: Unsigned integers. They must be less than 2^29, and `d_i` must
-  be non-zero. In simulation, an assertion reports invalid inputs when a
-  division is started.
+* `n_i`, `d_i`: Unsigned integers. They are valid if both are less than 2^29,
+  and `d_i` is not zero.
 * `q_o`: The quotient `n_i/d_i`, with 32 integer bits and 32 fractional bits,
   rounded to nearest.
 * Pulse `start_over_i` for one clock cycle to start a division. The inputs are
   only sampled in that clock cycle.
 * `busy_o` is high while the division is in progress. When it returns low,
   `q_o` is valid. A division takes 37 clock cycles.
+* `invalid_o` is set together with `q_o`, if the inputs were invalid. The
+  quotient is then all ones (the largest value), and the division only takes 3
+  clock cycles.
 
 ## Number format
 Internally (in `div.vhd` and `pla.vhd`) the values are two's complement with 4
@@ -74,10 +76,11 @@ state that depends only on the inputs, and the depth covers a complete
 division.
 
 ## Running
-* `make sim` (the default) runs the testbench. It checks a number of edge cases
-  (zero dividend, the largest inputs, and every normalization shift), and then
-  all divisions n/d with 1 <= n, d <= 1000. The expected results are calculated
-  exactly, including the rounding. This requires
+Type `make` to list the supported targets. The most important ones are:
+* `make sim` runs the testbench. It checks a number of edge cases (invalid
+  inputs, zero dividend, the largest valid inputs, and every normalization
+  shift), and then all divisions n/d with 1 <= n, d <= 1000. The expected results are
+  calculated exactly, including the rounding. This requires
   [GHDL](https://github.com/ghdl/ghdl). It takes about 15 minutes.
 * `make debug` runs only the first 10 us of the testbench (about 25 divisions),
   and writes a waveform to `srt.ghw`. Use `make show_debug` to view it in
@@ -90,6 +93,10 @@ division.
 * `make model` (or `./srt.py`) checks the quotient digit table, and tests the
   model. See below.
 * `make clean` removes the generated files.
+
+The CI (`.github/workflows/srt.yml`) runs `make model`, `make sim`, and
+`make formal` on every pull request, and every push to master, that changes
+this directory.
 
 ## The model
 `srt.py` is a bit-exact model of `srt_float`, written in Python using
