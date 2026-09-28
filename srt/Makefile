@@ -43,7 +43,7 @@ model:
 # Diagram of the table
 #######################
 
-# The diagram is included in the README as pla.svg
+# The diagram is included in ALGORITHM.md as pla.svg
 pla_steps.tex: srt.py
 	./srt.py --tikz > $@
 
