@@ -16,13 +16,14 @@ library ieee;
 -- The input format is the same as in div.vhd: two's complement with 4 integer
 -- bits including the sign, and d must be normalized (1 <= d < 2).
 --
--- The table also works if the partial remainder is kept in carry-save form
--- (a sum and a carry), like in the Pentium. Then only the top 7 bits of the
--- sum and the carry are added, so the table may see n one row too low. So
--- each entry must hold a digit that is valid not just for its own row of n,
--- but also for the row above. The digit is therefore selected by rounding n/d
--- to the nearest integer at the centre of this region, i.e. at the centre of
--- two rows of n and one column of d. See get_q, and ALGORITHM.md.
+-- div.vhd keeps the partial remainder in carry-save form (a sum and a carry),
+-- like the Pentium. Only the top 7 bits of the sum and the carry are added
+-- for the table lookup, so the table may see n one row too low. So each entry
+-- must hold a digit that is valid not just for its own row of n, but also for
+-- the row above. The digit is therefore selected by rounding n/d to the
+-- nearest integer at the centre of this region, i.e. at the centre of two
+-- rows of n and one column of d. See get_q, and ALGORITHM.md. The table also
+-- works if n is calculated exactly.
 --
 -- This is a purely combinatorial block.
 

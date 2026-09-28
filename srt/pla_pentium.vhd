@@ -11,25 +11,26 @@ library ieee;
 -- The article shows both tables as images, which were read cell by cell into
 -- C_ROWS below. C_ROWS has the same layout as the images: one row for each
 -- value of n, from +7.875 at the top to -8 at the bottom, and one column for
--- each value of d, from 1.0000 on the left to 1.1111 on the right. Each entry is |q|, and the sign of q is
--- taken from the sign of n, just like in pla.vhd. The index into the table is
--- also the same as in pla.vhd.
+-- each value of d, from 1.0000 on the left to 1.1111 on the right. Each entry
+-- is |q|, and the sign of q is taken from the sign of n, just like in pla.vhd.
+-- The index into the table is also the same as in pla.vhd.
 --
 -- The original table (G_FIXED = false) has five missing entries, marked below.
 -- They should hold 2, but hold 0. The unused entries above the +2 region and
 -- below the -2 region also hold 0. In the fixed table (G_FIXED = true), all of
 -- these entries hold 2. Otherwise the two tables are identical.
 --
--- With this divider, the missing entries are never used: div.vhd calculates
--- the partial remainder n exactly, and then n stays well below the missing
--- entries (see "./srt.py --pla pentium"). The Pentium instead kept n in
--- carry-save form, and the table lookup could then end up one row too low,
--- which in rare cases leads to a missing entry. The model srt.py can simulate
--- this, see "./srt.py 4195835 3145727 --pla pentium --carry-save".
+-- div.vhd keeps the partial remainder n in carry-save form, like the Pentium,
+-- so the table lookup may see n one row too low. With the original table this
+-- in rare cases leads to a missing entry, and a wrong result: div.vhd then has
+-- the Pentium's FDIV bug, e.g. for 4195835/3145727 (see tb_srt.vhd, and
+-- "./srt.py 4195835 3145727 --pla pentium"). If n were calculated exactly,
+-- the missing entries would never be used (see "./srt.py --pla pentium
+-- --exact").
 --
 -- The Pentium's table picks the larger digit where both are allowed, so the
 -- partial remainder has a slightly larger range than with pla.vhd:
--- -5 < n < 4.5 instead of -4.5 < n < 4. It still satisfies |n/d| < 8/3.
+-- -5 < n < 5 instead of -4.5 < n < 4.5. It still satisfies |n/d| < 8/3.
 --
 -- This is a purely combinatorial block.
 

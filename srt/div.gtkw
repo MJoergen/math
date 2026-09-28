@@ -29,6 +29,9 @@ div.busy_o
 div.q_o[35:0]
 div.iter[4:0]
 div.n[15:0]
+div.n_s[15:0]
+div.n_c[15:0]
+div.n_est[15:0]
 div.d[15:0]
 @28
 div.pla_q[2:0]

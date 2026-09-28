@@ -28,8 +28,9 @@ library ieee;
 --
 -- The generic G_PLA selects the quotient digit table, see div.vhd. For
 -- instance, "make sim PLA=pentium" runs the testbench with the original
--- Pentium table. That gives the correct results too, since the missing
--- entries are never used by this divider, see pla_pentium.vhd.
+-- Pentium table. Then the divider has the Pentium's FDIV bug, and the
+-- testbench verifies that 4195835/3145727 gives the Pentium's wrong result.
+-- The other divisions are still correct, since the bug is so rare.
 
 entity tb_srt is
    generic (
@@ -155,6 +156,33 @@ begin
                ". invalid_o is not set";
       end procedure verify_invalid;
 
+      -- Calculate 4195835/3145727, the division that exposed the Pentium's
+      -- FDIV bug. With the original Pentium table, this divider has the same
+      -- bug: it gives the same wrong result as the Pentium, and as the model
+      -- ("./srt.py 4195835 3145727 --pla pentium"). Otherwise the result is
+      -- correct.
+      procedure verify_fdiv_bug is
+         constant C_WRONG : std_logic_vector(63 downto 0) := X"00000001556FEC72";
+      begin
+         if G_PLA /= "pentium" then
+            verify_division(4195835, 3145727);
+            return;
+         end if;
+
+         report "verify: n=4195835, d=3145727 (FDIV bug)";
+         n          <= to_stdlogicvector(4195835, 32);
+         d          <= to_stdlogicvector(3145727, 32);
+         start_over <= '1';
+         wait until rising_edge(clk);
+         start_over <= '0';
+         wait until rising_edge(clk);
+         assert busy = '1';
+         wait until busy = '0';
+         assert q = C_WRONG
+            report "FDIV: Calculating 4195835/3145727. Got 0x" & to_hstring(q) &
+               ", expected the Pentium's wrong result 0x" & to_hstring(C_WRONG);
+      end procedure verify_fdiv_bug;
+
       variable start_time : time;
       variable end_time   : time;
 
@@ -214,6 +242,9 @@ begin
       verify_division(C_MAX - 1, C_MAX);
       verify_division(1, C_MAX);
       verify_division(123456789, 1000);
+
+      -- The division that exposed the Pentium's FDIV bug
+      verify_fdiv_bug;
 
       -- Every normalization shift, with the smallest and largest mantissas
       for i in 0 to 28 loop
