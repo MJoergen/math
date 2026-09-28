@@ -2,10 +2,6 @@
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
 [*] Mon Jan 13 09:43:17 2025
 [*]
-[dumpfile] "/home/mike/git/MJoergen/math/srt/srt_core_bmc/engine_0/trace.vcd"
-[dumpfile_mtime] "Mon Jan 13 09:42:22 2025"
-[dumpfile_size] 5130
-[savefile] "/home/mike/git/MJoergen/math/srt/srt_core.gtkw"
 [timestart] 0
 [size] 1610 1030
 [pos] -1 -1

@@ -112,8 +112,8 @@ architecture synthesis of srt_core is
    signal   pla_mag : mag_type;
    signal   pla_q   : integer range -2 to 2;
 
-   -- Any normalized value will do. This just keeps the assertions happy
-   -- before the first division.
+   -- The initial value of d, before the first division. Any normalized value
+   -- will do. The initial value of col must match it, see f_col.
    function get_init_d return std_logic_vector is
       variable res_v : std_logic_vector(G_SIZE - 1 downto 0);
    begin
