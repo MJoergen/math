@@ -31,9 +31,9 @@ prove32: depth 4
 smtbmc
 
 [script]
-cover: ghdl --std=08 -gG_SIZE=16 div.vhd div.psl pla.vhd -e div
-prove: ghdl --std=08 -gG_SIZE=16 div.vhd div.psl pla.vhd -e div
-prove32: ghdl --std=08 -gG_SIZE=32 div.vhd div.psl pla.vhd -e div
+cover: ghdl --std=08 -gG_SIZE=16 pla.vhd pla_pentium.vhd div.vhd div.psl -e div
+prove: ghdl --std=08 -gG_SIZE=16 pla.vhd pla_pentium.vhd div.vhd div.psl -e div
+prove32: ghdl --std=08 -gG_SIZE=32 pla.vhd pla_pentium.vhd div.vhd div.psl -e div
 prep -top div
 memory_map -rom-only
 
@@ -41,3 +41,4 @@ memory_map -rom-only
 div.psl
 div.vhd
 pla.vhd
+pla_pentium.vhd

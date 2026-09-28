@@ -226,3 +226,38 @@ $\frac{1}{8}$, namely those where this makes the allowed region smaller. The
 top edge is not one of them, but it was moved down anyway. Only five of the 16
 missing entries affect the result, and because of the carry-save adder even
 these are only reached in about 1 in 9 billion random divisions.
+
+The fix filled all the unused entries above the $q = 2$ region and below the
+$q = -2$ region with 2, which also made the PLA smaller.
+
+### Both Pentium tables in this divider
+[`pla_pentium.vhd`](pla_pentium.vhd) holds the Pentium's table, both the
+original and the fixed version, copied from the article. It can replace
+`pla.vhd` with the generic `G_PLA` of `div.vhd`, e.g. `make sim PLA=pentium`.
+The Pentium's table picks the larger digit where both are allowed, so the
+partial remainder has a slightly larger range: $-5 < n < 4.5$.
+
+In this divider even the original table gives the correct result, since
+`div.vhd` calculates the partial remainder exactly. Then the partial remainder
+stays below the missing entries: `./srt.py --pla pentium` shows that the table
+check fails for 21 entries along the top edge (all of them only touch the
+region $|n| < \frac{8}{3}d$ at a corner), and that each of them is outside the
+range of the partial remainder. (The article counts 16 missing entries: those
+reached in its simulation of a carry-save divider.)
+
+The bug needs the carry-save partial remainder, which `srt.py` can simulate:
+```
+./srt.py 4195835 3145727 --pla pentium --carry-save --trace
+```
+This gives $1.3337390688$ instead of $1.3338204492$, the famous wrong result of
+the Pentium. The trace shows how: In iteration 8 the partial remainder is
+$n = 3.943$, but the carry-save estimate uses the row below, $3.875$. For this
+divisor ($d = 1.0111\ldots$ in binary) that is one of the five missing entries,
+so $q = 0$ instead of $2$. The next partial remainder is then far outside its
+bounds, and the quotient never recovers. With `--pla pentium_fixed` the result
+is correct.
+
+The table in `pla.vhd` does not allow for the carry-save estimate: with
+`./srt.py --carry-save`, about 1 in 80 random divisions gives a wrong result.
+Both Pentium tables give correct results with `--carry-save` in the same test
+(the original table fails too rarely to show up).

@@ -25,8 +25,16 @@ library ieee;
 --
 -- At the end it reports the average number of clock cycles per division, and
 -- how many results had a fractional part that was too low or too high.
+--
+-- The generic G_PLA selects the quotient digit table, see div.vhd. For
+-- instance, "make sim PLA=pentium" runs the testbench with the original
+-- Pentium table. That gives the correct results too, since the missing
+-- entries are never used by this divider, see pla_pentium.vhd.
 
 entity tb_srt is
+   generic (
+      G_PLA : string := "srt"
+   );
 end entity tb_srt;
 
 architecture simulation of tb_srt is
@@ -48,6 +56,9 @@ begin
    clk <= running and not clk after 5 ns;
 
    srt_float_inst : entity work.srt_float
+      generic map (
+         G_PLA => G_PLA
+      )
       port map (
          clk_i         => clk,
          n_i           => n,
@@ -177,6 +188,7 @@ begin
       wait for 100 ns;
       wait until rising_edge(clk);
 
+      report "Using the quotient digit table """ & G_PLA & """";
       report "Testing edge cases";
 
       -- Invalid inputs: Division by zero, and inputs of 2^29 or more. The next

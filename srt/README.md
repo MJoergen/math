@@ -29,6 +29,7 @@ partial remainder, and the Pentium bug. It also has a diagram of the table.
 | [`normalizer.vhd`](normalizer.vhd) | Shifts dividend and divisor into the range [1, 2).
 | [`div.vhd`](div.vhd) | The SRT divider itself. Operates on normalized values.
 | [`pla.vhd`](pla.vhd) | The quotient digit selection table.
+| [`pla_pentium.vhd`](pla_pentium.vhd) | The Pentium's table, with and without the FDIV bug. Can replace `pla.vhd`.
 | [`shifter.vhd`](shifter.vhd) | Shifts the quotient back to undo the normalization.
 | [`tb_srt.vhd`](tb_srt.vhd) | Testbench for `srt_float`.
 | [`div.psl`](div.psl), [`div.sby`](div.sby) | Formal verification of `div`.
@@ -85,6 +86,8 @@ Type `make` to list the supported targets. The most important ones are:
   across the whole range of valid inputs. The expected results are calculated
   exactly, including the rounding. This requires
   [GHDL](https://github.com/ghdl/ghdl). It takes about 30 seconds.
+  `make sim PLA=pentium` runs it with the Pentium's original table instead
+  (or `PLA=pentium_fixed`).
 * `make debug` runs only the first 10 us of the testbench (about 25 divisions),
   and writes a waveform to `srt.ghw`. Use `make show_debug` to view it in
   GTKWave.
@@ -124,6 +127,13 @@ modified.
   that give a wrong result. A failing entry outside the range of the partial
   remainder is reported as never used. Use `--remove=-2.5:1.0` for a negative
   n.
+* `./srt.py --pla pentium` uses the Pentium's original table from
+  `pla_pentium.vhd` instead (`--pla pentium_fixed` for the fixed one).
+  `--carry-save` keeps the partial remainder in carry-save form, like the
+  Pentium. Together they reproduce the FDIV bug:
+  `./srt.py 4195835 3145727 --pla pentium --carry-save` gives the Pentium's
+  wrong result. See
+  [The Pentium FDIV bug](ALGORITHM.md#the-pentium-fdiv-bug).
 
 The search works backwards from the table entry to the dividend, because some
 table entries may be used by very few divisions. In the Pentium, only about

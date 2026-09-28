@@ -33,13 +33,22 @@ library ieee;
 -- bits, and after the last iteration quot is the result. See the table in
 -- div_proc.
 --
+-- The generic G_PLA selects the quotient digit table:
+--   "srt"           : pla.vhd (the default).
+--   "pentium"       : pla_pentium.vhd, the original Pentium table with the
+--                     FDIV bug.
+--   "pentium_fixed" : pla_pentium.vhd, the fixed Pentium table.
+-- With the Pentium tables the partial remainder has a larger range, see
+-- pla_pentium.vhd. The formal verification only covers pla.vhd.
+--
 -- Usage: Pulse start_i for one clock cycle. The inputs n_i and d_i are only
 -- sampled in that cycle. The result is valid on q_o when busy_o returns low.
 
 entity div is
    generic (
       G_SIZE  : natural;
-      G_DEBUG : boolean
+      G_DEBUG : boolean;
+      G_PLA   : string := "srt"
    );
    port (
       clk_i   : in    std_logic;
@@ -251,16 +260,40 @@ begin
       end if;
    end process div_proc;
 
-   pla_inst : entity work.pla
-      generic map (
-         G_SIZE  => G_SIZE,
-         G_DEBUG => G_DEBUG
-      )
-      port map (
-         n_i => n,
-         d_i => d,
-         q_o => pla_q
-      ); -- pla_inst
+   pla_gen : if G_PLA = "srt" generate
+
+      pla_inst : entity work.pla
+         generic map (
+            G_SIZE  => G_SIZE,
+            G_DEBUG => G_DEBUG
+         )
+         port map (
+            n_i => n,
+            d_i => d,
+            q_o => pla_q
+         ); -- pla_inst
+
+   elsif G_PLA = "pentium" or G_PLA = "pentium_fixed" generate
+
+      pla_pentium_inst : entity work.pla_pentium
+         generic map (
+            G_SIZE  => G_SIZE,
+            G_DEBUG => G_DEBUG,
+            G_FIXED => G_PLA = "pentium_fixed"
+         )
+         port map (
+            n_i => n,
+            d_i => d,
+            q_o => pla_q
+         ); -- pla_pentium_inst
+
+   else generate
+
+      assert false
+         report "div: Unknown G_PLA """ & G_PLA & """"
+         severity failure;
+
+   end generate pla_gen;
 
 end architecture synthesis;
 
