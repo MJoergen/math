@@ -40,6 +40,21 @@ model:
 
 
 #######################
+# Diagram of the table
+#######################
+
+# The diagram is included in the README as pla.svg
+pla_steps.tex: srt.py
+	./srt.py --tikz > $@
+
+pla.pdf: pla.tex pla_steps.tex
+	latexmk -pdf pla.tex
+
+pla.svg: pla.pdf
+	pdftocairo -svg $< $@
+
+
+#######################
 # Formal verification
 #######################
 
@@ -63,5 +78,5 @@ show_cover:
 
 .PHONY: clean
 clean:
-	rm -rf __pycache__ tb_srt srt.ghw work-obj08.cf *.o $(DUT)_cover $(DUT)_bmc
+	rm -rf __pycache__ pla.pdf pla.aux pla.log pla.fls pla.fdb_latexmk tb_srt srt.ghw work-obj08.cf *.o $(DUT)_cover $(DUT)_bmc
 
