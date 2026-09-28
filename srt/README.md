@@ -14,6 +14,14 @@ Here $d$ is the divisor, and $n$ is the partial remainder, which starts out as
 the dividend $N$. Both are normalized first, so $1 \le d < 2$ and
 $1 \le N < 2$ (or $N = 0$).
 
+The quotient digit $q$ is one of $\{-2, -1, 0, 1, 2\}$, and it is selected by
+a small lookup table (`PLA`) that only looks at the top 7 bits of $n$ and the
+top 4 bits of $d$ (after the leading one). This works because the digit only
+needs to be approximately right: a slightly wrong digit is corrected by the
+later digits, as long as the partial remainder stays within
+$|n| \le \frac{8}{3}d$. The sections below explain these digits, why this
+bound holds, and why so few bits are enough.
+
 ### Radix 4 and the redundant digits
 Radix 4 means that each iteration produces one base-4 digit of the quotient.
 So the quotient gains two bits per iteration, and the partial remainder is
