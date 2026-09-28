@@ -1,9 +1,12 @@
 name: srt
 
 # Test the SRT divider in the directory srt. This only runs when something in
-# that directory (or this file) changes.
+# that directory (or this file) changes: on pull requests, and on pushes to
+# master. (Running on all pushes would test each pull request twice.)
 on:
   push:
+    branches:
+      - master
     paths:
       - 'srt/**'
       - '.github/workflows/srt.yml'
@@ -11,6 +14,11 @@ on:
     paths:
       - 'srt/**'
       - '.github/workflows/srt.yml'
+
+# When a pull request is updated, cancel the run for the previous commit
+concurrency:
+  group: srt-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 defaults:
   run:

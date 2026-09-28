@@ -93,7 +93,8 @@ Type `make` to list the supported targets. The most important ones are:
 * `make clean` removes the generated files.
 
 The CI (`.github/workflows/srt.yml`) runs `make model`, `make sim`, and
-`make formal` on every push and pull request that changes this directory.
+`make formal` on every pull request, and every push to master, that changes
+this directory.
 
 ## The model
 `srt.py` is a bit-exact model of `srt_float`, written in Python using
