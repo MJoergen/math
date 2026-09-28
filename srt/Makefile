@@ -35,9 +35,11 @@ debug: $(SIM_SRC) ## Run the first 10 us of the testbench, and write a waveform 
 	ghdl -m --std=08 -fexplicit tb_srt
 	ghdl -r --std=08 tb_srt -gG_PLA=$(PLA) --assert-level=error --wave=srt.ghw --stop-time=10us
 
+# srt.gtkw selects the most relevant signals of srt_float, normalizer, div,
+# and shifter
 .PHONY: show_debug
 show_debug: ## Show the waveform from "make debug" in GTKWave
-	gtkwave srt.ghw
+	gtkwave srt.ghw srt.gtkw
 
 
 #######################

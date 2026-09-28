@@ -1,0 +1,78 @@
+[*]
+[*] GTKWave save file for the waveform srt.ghw from "make debug"
+[*]
+[timestart] 0
+[size] 1610 1030
+[pos] -1 -1
+*-28.150000 0 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] top.
+[treeopen] top.tb_srt.
+[treeopen] top.tb_srt.srt_float_inst.
+[sst_width] 249
+[signals_width] 300
+[sst_expanded] 1
+[sst_vpaned_height] 298
+@800200
+-srt_float
+@28
+top.tb_srt.clk
+top.tb_srt.start_over
+@22
+top.tb_srt.n[31:0]
+top.tb_srt.d[31:0]
+@28
+top.tb_srt.busy
+@22
+top.tb_srt.q[63:0]
+@28
+top.tb_srt.invalid
+top.tb_srt.srt_float_inst.state
+@1000200
+-srt_float
+@800200
+-normalizer
+@22
+top.tb_srt.srt_float_inst.norm_n[31:0]
+top.tb_srt.srt_float_inst.norm_d[31:0]
+@420
+top.tb_srt.srt_float_inst.norm_exp
+@1000200
+-normalizer
+@800200
+-div
+@28
+top.tb_srt.srt_float_inst.div_inst.start_i
+top.tb_srt.srt_float_inst.div_inst.state
+@24
+top.tb_srt.srt_float_inst.div_inst.iter
+@22
+top.tb_srt.srt_float_inst.div_inst.d[31:0]
+top.tb_srt.srt_float_inst.div_inst.col[11:0]
+top.tb_srt.srt_float_inst.div_inst.n[31:0]
+top.tb_srt.srt_float_inst.div_inst.n_s[31:0]
+top.tb_srt.srt_float_inst.div_inst.n_c[31:0]
+top.tb_srt.srt_float_inst.div_inst.n_est[31:0]
+@28
+top.tb_srt.srt_float_inst.div_inst.pla_mag[1:0]
+@420
+top.tb_srt.srt_float_inst.div_inst.pla_q
+top.tb_srt.srt_float_inst.div_inst.digit
+@22
+top.tb_srt.srt_float_inst.div_inst.quot[67:0]
+top.tb_srt.srt_float_inst.div_inst.quot_m1[67:0]
+@28
+top.tb_srt.srt_float_inst.div_inst.busy_o
+@22
+top.tb_srt.srt_float_inst.div_inst.q_o[67:0]
+@1000200
+-div
+@800200
+-shifter
+@24
+top.tb_srt.srt_float_inst.exp
+@22
+top.tb_srt.srt_float_inst.shifter_q[67:0]
+@1000200
+-shifter
+[pattern_trace] 1
+[pattern_trace] 0
