@@ -61,7 +61,8 @@ The formal verification checks $-4 \le n < 4.5$.
 
 ## Formal verification
 The formal verification (`div.psl`, `div.sby`) checks `div` with `G_SIZE=16`
-for all normalized inputs, including a zero dividend:
+and with `G_SIZE=32` (as used in `srt_float`), for all normalized inputs,
+including a zero dividend:
 * The partial remainder stays within its bounds, and never overflows.
 * The quotient `q_o` matches the digits chosen by the PLA.
 * The quotient is correct: it differs from the exact value n/d by less than
@@ -71,25 +72,28 @@ SMT solvers are slow at multiplication, so instead of calculating q*d directly,
 `div.psl` tracks q*d alongside the divider using only additions, and checks a
 few invariants in every clock cycle. See the comments in `div.psl`.
 
-Bounded model checking is sufficient, because every division starts from a
-state that depends only on the inputs, and the depth covers a complete
-division.
+The properties are proven with k-induction, so they hold in every clock cycle,
+not just for a bounded number of them. This takes about a minute. The
+invariants that are checked in every clock cycle are what makes this possible:
+each clock cycle is a small local step for the solver.
 
 ## Running
 Type `make` to list the supported targets. The most important ones are:
 * `make sim` runs the testbench. It checks a number of edge cases (invalid
   inputs, zero dividend, the largest valid inputs, and every normalization
-  shift), and then all divisions n/d with 1 <= n, d <= 1000. The expected results are
-  calculated exactly, including the rounding. This requires
-  [GHDL](https://github.com/ghdl/ghdl). It takes about 15 minutes.
+  shift), all divisions n/d with 1 <= n, d <= 100, and 20000 random divisions
+  across the whole range of valid inputs. The expected results are calculated
+  exactly, including the rounding. This requires
+  [GHDL](https://github.com/ghdl/ghdl). It takes about 30 seconds.
 * `make debug` runs only the first 10 us of the testbench (about 25 divisions),
   and writes a waveform to `srt.ghw`. Use `make show_debug` to view it in
   GTKWave.
 * `make formal` runs the formal verification. This requires
   [SymbiYosys](https://github.com/YosysHQ/sby), the GHDL plugin for Yosys, and
-  the [Yices 2](https://github.com/SRI-CSL/yices2) solver. The BMC task takes
-  about 25 minutes.
-  Use `make show_bmc` or `make show_cover` to view the traces in GTKWave.
+  the [Yices 2](https://github.com/SRI-CSL/yices2) solver. It takes about a
+  minute.
+  If it fails, use `make show_prove` or `make show_induct` to view the
+  counterexample in GTKWave, and `make show_cover` to view the cover trace.
 * `make model` (or `./srt.py`) checks the quotient digit table, and tests the
   model. See below.
 * `make clean` removes the generated files.

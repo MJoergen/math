@@ -1,6 +1,7 @@
 library ieee;
    use ieee.std_logic_1164.all;
    use ieee.numeric_std_unsigned.all;
+   use ieee.math_real.all;
 
 -- This is a testbench for srt_float.
 --
@@ -9,7 +10,14 @@ library ieee;
 -- (2^29 - 1), and all combinations of powers of two, which exercise every
 -- possible normalization shift.
 --
--- Then it performs all divisions n/d with 1 <= n, d <= 1000.
+-- Then it performs all divisions n/d with 1 <= n, d <= 100, and finally a
+-- number of pseudo-random divisions. The random inputs have a random number of
+-- bits (up to 29), so they cover the whole range of valid inputs, including
+-- every normalization shift and all bit patterns of the quotient.
+--
+-- The divider itself (div.vhd) is formally verified for all inputs, so this
+-- testbench mainly verifies srt_float around it: normalization, rounding,
+-- invalid inputs, and the handshake.
 --
 -- Each result is compared against the expected value. The integer part is
 -- calculated using integer division, and the fractional part using binary
@@ -139,11 +147,32 @@ begin
       variable start_time : time;
       variable end_time   : time;
 
-      constant MAX_D : natural := 1000;
-      constant MAX_N : natural := 1000;
+      constant MAX_D : natural := 100;
+      constant MAX_N : natural := 100;
 
       -- The largest input value supported by srt_float
       constant C_MAX : natural := 2 ** 29 - 1;
+
+      -- The number of random divisions, and the random seeds (fixed, so the
+      -- test is reproducible)
+      constant C_NUM_RANDOM : natural := 20000;
+      variable seed1_v      : positive := 1;
+      variable seed2_v      : positive := 42;
+      variable n_v          : natural;
+      variable d_v          : natural;
+
+      -- Return a random value 0 <= x < 2^e, where the number of bits e is
+      -- itself random, between 0 and 29. So small and large values are both
+      -- likely.
+      impure function random_value return natural is
+         variable r_v    : real;
+         variable bits_v : natural range 0 to 29;
+      begin
+         uniform(seed1_v, seed2_v, r_v);
+         bits_v := natural(floor(r_v * 30.0));
+         uniform(seed1_v, seed2_v, r_v);
+         return natural(floor(r_v * 2.0 ** bits_v));
+      end function random_value;
    begin
       wait for 100 ns;
       wait until rising_edge(clk);
@@ -184,17 +213,28 @@ begin
          end loop;
       end loop;
 
+      report "Testing all divisions n/d with 1 <= n, d <= " & to_string(MAX_N);
       start_time := now;
-      report "Test started";
       for di in 1 to MAX_D loop
          for ni in 1 to MAX_N loop
             verify_division(ni, di);
          end loop;
       end loop;
       end_time := now;
-      report "Test finished, " &
-         to_string(real((end_time-start_time) / 10 ns) / real(MAX_D*MAX_N)) &
+      report to_string(real((end_time-start_time) / 10 ns) / real(MAX_D*MAX_N)) &
          " clock cycles per division";
+
+      report "Testing " & to_string(C_NUM_RANDOM) & " random divisions";
+      for i in 1 to C_NUM_RANDOM loop
+         n_v := random_value;
+         d_v := random_value;
+         if d_v = 0 then
+            d_v := 1;
+         end if;
+         verify_division(n_v, d_v);
+      end loop;
+
+      report "Test finished";
       report "low_count=" & to_string(low_count);
       report "high_count=" & to_string(high_count);
       wait until rising_edge(clk);

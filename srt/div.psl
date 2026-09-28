@@ -2,12 +2,12 @@
 -- In addition to the properties in this file, the assertions inside div.vhd
 -- (e.g. in the function get_n) are verified too.
 --
--- Why bounded model checking is enough here: Every division starts by
--- loading all the state (n, d, iter, res_p, res_n) from the inputs. So the
--- behaviour of a division depends only on n_i and d_i, and not on anything
--- that happened before. The BMC depth in div.sby is long enough to cover a
--- complete division, and n_i and d_i are unconstrained (apart from being
--- normalized), so this checks every possible division.
+-- The properties are proven with k-induction (see div.sby): If they hold in a
+-- few consecutive clock cycles, then they also hold in the next one. This
+-- works because the assertions below check invariants in every clock cycle,
+-- so each clock cycle is a small local step. Some extra assertions (marked
+-- "for induction") rule out states that can never be reached, but from which
+-- induction could otherwise start.
 
 vunit div_inst (div(synthesis))
 {
@@ -161,7 +161,11 @@ vunit div_inst (div(synthesis))
    f_n4_check  : assert always f_started = '1' -> f_n4_ok;
    f_invariant : assert always f_started = '1' -> f_inv_ok;
    f_remainder : assert always f_started = '1' -> f_rem_ok;
-   f_digits    : assert always f_started = '1' -> res_p - res_n = f_q;
+   f_digits    : assert always f_started = '1' -> quot = f_q and quot_m1 = f_q - 1;
+
+   -- For induction: The stored divisor and dividend are valid
+   f_d_norm    : assert always f_started = '1' -> d(G_SIZE-1 downto G_SIZE-4) = "0001";
+   f_n_valid   : assert always f_started = '1' -> (f_n(G_SIZE-1 downto G_SIZE-4) = "0001" or f_n = 0);
 
    -- When a division finishes, verify that the quotient matches the digits.
    -- This is modulo 2^(2*G_SIZE+4), but f_result below shows that the true
@@ -179,6 +183,11 @@ vunit div_inst (div(synthesis))
 
    -- Require reset at startup.
    f_reset : assume {start_i};
+
+   -- For induction: The helper signals are only invalid before the first
+   -- division is started, i.e. in the first clock cycle, where f_reset
+   -- requires a start anyway.
+   f_start_first : assume always f_started = '0' -> start_i = '1';
 
    -- Require valid input: The divisor must be normalized, and the dividend
    -- must be either normalized or zero.

@@ -36,10 +36,10 @@ jobs:
       - name: Check that the diagram data matches the table
         run: ./srt.py --tikz | diff -u pla_steps.tex -
 
-  # Run the complete testbench (about 15 minutes)
+  # Run the complete testbench (about 30 seconds)
   sim:
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
       - name: Install GHDL
@@ -47,16 +47,16 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ghdl
       - name: Run the testbench
-        # The testbench reports every division, i.e. over a million lines, so
-        # these are left out of the log.
+        # The testbench reports every division, so these lines are left out of
+        # the log.
         run: make sim 2>&1 | grep -v 'verify:' | tee sim.log
       - name: Check that the testbench ran to the end
         run: grep 'Test finished' sim.log
 
-  # Run the formal verification of div.vhd (about 25 minutes)
+  # Run the formal verification of div.vhd (about a minute)
   formal:
     runs-on: ubuntu-24.04
-    timeout-minutes: 90
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
       - name: Install GHDL and Yosys

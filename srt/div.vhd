@@ -24,9 +24,14 @@ library ieee;
 --              1/2 < n_i/d_i < 2 the first digit is always 1 or 2
 --              (unless n_i = 0).
 --
--- The positive and negative quotient digits are accumulated in two separate
--- registers (res_p and res_n), and subtracted only once at the end. This
--- avoids a long carry chain in every iteration.
+-- The quotient digits are converted to an ordinary binary number on the fly,
+-- without any carry chain: Two registers hold the quotient so far (quot) and
+-- the quotient minus one unit of the last digit (quot_m1). A negative digit
+-- q is then handled by appending (4 + q) to quot_m1, since
+--    4*quot + q = 4*quot_m1 + (4 + q)
+-- So each iteration only selects one of the two registers and appends two
+-- bits, and after the last iteration quot is the result. See the table in
+-- div_proc.
 --
 -- Usage: Pulse start_i for one clock cycle. The inputs n_i and d_i are only
 -- sampled in that cycle. The result is valid on q_o when busy_o returns low.
@@ -67,8 +72,8 @@ architecture synthesis of div is
 
    signal   n     : std_logic_vector(G_SIZE - 1 downto 0) := (others => '0'); -- Partial remainder
    signal   d     : std_logic_vector(G_SIZE - 1 downto 0) := get_init_d;      -- Divisor
-   signal   res_p : std_logic_vector(2 * G_SIZE + 3 downto 0);                -- Positive digits
-   signal   res_n : std_logic_vector(2 * G_SIZE + 3 downto 0);                -- Negative digits
+   signal   quot    : std_logic_vector(2 * G_SIZE + 3 downto 0);              -- Quotient so far
+   signal   quot_m1 : std_logic_vector(2 * G_SIZE + 3 downto 0);              -- quot - 1
 
    type     state_type is (IDLE_ST, BUSY_ST);
    signal   state : state_type                            := IDLE_ST;
@@ -84,26 +89,6 @@ architecture synthesis of div is
          return 1 + not arg;
       end if;
    end function abs_slv;
-
-   -- Convert the magnitude of a quotient digit to two bits
-   pure function digit_to_slv (
-      arg : natural range 0 to 2
-   ) return std_logic_vector is
-   begin
-      --
-      case arg is
-
-         when 1 =>
-            return "01";
-
-         when 2 =>
-            return "10";
-
-         when others =>
-            return "00";
-
-      end case;
-   end function digit_to_slv;
 
    -- Calculate the next partial remainder 4*(n - q*d).
    -- The assertions verify the invariants of the SRT algorithm, and are used
@@ -177,8 +162,10 @@ begin
              '0';
 
    div_proc : process (clk_i)
-      variable res_p_v : std_logic_vector(2 * G_SIZE + 3 downto 0);
-      variable res_n_v : std_logic_vector(2 * G_SIZE + 3 downto 0);
+      variable quot_v    : std_logic_vector(2 * G_SIZE + 1 downto 0);
+      variable quot_m1_v : std_logic_vector(2 * G_SIZE + 1 downto 0);
+      variable new_v     : std_logic_vector(2 * G_SIZE + 3 downto 0);
+      variable new_m1_v  : std_logic_vector(2 * G_SIZE + 3 downto 0);
    begin
       if rising_edge(clk_i) then
 
@@ -197,23 +184,51 @@ begin
 
                n <= get_n(n, d, pla_q);
 
-               -- Shift the new quotient digit into either res_p or res_n
-               if pla_q > 0 then
-                  res_p_v := res_p(2 * G_SIZE + 1 downto 0) & digit_to_slv(pla_q);
-                  res_n_v := res_n(2 * G_SIZE + 1 downto 0) & "00";
-               else
-                  res_p_v := res_p(2 * G_SIZE + 1 downto 0) & "00";
-                  res_n_v := res_n(2 * G_SIZE + 1 downto 0) & digit_to_slv(-pla_q);
-               end if;
-               res_p <= res_p_v;
-               res_n <= res_n_v;
+               -- Append the new quotient digit q (on-the-fly conversion). The
+               -- new values are 4*quot + q and 4*quot + q - 1, where
+               -- 4*quot = quot & "00", and 4*quot = quot_m1 & "00" + 4.
+               --    q  | new quot       | new quot_m1
+               --    2  | quot    & "10" | quot    & "01"
+               --    1  | quot    & "01" | quot    & "00"
+               --    0  | quot    & "00" | quot_m1 & "11"
+               --   -1  | quot_m1 & "11" | quot_m1 & "10"
+               --   -2  | quot_m1 & "10" | quot_m1 & "01"
+               quot_v    := quot(2 * G_SIZE + 1 downto 0);
+               quot_m1_v := quot_m1(2 * G_SIZE + 1 downto 0);
+
+               case pla_q is
+
+                  when 2 =>
+                     new_v    := quot_v & "10";
+                     new_m1_v := quot_v & "01";
+
+                  when 1 =>
+                     new_v    := quot_v & "01";
+                     new_m1_v := quot_v & "00";
+
+                  when -1 =>
+                     new_v    := quot_m1_v & "11";
+                     new_m1_v := quot_m1_v & "10";
+
+                  when -2 =>
+                     new_v    := quot_m1_v & "10";
+                     new_m1_v := quot_m1_v & "01";
+
+                  when others =>
+                     new_v    := quot_v & "00";
+                     new_m1_v := quot_m1_v & "11";
+
+               end case;
+
+               quot    <= new_v;
+               quot_m1 <= new_m1_v;
 
                -- In the last iteration, the result includes the digit just
                -- calculated.
                if iter < C_NUM_ITERS - 1 then
                   iter <= iter + 1;
                else
-                  q_o   <= res_p_v - res_n_v;
+                  q_o   <= new_v;
                   state <= IDLE_ST;
                end if;
 
@@ -226,12 +241,12 @@ begin
                report "div: Dividend 0x" & to_hstring(n_i) & " is not normalized.";
             f_valid_d : assert d_i(G_SIZE - 1 downto G_SIZE - 4) = "0001"
                report "div: Divisor 0x" & to_hstring(d_i) & " is not normalized.";
-            n     <= n_i;
-            d     <= d_i;
-            iter  <= 0;
-            res_p <= (others => '0');
-            res_n <= (others => '0');
-            state <= BUSY_ST;
+            n       <= n_i;
+            d       <= d_i;
+            iter    <= 0;
+            quot    <= (others => '0');                -- 0
+            quot_m1 <= (others => '1');                -- -1
+            state   <= BUSY_ST;
          end if;
       end if;
    end process div_proc;

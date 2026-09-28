@@ -19,7 +19,7 @@ SIM_SRC = srt_float.vhd pla.vhd normalizer.vhd div.vhd shifter.vhd tb_srt.vhd
 # Run the complete testbench. No waveform is written, since a waveform of the
 # complete run is several GB, and makes GHDL crash.
 .PHONY: sim
-sim: $(SIM_SRC) ## Run the complete testbench (takes about 15 minutes)
+sim: $(SIM_SRC) ## Run the complete testbench (takes about 30 seconds)
 	ghdl -i --std=08 --work=work $^
 	ghdl -m --std=08 -fexplicit tb_srt
 	ghdl -r --std=08 tb_srt --assert-level=error --stop-time=400ms
@@ -112,14 +112,18 @@ DUT  = div
 SRC += $(DUT).vhd
 SRC += pla.vhd
 
-# This runs both the "cover" and the "bmc" tasks defined in $(DUT).sby
+# This runs all the tasks defined in $(DUT).sby
 .PHONY: formal
-formal: $(DUT).sby $(DUT).psl $(SRC) ## Run the formal verification of div.vhd (takes about 25 minutes)
+formal: $(DUT).sby $(DUT).psl $(SRC) ## Run the formal verification of div.vhd (takes about a minute)
 	sby --yosys "yosys -m ghdl" -f $(DUT).sby
 
-.PHONY: show_bmc
-show_bmc: ## Show the counterexample from a failing "make formal" in GTKWave
-	gtkwave $(DUT)_bmc/engine_0/trace.vcd $(DUT).gtkw
+.PHONY: show_prove
+show_prove: ## Show the counterexample from a failing "make formal" in GTKWave
+	gtkwave $(DUT)_prove/engine_0/trace.vcd $(DUT).gtkw
+
+.PHONY: show_induct
+show_induct: ## Show the trace from a failing induction step in GTKWave
+	gtkwave $(DUT)_prove/engine_0/trace_induct.vcd $(DUT).gtkw
 
 .PHONY: show_cover
 show_cover: ## Show the cover trace from "make formal" in GTKWave
@@ -128,7 +132,7 @@ show_cover: ## Show the cover trace from "make formal" in GTKWave
 
 .PHONY: clean
 clean: ## Remove the generated files
-	rm -rf __pycache__ pla.pdf pla.aux pla.log pla.fls pla.fdb_latexmk tb_srt srt.ghw work-obj08.cf *.o $(DUT)_cover $(DUT)_bmc
+	rm -rf __pycache__ pla.pdf pla.aux pla.log pla.fls pla.fdb_latexmk tb_srt srt.ghw work-obj08.cf *.o $(DUT)_cover $(DUT)_prove $(DUT)_prove32
 	rm -rf vivado_build.tcl post_synth.dcp post_route.dcp timing_summary.rpt utilization.rpt $(VIVADO_TOP).bit
 	rm -rf vivado*.jou vivado*.log usage_statistics_webtalk* .Xil
 	rm -rf clockInfo.txt tight_setup_hold_pins.txt
