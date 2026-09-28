@@ -13,6 +13,7 @@ work-obj08.cf
 srt_core_cover/
 srt_core_prove/
 srt_core_prove32/
+srt_core/
 
 # Diagram (pla.svg and pla_steps.tex are kept in the repository)
 pla.pdf

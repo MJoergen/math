@@ -41,17 +41,25 @@ partial remainder, and the Pentium bug. It also has a diagram of the table.
 | [`ALGORITHM.md`](ALGORITHM.md) | Detailed explanation of the algorithm.
 
 ## Interface of `srt`
-* `n_i`, `d_i`: Unsigned integers. They are valid if both are less than 2^29,
-  and `d_i` is not zero.
-* `q_o`: The quotient `n_i/d_i`, with 32 integer bits and 32 fractional bits,
-  rounded to nearest.
-* Pulse `start_over_i` for one clock cycle to start a division. The inputs are
-  only sampled in that clock cycle.
-* `busy_o` is high while the division is in progress. When it returns low,
-  `q_o` is valid. A division takes 37 clock cycles.
-* `invalid_o` is set together with `q_o`, if the inputs were invalid. The
-  quotient is then all ones (the largest value), and the division only takes 3
-  clock cycles.
+Both the input and the output use AXI-style handshaking: a value is
+transferred in a clock cycle where both valid and ready are high. The sender
+keeps valid high and the value unchanged until then.
+
+| Port | Direction | Description
+| ---- | --------- | -----------
+| `s_valid_i`, `s_ready_o` | in, out | Handshake of the input.
+| `s_n_i`, `s_d_i` | in | The dividend and divisor, unsigned integers. They are valid if both are less than 2^29, and `s_d_i` is not zero.
+| `m_valid_o`, `m_ready_i` | out, in | Handshake of the output.
+| `m_q_o` | out | The quotient `s_n_i/s_d_i`, with 32 integer bits and 32 fractional bits, rounded to nearest.
+| `m_invalid_o` | out | Set if the inputs were invalid. The quotient is then all ones (the largest value).
+
+The result is valid 37 clock cycles after the input is transferred (2 clock
+cycles for invalid inputs). The next division can start while the result is
+waiting on the output, so with `m_ready_i` high, a division can start every 37
+clock cycles.
+
+`srt_core` has the same handshake, with the ports `s_n_i`, `s_d_i`, and
+`m_q_o`. It only accepts a new input once its result has been taken.
 
 ## Number format
 Internally (in `srt_core.vhd` and `pla.vhd`) the values are two's complement
@@ -59,8 +67,7 @@ with 4 integer bits (including the sign). The inputs to `srt_core` are
 normalized so the top nibble is `0001`, i.e. they are in the range [1, 2). The
 partial remainder `n` is kept in carry-save form (a sum and a carry, like in
 the Pentium), so calculating the next partial remainder needs no carry chain,
-see `srt_core.vhd`. It
-then stays in the range $-4.5 < n < 4.5$, see
+see `srt_core.vhd`. It then stays in the range $-4.5 < n < 4.5$, see
 [The actual range of the partial remainder](ALGORITHM.md#the-actual-range-of-the-partial-remainder).
 The formal verification checks $-4.5 \le n < 4.5$.
 
@@ -69,9 +76,10 @@ The formal verification (`srt_core.psl`, `srt_core.sby`) checks `srt_core`
 with `G_SIZE=16` and with `G_SIZE=32` (as used in `srt`), for all normalized
 inputs, including a zero dividend:
 * The partial remainder stays within its bounds, and never overflows.
-* The quotient `q_o` matches the digits chosen by the PLA.
+* The quotient `m_q_o` matches the digits chosen by the PLA.
 * The quotient is correct: it differs from the exact value n/d by less than
   2/3 of its least significant bit.
+* The result stays valid and unchanged until it is taken.
 
 SMT solvers are slow at multiplication, so instead of calculating q*d directly,
 `srt_core.psl` tracks q*d alongside the divider using only additions, and
@@ -88,9 +96,11 @@ Type `make` to list the supported targets. The most important ones are:
 * `make sim` runs the testbench. It checks a number of edge cases (invalid
   inputs, zero dividend, the largest valid inputs, and every normalization
   shift), all divisions n/d with 1 <= n, d <= 100, and 20000 random divisions
-  across the whole range of valid inputs. The expected results are calculated
-  exactly, including the rounding. This requires
-  [GHDL](https://github.com/ghdl/ghdl). It takes about 30 seconds.
+  across the whole range of valid inputs. The random divisions have random
+  gaps between the inputs and random backpressure on the output, and the
+  testbench checks that the output does not change until it is taken. The
+  expected results are calculated exactly, including the rounding. This
+  requires [GHDL](https://github.com/ghdl/ghdl). It takes about a minute.
   `make sim PLA=pentium` runs it with the Pentium's original table instead
   (or `PLA=pentium_fixed`). Then the divider has the Pentium's FDIV bug, and
   the testbench verifies that 4195835/3145727 gives the Pentium's wrong
