@@ -1,0 +1,70 @@
+name: srt
+
+# Test the SRT divider in the directory srt. This only runs when something in
+# that directory (or this file) changes.
+on:
+  push:
+    paths:
+      - 'srt/**'
+      - '.github/workflows/srt.yml'
+  pull_request:
+    paths:
+      - 'srt/**'
+      - '.github/workflows/srt.yml'
+
+defaults:
+  run:
+    working-directory: srt
+
+jobs:
+  # Check the quotient digit table, and test the bit-exact model (seconds)
+  model:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check the table and test the model
+        run: make model
+      - name: Check that the diagram data matches the table
+        run: ./srt.py --tikz | diff -u pla_steps.tex -
+
+  # Run the complete testbench (about 15 minutes)
+  sim:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install GHDL
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ghdl
+      - name: Run the testbench
+        # The testbench reports every division, i.e. over a million lines, so
+        # these are left out of the log.
+        run: make sim 2>&1 | grep -v 'verify:' | tee sim.log
+      - name: Check that the testbench ran to the end
+        run: grep 'Test finished' sim.log
+
+  # Run the formal verification of div.vhd (about 25 minutes)
+  formal:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install GHDL and Yosys
+        # The GHDL plugin for Yosys needs the VHDL libraries of ghdl-gcc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ghdl ghdl-gcc yosys yosys-plugin-ghdl python3-click
+      - name: Install SymbiYosys
+        # Use the version of SymbiYosys that matches the installed Yosys
+        run: |
+          version=$(yosys -V | awk '{print $2}')
+          git clone --depth 1 --branch "yosys-$version" https://github.com/YosysHQ/sby.git /tmp/sby
+          sudo make -C /tmp/sby install PREFIX=/usr/local
+      - name: Install Yices 2
+        run: |
+          curl -sSL https://github.com/SRI-CSL/yices2/releases/download/Yices-2.6.4/yices-2.6.4-x86_64-pc-linux-gnu.tar.gz | tar xz -C /tmp
+          sudo cp /tmp/yices-2.6.4/bin/* /usr/local/bin/
+      - name: Run the formal verification
+        run: make formal
