@@ -9,9 +9,9 @@
 #
 # It can also check every entry of the table: It verifies that the chosen
 # quotient digit keeps the partial remainder within bounds, for all values of n
-# and d that map to that entry. Entries can be removed from the
-# table (like the five missing entries in the Pentium), to see which table
-# entries then fail, and to search for divisions that give a wrong result.
+# and d that map to that entry. Entries can be removed from the table (like
+# the missing entries in the Pentium), to see which table entries then fail,
+# and to search for divisions that give a wrong result.
 #
 # Usage:
 #   ./srt.py                   Check the table, and test many divisions.

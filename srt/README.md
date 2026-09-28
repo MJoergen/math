@@ -103,18 +103,32 @@ practice it stays below 4.5, see below).
 
 The condition is sufficient, but not necessary: depending on how the steps
 line up with the grid, even fewer bits can work. `srt.py` checks the actual
-table.
+table. Other designs have made other choices; the analysis linked above
+mentions that the MIPS R3010 used 9 bits of the partial remainder and 9 bits of
+the divisor.
 
-Many hardware dividers keep the partial remainder in carry-save form (a sum
-and a carry), to avoid a carry-propagating addition in each iteration. The
-table must then add the top bits of both, and its estimate of $n$ can be off
-by up to $2\Delta n$. The condition becomes
+The Pentium uses the same 7 + 4 bits, but it keeps the partial remainder in
+carry-save form (a sum and a carry), to avoid a carry-propagating addition in
+each iteration. To get the table index, it adds the top 7 bits of the sum and
+the carry with a small carry-lookahead adder. Since the lower bits are ignored,
+the index can be one entry too low, i.e. the estimate of $n$ can be off by up
+to $2\Delta n$. The condition then becomes
 $2\Delta n + \frac{4}{3}\Delta d \le \frac{1}{3}$, which 7 + 4 bits satisfy
-with equality. This design calculates $n$ exactly in every iteration, so its
-table has more precision than it needs.
+with equality, leaving no margin. This design calculates $n$ exactly in every
+iteration, so its table has more precision than it needs.
 
-In the Pentium this table was implemented as a PLA, and the famous FDIV bug
-was caused by five missing entries in this table.
+### The Pentium FDIV bug
+In the Pentium this table was implemented as a PLA. The table's unused
+entries held 0. In 1994 Intel stated that the FDIV bug was caused by five
+entries that were omitted from the table. The analysis linked above shows
+that in fact 16 entries were missing, along the top edge of the $q = 2$
+region: they should have held 2, but held 0. Its explanation is that the table
+was generated with the wrong bound line for that edge. To allow for the
+carry-save estimate, some of the bound lines must be moved down by
+$\frac{1}{8}$, namely those where this makes the allowed region smaller. The
+top edge is not one of them, but it was moved down anyway. Only five of the 16
+missing entries affect the result, and because of the carry-save adder even
+these are only reached in about 1 in 9 billion random divisions.
 
 ### The table
 ![Diagram of the quotient digit table](pla.svg)
@@ -214,14 +228,15 @@ modified.
 * `./srt.py 1 3 --trace` calculates 1/3, and shows the partial remainder and
   quotient digit of each iteration.
 * `./srt.py --remove 3.0:1.5` removes a table entry (sets it to zero, like the
-  five missing entries in the Pentium). It shows which entries now fail the
-  check, and searches for divisions that give a wrong result. Use
+  missing entries in the Pentium). It shows which entries now fail the check,
+  and searches for divisions that give a wrong result. Use
   `--remove=-2.5:1.0` for a negative n.
 
 The search works backwards from the table entry to the dividend, because some
-table entries may be used by very few divisions. In the Pentium, about one
-division in nine billion used a missing entry. In this table, all the entries
-that are used at all are used often enough that random testing finds them too.
+table entries may be used by very few divisions. In the Pentium, only about
+one in nine billion random divisions reached a missing entry. In this table,
+all the entries that are used at all are used often enough that random testing
+finds them too.
 
 ## Links
 * [http://degiorgi.math.hr/aaa_sem/Div/925-934.pdf](http://degiorgi.math.hr/aaa_sem/Div/925-934.pdf)
