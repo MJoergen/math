@@ -21,6 +21,8 @@
 #                              Use --remove=-2.5:1.0 for a negative n.
 #   ./srt.py --tikz            Print the digit boundaries of the table, for the
 #                              diagram in pla.tex.
+#   ./srt.py --bounds          Print the range of the partial remainder for each
+#                              column of the table.
 
 import argparse
 import random
@@ -204,6 +206,86 @@ def check_table(table):
 
 
 # -------------------------------------------------------------------------
+# The range of the partial remainder
+# -------------------------------------------------------------------------
+
+# Calculate the range of the partial remainder for a fixed divisor d, which
+# selects one column of the table. The divisor does not change during a
+# division.
+#
+# Start with the range of the dividend, i.e. 0 <= n < 2. For each table row
+# (n in [row/8, (row+1)/8)) that intersects the current range, the next partial
+# remainder 4*(n - q*d) is between the images of the row's two ends. Extend the
+# range with these images, until it no longer changes. The result is a range
+# that the partial remainder never leaves. The upper limit is never reached.
+#
+# Returns (lo, hi), with lo <= n < hi, or None if the range grows beyond the
+# 4 integer bits of n, i.e. the division fails.
+def remainder_range(table, col, d):
+    def digit(row):
+        q = table[((row & 0x7F) << 4) | col]
+        return -q if row < 0 else q
+
+    lo, hi = Fraction(0), Fraction(2)
+    while True:
+        new_lo, new_hi = lo, hi
+        for row in range(-64, 64):
+            a = max(Fraction(row, 8), lo)
+            b = min(Fraction(row + 1, 8), hi)
+            if a < b:
+                q = digit(row)
+                new_lo = min(new_lo, 4 * (a - q * d))
+                new_hi = max(new_hi, 4 * (b - q * d))
+        if new_lo < -8 or new_hi > 8:
+            return None
+        if (new_lo, new_hi) == (lo, hi):
+            return lo, hi
+        lo, hi = new_lo, new_hi
+
+
+# Calculate the range of the partial remainder for each column of the table.
+# Within a column, the limits are linear in d (as long as the same table rows
+# are involved), so the extremes are at the ends of the column. This evaluates
+# the ends and 15 points in between. The upper end of the column is not a
+# valid divisor, so the limits found there are only approached, never reached.
+#
+# Returns a list with one entry per column: (lo, lo_reached, hi), or None if
+# the partial remainder is not bounded.
+def remainder_bounds(table):
+    result = []
+    for col in range(16):
+        d_lo = 1 + Fraction(col, 16)
+        ranges = [remainder_range(table, col, d_lo + Fraction(i, 16 * 16)) for i in range(17)]
+        if None in ranges:
+            result.append(None)
+            continue
+        lo = min(r[0] for r in ranges)
+        lo_reached = any(r[0] == lo for r in ranges[:16])     # Not only at the upper end
+        hi = max(r[1] for r in ranges)
+        result.append((lo, lo_reached, hi))
+    return result
+
+
+def format_bounds(lo, lo_reached, hi):
+    return f"{lo} {'<=' if lo_reached else '<'} n < {hi}"
+
+
+def print_bounds(bounds, per_column):
+    if per_column:
+        for col, b in enumerate(bounds):
+            d_lo = 1 + Fraction(col, 16)
+            text = "not bounded" if b is None else format_bounds(*b)
+            print(f"  column {col:2d}, d in [{d_lo}, {d_lo + Fraction(1, 16)}): {text}")
+    if None in bounds:
+        print("Partial remainder: NOT BOUNDED in some columns, i.e. some divisions fail.")
+    else:
+        lo = min(b[0] for b in bounds)
+        lo_reached = any(b[1] for b in bounds if b[0] == lo)
+        hi = max(b[2] for b in bounds)
+        print(f"Partial remainder: {format_bounds(lo, lo_reached, hi)}.")
+
+
+# -------------------------------------------------------------------------
 # Diagram of the table
 # -------------------------------------------------------------------------
 
@@ -338,6 +420,8 @@ def main():
                         help="number of random divisions to test (default 100000)")
     parser.add_argument("--tikz", action="store_true",
                         help="print the digit boundaries of the table for pla.tex")
+    parser.add_argument("--bounds", action="store_true",
+                        help="print the range of the partial remainder for each column")
     args = parser.parse_args()
 
     removed = [table_index(*map(Fraction, r.split(":"))) for r in args.remove]
@@ -345,6 +429,10 @@ def main():
 
     if args.tikz:
         print_tikz(table)
+        return
+
+    if args.bounds:
+        print_bounds(remainder_bounds(table), per_column=True)
         return
 
     if args.n is not None:
@@ -358,10 +446,18 @@ def main():
     for idx in bad:
         n_lo, n_hi, d_lo, d_hi = cell_bounds(idx)
         print(f"  FAIL: entry {idx}: n in [{n_lo}, {n_hi}), d in [{d_lo}, {d_hi}), |q| = {table[idx]}")
+    bounds = remainder_bounds(table)
+    print_bounds(bounds, per_column=False)
 
     test(table, args.count, bad)
 
     for idx in bad:
+        # An entry outside the range of the partial remainder is never used
+        n_lo, n_hi, _, _ = cell_bounds(idx)
+        b = bounds[idx & 15]
+        if b is not None and (n_hi <= b[0] or n_lo >= b[2]):
+            print(f"Entry {idx}: Never used, since it is outside the range of the partial remainder.")
+            continue
         found = find_input(idx, table)
         if found is None:
             print(f"Entry {idx}: No division found that uses it. It may be unreachable.")

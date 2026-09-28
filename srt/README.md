@@ -107,7 +107,8 @@ enough. This design uses $\Delta n = \frac{1}{8}$, i.e. 3 fractional bits,
 which leaves a margin: $\frac{1}{8} + \frac{1}{12} = \frac{5}{24} < \frac{1}{3}$.
 The other 4 of the 7 bits are the sign and 3 integer bits, which are needed
 because the bound allows $|n|$ up to $\frac{8}{3} \cdot 2 = \frac{16}{3}$. (With
-this table, the formal verification shows that in fact $-4 \le n < 4.5$.)
+this table, the partial remainder in fact stays within $-4 < n < 4.5$, as shown
+in the section "The actual range of the partial remainder".)
 
 The condition is sufficient, but not necessary: depending on how the steps
 line up with the grid, even fewer bits can work. `srt.py` checks the actual
@@ -129,6 +130,55 @@ $\frac{1}{8}$ strictly inside the allowed range, and the smallest margin is
 $\frac{1}{48}$ (for $d$ between $\frac{17}{16}$ and $\frac{9}{8}$, between the
 digits $-2$ and $-1$). This design calculates $n$ exactly in every iteration,
 so its table has more precision than it needs.
+
+### The actual range of the partial remainder
+The bound $|n| \le \frac{8}{3}d$ holds for any valid table. For the table in
+`pla.vhd`, the partial remainder actually stays within $-4 < n < 4.5$. This can
+be shown directly, for any precision of $n$ and $d$.
+
+The divisor does not change during a division, so consider a fixed $d$, i.e. a
+fixed column of the table. In this column, let $t_k$ be the smallest $n$ (a
+multiple of $\frac{1}{8}$) where the table selects a digit larger than $k$, for
+$k = -2, \ldots, 1$. So the table selects the digit $q$ for
+$t_{q-1} \le n < t_q$. In this range, the next partial remainder
+$n' = 4(n - qd)$ increases with $n$, so it is largest just below $t_q$:
+
+| Digit     | Range of $n$              | Next partial remainder  |
+| --------- | ------------------------- | ----------------------- |
+| $q = -2$  | $n < t_{-2}$              | $n' < 4(t_{-2} + 2d)$   |
+| $q = -1$  | $t_{-2} \le n < t_{-1}$   | $n' < 4(t_{-1} + d)$    |
+| $q = 0$   | $t_{-1} \le n < t_0$      | $n' < 4 t_0$            |
+| $q = 1$   | $t_0 \le n < t_1$         | $n' < 4(t_1 - d)$       |
+| $q = 2$   | $t_1 \le n < U$           | $n' < 4(U - 2d)$        |
+
+Let $U$ be the largest of the first four limits and 2 (the dividend is less
+than 2). Then $4(U - 2d) \le U$, as long as $U \le \frac{8}{3}d$, so by
+induction $n < U$ in every iteration. The lower limit $L$ is found the same
+way, from the smallest values in each range. Each limit is linear in $d$, so
+within a column the extremes are at the ends of the column. Calculating this
+for all 16 columns (`./srt.py --bounds`) gives $-4 < n < 4.5$.
+
+The upper limit of 4.5 comes from the last column,
+$\frac{31}{16} \le d < 2$, where $t_{-2} = -\frac{23}{8}$,
+$t_{-1} = -\frac{7}{8}$, $t_0 = 1$, and $t_1 = 3$. A partial remainder just
+below $-\frac{7}{8}$ gets the digit $q = -1$, which gives
+$n' = 4(n + d) < 4\left(-\frac{7}{8} + 2\right) = 4.5$. This limit is
+approached, but never reached: the model finds partial remainders up to
+4.4964. The mirror case, a partial remainder just below 1 with the digit
+$q = 0$, only gives $n' < 4$. The lower limit $-4$ is likewise only
+approached, as $d$ approaches the upper end of a column.
+
+So the value 4.5 is a property of this particular table. The table sees $n$
+rounded down, and for a negative $n$ this rounds away from zero: $-0.876$ is
+seen as $-1$. With $d$ close to 2 this selects $q = -1$, even though
+$n/d \approx -0.44$ would round to 0. That digit is allowed, but it moves the
+next partial remainder further out. A table that selected the digit by rounding
+the exact value of $n/d$ would keep $|n'| \le 2d < 4$.
+
+The range also shows which table entries are never used: those outside the
+range of their column. This is why the table check in `srt.py`, which only
+uses the bound $|n| \le \frac{8}{3}d$, flags some entries near the edge that
+are never used.
 
 ### The Pentium FDIV bug
 In the Pentium this table was implemented as a PLA. The table's unused
@@ -191,7 +241,8 @@ diagram is built from `pla.tex` with `make pla.svg`.
 Internally (in `div.vhd` and `pla.vhd`) the values are two's complement with 4
 integer bits (including the sign). The inputs to `div` are normalized so the
 top nibble is `0001`, i.e. they are in the range [1, 2). The partial remainder
-`n` then stays in the range [-4, 4.5), as shown by the formal verification.
+`n` then stays in the range $-4 < n < 4.5$, see "The actual range of the
+partial remainder". The formal verification checks $-4 \le n < 4.5$.
 
 ## Formal verification
 The formal verification (`div.psl`, `div.sby`) checks `div` with `G_SIZE=16`
@@ -236,14 +287,18 @@ modified.
 * `./srt.py` checks every entry of the table: For all values of n and d that
   map to the entry, and that satisfy |n/d| < 8/3, the next partial remainder
   must satisfy this too. This check is slightly conservative: some entries near
-  the edge are never used. It then tests over 100000 divisions against the
-  exact result.
+  the edge are never used. It then prints the range of the partial remainder,
+  and tests over 100000 divisions against the exact result.
+* `./srt.py --bounds` prints the range of the partial remainder for each
+  column of the table, see "The actual range of the partial remainder".
 * `./srt.py 1 3 --trace` calculates 1/3, and shows the partial remainder and
   quotient digit of each iteration.
 * `./srt.py --remove 3.0:1.5` removes a table entry (sets it to zero, like the
   missing entries in the Pentium). It shows which entries now fail the check,
-  and searches for divisions that give a wrong result. Use
-  `--remove=-2.5:1.0` for a negative n.
+  how the range of the partial remainder changes, and searches for divisions
+  that give a wrong result. A failing entry outside the range of the partial
+  remainder is reported as never used. Use `--remove=-2.5:1.0` for a negative
+  n.
 
 The search works backwards from the table entry to the dividend, because some
 table entries may be used by very few divisions. In the Pentium, only about
