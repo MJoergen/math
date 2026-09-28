@@ -24,7 +24,7 @@ PLA ?= srt
 # Run the complete testbench. No waveform is written, since a waveform of the
 # complete run is several GB, and makes GHDL crash.
 .PHONY: sim
-sim: $(SIM_SRC) ## Run the complete testbench (about 30 seconds). PLA=pentium uses the Pentium table
+sim: $(SIM_SRC) ## Run the complete testbench (about a minute). PLA=pentium uses the Pentium table
 	ghdl -i --std=08 --work=work $^
 	ghdl -m --std=08 -fexplicit tb_srt
 	ghdl -r --std=08 tb_srt -gG_PLA=$(PLA) --assert-level=error --stop-time=400ms
@@ -130,7 +130,7 @@ SRC += pla_pentium.vhd
 
 # This runs all the tasks defined in $(DUT).sby
 .PHONY: formal
-formal: $(DUT).sby $(DUT).psl $(SRC) ## Run the formal verification of srt_core.vhd (takes about a minute)
+formal: $(DUT).sby $(DUT).psl $(SRC) ## Run the formal verification of srt_core.vhd (about two minutes)
 	sby --yosys "yosys -m ghdl" -f $(DUT).sby
 
 .PHONY: show_prove
