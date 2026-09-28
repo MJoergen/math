@@ -3,7 +3,7 @@
 -- (e.g. in the function get_n) are verified too.
 --
 -- Why bounded model checking is enough here: Every division starts by
--- loading all the state (n, d, iter, res_p, res_n) from the inputs. So the
+-- loading all the state (n, d, iter, quot, quot_m1) from the inputs. So the
 -- behaviour of a division depends only on n_i and d_i, and not on anything
 -- that happened before. The BMC depth in div.sby is long enough to cover a
 -- complete division, and n_i and d_i are unconstrained (apart from being
@@ -161,7 +161,7 @@ vunit div_inst (div(synthesis))
    f_n4_check  : assert always f_started = '1' -> f_n4_ok;
    f_invariant : assert always f_started = '1' -> f_inv_ok;
    f_remainder : assert always f_started = '1' -> f_rem_ok;
-   f_digits    : assert always f_started = '1' -> res_p - res_n = f_q;
+   f_digits    : assert always f_started = '1' -> quot = f_q and quot_m1 = f_q - 1;
 
    -- When a division finishes, verify that the quotient matches the digits.
    -- This is modulo 2^(2*G_SIZE+4), but f_result below shows that the true

@@ -42,9 +42,24 @@ This has two advantages:
 * The digit does not have to be chosen exactly, see
   [Why 7 bits of n and 4 bits of d](#why-7-bits-of-n-and-4-bits-of-d).
 
-In this design the magnitudes of the positive and the negative digits are
-shifted into two separate registers (`res_p` and `res_n`), two bits per
-iteration, and these are subtracted only once at the end.
+Appending a negative digit to the quotient would normally require a
+subtraction, i.e. a carry chain. Instead, this design converts the digits to
+an ordinary binary number *on the fly*: Two registers hold the quotient so
+far, $Q$, and $Q - 1$ (in units of the last digit). Since
+$4Q + q = 4(Q - 1) + (4 + q)$, a negative digit is appended to $Q - 1$
+instead:
+
+| $q$  | New $Q$           | New $Q - 1$       |
+| ---- | ----------------- | ----------------- |
+| 2    | $Q$ & `10`        | $Q$ & `01`        |
+| 1    | $Q$ & `01`        | $Q$ & `00`        |
+| 0    | $Q$ & `00`        | $Q - 1$ & `11`    |
+| -1   | $Q - 1$ & `11`    | $Q - 1$ & `10`    |
+| -2   | $Q - 1$ & `10`    | $Q - 1$ & `01`    |
+
+Here & means appending two bits. So each iteration only selects one of the two
+registers and appends two bits, without any carry chain, and after the last
+iteration $Q$ is the quotient.
 
 ## Why the partial remainder stays bounded
 **Claim:** If $|n| \le \frac{8}{3}d$, then there is a digit $q$ such that the
