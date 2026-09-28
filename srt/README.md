@@ -25,18 +25,18 @@ partial remainder, and the Pentium bug. It also has a diagram of the table.
 ## Files
 | File             | Description
 | ---------------- | -----------
-| `srt_float.vhd`  | Top level. Divides two unsigned integers, returns a 32.32 fixed-point quotient.
-| `normalizer.vhd` | Shifts dividend and divisor into the range [1, 2).
-| `div.vhd`        | The SRT divider itself. Operates on normalized values.
-| `pla.vhd`        | The quotient digit selection table.
-| `shifter.vhd`    | Shifts the quotient back to undo the normalization.
-| `tb_srt.vhd`     | Testbench for `srt_float`.
-| `div.psl`, `div.sby` | Formal verification of `div`.
-| `div.gtkw`       | GTKWave setup for viewing the formal verification traces.
-| `srt.xpr`, `srt.xdc` | Vivado project (Artix-7 xc7a200tfbg484-2) and timing constraint (200 MHz), for synthesis.
-| `srt.py`         | Bit-exact model of `srt_float`, and a checker for the quotient digit table.
-| `pla.tex`, `pla_steps.tex`, `pla.svg` | Diagram of the quotient digit table.
-| `ALGORITHM.md`   | Detailed explanation of the algorithm.
+| [`srt_float.vhd`](srt_float.vhd) | Top level. Divides two unsigned integers, returns a 32.32 fixed-point quotient.
+| [`normalizer.vhd`](normalizer.vhd) | Shifts dividend and divisor into the range [1, 2).
+| [`div.vhd`](div.vhd) | The SRT divider itself. Operates on normalized values.
+| [`pla.vhd`](pla.vhd) | The quotient digit selection table.
+| [`shifter.vhd`](shifter.vhd) | Shifts the quotient back to undo the normalization.
+| [`tb_srt.vhd`](tb_srt.vhd) | Testbench for `srt_float`.
+| [`div.psl`](div.psl), [`div.sby`](div.sby) | Formal verification of `div`.
+| [`div.gtkw`](div.gtkw) | GTKWave setup for viewing the formal verification traces.
+| [`srt.xpr`](srt.xpr), [`srt.xdc`](srt.xdc) | Vivado project (Artix-7 xc7a200tfbg484-2) and timing constraint (200 MHz), for synthesis.
+| [`srt.py`](srt.py) | Bit-exact model of `srt_float`, and a checker for the quotient digit table.
+| [`pla.tex`](pla.tex), [`pla_steps.tex`](pla_steps.tex), [`pla.svg`](pla.svg) | Diagram of the quotient digit table.
+| [`ALGORITHM.md`](ALGORITHM.md) | Detailed explanation of the algorithm.
 
 ## Interface of `srt_float`
 * `n_i`, `d_i`: Unsigned integers. They are valid if both are less than 2^29,
