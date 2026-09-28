@@ -223,12 +223,14 @@ vunit srt_core_inst (srt_core(synthesis))
    -- limit 4.5 needs the table to see n one row too low (because of the
    -- carry-save form) at the right moment, so it is hard to approach: the
    -- model reaches n=4.354 when dividing 0x116B/0x1FFF (with G_SIZE=16), after
-   -- 14 iterations. Reached in step 5.
+   -- 14 iterations (see "The actual range of the partial remainder" in
+   -- ALGORITHM.md). Reached in step 5.
    f_large_n : cover {n(G_SIZE-1) = '0' and n(G_SIZE-2 downto G_SIZE-12) >= "10001011000"};
 
-   -- Verify that n=-4.5 (= 1011.10000000, i.e. n truncated to a multiple of
-   -- 1/256) can be reached. The model reaches n=-4.499 when dividing
-   -- 0x1003/0x1FFF (with G_SIZE=16). Reached in step 6.
+   -- Verify that n truncated to a multiple of 1/256 can be -4.5
+   -- (= 1011.10000000), i.e. -4.5 <= n < -4.5 + 1/256. The limit -4.5 itself is
+   -- never reached. The model reaches n=-4.499 when dividing 0x1003/0x1FFF
+   -- (with G_SIZE=16). Reached in step 6.
    f_small_n : cover {n(G_SIZE-1 downto G_SIZE-12) = "101110000000"};
 
    -- Verify that a division can complete, so f_result is not vacuous
@@ -249,8 +251,10 @@ vunit srt_core_inst (srt_core(synthesis))
    --------------------------------------------
 
    -- Verify that the partial remainder stays in the range -4.5 <= n < 4.5.
-   -- Together with the covers above, this shows that the range is nearly
-   -- tight. Here n = n_s + n_c, see srt_core.vhd.
+   -- This only checks the top 12 bits of n, so it is slightly weaker than the
+   -- range -4.5 < n < 4.5 derived in ALGORITHM.md. Together with the covers
+   -- above, this shows that the range is nearly tight. Here n = n_s + n_c, see
+   -- srt_core.vhd.
    f_range_n : assert always n(G_SIZE-1 downto G_SIZE-12) >= X"B80" or
                              n(G_SIZE-1 downto G_SIZE-12) < X"480";
 

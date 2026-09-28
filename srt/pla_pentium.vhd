@@ -2,7 +2,8 @@ library ieee;
    use ieee.std_logic_1164.all;
    use ieee.numeric_std_unsigned.all;
 
--- This is the quotient digit selection table (the PLA) of the Intel Pentium,
+-- This is the quotient digit selection table (the PLA, i.e. programmable logic
+-- array) of the Intel Pentium,
 -- both the original version with the FDIV bug and the later, fixed version.
 -- It can be used in srt_core.vhd instead of pla.vhd, see the generic G_PLA
 -- there.
@@ -16,22 +17,27 @@ library ieee;
 -- is |q|, and the sign of q is taken from the sign of n, just like in pla.vhd.
 -- The index into the table is also the same as in pla.vhd.
 --
--- The original table (G_FIXED = false) has five missing entries, marked below.
--- They should hold 2, but hold 0. The unused entries above the +2 region and
--- below the -2 region also hold 0. In the fixed table (G_FIXED = true), all of
--- these entries hold 2. Otherwise the two tables are identical.
+-- The original table (G_FIXED = false) has 16 missing entries, one in each
+-- column along the top edge of the +2 region. They should hold 2, but hold 0.
+-- Only five of them can be reached by a division, and these are marked below
+-- (see "The Pentium FDIV bug" in ALGORITHM.md). The unused entries above the
+-- +2 region and below the -2 region also hold 0. In the fixed table
+-- (G_FIXED = true), all of these entries hold 2. Otherwise the two tables are
+-- identical.
 --
 -- srt_core.vhd keeps the partial remainder n in carry-save form, like the
 -- Pentium, so the table lookup may see n one row too low. With the original
 -- table this in rare cases leads to a missing entry, and a wrong result:
--- srt_core.vhd then has the Pentium's FDIV bug, e.g. for 4195835/3145727 (see tb_srt.vhd, and
--- "./srt.py 4195835 3145727 --pla pentium"). If n were calculated exactly,
--- the missing entries would never be used (see "./srt.py --pla pentium
--- --exact").
+-- srt_core.vhd then has the Pentium's FDIV bug, e.g. for 4195835/3145727
+-- (see tb_srt.vhd, and "./srt.py 4195835 3145727 --pla pentium"). If n were
+-- calculated exactly, the missing entries would never be used (see
+-- "./srt.py --pla pentium --exact").
 --
--- The Pentium's table picks the larger digit where both are allowed, so the
--- partial remainder has a slightly larger range than with pla.vhd:
--- -5 < n < 5 instead of -4.5 < n < 4.5. It still satisfies |n/d| < 8/3.
+-- The Pentium's table picks the larger digit where both are allowed, so with
+-- the fixed table the partial remainder has a slightly larger range than with
+-- pla.vhd: -5 < n < 5 instead of -4.5 < n < 4.5. It still satisfies
+-- |n/d| < 8/3. With the original table, n is not bounded in the five columns
+-- with a marked entry.
 --
 -- This is a purely combinatorial block.
 
@@ -42,7 +48,7 @@ entity pla_pentium is
       G_FIXED : boolean   -- false: With the FDIV bug. true: Fixed.
    );
    port (
-      n_i : in    std_logic_vector(G_SIZE-1 downto 0); -- dividend
+      n_i : in    std_logic_vector(G_SIZE-1 downto 0); -- partial remainder
       d_i : in    std_logic_vector(G_SIZE-1 downto 0); -- divisor
       q_o : out   integer range -2 to 2
    );

@@ -3,15 +3,16 @@ library ieee;
    use ieee.numeric_std_unsigned.all;
 
 -- This is the quotient digit selection table of the SRT divider, corresponding
--- to the PLA in the Pentium processor.
+-- to the PLA (programmable logic array) in the Pentium processor.
 --
 -- The table is indexed by only 11 bits, just like in the Pentium:
 -- * The top 7 bits of the partial remainder n (sign, 3 integer bits, and
 --   3 fractional bits). So n is truncated to a multiple of 1/8.
 -- * The 4 bits of the divisor d just after the leading "0001". So d is
 --   truncated to a multiple of 1/16.
--- The table therefore has 2^11 = 2048 entries. Each entry stores |q|, and the
--- sign of q is taken from the sign of n.
+-- The table therefore has 2^11 = 2048 entries. Each entry stores |q| (as an
+-- unsigned number, so 2 is "10"), and the sign of q is taken from the sign of
+-- n.
 --
 -- The input format is the same as in srt_core.vhd: two's complement with 4
 -- integer bits including the sign, and d must be normalized (1 <= d < 2).
@@ -28,30 +29,32 @@ library ieee;
 -- The divisor does not change during a division, i.e. a division only uses one
 -- column of the table. Since get_q rounds (n + 1/8)/d, where n is the value the
 -- table sees, |q| only depends on |n + 1/8| within a column:
---    |q| = 0   for             |n + 1/8| < T1 + 1/8
---    |q| = 1   for   T1 + 1/8 <= |n + 1/8| < T2 + 1/8
---    |q| = 2   for   T2 + 1/8 <= |n + 1/8|
--- where the thresholds T1 and T2 (multiples of 1/8) are the smallest n >= 0
--- where |q| >= 1 and |q| >= 2 in the column. (These are t_0 and t_1 in
--- ALGORITHM.md.) So when a division starts, srt_core.vhd stores the
--- thresholds of the column (get_col), and in each iteration the entity pla
--- below compares n against them (get_mag). This is much faster than a lookup in the table,
--- because the lookup depends on 11 bits, but the comparisons only depend on
--- the 7 bits of n. The entity pla checks that this gives exactly the same
--- digits as the table, for all 2048 entries.
+--    |q| = 0   for             |n + 1/8| < t0 + 1/8
+--    |q| = 1   for   t0 + 1/8 <= |n + 1/8| < t1 + 1/8
+--    |q| = 2   for   t1 + 1/8 <= |n + 1/8|
+-- where the thresholds t0 and t1 (multiples of 1/8) are the smallest n >= 0
+-- where |q| >= 1 and |q| >= 2 in the column, see "Selecting the digit with
+-- two comparisons" in ALGORITHM.md. So when a division starts, srt_core.vhd
+-- stores the thresholds of the column (get_col), and in each iteration the
+-- entity pla below compares n against them (get_mag). This is much faster
+-- than a lookup in the table, because the lookup depends on 11 bits, but the
+-- comparisons only depend on the 7 bits of n. The entity pla checks that this
+-- gives exactly the same digits as the table, for all 2048 entries.
 --
--- The magnitude |q| is returned as two bits: bit 0 is |q| >= 1, and bit 1 is
--- |q| >= 2. So |q| = 0, 1, 2 is "00", "01", "11". These are the two
+-- The magnitude |q| is returned as two bits (mag_type): bit 0 is |q| >= 1,
+-- and bit 1 is |q| >= 2. So |q| = 0, 1, 2 is "00", "01", "11". Note that this
+-- differs from the table, where 2 is "10". The two bits are the two
 -- comparisons, and they select the multiple of d directly.
 
 package pla_pkg is
 
    type     rom_type is array (natural range <>) of std_logic_vector(1 downto 0);
 
-   -- The table, indexed by n(7 bits) & d(4 bits). Each entry stores |q|.
+   -- The table, indexed by n(7 bits) & d(4 bits). Each entry stores |q| as an
+   -- unsigned number, i.e. "00", "01", or "10".
    constant C_PLA_ROM : rom_type(0 to 2047);
 
-   -- The thresholds of one column: T2 & T1, in units of 1/8
+   -- The thresholds of one column: t1 & t0, in units of 1/8
    subtype  col_type is std_logic_vector(11 downto 0);
 
    -- Return the thresholds of the column for the 4 bits of d just after the
@@ -60,6 +63,7 @@ package pla_pkg is
       d4 : std_logic_vector(3 downto 0)
    ) return col_type;
 
+   -- The magnitude of the quotient digit: "00", "01", or "11", see above
    subtype  mag_type is std_logic_vector(1 downto 0);
 
    -- Select the magnitude of the quotient digit for the top 7 bits of n,
@@ -137,24 +141,24 @@ package body pla_pkg is
    -- holds |q| >= 1 and |q| >= 2.
    pure function init_cols return col_table_type is
       variable cols_v : col_table_type;
+      variable t0_v   : natural range 0 to 63;
       variable t1_v   : natural range 0 to 63;
-      variable t2_v   : natural range 0 to 63;
    begin
       --
       for d in 0 to 15 loop
+         t0_v := 63;
          t1_v := 63;
-         t2_v := 63;
 
          for n in 63 downto 0 loop
             if C_PLA_ROM(n * 16 + d) /= "00" then
-               t1_v := n;
+               t0_v := n;
             end if;
             if C_PLA_ROM(n * 16 + d) = "10" then
-               t2_v := n;
+               t1_v := n;
             end if;
          end loop;
 
-         cols_v(d) := to_stdlogicvector(t2_v, 6) & to_stdlogicvector(t1_v, 6);
+         cols_v(d) := to_stdlogicvector(t1_v, 6) & to_stdlogicvector(t0_v, 6);
       end loop;
 
       return cols_v;
@@ -181,7 +185,7 @@ package body pla_pkg is
       -- complement). So |n + 1/8| = u_v + not sign, in units of 1/8.
       u_v := n7(5 downto 0) xor (5 downto 0 => n7(6));
 
-      -- |n + 1/8| >= T + 1/8 is the same as u_v + not sign + (63 - T) >= 64,
+      -- |n + 1/8| >= t + 1/8 is the same as u_v + not sign + (63 - t) >= 64,
       -- i.e. the carry out of a 6-bit addition, with the inverted sign as
       -- carry in. So each comparison is a single short carry chain.
       s1_v := ("0" & u_v) + ("0" & not col(5 downto 0)) + not n7(6);

@@ -22,9 +22,8 @@ library work;
 --              allowed.
 --   s_d_i    : The divisor. Must be normalized, so 1 <= s_d_i < 2.
 --   n        : The partial remainder, n = n_s + n_c (see below). It stays
---              within |n/d| < 8/3, which is the radix 4 times the redundancy
---              factor 2/3 of the digit set. Formal verification shows that
---              -4.5 <= n < 4.5.
+--              within |n/d| <= 8/3, see ALGORITHM.md. Formal verification
+--              shows that -4.5 <= n < 4.5.
 --   m_q_o    : Unsigned, with 2 integer bits and 2*G_SIZE+2 fractional bits.
 --              The quotient digit from iteration k has weight 4^(-k). Since
 --              1/2 < s_n_i/s_d_i < 2 the first digit is always 1 or 2
@@ -38,10 +37,11 @@ library work;
 -- of the new carries, which is otherwise 0. For the table lookup only the top
 -- 7 bits of n_s and n_c are added. This ignores the carries from the lower
 -- bits, so the table may see n one row too low (1/8 less). The table in
--- pla.vhd allows for this, see there. The divisor does not change during a
--- division, so the thresholds of its column of the table are stored in col
--- when the division starts. Then each iteration only compares the estimate of
--- n against them, see pla.vhd.
+-- pla.vhd allows for this, see there.
+--
+-- The divisor does not change during a division, so the thresholds of its
+-- column of the table are stored in col when the division starts. Then each
+-- iteration only compares the estimate of n against them, see pla.vhd.
 --
 -- The quotient digits are converted to an ordinary binary number on the fly,
 -- without any carry chain: Two registers hold the quotient so far (quot) and
@@ -54,8 +54,8 @@ library work;
 -- Each digit is first stored in the register digit, and only appended to
 -- quot in the next iteration. This keeps the quotient registers (about 140
 -- loads) off the output of the PLA, which is on the critical path. The
--- quotient m_q_o is quot with the last digit appended, so it is still valid
--- in the same clock cycle as before.
+-- quotient m_q_o is quot with the stored digit appended, so it includes the
+-- last digit as soon as the last iteration is done.
 --
 -- The generic G_PLA selects the quotient digit table:
 --   "srt"           : pla.vhd (the default).
@@ -213,7 +213,7 @@ architecture synthesis of srt_core is
       arg_n_v := arg_s + arg_c;
       argn3_v := ("00" & abs_slv(arg_n_v)) + ("0" & abs_slv(arg_n_v) & "0");
 
-      -- Verify that n/d < 8/3, i.e. 3*n < 8*d
+      -- Verify that |n|/d < 8/3, i.e. 3*|n| < 8*d
       f_quotient_bound : assert argn3_v(G_SIZE + 1 downto G_SIZE) = "00" and
                                 argn3_v(G_SIZE - 1 downto 0) < arg_d(G_SIZE - 4 downto 0) & "000"
          report "argn3_v=0x" & to_hstring(argn3_v) &
