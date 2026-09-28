@@ -23,7 +23,7 @@ library ieee;
 -- check_proc. Between them, queue holds the inputs of the divisions whose
 -- results have not been verified yet. So a new division can start while the
 -- previous result is still waiting on the output. The edge cases and the
--- divisions n/d <= 100 are sent back to back, with m_ready always high. The
+-- divisions with n, d <= 100 are sent back to back, with m_ready always high. The
 -- random divisions have random gaps between the inputs, and random
 -- backpressure on the output. The backpressure is often longer than a
 -- division, so the next result must also wait inside srt. axi_proc verifies

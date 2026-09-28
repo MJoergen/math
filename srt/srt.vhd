@@ -15,10 +15,10 @@ library ieee;
 -- 3. shifter    : Shift the quotient back to undo the normalization.
 -- Finally, the result is rounded.
 --
--- Invalid inputs: The inputs are valid if s_n_i and s_d_i are both less than
--- 2^29 (see normalizer.vhd), and s_d_i is not zero. For invalid inputs,
--- m_invalid_o is set, and m_q_o is all ones (the largest value). Otherwise
--- m_invalid_o is cleared.
+-- Inputs out of range: s_n_i and s_d_i must both be less than 2^29 (see
+-- normalizer.vhd), and s_d_i must not be zero. Otherwise m_invalid_o is set,
+-- and m_q_o is all ones (the largest value). For inputs in range, m_invalid_o
+-- is cleared.
 --
 -- Usage: Both ports use AXI-style handshaking, i.e. a value is transferred in
 -- a clock cycle where both valid and ready are high.
@@ -27,7 +27,7 @@ library ieee;
 -- * Output: m_valid_o is set together with the quotient m_q_o and
 --   m_invalid_o. They stay unchanged until m_ready_i is high.
 -- The result is valid 37 clock cycles after the input transfer (2 clock
--- cycles for invalid inputs), unless the previous result is still waiting on
+-- cycles for inputs out of range), unless the previous result is still waiting on
 -- the output. A new division can start while the previous result is waiting
 -- on the output, so with m_ready_i high, a division can start every 37 clock
 -- cycles.
@@ -50,7 +50,7 @@ entity srt is
       m_valid_o   : out   std_logic;
       m_ready_i   : in    std_logic;
       m_q_o       : out   std_logic_vector(63 downto 0); -- quotient (32.32 fixed point)
-      m_invalid_o : out   std_logic                      -- inputs were invalid
+      m_invalid_o : out   std_logic                      -- inputs were out of range
    );
 end entity srt;
 
@@ -68,8 +68,8 @@ architecture synthesis of srt is
    signal core_m_ready : std_logic;
    signal core_q       : std_logic_vector(67 downto 0);
 
-   -- Whether the inputs are valid, and whether the inputs of the current
-   -- division were invalid
+   -- Whether the inputs are in range, and whether the inputs of the current
+   -- division were out of range
    signal inputs_valid : boolean;
    signal invalid      : std_logic                 := '0';
 
@@ -93,7 +93,8 @@ architecture synthesis of srt is
 begin
 
    -- srt_core is always ready when state is IDLE_ST, since its result has
-   -- already been taken. Checking core_s_ready as well keeps the two in step.
+   -- already been taken. So checking core_s_ready is redundant, but it makes
+   -- sure that no input is lost if this ever changes.
    s_ready_o <= '1' when state = IDLE_ST and core_s_ready = '1' else
                 '0';
    m_valid_o <= m_valid;
@@ -143,9 +144,9 @@ begin
          end case;
 
          -- Start a new division. The srt_core instance is started in the same
-         -- clock cycle (unless the inputs are invalid), see core_s_valid below.
-         -- For invalid inputs, the result from srt_core is not needed, since
-         -- m_q_o is set to all ones.
+         -- clock cycle (unless the inputs are out of range), see core_s_valid
+         -- below. For inputs out of range, the result from srt_core is not
+         -- needed, since m_q_o is set to all ones.
          if s_valid_i = '1' and s_ready_o = '1' then
             exp <= 30 + norm_exp;
             if inputs_valid then
@@ -159,7 +160,7 @@ begin
       end if;
    end process srt_proc;
 
-   -- Don't start srt_core for invalid inputs, since they can then not be
+   -- Don't start srt_core for inputs out of range, since they cannot be
    -- normalized
    core_s_valid <= s_valid_i when state = IDLE_ST and inputs_valid else
                    '0';

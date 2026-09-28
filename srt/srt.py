@@ -133,8 +133,8 @@ def pla(n, d, table, g=G_SIZE):
 # of each iteration are appended to it.
 #
 # With carry_save, the partial remainder is kept in carry-save form, like in
-# srt_core.vhd and in the Pentium: n = s + c. Then n - q*d is calculated with a carry-save adder,
-# without propagating any carries. A positive q*d is subtracted by adding its
+# srt_core.vhd and in the Pentium: n = s + c. Then n - q*d is calculated with a
+# carry-save adder, without propagating any carries. A positive q*d is subtracted by adding its
 # complement, and adding the 1 as the lowest bit of the carries. For the table
 # lookup, only the top 7 bits of s and c are added. This ignores the carries
 # from the lower bits, so the lookup can use the table row just below n. With
@@ -548,7 +548,7 @@ def main():
             print(f"Entry {idx}: Never used, since it is outside the range of the partial remainder.")
             continue
         if carry_save:
-            print(f"Entry {idx}: Not outside the range of the partial remainder, so it may be used.")
+            print(f"Entry {idx}: Inside the range of the partial remainder, so it may be used.")
             continue
         found = find_input(idx, table)
         if found is None:
