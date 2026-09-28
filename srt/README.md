@@ -106,8 +106,8 @@ leading one, $\Delta d = \frac{1}{16}$, and so $\Delta n \le \frac{1}{4}$ is
 enough. This design uses $\Delta n = \frac{1}{8}$, i.e. 3 fractional bits,
 which leaves a margin: $\frac{1}{8} + \frac{1}{12} = \frac{5}{24} < \frac{1}{3}$.
 The other 4 of the 7 bits are the sign and 3 integer bits, which are needed
-because the bound allows $|n|$ up to $\frac{8}{3} \cdot 2 = \frac{16}{3}$ (in
-practice it stays below 4.5, see below).
+because the bound allows $|n|$ up to $\frac{8}{3} \cdot 2 = \frac{16}{3}$. (With
+this table, the formal verification shows that in fact $-4 \le n < 4.5$.)
 
 The condition is sufficient, but not necessary: depending on how the steps
 line up with the grid, even fewer bits can work. `srt.py` checks the actual
