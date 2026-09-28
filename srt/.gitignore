@@ -1,0 +1,44 @@
+# Generated files, see "make clean"
+
+# Model
+__pycache__/
+
+# Simulation
+tb_srt
+srt.ghw
+work-obj08.cf
+*.o
+
+# Formal verification
+div_cover/
+div_prove/
+div_prove32/
+
+# Diagram (pla.svg and pla_steps.tex are kept in the repository)
+pla.pdf
+pla.aux
+pla.log
+pla.fls
+pla.fdb_latexmk
+
+# Vivado (make vivado)
+vivado_build.tcl
+post_synth.dcp
+post_route.dcp
+timing_summary.rpt
+utilization.rpt
+srt_float.bit
+vivado*.jou
+vivado*.log
+usage_statistics_webtalk*
+.Xil/
+clockInfo.txt
+tight_setup_hold_pins.txt
+
+# Vivado (srt.xpr project)
+srt.cache/
+srt.gen/
+srt.hw/
+srt.ip_user_files/
+srt.runs/
+srt.sim/

@@ -56,9 +56,9 @@ partial remainder, and the Pentium bug. It also has a diagram of the table.
 Internally (in `div.vhd` and `pla.vhd`) the values are two's complement with 4
 integer bits (including the sign). The inputs to `div` are normalized so the
 top nibble is `0001`, i.e. they are in the range [1, 2). The partial remainder
-`n` then stays in the range $-4 < n < 4.5$, see
+`n` then stays in the range $-4.5 < n < 4$, see
 [The actual range of the partial remainder](ALGORITHM.md#the-actual-range-of-the-partial-remainder).
-The formal verification checks $-4 \le n < 4.5$.
+The formal verification checks $-4.5 \le n < 4$.
 
 ## Formal verification
 The formal verification (`div.psl`, `div.sby`) checks `div` with `G_SIZE=16`
@@ -97,8 +97,8 @@ Type `make` to list the supported targets. The most important ones are:
   minute.
   If it fails, use `make show_prove` or `make show_induct` to view the
   counterexample in GTKWave, and `make show_cover` to view the cover trace.
-* `make model` (or `./srt.py`) checks the quotient digit table, and tests the
-  model. See below.
+* `make model` (or `./srt.py` and `./srt.py --carry-save`) checks the quotient
+  digit table, and tests the model. See below.
 * `make clean` removes the generated files.
 
 The CI (`.github/workflows/srt.yml`) runs `make model`, `make sim`, and
@@ -115,13 +115,19 @@ modified.
   map to the entry, and that satisfy |n/d| < 8/3, the next partial remainder
   must satisfy this too. This check is slightly conservative: some entries near
   the edge are never used. It then prints the range of the partial remainder,
-  and tests over 100000 divisions against the exact result.
+  and tests over 100000 divisions against the exact result. It exits with an
+  error if any of the divisions is wrong.
+* `./srt.py --carry-save` does the same with a carry-save partial remainder,
+  like in the Pentium. Then the table may see the partial remainder one row
+  too low, so the table check also requires each entry to be valid for the
+  row above it. The table in `pla.vhd` passes both checks, see
+  [The table](ALGORITHM.md#the-table).
 * `./srt.py --bounds` prints the range of the partial remainder for each
   column of the table, see
   [The actual range of the partial remainder](ALGORITHM.md#the-actual-range-of-the-partial-remainder).
 * `./srt.py 1 3 --trace` calculates 1/3, and shows the partial remainder and
   quotient digit of each iteration.
-* `./srt.py --remove 3.0:1.5` removes a table entry (sets it to zero, like the
+* `./srt.py --remove 2.5:1.5` removes a table entry (sets it to zero, like the
   missing entries in the Pentium). It shows which entries now fail the check,
   how the range of the partial remainder changes, and searches for divisions
   that give a wrong result. A failing entry outside the range of the partial
@@ -129,8 +135,7 @@ modified.
   n.
 * `./srt.py --pla pentium` uses the Pentium's original table from
   `pla_pentium.vhd` instead (`--pla pentium_fixed` for the fixed one).
-  `--carry-save` keeps the partial remainder in carry-save form, like the
-  Pentium. Together they reproduce the FDIV bug:
+  Together with `--carry-save` this reproduces the FDIV bug:
   `./srt.py 4195835 3145727 --pla pentium --carry-save` gives the Pentium's
   wrong result. See
   [The Pentium FDIV bug](ALGORITHM.md#the-pentium-fdiv-bug).

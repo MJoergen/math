@@ -44,10 +44,12 @@ show_debug: ## Show the waveform from "make debug" in GTKWave
 # Model
 #######################
 
-# Check the quotient digit table, and test the bit-exact model
+# Check the quotient digit table, and test the bit-exact model, both with an
+# exact partial remainder (like div.vhd) and with a carry-save partial remainder
 .PHONY: model
 model: ## Check the quotient digit table, and test the bit-exact model srt.py
 	./srt.py
+	./srt.py --carry-save
 
 
 #######################

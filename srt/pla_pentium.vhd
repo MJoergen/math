@@ -29,7 +29,7 @@ library ieee;
 --
 -- The Pentium's table picks the larger digit where both are allowed, so the
 -- partial remainder has a slightly larger range than with pla.vhd:
--- -5 < n < 4.5 instead of -4 < n < 4.5. It still satisfies |n/d| < 8/3.
+-- -5 < n < 4.5 instead of -4.5 < n < 4. It still satisfies |n/d| < 8/3.
 --
 -- This is a purely combinatorial block.
 

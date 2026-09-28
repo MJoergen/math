@@ -17,8 +17,9 @@
 #
 # Usage:
 #   ./srt.py                   Check the table, and test many divisions.
+#   ./srt.py --carry-save      The same, with a carry-save partial remainder.
 #   ./srt.py N D [--trace]     Calculate N/D, optionally showing each iteration.
-#   ./srt.py --remove 3.0:1.5  Remove the table entry for n=3.0, d=1.5, and
+#   ./srt.py --remove 2.5:1.5  Remove the table entry for n=2.5, d=1.5, and
 #                              search for divisions that give a wrong result.
 #                              Use --remove=-2.5:1.0 for a negative n.
 #   ./srt.py --tikz            Print the digit boundaries of the table, for the
@@ -35,6 +36,7 @@ import argparse
 import os
 import random
 import re
+import sys
 from fractions import Fraction
 
 G_SIZE = 32                       # The value of G_SIZE used by srt_float
@@ -49,26 +51,21 @@ def to_signed(x, bits):
 # The quotient digit table (pla.vhd)
 # -------------------------------------------------------------------------
 
-# Select the quotient digit for 8-bit values n and d, with 4 integer bits
-# (including the sign) and 4 fractional bits. This is the function get_q in
-# pla.vhd, i.e. rounding n/d to the nearest integer.
-def get_q(n, d):
-    half_d = d >> 1
-    if n & 0x80 == 0:
-        if n < half_d:
-            return 0
-        elif n <= d + half_d:
-            return 1
-        else:
-            return 2
+# Select |q| for the table entry with the top 7 bits n7 of n (as a signed
+# integer) and the 4 bits d4 of d after the leading one. This is the function
+# get_q in pla.vhd: it rounds n/d to the nearest integer at the centre of the
+# region the entry must cover, i.e. at n = n7/8 + 1/8 (two rows, to allow for
+# the carry-save estimate) and d = 1 + d4/16 + 1/32. In units of 1/32 these
+# are n_v and d_v. Since 2*|n_v| is even and d_v is odd, there are no ties.
+def get_q(n7, d4):
+    n_v = 4 * n7 + 4
+    d_v = 33 + 2 * d4
+    if 2 * abs(n_v) < d_v:
+        return 0
+    elif 2 * abs(n_v) < 3 * d_v:
+        return 1
     else:
-        neg_n = (-n) & 0xFF
-        if neg_n < half_d:
-            return 0
-        elif neg_n <= d + half_d:
-            return -1
-        else:
-            return -2
+        return 2
 
 
 # Read the Pentium's table from pla_pentium.vhd, either the original version
@@ -94,11 +91,7 @@ def pentium_table(fixed):
 # from pla.vhd ("srt"), or one of the Pentium's ("pentium", "pentium_fixed").
 def build_table(remove=(), pla="srt"):
     if pla == "srt":
-        table = []
-        for i in range(2048):
-            n = (i >> 4) << 1           # 7 bits of n, followed by a zero
-            d = 16 + (i & 15)           # "0001" followed by 4 bits of d
-            table.append(abs(get_q(n, d)))
+        table = [get_q(to_signed(i >> 4, 7), i & 15) for i in range(2048)]
     else:
         table = pentium_table(fixed=(pla == "pentium_fixed"))
     for i in remove:
@@ -238,11 +231,19 @@ def clip(poly, a, b, c):
 # This is slightly conservative, since n and d are treated as real numbers,
 # and since not all of the region is necessarily reachable.
 #
+# With carry_save, the entry must also be valid for the row of n above it,
+# since with a carry-save partial remainder the table may see n one row too
+# low.
+#
 # Returns the list of failing table indices.
-def check_table(table):
+def check_table(table, carry_save=False):
     bad = []
     for idx in range(2048):
         n_lo, n_hi, d_lo, d_hi = cell_bounds(idx)
+        if carry_save:
+            # The table may see n one row too low, so the entry must also be
+            # valid for the row above.
+            n_hi += Fraction(1, 8)
         poly = [(n_lo, d_lo), (n_hi, d_lo), (n_hi, d_hi), (n_lo, d_hi)]
         poly = clip(poly, -1, Fraction(8, 3), 0)       # n < 8d/3
         poly = clip(poly, 1, Fraction(8, 3), 0)        # n > -8d/3
@@ -514,21 +515,21 @@ def main():
         show_division(args.n, args.d, table, args.trace, args.carry_save)
         return
 
-    if args.carry_save:
-        # The table check and the range of the partial remainder below assume
-        # that the partial remainder is exact, so only test divisions
-        test(table, args.count, carry_save=True)
-        return
-
-    bad = check_table(table)
-    print(f"Table check: {len(bad)} failing entries.")
+    bad = check_table(table, args.carry_save)
+    print(f"Table check{' (carry-save)' if args.carry_save else ''}: {len(bad)} failing entries.")
     for idx in bad:
         n_lo, n_hi, d_lo, d_hi = cell_bounds(idx)
         print(f"  FAIL: entry {idx}: n in [{n_lo}, {n_hi}), d in [{d_lo}, {d_hi}), |q| = {table[idx]}")
+
+    if args.carry_save:
+        # The range of the partial remainder and the search for divisions
+        # below assume that the partial remainder is exact
+        errors = test(table, args.count, carry_save=True)
+        sys.exit(1 if errors else 0)
     bounds = remainder_bounds(table)
     print_bounds(bounds, per_column=False)
 
-    test(table, args.count, bad)
+    errors = test(table, args.count, bad)
 
     for idx in bad:
         # An entry outside the range of the partial remainder is never used
@@ -543,6 +544,9 @@ def main():
         else:
             print(f"Entry {idx}: This division uses it:")
             show_division(*found, table, args.trace)
+
+    # Fail if any division in the test was wrong
+    sys.exit(1 if errors else 0)
 
 
 if __name__ == "__main__":

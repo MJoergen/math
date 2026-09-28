@@ -16,6 +16,14 @@ library ieee;
 -- The input format is the same as in div.vhd: two's complement with 4 integer
 -- bits including the sign, and d must be normalized (1 <= d < 2).
 --
+-- The table also works if the partial remainder is kept in carry-save form
+-- (a sum and a carry), like in the Pentium. Then only the top 7 bits of the
+-- sum and the carry are added, so the table may see n one row too low. So
+-- each entry must hold a digit that is valid not just for its own row of n,
+-- but also for the row above. The digit is therefore selected by rounding n/d
+-- to the nearest integer at the centre of this region, i.e. at the centre of
+-- two rows of n and one column of d. See get_q, and ALGORITHM.md.
+--
 -- This is a purely combinatorial block.
 
 entity pla is
@@ -32,61 +40,52 @@ end entity pla;
 
 architecture synthesis of pla is
 
-   -- Select the quotient digit by rounding n/d to the nearest integer, i.e.
-   --   |n| <  d/2        => |q| = 0
-   --   |n| <= d + d/2    => |q| = 1
+   -- Select |q| for the table entry with the top 7 bits n7 of n (as a signed
+   -- integer, i.e. n7/8 <= n < (n7+1)/8) and the 4 bits d4 of d after the
+   -- leading one (i.e. 1 + d4/16 <= d < 1 + (d4+1)/16). This rounds n/d to the
+   -- nearest integer at the centre of the region the entry must cover:
+   --   n = n7/8 + 1/8     (the centre of this row and the row above)
+   --   d = 1 + d4/16 + 1/32
+   -- In units of 1/32 these are the integers n_v and d_v below. Since 2*|n_v|
+   -- is even and d_v is odd, n/d is never exactly halfway between two digits.
+   --   |n| < d/2         => |q| = 0
+   --   |n| < d + d/2     => |q| = 1
    --   otherwise         => |q| = 2
-   -- This is only used when generating the table, so it can afford to use
-   -- full comparators.
+   -- The sign of q is the sign of n, see q_v_proc.
    pure function get_q (
-      arg_n : std_logic_vector;
-      arg_d : std_logic_vector
-   ) return integer is
-      variable neg_n_v  : std_logic_vector(arg_n'range);
-      variable half_d_v : std_logic_vector(arg_d'range);
-      variable res_v    : integer range -2 to 2;
+      n7 : integer range -64 to 63;
+      d4 : natural range 0 to 15
+   ) return natural is
+      variable n_v : integer;
+      variable d_v : natural;
    begin
-      assert arg_d(arg_d'left downto arg_d'left-3) = "0001";
+      n_v := 4 * n7 + 4;
+      d_v := 33 + 2 * d4;
 
-      half_d_v := "0" & arg_d(arg_d'left downto 1);
-      neg_n_v  := (not arg_n) + 1;
-
-      if arg_n(arg_n'left) = '0' then
-         if arg_n < half_d_v then
-            res_v := 0;
-         elsif arg_n <= arg_d + half_d_v then
-            res_v := 1;
-         else
-            res_v := 2;
-         end if;
+      if 2 * abs(n_v) < d_v then
+         return 0;
+      elsif 2 * abs(n_v) < 3 * d_v then
+         return 1;
       else
-         if neg_n_v < half_d_v then
-            res_v := 0;
-         elsif neg_n_v <= arg_d + half_d_v then
-            res_v := -1;
-         else
-            res_v := -2;
-         end if;
+         return 2;
       end if;
-
-      return res_v;
    end function get_q;
 
    type   rom_type is array (natural range <>) of std_logic_vector(1 downto 0);
 
    -- Build the table by evaluating get_q for each entry. The index is
-   -- n(7 bits) & d(4 bits). Here n and d are reconstructed as 8-bit values in
-   -- the same format as the inputs (4 integer bits and 4 fractional bits).
+   -- n(7 bits) & d(4 bits).
    pure function init_rom return rom_type is
       variable rom_v : rom_type(0 to 2047) := (others => (others => '0'));
-      variable n_v   : std_logic_vector(7 downto 0);
-      variable d_v   : std_logic_vector(7 downto 0);
+      variable n7_v  : integer range -64 to 127;
    begin
       --
       for i in 0 to 2047 loop
-         n_v      := to_stdlogicvector(i / 16, 7) & "0";
-         d_v      := "0001" & to_stdlogicvector(i mod 16, 4);
-         rom_v(i) := to_stdlogicvector(abs(get_q(n_v, d_v)), 2);
+         n7_v := i / 16;
+         if n7_v >= 64 then
+            n7_v := n7_v - 128;                           -- Negative n
+         end if;
+         rom_v(i) := to_stdlogicvector(get_q(n7_v, i mod 16), 2);
       end loop;
 
       return rom_v;
