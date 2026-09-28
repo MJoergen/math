@@ -32,6 +32,7 @@ div.n[15:0]
 div.d[15:0]
 @28
 div.pla_q[2:0]
+div.digit[2:0]
 @22
 div.quot[35:0]
 div.quot_m1[35:0]

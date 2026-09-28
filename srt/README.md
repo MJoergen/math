@@ -28,7 +28,7 @@ partial remainder, and the Pentium bug. It also has a diagram of the table.
 | [`srt_float.vhd`](srt_float.vhd) | Top level. Divides two unsigned integers, returns a 32.32 fixed-point quotient.
 | [`normalizer.vhd`](normalizer.vhd) | Shifts dividend and divisor into the range [1, 2).
 | [`div.vhd`](div.vhd) | The SRT divider itself. Operates on normalized values.
-| [`pla.vhd`](pla.vhd) | The quotient digit selection table.
+| [`pla.vhd`](pla.vhd) | The quotient digit selection table, implemented as comparisons against thresholds.
 | [`shifter.vhd`](shifter.vhd) | Shifts the quotient back to undo the normalization.
 | [`tb_srt.vhd`](tb_srt.vhd) | Testbench for `srt_float`.
 | [`div.psl`](div.psl), [`div.sby`](div.sby) | Formal verification of `div`.
@@ -96,6 +96,10 @@ Type `make` to list the supported targets. The most important ones are:
   counterexample in GTKWave, and `make show_cover` to view the cover trace.
 * `make model` (or `./srt.py`) checks the quotient digit table, and tests the
   model. See below.
+* `make vivado` runs synthesis and implementation in Vivado, and fails if the
+  design does not meet the 200 MHz timing constraint. The timing report is
+  written to `timing_summary.rpt`. No I/O pins are assigned, so the bitstream
+  is not meant to be loaded into a board.
 * `make clean` removes the generated files.
 
 The CI (`.github/workflows/srt.yml`) runs `make model`, `make sim`, and

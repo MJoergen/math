@@ -157,11 +157,12 @@ vunit div_inst (div(synthesis))
    -- ASSERTIONS ABOUT OUTPUTS
    -----------------------------
 
-   -- Verify the helper signals in every clock cycle
+   -- Verify the helper signals in every clock cycle. q_o is quot with the
+   -- stored digit appended, i.e. all the digits so far.
    f_n4_check  : assert always f_started = '1' -> f_n4_ok;
    f_invariant : assert always f_started = '1' -> f_inv_ok;
    f_remainder : assert always f_started = '1' -> f_rem_ok;
-   f_digits    : assert always f_started = '1' -> quot = f_q and quot_m1 = f_q - 1;
+   f_digits    : assert always f_started = '1' -> q_o = f_q and quot_m1 = quot - 1;
 
    -- For induction: The stored divisor and dividend are valid
    f_d_norm    : assert always f_started = '1' -> d(G_SIZE-1 downto G_SIZE-4) = "0001";

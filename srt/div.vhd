@@ -2,6 +2,9 @@ library ieee;
    use ieee.std_logic_1164.all;
    use ieee.numeric_std_unsigned.all;
 
+library work;
+   use work.pla_pkg.all;
+
 -- This divides two numbers using the SRT algorithm (with radix 4).
 -- It is inspired by this analysis: https://www.righto.com/2024/12/this-die-photo-of-pentium-shows.html
 --
@@ -11,6 +14,9 @@ library ieee;
 --    n := 4*(n - q*d)
 -- The digit set is redundant, so the table only needs to look at the top few
 -- bits of n and d, and an imprecise choice of q is corrected by later digits.
+-- The divisor does not change during a division, so the thresholds of its
+-- column of the table are stored in col when the division starts. Then each
+-- iteration only compares n against them, see pla.vhd.
 --
 -- Number formats (G_SIZE bits, two's complement with 4 integer bits including
 -- the sign, i.e. bit G_SIZE-4 has weight 1):
@@ -30,11 +36,17 @@ library ieee;
 -- q is then handled by appending (4 + q) to quot_m1, since
 --    4*quot + q = 4*quot_m1 + (4 + q)
 -- So each iteration only selects one of the two registers and appends two
--- bits, and after the last iteration quot is the result. See the table in
--- div_proc.
+-- bits. See the table in append_proc.
+--
+-- Each digit is first stored in the register digit, and only appended to
+-- quot in the next iteration. This keeps the quotient registers (about 140
+-- loads) off the output of the PLA, which is on the critical path. The
+-- quotient q_o is quot with the last digit appended, so it is still valid
+-- in the same clock cycle as before.
 --
 -- Usage: Pulse start_i for one clock cycle. The inputs n_i and d_i are only
--- sampled in that cycle. The result is valid on q_o when busy_o returns low.
+-- sampled in that cycle. The result is valid on q_o when busy_o returns low,
+-- until the next division is started.
 
 entity div is
    generic (
@@ -58,9 +70,12 @@ architecture synthesis of div is
 
    signal   iter : natural range 0 to C_NUM_ITERS - 1;
 
-   signal   pla_q : integer range -2 to 2;
+   -- The quotient digit selected by the PLA: its magnitude, and the digit
+   -- itself (with the sign of n)
+   signal   pla_mag : mag_type;
+   signal   pla_q   : integer range -2 to 2;
 
-   -- Any normalized value will do. This just keeps the PLA assertion happy
+   -- Any normalized value will do. This just keeps the assertions happy
    -- before the first division.
    function get_init_d return std_logic_vector is
       variable res_v : std_logic_vector(G_SIZE - 1 downto 0);
@@ -70,10 +85,26 @@ architecture synthesis of div is
       return res_v;
    end function get_init_d;
 
+   constant C_INIT_D : std_logic_vector(G_SIZE - 1 downto 0) := get_init_d;
+
+   -- The 4 bits of d that select the column of the table
+   pure function get_d4 (
+      arg_d : std_logic_vector(G_SIZE - 1 downto 0)
+   ) return std_logic_vector is
+   begin
+      return arg_d(G_SIZE - 5 downto G_SIZE - 8);
+   end function get_d4;
+
    signal   n     : std_logic_vector(G_SIZE - 1 downto 0) := (others => '0'); -- Partial remainder
-   signal   d     : std_logic_vector(G_SIZE - 1 downto 0) := get_init_d;      -- Divisor
+   signal   d     : std_logic_vector(G_SIZE - 1 downto 0) := C_INIT_D;        -- Divisor
+   signal   col   : col_type := get_col(get_d4(C_INIT_D));                     -- Column of d
    signal   quot    : std_logic_vector(2 * G_SIZE + 3 downto 0);              -- Quotient so far
    signal   quot_m1 : std_logic_vector(2 * G_SIZE + 3 downto 0);              -- quot - 1
+   signal   digit   : integer range -2 to 2;                                  -- Not yet appended to quot
+
+   -- quot and quot_m1 with digit appended
+   signal   new_quot    : std_logic_vector(2 * G_SIZE + 3 downto 0);
+   signal   new_quot_m1 : std_logic_vector(2 * G_SIZE + 3 downto 0);
 
    type     state_type is (IDLE_ST, BUSY_ST);
    signal   state : state_type                            := IDLE_ST;
@@ -90,16 +121,18 @@ architecture synthesis of div is
       end if;
    end function abs_slv;
 
-   -- Calculate the next partial remainder 4*(n - q*d).
+   -- Calculate the next partial remainder 4*(n - q*d), where the quotient
+   -- digit q has the magnitude arg_mag (see pla.vhd), and the sign of n.
    -- The assertions verify the invariants of the SRT algorithm, and are used
    -- during formal verification.
    pure function get_n (
-      arg_n : std_logic_vector(G_SIZE - 1 downto 0);
-      arg_d : std_logic_vector(G_SIZE - 1 downto 0);
-      arg_q : integer range -2 to 2
+      arg_n   : std_logic_vector(G_SIZE - 1 downto 0);
+      arg_d   : std_logic_vector(G_SIZE - 1 downto 0);
+      arg_mag : mag_type
    ) return std_logic_vector is
+      variable mult_v  : std_logic_vector(G_SIZE - 1 downto 0);
+      variable sub_v   : std_logic;
       variable tmp_v   : std_logic_vector(G_SIZE - 1 downto 0);
-      variable neg_v   : std_logic_vector(G_SIZE - 1 downto 0);
       variable tmp3_v  : std_logic_vector(G_SIZE + 1 downto 0);
       variable argn3_v : std_logic_vector(G_SIZE + 1 downto 0);
    begin
@@ -112,28 +145,21 @@ architecture synthesis of div is
                 ", arg_n=0x" & to_hstring(arg_n) &
                 ", arg_d=0x" & to_hstring(arg_d);
 
-      -- Calculate n - q*d. Multiplying by 2 is just a shift.
-      case arg_q is
+      -- Calculate |q|*d. Multiplying by 2 is just a shift.
+      if arg_mag(1) = '1' then
+         mult_v := arg_d(G_SIZE - 2 downto 0) & "0";
+      elsif arg_mag(0) = '1' then
+         mult_v := arg_d;
+      else
+         mult_v := (others => '0');
+      end if;
 
-         when -2 =>
-            tmp_v := arg_n + (arg_d(G_SIZE - 2 downto 0) & "0");
-
-         when -1 =>
-            tmp_v := arg_n + arg_d;
-
-         when 0 =>
-            tmp_v := arg_n;
-
-         when 1 =>
-            tmp_v := arg_n - arg_d;
-
-         when 2 =>
-            tmp_v := arg_n - (arg_d(G_SIZE - 2 downto 0) & "0");
-
-         when others =>
-            tmp_v := arg_n;
-
-      end case;
+      -- Calculate n - q*d, i.e. n - |q|*d for n >= 0, and n + |q|*d for n < 0.
+      -- This is written as a single addition, with the subtraction as
+      -- n + not(|q|*d) + 1. Then each bit of the adder only depends on n, two
+      -- bits of d, the sign of n, and arg_mag, which fits in one LUT.
+      sub_v := not arg_n(G_SIZE - 1);
+      tmp_v := arg_n + (mult_v xor (mult_v'range => sub_v)) + sub_v;
 
       if G_DEBUG then
          report "get_n: tmp_v=0x" & to_hstring(tmp_v);
@@ -161,11 +187,53 @@ begin
    busy_o <= '1' when state /= IDLE_ST else
              '0';
 
-   div_proc : process (clk_i)
+   -- Append the stored quotient digit q (on-the-fly conversion). The new
+   -- values are 4*quot + q and 4*quot + q - 1, where
+   -- 4*quot = quot & "00", and 4*quot = quot_m1 & "00" + 4.
+   --    q  | new quot       | new quot_m1
+   --    2  | quot    & "10" | quot    & "01"
+   --    1  | quot    & "01" | quot    & "00"
+   --    0  | quot    & "00" | quot_m1 & "11"
+   --   -1  | quot_m1 & "11" | quot_m1 & "10"
+   --   -2  | quot_m1 & "10" | quot_m1 & "01"
+   append_proc : process (all)
       variable quot_v    : std_logic_vector(2 * G_SIZE + 1 downto 0);
       variable quot_m1_v : std_logic_vector(2 * G_SIZE + 1 downto 0);
-      variable new_v     : std_logic_vector(2 * G_SIZE + 3 downto 0);
-      variable new_m1_v  : std_logic_vector(2 * G_SIZE + 3 downto 0);
+   begin
+      quot_v    := quot(2 * G_SIZE + 1 downto 0);
+      quot_m1_v := quot_m1(2 * G_SIZE + 1 downto 0);
+
+      case digit is
+
+         when 2 =>
+            new_quot    <= quot_v & "10";
+            new_quot_m1 <= quot_v & "01";
+
+         when 1 =>
+            new_quot    <= quot_v & "01";
+            new_quot_m1 <= quot_v & "00";
+
+         when -1 =>
+            new_quot    <= quot_m1_v & "11";
+            new_quot_m1 <= quot_m1_v & "10";
+
+         when -2 =>
+            new_quot    <= quot_m1_v & "10";
+            new_quot_m1 <= quot_m1_v & "01";
+
+         when others =>
+            new_quot    <= quot_v & "00";
+            new_quot_m1 <= quot_m1_v & "11";
+
+      end case;
+
+   end process append_proc;
+
+   -- After the last iteration, digit holds the last digit, and quot holds
+   -- all the digits before it.
+   q_o <= new_quot;
+
+   div_proc : process (clk_i)
    begin
       if rising_edge(clk_i) then
 
@@ -182,53 +250,18 @@ begin
                          ", pla_q=" & to_string(pla_q);
                end if;
 
-               n <= get_n(n, d, pla_q);
+               n <= get_n(n, d, pla_mag);
 
-               -- Append the new quotient digit q (on-the-fly conversion). The
-               -- new values are 4*quot + q and 4*quot + q - 1, where
-               -- 4*quot = quot & "00", and 4*quot = quot_m1 & "00" + 4.
-               --    q  | new quot       | new quot_m1
-               --    2  | quot    & "10" | quot    & "01"
-               --    1  | quot    & "01" | quot    & "00"
-               --    0  | quot    & "00" | quot_m1 & "11"
-               --   -1  | quot_m1 & "11" | quot_m1 & "10"
-               --   -2  | quot_m1 & "10" | quot_m1 & "01"
-               quot_v    := quot(2 * G_SIZE + 1 downto 0);
-               quot_m1_v := quot_m1(2 * G_SIZE + 1 downto 0);
+               -- Store the new digit, and append the previous one. In the
+               -- first iteration, the previous digit is a leading zero,
+               -- which leaves quot and quot_m1 unchanged.
+               digit   <= pla_q;
+               quot    <= new_quot;
+               quot_m1 <= new_quot_m1;
 
-               case pla_q is
-
-                  when 2 =>
-                     new_v    := quot_v & "10";
-                     new_m1_v := quot_v & "01";
-
-                  when 1 =>
-                     new_v    := quot_v & "01";
-                     new_m1_v := quot_v & "00";
-
-                  when -1 =>
-                     new_v    := quot_m1_v & "11";
-                     new_m1_v := quot_m1_v & "10";
-
-                  when -2 =>
-                     new_v    := quot_m1_v & "10";
-                     new_m1_v := quot_m1_v & "01";
-
-                  when others =>
-                     new_v    := quot_v & "00";
-                     new_m1_v := quot_m1_v & "11";
-
-               end case;
-
-               quot    <= new_v;
-               quot_m1 <= new_m1_v;
-
-               -- In the last iteration, the result includes the digit just
-               -- calculated.
                if iter < C_NUM_ITERS - 1 then
                   iter <= iter + 1;
                else
-                  q_o   <= new_v;
                   state <= IDLE_ST;
                end if;
 
@@ -243,13 +276,20 @@ begin
                report "div: Divisor 0x" & to_hstring(d_i) & " is not normalized.";
             n       <= n_i;
             d       <= d_i;
+            col     <= get_col(get_d4(d_i));
             iter    <= 0;
             quot    <= (others => '0');                -- 0
             quot_m1 <= (others => '1');                -- -1
+            digit   <= 0;
             state   <= BUSY_ST;
          end if;
       end if;
    end process div_proc;
+
+   -- col is loaded together with d. This is also needed for the induction in
+   -- the formal verification.
+   f_col : assert col = get_col(get_d4(d))
+      report "col does not match d=0x" & to_hstring(d);
 
    pla_inst : entity work.pla
       generic map (
@@ -257,10 +297,12 @@ begin
          G_DEBUG => G_DEBUG
       )
       port map (
-         n_i => n,
-         d_i => d,
-         q_o => pla_q
+         n_i   => n,
+         col_i => col,
+         mag_o => pla_mag
       ); -- pla_inst
+
+   pla_q <= get_digit(n(G_SIZE - 1), pla_mag);
 
 end architecture synthesis;
 

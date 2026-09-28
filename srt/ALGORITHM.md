@@ -61,6 +61,11 @@ Here & means appending two bits. So each iteration only selects one of the two
 registers and appends two bits, without any carry chain, and after the last
 iteration $Q$ is the quotient.
 
+In `div.vhd` each digit is first stored in a register, and only appended in
+the next iteration, and the quotient output is $Q$ with the stored digit
+appended. This keeps the many quotient registers off the output of the table,
+which is on the critical path.
+
 ## Why the partial remainder stays bounded
 **Claim:** If $|n| \le \frac{8}{3}d$, then there is a digit $q$ such that the
 next partial remainder $n' = 4(n - qd)$ also satisfies $|n'| \le \frac{8}{3}d$.
@@ -212,6 +217,31 @@ The range also shows which table entries are never used: those outside the
 range of their column. This is why the table check in `srt.py`, which only
 uses the bound $|n| \le \frac{8}{3}d$, flags some entries near the edge that
 are never used.
+
+## Implementing the table
+The thresholds $t_k$ above also give a faster way to implement the table. The
+table compares $|n|$ against $\frac{d}{2}$ and $\frac{3}{2}d$, for positive
+and negative $n$ alike, so in every column $t_{-1} = \frac{1}{8} - t_0$ and
+$t_{-2} = \frac{1}{8} - t_1$. (In the last column, $t_0 = 1$ and
+$t_{-1} = -\frac{7}{8}$.) So within a column, the magnitude of the digit only
+depends on $|n|$:
+```math
+|q| = \begin{cases}
+0 & \text{for } |n| < t_0 \\
+1 & \text{for } t_0 \le |n| < t_1 \\
+2 & \text{for } t_1 \le |n|
+\end{cases}
+```
+and its sign is the sign of $n$.
+
+The divisor does not change during a division, so `div.vhd` looks up $t_0$
+and $t_1$ for its column when the division starts, and stores them in a
+register. Each iteration then only compares $|n|$ against these two values.
+In the FPGA, each comparison is a short carry chain on the 7 bits of $n$,
+which is much faster than a lookup that depends on all 11 bits. The digit
+selection and the update of the partial remainder must both fit in one clock
+cycle, so this matters for the clock frequency. `pla.vhd` checks that the
+comparisons give the same digit as the table for all 2048 entries.
 
 ## The Pentium FDIV bug
 In the Pentium this table was implemented as a PLA. The table's unused
