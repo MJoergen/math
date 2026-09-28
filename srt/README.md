@@ -114,8 +114,13 @@ the carry with a small carry-lookahead adder. Since the lower bits are ignored,
 the index can be one entry too low, i.e. the estimate of $n$ can be off by up
 to $2\Delta n$. The condition then becomes
 $2\Delta n + \frac{4}{3}\Delta d \le \frac{1}{3}$, which 7 + 4 bits satisfy
-with equality, leaving no margin. This design calculates $n$ exactly in every
-iteration, so its table has more precision than it needs.
+with equality: $\frac{2}{8} + \frac{4}{3} \cdot \frac{1}{16} = \frac{1}{4} + \frac{1}{12} = \frac{1}{3}$.
+So the condition only just guarantees that a correct table exists. In practice
+the steps line up well with the grid: in every column there is a multiple of
+$\frac{1}{8}$ strictly inside the allowed range, and the smallest margin is
+$\frac{1}{48}$ (for $d$ between $\frac{17}{16}$ and $\frac{9}{8}$, between the
+digits $-2$ and $-1$). This design calculates $n$ exactly in every iteration,
+so its table has more precision than it needs.
 
 ### The Pentium FDIV bug
 In the Pentium this table was implemented as a PLA. The table's unused
