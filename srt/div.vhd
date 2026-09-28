@@ -18,7 +18,7 @@ library ieee;
 --              1 <= n_i, d_i < 2. As a special case n_i = 0 is allowed.
 --   n        : The partial remainder. It stays within |n/d| < 8/3, which is
 --              the radix 4 times the redundancy factor 2/3 of the digit set.
---              Formal verification shows that -4 <= n < 4.25.
+--              Formal verification shows that -4 <= n < 4.5.
 --   q_o      : Unsigned, with 2 integer bits and 2*G_SIZE+2 fractional bits.
 --              The quotient digit from iteration k has weight 4^(-k). Since
 --              1/2 < n_i/d_i < 2 the first digit is always 1 or 2
@@ -222,8 +222,10 @@ begin
          if start_i then
             -- The inputs must be normalized. A zero dividend is fine too,
             -- since the PLA will then select q = 0 in every iteration.
-            f_valid_n : assert n_i(G_SIZE - 1 downto G_SIZE - 4) = "0001" or n_i = 0;
-            f_valid_d : assert d_i(G_SIZE - 1 downto G_SIZE - 4) = "0001";
+            f_valid_n : assert n_i(G_SIZE - 1 downto G_SIZE - 4) = "0001" or n_i = 0
+               report "div: Dividend 0x" & to_hstring(n_i) & " is not normalized.";
+            f_valid_d : assert d_i(G_SIZE - 1 downto G_SIZE - 4) = "0001"
+               report "div: Divisor 0x" & to_hstring(d_i) & " is not normalized.";
             n     <= n_i;
             d     <= d_i;
             iter  <= 0;
