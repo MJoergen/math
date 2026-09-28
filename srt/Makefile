@@ -14,22 +14,26 @@ help: ## Show this help message
 # Simulation
 #######################
 
-SIM_SRC = srt_float.vhd pla.vhd normalizer.vhd div.vhd shifter.vhd tb_srt.vhd
+SIM_SRC = srt_float.vhd pla.vhd pla_pentium.vhd normalizer.vhd div.vhd shifter.vhd tb_srt.vhd
+
+# The quotient digit table used by the testbench: srt (pla.vhd), pentium (the
+# original Pentium table with the FDIV bug), or pentium_fixed. See div.vhd.
+PLA ?= srt
 
 # Run the complete testbench. No waveform is written, since a waveform of the
 # complete run is several GB, and makes GHDL crash.
 .PHONY: sim
-sim: $(SIM_SRC) ## Run the complete testbench (takes about 30 seconds)
+sim: $(SIM_SRC) ## Run the complete testbench (about 30 seconds). PLA=pentium uses the Pentium table
 	ghdl -i --std=08 --work=work $^
 	ghdl -m --std=08 -fexplicit tb_srt
-	ghdl -r --std=08 tb_srt --assert-level=error --stop-time=400ms
+	ghdl -r --std=08 tb_srt -gG_PLA=$(PLA) --assert-level=error --stop-time=400ms
 
 # Run only the first few divisions, and write a waveform to srt.ghw
 .PHONY: debug
 debug: $(SIM_SRC) ## Run the first 10 us of the testbench, and write a waveform to srt.ghw
 	ghdl -i --std=08 --work=work $^
 	ghdl -m --std=08 -fexplicit tb_srt
-	ghdl -r --std=08 tb_srt --assert-level=error --wave=srt.ghw --stop-time=10us
+	ghdl -r --std=08 tb_srt -gG_PLA=$(PLA) --assert-level=error --wave=srt.ghw --stop-time=10us
 
 .PHONY: show_debug
 show_debug: ## Show the waveform from "make debug" in GTKWave
@@ -40,10 +44,12 @@ show_debug: ## Show the waveform from "make debug" in GTKWave
 # Model
 #######################
 
-# Check the quotient digit table, and test the bit-exact model
+# Check the quotient digit table, and test the bit-exact model, both with a
+# carry-save partial remainder (like div.vhd) and with an exact one
 .PHONY: model
 model: ## Check the quotient digit table, and test the bit-exact model srt.py
 	./srt.py
+	./srt.py --exact
 
 
 #######################
@@ -69,7 +75,7 @@ XILINX_DIR = /opt/Xilinx/2025.1/Vivado
 
 VIVADO_TOP  = srt_float
 VIVADO_PART = xc7a200tfbg484-2
-VIVADO_SRC  = pla.vhd normalizer.vhd div.vhd shifter.vhd srt_float.vhd
+VIVADO_SRC  = pla.vhd pla_pentium.vhd normalizer.vhd div.vhd shifter.vhd srt_float.vhd
 
 # -mode batch, NOT -mode tcl. In tcl mode Vivado exits 0 even when the sourced
 # script raises an error, so an aborted build -- on the timing check below, or
@@ -85,6 +91,11 @@ $(VIVADO_TOP).bit: vivado_build.tcl $(VIVADO_SRC) srt.xdc
 # the check after it aborts the build on negative slack. write_bitstream
 # succeeds even when timing is violated, so without that check a bitstream is
 # not evidence that the design meets the 200 MHz constraint in srt.xdc.
+#
+# No I/O pins are assigned (see srt.xdc), so the DRCs for missing pin
+# locations (UCIO-1) and I/O standards (NSTD-1) are reduced to warnings.
+# Otherwise write_bitstream fails. The bitstream is therefore not meant to be
+# loaded into a board.
 vivado_build.tcl: Makefile
 	echo "# This is a tcl command script for the Vivado tool chain" > $@
 	echo "read_vhdl -vhdl2008 { $(VIVADO_SRC) }" >> $@
@@ -100,6 +111,7 @@ vivado_build.tcl: Makefile
 	echo "report_timing_summary -file timing_summary.rpt" >> $@
 	echo "report_utilization -file utilization.rpt" >> $@
 	echo "if {[get_property SLACK [get_timing_paths]] < 0} { puts {TIMING VIOLATED -- see timing_summary.rpt} ; exit 1 }" >> $@
+	echo "set_property SEVERITY {Warning} [get_drc_checks {NSTD-1 UCIO-1}]" >> $@
 	echo "write_bitstream -force $(VIVADO_TOP).bit" >> $@
 	echo "exit" >> $@
 
@@ -111,6 +123,7 @@ vivado_build.tcl: Makefile
 DUT  = div
 SRC += $(DUT).vhd
 SRC += pla.vhd
+SRC += pla_pentium.vhd
 
 # This runs all the tasks defined in $(DUT).sby
 .PHONY: formal

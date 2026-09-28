@@ -35,6 +35,16 @@ jobs:
         run: make model
       - name: Check that the diagram data matches the table
         run: ./srt.py --tikz | diff -u pla_steps.tex -
+      - name: Check the Pentium tables
+        # The original table must give the Pentium's wrong result for this
+        # division (with a carry-save partial remainder, the default), and the
+        # fixed table must give the correct result. With an exact partial
+        # remainder, the original table never fails.
+        run: |
+          ./srt.py --pla pentium --exact --count 10000
+          ./srt.py --pla pentium_fixed --count 10000
+          ./srt.py 4195835 3145727 --pla pentium | grep 'WRONG'
+          ./srt.py 4195835 3145727 --pla pentium_fixed | grep -v 'WRONG' | grep '= 1.3338204492$'
 
   # Run the complete testbench (about 30 seconds)
   sim:
@@ -52,6 +62,11 @@ jobs:
         run: make sim 2>&1 | grep -v 'verify:' | tee sim.log
       - name: Check that the testbench ran to the end
         run: grep 'Test finished' sim.log
+      - name: Run the testbench with the original Pentium table
+        # This also verifies that the divider then has the FDIV bug
+        run: make sim PLA=pentium 2>&1 | grep -v 'verify:' | tee sim_pentium.log
+      - name: Check that the testbench with the Pentium table ran to the end
+        run: grep 'Test finished' sim_pentium.log
 
   # Run the formal verification of div.vhd (about a minute)
   formal:

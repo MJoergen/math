@@ -32,9 +32,13 @@
    % The boundaries between the digits selected by the table
    \input{pla_steps}
 
-   % One table entry, i.e. n in [3, 3+1/8) and d in [1.5, 1.5+1/16)
+   % One table entry, i.e. n in [3, 3+1/8) and d in [1.5, 1.5+1/16), and the
+   % row above it, which the entry must also cover with a carry-save partial
+   % remainder
+   \draw[thick, fill=orange!35] (1.5, 3.125) rectangle (1.5625, 3.25);
    \draw[thick, fill=orange] (1.5, 3) rectangle (1.5625, 3.125);
    \draw[<-, thick] (1.5625, 3.0625) -- (1.62, 3.6) node[right] {one table entry};
+   \draw[<-, thick] (1.5, 3.1875) -- (1.4, 3.9) node[left] {row above (carry-save)};
 
    % The quotient digits
    \node at (1.2, 2.7)   {$q = 2$};

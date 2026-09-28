@@ -61,6 +61,11 @@ Here & means appending two bits. So each iteration only selects one of the two
 registers and appends two bits, without any carry chain, and after the last
 iteration $Q$ is the quotient.
 
+In `div.vhd` each digit is first stored in a register, and only appended in
+the next iteration, and the quotient output is $Q$ with the stored digit
+appended. This keeps the many quotient registers off the output of the table,
+which is on the critical path.
+
 ## Why the partial remainder stays bounded
 **Claim:** If $|n| \le \frac{8}{3}d$, then there is a digit $q$ such that the
 next partial remainder $n' = 4(n - qd)$ also satisfies $|n'| \le \frac{8}{3}d$.
@@ -122,7 +127,7 @@ enough. This design uses $\Delta n = \frac{1}{8}$, i.e. 3 fractional bits,
 which leaves a margin: $\frac{1}{8} + \frac{1}{12} = \frac{5}{24} < \frac{1}{3}$.
 The other 4 of the 7 bits are the sign and 3 integer bits, which are needed
 because the bound allows $|n|$ up to $\frac{8}{3} \cdot 2 = \frac{16}{3}$. (With
-this table, the partial remainder in fact stays within $-4 < n < 4.5$, see
+this table, the partial remainder in fact stays within $-4.5 < n < 4.5$, see
 [The actual range of the partial remainder](#the-actual-range-of-the-partial-remainder).)
 
 The condition is sufficient, but not necessary: depending on how the steps
@@ -131,10 +136,12 @@ table. Other designs have made other choices: according to
 [Ken Shirriff's analysis](https://www.righto.com/2024/12/this-die-photo-of-pentium-shows.html),
 the MIPS R3010 used 9 bits of the partial remainder and 9 bits of the divisor.
 
-The Pentium uses the same 7 + 4 bits, but it keeps the partial remainder in
-carry-save form (a sum and a carry), to avoid a carry-propagating addition in
-each iteration. To get the table index, it adds the top 7 bits of the sum and
-the carry with a small carry-lookahead adder. Since the lower bits are ignored,
+The Pentium uses the same 7 + 4 bits, and like this design it keeps the partial
+remainder in carry-save form (a sum and a carry), to avoid a carry-propagating
+addition in each iteration: each bit of $n - qd$ is calculated by a full adder
+of three bits, from the sum, the carry, and $-qd$. To get the table index, the
+top 7 bits of the sum and the carry are added (in the Pentium with a small
+carry-lookahead adder). Since the lower bits are ignored,
 the index can be one entry too low, i.e. the estimate of $n$ can be off by up
 to $2\Delta n$. The condition then becomes
 $2\Delta n + \frac{4}{3}\Delta d \le \frac{1}{3}$, which 7 + 4 bits satisfy
@@ -143,8 +150,8 @@ So the condition only just guarantees that a correct table exists. In practice
 the steps line up well with the grid: in every column there is a multiple of
 $\frac{1}{8}$ strictly inside the allowed range, and the smallest margin is
 $\frac{1}{48}$ (for $d$ between $\frac{17}{16}$ and $\frac{9}{8}$, between the
-digits $-2$ and $-1$). This design calculates $n$ exactly in every iteration,
-so its table has more precision than it needs.
+digits $-2$ and $-1$). The table in `pla.vhd` is built for this, see
+[The table](#the-table).
 
 ## The table
 ![Diagram of the quotient digit table](pla.svg)
@@ -159,59 +166,130 @@ $d$, and the vertical axis is the partial remainder $n$.
   rounding $n/d$ to the nearest integer, so the steps follow the lines
   $n = (k + \frac{1}{2}) d$, near the middle of the bands.
 * The orange rectangle is a single table entry, $\frac{1}{16}$ wide and
-  $\frac{1}{8}$ high.
+  $\frac{1}{8}$ high. The light orange rectangle above it is the row that the
+  entry must also cover, since the partial remainder is in carry-save form.
+
+Since the partial remainder is in carry-save form (see
+[Why 7 bits of n and 4 bits of d](#why-7-bits-of-n-and-4-bits-of-d)), the
+table may see $n$ one row too low. So each entry must hold a digit that is
+valid for its own row and the row above, i.e. for $n$ in
+$[n_0, n_0 + \frac{1}{4})$ and $d$ in $[d_0, d_0 + \frac{1}{16})$, where
+$n_0$ and $d_0$ are the values that the table sees. The table in `pla.vhd`
+therefore rounds $n/d$ at the centre of this region,
+$n = n_0 + \frac{1}{8}$ and $d = d_0 + \frac{1}{32}$. In units of
+$\frac{1}{32}$ these are integers, $N = 32 n_0 + 4$ and $D = 32 d_0 + 1$, and
+```math
+|q| = \begin{cases} 0 & \text{if } 2|N| < D \\ 1 & \text{if } D < 2|N| < 3D \\ 2 & \text{if } 3D < 2|N| \end{cases}
+```
+with the sign of $n$. Here $2|N|$ is even, and $D$ and $3D$ are odd, so there
+are no ties. A table that works with the carry-save estimate also works with
+an exact partial remainder, since each entry then only needs to be valid for
+its own row. `./srt.py` checks the table and tests divisions with a carry-save
+partial remainder, and `./srt.py --exact` with an exact one.
+
+There is little room for other choices: the carry-save condition above is met
+with equality. For instance, rounding at the centre of a single table entry,
+$n = n_0 + \frac{1}{16}$, gives a table that works for the exact partial
+remainder, but fails for 2 entries with carry-save. The earlier version of
+`pla.vhd` rounded at the corner of the entry, $n = n_0$ and $d = d_0$ (using
+$|n_0|$), which fails for 18 entries with carry-save.
 
 The staircases are generated from the table by `./srt.py --tikz`, and the
 diagram is built from `pla.tex` with `make pla.svg`.
 
 ## The actual range of the partial remainder
 The bound $|n| \le \frac{8}{3}d$ holds for any valid table. For the table in
-`pla.vhd`, the partial remainder actually stays within $-4 < n < 4.5$. This can
-be shown directly, for any precision of $n$ and $d$.
+`pla.vhd`, the partial remainder actually stays within $-4.5 < n < 4.5$. This
+can be shown directly, for any precision of $n$ and $d$.
 
 The divisor does not change during a division, so consider a fixed $d$, i.e. a
 fixed column of the table. In this column, let $t_k$ be the smallest $n$ (a
 multiple of $\frac{1}{8}$) where the table selects a digit larger than $k$, for
-$k = -2, \ldots, 1$. So the table selects the digit $q$ for
-$t_{q-1} \le n < t_q$. In this range, the next partial remainder
-$n' = 4(n - qd)$ increases with $n$, so it is largest just below $t_q$:
+$k = -2, \ldots, 1$. So the table selects the digit $q$ when it sees $n$ in
+$t_{q-1} \le n < t_q$. Since the table may see $n$ one row too low, the digit
+$q$ is used for $t_{q-1} \le n < t_q + \frac{1}{8}$. In this range, the next
+partial remainder $n' = 4(n - qd)$ increases with $n$, so it is largest just
+below $t_q + \frac{1}{8}$:
 
-| Digit     | Range of $n$              | Next partial remainder  |
-| --------- | ------------------------- | ----------------------- |
-| $q = -2$  | $n < t_{-2}$              | $n' < 4(t_{-2} + 2d)$   |
-| $q = -1$  | $t_{-2} \le n < t_{-1}$   | $n' < 4(t_{-1} + d)$    |
-| $q = 0$   | $t_{-1} \le n < t_0$      | $n' < 4 t_0$            |
-| $q = 1$   | $t_0 \le n < t_1$         | $n' < 4(t_1 - d)$       |
-| $q = 2$   | $t_1 \le n < U$           | $n' < 4(U - 2d)$        |
+| Digit     | Range of $n$                              | Next partial remainder                   |
+| --------- | ----------------------------------------- | ---------------------------------------- |
+| $q = -2$  | $n < t_{-2} + \frac{1}{8}$                | $n' < 4(t_{-2} + \frac{1}{8} + 2d)$      |
+| $q = -1$  | $t_{-2} \le n < t_{-1} + \frac{1}{8}$     | $n' < 4(t_{-1} + \frac{1}{8} + d)$       |
+| $q = 0$   | $t_{-1} \le n < t_0 + \frac{1}{8}$        | $n' < 4(t_0 + \frac{1}{8})$              |
+| $q = 1$   | $t_0 \le n < t_1 + \frac{1}{8}$           | $n' < 4(t_1 + \frac{1}{8} - d)$          |
+| $q = 2$   | $t_1 \le n < U$                           | $n' < 4(U - 2d)$                         |
 
 Let $U$ be the largest of the first four limits and 2 (the dividend is less
 than 2). Then $4(U - 2d) \le U$, as long as $U \le \frac{8}{3}d$, so by
 induction $n < U$ in every iteration. The lower limit $L$ is found the same
 way, from the smallest values in each range. Each limit is linear in $d$, so
 within a column the extremes are at the ends of the column. Calculating this
-for all 16 columns (`./srt.py --bounds`) gives $-4 < n < 4.5$.
+for all 16 columns (`./srt.py --bounds`) gives $-4.5 < n < 4.5$. (With an
+exact partial remainder, the ranges end at $t_q$ instead, and
+`./srt.py --bounds --exact` gives $-4.5 < n < 4$.)
 
-The upper limit of 4.5 comes from the last column,
-$\frac{31}{16} \le d < 2$, where $t_{-2} = -\frac{23}{8}$,
-$t_{-1} = -\frac{7}{8}$, $t_0 = 1$, and $t_1 = 3$. A partial remainder just
-below $-\frac{7}{8}$ gets the digit $q = -1$, which gives
-$n' = 4(n + d) < 4\left(-\frac{7}{8} + 2\right) = 4.5$. This limit is
-approached, but never reached: the model finds partial remainders up to
-4.4964. The mirror case, a partial remainder just below 1 with the digit
-$q = 0$, only gives $n' < 4$. The lower limit $-4$ is likewise only
-approached, as $d$ approaches the upper end of a column.
+Both limits come from the last column, $\frac{31}{16} \le d < 2$, where
+$t_{-2} = -3$, $t_{-1} = -1$, $t_0 = \frac{7}{8}$, and $t_1 = \frac{23}{8}$:
+* A partial remainder of $\frac{7}{8}$ (or just above) gets the digit $q = 1$,
+  which gives $n' = 4(n - d) > 4\left(\frac{7}{8} - 2\right) = -4.5$. Likewise
+  $n = \frac{23}{8}$ gets $q = 2$, which gives
+  $n' > 4\left(\frac{23}{8} - 4\right) = -4.5$.
+* A partial remainder just below $-\frac{7}{8}$ is in the row where the table
+  holds $q = 0$. But the table may see it in the row below, and then selects
+  $q = -1$, which gives $n' = 4(n + d) < 4\left(-\frac{7}{8} + 2\right) = 4.5$.
+  Likewise for $n$ just below $-\frac{23}{8}$ and $q = -2$.
 
-So the value 4.5 is a property of this particular table. The table sees $n$
-rounded down, and for a negative $n$ this rounds away from zero: $-0.876$ is
-seen as $-1$. With $d$ close to 2 this selects $q = -1$, even though
-$n/d \approx -0.44$ would round to 0. That digit is allowed, but it moves the
-next partial remainder further out. A table that selected the digit by rounding
-the exact value of $n/d$ would keep $|n'| \le 2d < 4$.
+These limits are approached, but never reached: with `G_SIZE=16` the model
+finds partial remainders from $-4.499$ up to $4.354$. The upper limit needs
+the table to see $n$ one row too low at the right moment, which is rare.
+
+So the range is a property of this particular table, and of the carry-save
+estimate. The table rounds $n/d$ at $n_0 + \frac{1}{8}$, to allow for the
+carry-save estimate, where $n_0$ is the value of $n$ that the table sees. For
+$n = \frac{7}{8}$ and $d$ in the last column this selects $q = 1$, since the
+table rounds
+$\left(\frac{7}{8} + \frac{1}{8}\right) / \left(\frac{31}{16} + \frac{1}{32}\right) = \frac{32}{63} \approx 0.51$,
+even though $n/d \approx 0.44$ (for $d$ close to 2) would round to 0. That
+digit is allowed, but it moves the next partial remainder further out. A table
+that selected the digit by rounding the exact value of $n/d$ would keep
+$|n'| \le 2d < 4$.
 
 The range also shows which table entries are never used: those outside the
 range of their column. This is why the table check in `srt.py`, which only
 uses the bound $|n| \le \frac{8}{3}d$, flags some entries near the edge that
 are never used.
+
+## Implementing the table
+The thresholds $t_k$ above also give a faster way to implement the table. The
+table rounds $(n_0 + \frac{1}{8})/d$, where $n_0$ is the value of $n$ that it
+sees, for positive and negative $n_0$ alike. So in every column
+$t_{-1} = -t_0 - \frac{1}{8}$ and $t_{-2} = -t_1 - \frac{1}{8}$ (e.g. in the
+last column $t_0 = \frac{7}{8}$ and $t_{-1} = -1$), and within a column, the
+magnitude of the digit only depends on $m = |n_0 + \frac{1}{8}|$:
+```math
+|q| = \begin{cases}
+0 & \text{for } m < t_0 + \frac{1}{8} \\
+1 & \text{for } t_0 + \frac{1}{8} \le m < t_1 + \frac{1}{8} \\
+2 & \text{for } t_1 + \frac{1}{8} \le m
+\end{cases}
+```
+and its sign is the sign of $n_0$. In units of $\frac{1}{8}$, $m = n_0 + 1$
+for $n_0 \ge 0$, and $m = -n_0 - 1$ (the one's complement of $n_0$) for
+$n_0 < 0$.
+
+The divisor does not change during a division, so `div.vhd` looks up $t_0$
+and $t_1$ for its column when the division starts, and stores them in a
+register. Each iteration then only compares $m$ against these two values.
+In the FPGA, each comparison is a short carry chain on the 7 bits of $n_0$,
+with the inverted sign as carry in, which is much faster than a lookup that
+depends on all 11 bits. The digit selection and the update of the partial
+remainder must both fit in one clock cycle, so this matters for the clock
+frequency. `pla.vhd` checks that the comparisons give the same digit as the
+table for all 2048 entries.
+
+The original Pentium table cannot be implemented like this, since it holds 0
+above the $q = 2$ region, and its upper edge is not the same for positive and
+negative $n$. So `pla_pentium.vhd` (see below) uses a lookup in the table.
 
 ## The Pentium FDIV bug
 In the Pentium this table was implemented as a PLA. The table's unused
@@ -226,3 +304,36 @@ $\frac{1}{8}$, namely those where this makes the allowed region smaller. The
 top edge is not one of them, but it was moved down anyway. Only five of the 16
 missing entries affect the result, and because of the carry-save adder even
 these are only reached in about 1 in 9 billion random divisions.
+
+The fix filled all the unused entries above the $q = 2$ region and below the
+$q = -2$ region with 2, which also made the PLA smaller.
+
+### Both Pentium tables in this divider
+[`pla_pentium.vhd`](pla_pentium.vhd) holds the Pentium's table, both the
+original and the fixed version, copied from the article. It can replace
+`pla.vhd` with the generic `G_PLA` of `div.vhd`, e.g. `make sim PLA=pentium`.
+The Pentium's table picks the larger digit where both are allowed, so the
+partial remainder has a larger range: $-5 < n < 5$.
+
+Since `div.vhd` keeps the partial remainder in carry-save form like the
+Pentium, the original table gives this divider the FDIV bug too. With
+`PLA=pentium`, the testbench verifies that 4195835/3145727 gives
+$1.3337390688$ instead of $1.3338204492$, the famous wrong result of the
+Pentium. The model shows how this happens:
+```
+./srt.py 4195835 3145727 --pla pentium --trace
+```
+In iteration 8 the partial remainder is $n = 3.943$, but the carry-save
+estimate uses the row below, $3.875$. For this divisor ($d = 1.0111\ldots$ in
+binary) that is one of the five missing entries, so $q = 0$ instead of $2$.
+The next partial remainder is then far outside its bounds, and the quotient
+never recovers. With the fixed table (`PLA=pentium_fixed`, or
+`--pla pentium_fixed`) the result is correct.
+
+The bug needs the carry-save partial remainder. With an exact partial
+remainder, even the original table gives correct results:
+`./srt.py --pla pentium --exact` shows that the table check fails for 21
+entries along the top edge (all of them only touch the region
+$|n| < \frac{8}{3}d$ at a corner), and that each of them is outside the range
+of the partial remainder. (The article counts 16 missing entries: those
+reached in its simulation of a carry-save divider.)

@@ -157,11 +157,12 @@ vunit div_inst (div(synthesis))
    -- ASSERTIONS ABOUT OUTPUTS
    -----------------------------
 
-   -- Verify the helper signals in every clock cycle
+   -- Verify the helper signals in every clock cycle. q_o is quot with the
+   -- stored digit appended, i.e. all the digits so far.
    f_n4_check  : assert always f_started = '1' -> f_n4_ok;
    f_invariant : assert always f_started = '1' -> f_inv_ok;
    f_remainder : assert always f_started = '1' -> f_rem_ok;
-   f_digits    : assert always f_started = '1' -> quot = f_q and quot_m1 = f_q - 1;
+   f_digits    : assert always f_started = '1' -> q_o = f_q and quot_m1 = quot - 1;
 
    -- For induction: The stored divisor and dividend are valid
    f_d_norm    : assert always f_started = '1' -> d(G_SIZE-1 downto G_SIZE-4) = "0001";
@@ -203,13 +204,17 @@ vunit div_inst (div(synthesis))
    -- The partial remainder n uses 4 integer bits (including the sign), so the
    -- top 12 bits are n truncated to a multiple of 1/256.
 
-   -- Verify that n=4.488 (= 0100.01111101) can be reached. This value was
-   -- found with the model srt.py, dividing 6154/7677 (with G_SIZE=16).
-   -- Reached in step 3.
-   f_large_n : cover {n(G_SIZE-1 downto G_SIZE-12) = "010001111101"};
+   -- Verify that n >= 4.34375 (= 0100.01011000) can be reached. The upper
+   -- limit 4.5 needs the table to see n one row too low (because of the
+   -- carry-save form) at the right moment, so it is hard to approach: the
+   -- model reaches n=4.354 when dividing 0x116B/0x1FFF (with G_SIZE=16), after
+   -- 14 iterations. Reached in step 5.
+   f_large_n : cover {n(G_SIZE-1) = '0' and n(G_SIZE-2 downto G_SIZE-12) >= "10001011000"};
 
-   -- Verify that n=-4 (= 1100.00000000) can be reached. Reached in step 2.
-   f_small_n : cover {n(G_SIZE-1 downto G_SIZE-12) = "110000000000"};
+   -- Verify that n=-4.5 (= 1011.10000000, i.e. n truncated to a multiple of
+   -- 1/256) can be reached. The model reaches n=-4.499 when dividing
+   -- 0x1003/0x1FFF (with G_SIZE=16). Reached in step 6.
+   f_small_n : cover {n(G_SIZE-1 downto G_SIZE-12) = "101110000000"};
 
    -- Verify that a division can complete, so f_result is not vacuous
    f_done : cover {busy_o; not busy_o};
@@ -222,9 +227,10 @@ vunit div_inst (div(synthesis))
    -- ASSERTIONS ABOUT INTERNAL STATE
    --------------------------------------------
 
-   -- Verify that the partial remainder stays in the range -4 <= n < 4.5.
-   -- Together with the covers above, this shows that the range is nearly tight.
-   f_range_n : assert always n(G_SIZE-1 downto G_SIZE-12) >= X"C00" or
+   -- Verify that the partial remainder stays in the range -4.5 <= n < 4.5.
+   -- Together with the covers above, this shows that the range is nearly
+   -- tight. Here n = n_s + n_c, see div.vhd.
+   f_range_n : assert always n(G_SIZE-1 downto G_SIZE-12) >= X"B80" or
                              n(G_SIZE-1 downto G_SIZE-12) < X"480";
 
 } -- vunit div_inst (div(synthesis))

@@ -27,7 +27,8 @@ library ieee;
 
 entity srt_float is
    generic (
-      G_DEBUG : boolean := false
+      G_DEBUG : boolean := false;
+      G_PLA   : string  := "srt"     -- The quotient digit table, see div.vhd
    );
    port (
       clk_i         : in    std_logic;
@@ -141,7 +142,8 @@ begin
    div_inst : entity work.div
       generic map (
          G_SIZE  => 32,
-         G_DEBUG => G_DEBUG
+         G_DEBUG => G_DEBUG,
+         G_PLA   => G_PLA
       )
       port map (
          clk_i   => clk_i,
