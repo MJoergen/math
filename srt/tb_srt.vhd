@@ -4,9 +4,9 @@ library ieee;
 
 -- This is a testbench for srt_float.
 --
--- It first tests a number of edge cases: A zero dividend, the largest allowed
--- inputs (2^29 - 1), and all combinations of powers of two, which exercise
--- every possible normalization shift.
+-- It first tests a number of edge cases: Division by zero, a zero dividend,
+-- the largest allowed inputs (2^29 - 1), and all combinations of powers of
+-- two, which exercise every possible normalization shift.
 --
 -- Then it performs all divisions n/d with 1 <= n, d <= 1000.
 --
@@ -22,16 +22,17 @@ end entity tb_srt;
 
 architecture simulation of tb_srt is
 
-   signal running    : std_logic := '1';
-   signal clk        : std_logic := '1';
-   signal n          : std_logic_vector(31 downto 0);
-   signal d          : std_logic_vector(31 downto 0);
-   signal q          : std_logic_vector(63 downto 0);
-   signal start_over : std_logic;
-   signal busy       : std_logic;
+   signal running     : std_logic := '1';
+   signal clk         : std_logic := '1';
+   signal n           : std_logic_vector(31 downto 0);
+   signal d           : std_logic_vector(31 downto 0);
+   signal q           : std_logic_vector(63 downto 0);
+   signal div_by_zero : std_logic;
+   signal start_over  : std_logic;
+   signal busy        : std_logic;
 
-   signal low_count  : natural := 0;
-   signal high_count : natural := 0;
+   signal low_count   : natural := 0;
+   signal high_count  : natural := 0;
 
 begin
 
@@ -39,12 +40,13 @@ begin
 
    srt_float_inst : entity work.srt_float
       port map (
-         clk_i        => clk,
-         n_i          => n,
-         d_i          => d,
-         q_o          => q,
-         start_over_i => start_over,
-         busy_o       => busy
+         clk_i         => clk,
+         n_i           => n,
+         d_i           => d,
+         q_o           => q,
+         div_by_zero_o => div_by_zero,
+         start_over_i  => start_over,
+         busy_o        => busy
       );
 
    test_proc : process
@@ -95,6 +97,9 @@ begin
          assert q(31 downto 0)  = exp_q_low
             report "LOW: Calculating " & to_string(arg_n) & "/" & to_string(arg_d) &
                ". Got 0x" & to_hstring(q(31 downto 0)) & ", expected 0x" & to_hstring(exp_q_low);
+         assert div_by_zero = '0'
+            report "Calculating " & to_string(arg_n) & "/" & to_string(arg_d) &
+               ". div_by_zero_o is set";
 
          -- Count the rounding errors (only relevant if the asserts above are
          -- not fatal)
@@ -105,6 +110,27 @@ begin
             high_count <= high_count + 1;
          end if;
       end procedure verify_division;
+
+      -- Start a division by zero, and verify that the result is all ones, and
+      -- that div_by_zero_o is set.
+      procedure verify_division_by_zero(arg_n : natural) is
+      begin
+         report "verify: n=" & to_string(arg_n) & ", d=0";
+
+         n          <= to_stdlogicvector(arg_n, 32);
+         d          <= (others => '0');
+         start_over <= '1';
+         wait until rising_edge(clk);
+         start_over <= '0';
+         wait until rising_edge(clk);
+         assert busy = '1';
+         wait until busy = '0';
+         assert q = X"FFFFFFFFFFFFFFFF"
+            report "Calculating " & to_string(arg_n) & "/0. Got 0x" & to_hstring(q) &
+               ", expected 0xFFFFFFFFFFFFFFFF";
+         assert div_by_zero = '1'
+            report "Calculating " & to_string(arg_n) & "/0. div_by_zero_o is not set";
+      end procedure verify_division_by_zero;
 
       variable start_time : time;
       variable end_time   : time;
@@ -119,6 +145,12 @@ begin
       wait until rising_edge(clk);
 
       report "Testing edge cases";
+
+      -- Division by zero. The next division checks that div_by_zero_o is
+      -- cleared again.
+      verify_division_by_zero(0);
+      verify_division_by_zero(1);
+      verify_division_by_zero(C_MAX);
 
       -- Zero dividend
       verify_division(0, 1);
