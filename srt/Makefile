@@ -19,7 +19,7 @@ SIM_SRC = srt_float.vhd pla.vhd normalizer.vhd div.vhd shifter.vhd tb_srt.vhd
 # Run the complete testbench. No waveform is written, since a waveform of the
 # complete run is several GB, and makes GHDL crash.
 .PHONY: sim
-sim: $(SIM_SRC) ## Run the complete testbench (takes about 15 minutes)
+sim: $(SIM_SRC) ## Run the complete testbench (takes about 30 seconds)
 	ghdl -i --std=08 --work=work $^
 	ghdl -m --std=08 -fexplicit tb_srt
 	ghdl -r --std=08 tb_srt --assert-level=error --stop-time=400ms

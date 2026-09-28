@@ -81,9 +81,10 @@ each clock cycle is a small local step for the solver.
 Type `make` to list the supported targets. The most important ones are:
 * `make sim` runs the testbench. It checks a number of edge cases (invalid
   inputs, zero dividend, the largest valid inputs, and every normalization
-  shift), and then all divisions n/d with 1 <= n, d <= 1000. The expected results are
-  calculated exactly, including the rounding. This requires
-  [GHDL](https://github.com/ghdl/ghdl). It takes about 15 minutes.
+  shift), all divisions n/d with 1 <= n, d <= 100, and 20000 random divisions
+  across the whole range of valid inputs. The expected results are calculated
+  exactly, including the rounding. This requires
+  [GHDL](https://github.com/ghdl/ghdl). It takes about 30 seconds.
 * `make debug` runs only the first 10 us of the testbench (about 25 divisions),
   and writes a waveform to `srt.ghw`. Use `make show_debug` to view it in
   GTKWave.
