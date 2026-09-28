@@ -1,4 +1,4 @@
-# Timing constraints for synthesizing srt_float in Vivado.
+# Timing constraints for synthesizing srt in Vivado.
 #
 # The project (srt.xpr) targets the Artix-7 part xc7a200tfbg484-2. No I/O pins
 # are assigned, so this is only used to check that the design meets timing.

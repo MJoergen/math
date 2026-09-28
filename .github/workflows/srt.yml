@@ -68,7 +68,7 @@ jobs:
       - name: Check that the testbench with the Pentium table ran to the end
         run: grep 'Test finished' sim_pentium.log
 
-  # Run the formal verification of div.vhd (about a minute)
+  # Run the formal verification of srt_core.vhd (about a minute)
   formal:
     runs-on: ubuntu-24.04
     timeout-minutes: 20

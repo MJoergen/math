@@ -13,15 +13,15 @@ library ieee;
 -- The table therefore has 2^11 = 2048 entries. Each entry stores |q|, and the
 -- sign of q is taken from the sign of n.
 --
--- The input format is the same as in div.vhd: two's complement with 4 integer
--- bits including the sign, and d must be normalized (1 <= d < 2).
+-- The input format is the same as in srt_core.vhd: two's complement with 4
+-- integer bits including the sign, and d must be normalized (1 <= d < 2).
 --
--- div.vhd keeps the partial remainder in carry-save form (a sum and a carry),
--- like the Pentium. Only the top 7 bits of the sum and the carry are added
--- for the table lookup, so the table may see n one row too low. So each entry
--- must hold a digit that is valid not just for its own row of n, but also for
--- the row above. The digit is therefore selected by rounding n/d to the
--- nearest integer at the centre of this region, i.e. at the centre of two
+-- srt_core.vhd keeps the partial remainder in carry-save form (a sum and a
+-- carry), like the Pentium. Only the top 7 bits of the sum and the carry are
+-- added for the table lookup, so the table may see n one row too low. So each
+-- entry must hold a digit that is valid not just for its own row of n, but
+-- also for the row above. The digit is therefore selected by rounding n/d to
+-- the nearest integer at the centre of this region, i.e. at the centre of two
 -- rows of n and one column of d. See get_q, and ALGORITHM.md. The table also
 -- works if n is calculated exactly.
 --
@@ -33,9 +33,9 @@ library ieee;
 --    |q| = 2   for   T2 + 1/8 <= |n + 1/8|
 -- where the thresholds T1 and T2 (multiples of 1/8) are the smallest n >= 0
 -- where |q| >= 1 and |q| >= 2 in the column. (These are t_0 and t_1 in
--- ALGORITHM.md.) So when a division starts, div.vhd stores the thresholds of
--- the column (get_col), and in each iteration the entity pla below compares n
--- against them (get_mag). This is much faster than a lookup in the table,
+-- ALGORITHM.md.) So when a division starts, srt_core.vhd stores the
+-- thresholds of the column (get_col), and in each iteration the entity pla
+-- below compares n against them (get_mag). This is much faster than a lookup in the table,
 -- because the lookup depends on 11 bits, but the comparisons only depend on
 -- the 7 bits of n. The entity pla checks that this gives exactly the same
 -- digits as the table, for all 2048 entries.

@@ -25,21 +25,22 @@ partial remainder, and the Pentium bug. It also has a diagram of the table.
 ## Files
 | File             | Description
 | ---------------- | -----------
-| [`srt_float.vhd`](srt_float.vhd) | Top level. Divides two unsigned integers, returns a 32.32 fixed-point quotient.
+| [`srt.vhd`](srt.vhd) | Top level. Divides two unsigned integers, returns a 32.32 fixed-point quotient.
 | [`normalizer.vhd`](normalizer.vhd) | Shifts dividend and divisor into the range [1, 2).
-| [`div.vhd`](div.vhd) | The SRT divider itself. Operates on normalized values.
+| [`srt_core.vhd`](srt_core.vhd) | The SRT divider itself. Operates on normalized values.
 | [`pla.vhd`](pla.vhd) | The quotient digit selection table, implemented as comparisons against thresholds.
 | [`pla_pentium.vhd`](pla_pentium.vhd) | The Pentium's table, with and without the FDIV bug. Can replace `pla.vhd`.
 | [`shifter.vhd`](shifter.vhd) | Shifts the quotient back to undo the normalization.
-| [`tb_srt.vhd`](tb_srt.vhd) | Testbench for `srt_float`.
-| [`div.psl`](div.psl), [`div.sby`](div.sby) | Formal verification of `div`.
-| [`div.gtkw`](div.gtkw) | GTKWave setup for viewing the formal verification traces.
+| [`tb_srt.vhd`](tb_srt.vhd) | Testbench for `srt`.
+| [`srt_core.psl`](srt_core.psl), [`srt_core.sby`](srt_core.sby) | Formal verification of `srt_core`.
+| [`srt_core.gtkw`](srt_core.gtkw) | GTKWave setup for viewing the formal verification traces.
+| [`srt.gtkw`](srt.gtkw) | GTKWave setup for viewing the waveform from `make debug`.
 | [`srt.xpr`](srt.xpr), [`srt.xdc`](srt.xdc) | Vivado project (Artix-7 xc7a200tfbg484-2) and timing constraint (200 MHz), for synthesis.
-| [`srt.py`](srt.py) | Bit-exact model of `srt_float`, and a checker for the quotient digit table.
+| [`srt.py`](srt.py) | Bit-exact model of `srt`, and a checker for the quotient digit table.
 | [`pla.tex`](pla.tex), [`pla_steps.tex`](pla_steps.tex), [`pla.svg`](pla.svg) | Diagram of the quotient digit table.
 | [`ALGORITHM.md`](ALGORITHM.md) | Detailed explanation of the algorithm.
 
-## Interface of `srt_float`
+## Interface of `srt`
 * `n_i`, `d_i`: Unsigned integers. They are valid if both are less than 2^29,
   and `d_i` is not zero.
 * `q_o`: The quotient `n_i/d_i`, with 32 integer bits and 32 fractional bits,
@@ -53,27 +54,29 @@ partial remainder, and the Pentium bug. It also has a diagram of the table.
   clock cycles.
 
 ## Number format
-Internally (in `div.vhd` and `pla.vhd`) the values are two's complement with 4
-integer bits (including the sign). The inputs to `div` are normalized so the
-top nibble is `0001`, i.e. they are in the range [1, 2). The partial remainder
-`n` is kept in carry-save form (a sum and a carry, like in the Pentium), so
-calculating the next partial remainder needs no carry chain, see `div.vhd`. It
+Internally (in `srt_core.vhd` and `pla.vhd`) the values are two's complement
+with 4 integer bits (including the sign). The inputs to `srt_core` are
+normalized so the top nibble is `0001`, i.e. they are in the range [1, 2). The
+partial remainder `n` is kept in carry-save form (a sum and a carry, like in
+the Pentium), so calculating the next partial remainder needs no carry chain,
+see `srt_core.vhd`. It
 then stays in the range $-4.5 < n < 4.5$, see
 [The actual range of the partial remainder](ALGORITHM.md#the-actual-range-of-the-partial-remainder).
 The formal verification checks $-4.5 \le n < 4.5$.
 
 ## Formal verification
-The formal verification (`div.psl`, `div.sby`) checks `div` with `G_SIZE=16`
-and with `G_SIZE=32` (as used in `srt_float`), for all normalized inputs,
-including a zero dividend:
+The formal verification (`srt_core.psl`, `srt_core.sby`) checks `srt_core`
+with `G_SIZE=16` and with `G_SIZE=32` (as used in `srt`), for all normalized
+inputs, including a zero dividend:
 * The partial remainder stays within its bounds, and never overflows.
 * The quotient `q_o` matches the digits chosen by the PLA.
 * The quotient is correct: it differs from the exact value n/d by less than
   2/3 of its least significant bit.
 
 SMT solvers are slow at multiplication, so instead of calculating q*d directly,
-`div.psl` tracks q*d alongside the divider using only additions, and checks a
-few invariants in every clock cycle. See the comments in `div.psl`.
+`srt_core.psl` tracks q*d alongside the divider using only additions, and
+checks a few invariants in every clock cycle. See the comments in
+`srt_core.psl`.
 
 The properties are proven with k-induction, so they hold in every clock cycle,
 not just for a bounded number of them. This takes about a minute. The
@@ -114,9 +117,9 @@ The CI (`.github/workflows/srt.yml`) runs `make model`, `make sim`, and
 this directory.
 
 ## The model
-`srt.py` is a bit-exact model of `srt_float`, written in Python using
-integers. It builds the quotient digit table the same way as `pla.vhd`, and
-keeps the partial remainder in carry-save form like `div.vhd`, so it calculates
+`srt.py` is a bit-exact model of `srt`, written in Python using integers. It
+builds the quotient digit table the same way as `pla.vhd`, and keeps the
+partial remainder in carry-save form like `srt_core.vhd`, so it calculates
 exactly the same quotient as the VHDL, including when the table is modified.
 
 * `./srt.py` checks every entry of the table: For all values of n and d that

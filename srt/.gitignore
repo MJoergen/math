@@ -10,9 +10,9 @@ work-obj08.cf
 *.o
 
 # Formal verification
-div_cover/
-div_prove/
-div_prove32/
+srt_core_cover/
+srt_core_prove/
+srt_core_prove32/
 
 # Diagram (pla.svg and pla_steps.tex are kept in the repository)
 pla.pdf
@@ -27,7 +27,7 @@ post_synth.dcp
 post_route.dcp
 timing_summary.rpt
 utilization.rpt
-srt_float.bit
+srt.bit
 vivado*.jou
 vivado*.log
 usage_statistics_webtalk*

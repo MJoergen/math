@@ -14,10 +14,11 @@ help: ## Show this help message
 # Simulation
 #######################
 
-SIM_SRC = srt_float.vhd pla.vhd pla_pentium.vhd normalizer.vhd div.vhd shifter.vhd tb_srt.vhd
+SIM_SRC = srt.vhd pla.vhd pla_pentium.vhd normalizer.vhd srt_core.vhd shifter.vhd tb_srt.vhd
 
 # The quotient digit table used by the testbench: srt (pla.vhd), pentium (the
-# original Pentium table with the FDIV bug), or pentium_fixed. See div.vhd.
+# original Pentium table with the FDIV bug), or pentium_fixed. See
+# srt_core.vhd.
 PLA ?= srt
 
 # Run the complete testbench. No waveform is written, since a waveform of the
@@ -35,7 +36,7 @@ debug: $(SIM_SRC) ## Run the first 10 us of the testbench, and write a waveform 
 	ghdl -m --std=08 -fexplicit tb_srt
 	ghdl -r --std=08 tb_srt -gG_PLA=$(PLA) --assert-level=error --wave=srt.ghw --stop-time=10us
 
-# srt.gtkw selects the most relevant signals of srt_float, normalizer, div,
+# srt.gtkw selects the most relevant signals of srt, normalizer, srt_core,
 # and shifter
 .PHONY: show_debug
 show_debug: ## Show the waveform from "make debug" in GTKWave
@@ -47,7 +48,7 @@ show_debug: ## Show the waveform from "make debug" in GTKWave
 #######################
 
 # Check the quotient digit table, and test the bit-exact model, both with a
-# carry-save partial remainder (like div.vhd) and with an exact one
+# carry-save partial remainder (like srt_core.vhd) and with an exact one
 .PHONY: model
 model: ## Check the quotient digit table, and test the bit-exact model srt.py
 	./srt.py
@@ -75,9 +76,9 @@ pla.svg: pla.pdf ## Build the diagram of the table, used in ALGORITHM.md
 
 XILINX_DIR = /opt/Xilinx/2025.1/Vivado
 
-VIVADO_TOP  = srt_float
+VIVADO_TOP  = srt
 VIVADO_PART = xc7a200tfbg484-2
-VIVADO_SRC  = pla.vhd pla_pentium.vhd normalizer.vhd div.vhd shifter.vhd srt_float.vhd
+VIVADO_SRC  = pla.vhd pla_pentium.vhd normalizer.vhd srt_core.vhd shifter.vhd srt.vhd
 
 # -mode batch, NOT -mode tcl. In tcl mode Vivado exits 0 even when the sourced
 # script raises an error, so an aborted build -- on the timing check below, or
@@ -122,14 +123,14 @@ vivado_build.tcl: Makefile
 # Formal verification
 #######################
 
-DUT  = div
+DUT  = srt_core
 SRC += $(DUT).vhd
 SRC += pla.vhd
 SRC += pla_pentium.vhd
 
 # This runs all the tasks defined in $(DUT).sby
 .PHONY: formal
-formal: $(DUT).sby $(DUT).psl $(SRC) ## Run the formal verification of div.vhd (takes about a minute)
+formal: $(DUT).sby $(DUT).psl $(SRC) ## Run the formal verification of srt_core.vhd (takes about a minute)
 	sby --yosys "yosys -m ghdl" -f $(DUT).sby
 
 .PHONY: show_prove

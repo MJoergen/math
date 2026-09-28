@@ -1,15 +1,15 @@
--- Formal verification of div.vhd. Run with "make formal".
--- In addition to the properties in this file, the assertions inside div.vhd
--- (e.g. in the function get_n) are verified too.
+-- Formal verification of srt_core.vhd. Run with "make formal".
+-- In addition to the properties in this file, the assertions inside
+-- srt_core.vhd (e.g. in the function get_n) are verified too.
 --
--- The properties are proven with k-induction (see div.sby): If they hold in a
--- few consecutive clock cycles, then they also hold in the next one. This
--- works because the assertions below check invariants in every clock cycle,
--- so each clock cycle is a small local step. Some extra assertions (marked
+-- The properties are proven with k-induction (see srt_core.sby): If they hold
+-- in a few consecutive clock cycles, then they also hold in the next one.
+-- This works because the assertions below check invariants in every clock
+-- cycle, so each clock cycle is a small local step. Some extra assertions (marked
 -- "for induction") rule out states that can never be reached, but from which
 -- induction could otherwise start.
 
-vunit div_inst (div(synthesis))
+vunit srt_core_inst (srt_core(synthesis))
 {
    -- set all declarations to run on clk_i
    default clock is rising_edge(clk_i);
@@ -229,9 +229,9 @@ vunit div_inst (div(synthesis))
 
    -- Verify that the partial remainder stays in the range -4.5 <= n < 4.5.
    -- Together with the covers above, this shows that the range is nearly
-   -- tight. Here n = n_s + n_c, see div.vhd.
+   -- tight. Here n = n_s + n_c, see srt_core.vhd.
    f_range_n : assert always n(G_SIZE-1 downto G_SIZE-12) >= X"B80" or
                              n(G_SIZE-1 downto G_SIZE-12) < X"480";
 
-} -- vunit div_inst (div(synthesis))
+} -- vunit srt_core_inst (srt_core(synthesis))
 
