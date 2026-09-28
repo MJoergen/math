@@ -13,8 +13,8 @@ library ieee;
 -- Limitations:
 -- * The top three bits of n_i and d_i must be zero, i.e. the values must be
 --   less than 2^29. Larger values are not shifted, so the result is wrong,
---   but the simulation does not crash. srt_float checks this with an
---   assertion.
+--   but the simulation does not crash. srt_float reports such inputs as
+--   invalid.
 -- * If n_i is zero, then n_o is zero too. Likewise for d_i. srt_float handles
 --   a zero divisor separately.
 --

@@ -131,8 +131,8 @@ def normalize(x):
 # Divide two unsigned integers, and return the quotient with 32 integer bits
 # and 32 fractional bits, rounded to nearest.
 def srt_float(n_i, d_i, table, trace=None):
-    if d_i == 0:
-        return (1 << 64) - 1                    # Division by zero: all ones
+    if not valid_inputs(n_i, d_i):
+        return (1 << 64) - 1                    # Invalid inputs: all ones
     n, nz = normalize(n_i)
     d, dz = normalize(d_i)
     q = div(n, d, table, trace=trace)
@@ -140,10 +140,15 @@ def srt_float(n_i, d_i, table, trace=None):
     return ((shifted + 8) & ((1 << 68) - 1)) >> 4
 
 
+# The inputs are valid if both are less than 2^29, and d_i is not zero
+def valid_inputs(n_i, d_i):
+    return n_i <= MAX_INPUT and 0 < d_i <= MAX_INPUT
+
+
 # The exact quotient, rounded to nearest. There are no ties when d_i < 2^29.
-# For a division by zero, srt_float returns all ones.
+# For invalid inputs, srt_float returns all ones.
 def expected(n_i, d_i):
-    if d_i == 0:
+    if not valid_inputs(n_i, d_i):
         return (1 << 64) - 1
     return ((n_i << 33) + d_i) // (2 * d_i)
 
@@ -365,7 +370,8 @@ def find_input(idx, table, max_depth=10, tries=2000, seed=1):
 
 # The edge cases also used in tb_srt.vhd
 def edge_cases():
-    yield from [(0, 0), (1, 0), (MAX_INPUT, 0),
+    yield from [(0, 0), (1, 0), (MAX_INPUT, 0), (2**29, 1), (1, 2**29),
+                (2**32 - 1, 3), (2**32 - 1, 2**32 - 1), (2**32 - 1, 0),
                 (0, 1), (0, 7), (0, MAX_INPUT), (MAX_INPUT, 1), (MAX_INPUT, 3),
                 (MAX_INPUT, MAX_INPUT), (MAX_INPUT - 1, MAX_INPUT),
                 (1, MAX_INPUT), (123456789, 1000)]
@@ -412,7 +418,7 @@ def show_division(n, d, table, trace):
         for k, (r, digit) in enumerate(steps):
             print(f"  iter {k:2d}: n = {to_signed(r, G_SIZE) / scale:+.8f}, q = {digit:+d}")
     exp = expected(n, d)
-    note = "  (division by zero)" if d == 0 else ""
+    note = "" if valid_inputs(n, d) else "  (invalid inputs)"
     print(f"{n}/{d} = 0x{q:016X} = {q / 2**32:.10f}{note}" + ("" if q == exp else f"  WRONG, expected 0x{exp:016X}"))
 
 
@@ -444,7 +450,7 @@ def main():
 
     if args.n is not None:
         assert args.d is not None, "Both N and D must be given"
-        assert 0 <= args.n <= MAX_INPUT and 0 <= args.d <= MAX_INPUT, "Inputs must be less than 2^29"
+        assert 0 <= args.n < 2**32 and 0 <= args.d < 2**32, "Inputs must be 32-bit unsigned integers"
         show_division(args.n, args.d, table, args.trace)
         return
 
