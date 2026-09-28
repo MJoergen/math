@@ -148,7 +148,7 @@ show_cover: ## Show the cover trace from "make formal" in GTKWave
 
 .PHONY: clean
 clean: ## Remove the generated files
-	rm -rf __pycache__ pla.pdf pla.aux pla.log pla.fls pla.fdb_latexmk tb_srt srt.ghw work-obj08.cf *.o $(DUT)_cover $(DUT)_prove $(DUT)_prove32
+	rm -rf __pycache__ pla.pdf pla.aux pla.log pla.fls pla.fdb_latexmk tb_srt srt.ghw work-obj08.cf *.o $(DUT) $(DUT)_cover $(DUT)_prove $(DUT)_prove32
 	rm -rf vivado_build.tcl post_synth.dcp post_route.dcp timing_summary.rpt utilization.rpt $(VIVADO_TOP).bit
 	rm -rf vivado*.jou vivado*.log usage_statistics_webtalk* .Xil
 	rm -rf clockInfo.txt tight_setup_hold_pins.txt

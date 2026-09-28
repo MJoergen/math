@@ -19,6 +19,16 @@ library ieee;
 -- this testbench mainly verifies srt around it: normalization, rounding,
 -- invalid inputs, and the handshake.
 --
+-- The inputs are sent by stim_proc, and the results are verified by
+-- check_proc. Between them, queue holds the inputs of the divisions whose
+-- results have not been verified yet. So a new division can start while the
+-- previous result is still waiting on the output. The edge cases and the
+-- divisions n/d <= 100 are sent back to back, with m_ready always high. The
+-- random divisions have random gaps between the inputs, and random
+-- backpressure on the output. The backpressure is often longer than a
+-- division, so the next result must also wait inside srt. axi_proc verifies
+-- that the output does not change until it is taken.
+--
 -- Each result is compared against the expected value. The integer part is
 -- calculated using integer division, and the fractional part using binary
 -- long division.
@@ -40,17 +50,64 @@ end entity tb_srt;
 
 architecture simulation of tb_srt is
 
-   signal running     : std_logic := '1';
-   signal clk         : std_logic := '1';
-   signal n           : std_logic_vector(31 downto 0);
-   signal d           : std_logic_vector(31 downto 0);
-   signal q           : std_logic_vector(63 downto 0);
-   signal invalid     : std_logic;
-   signal start_over  : std_logic;
-   signal busy        : std_logic;
+   signal running      : std_logic := '1';
+   signal clk          : std_logic := '1';
 
-   signal low_count   : natural := 0;
-   signal high_count  : natural := 0;
+   signal s_valid      : std_logic := '0';
+   signal s_ready      : std_logic;
+   signal s_n          : std_logic_vector(31 downto 0) := (others => '0');
+   signal s_d          : std_logic_vector(31 downto 0) := (others => '0');
+   signal m_valid      : std_logic;
+   signal m_ready      : std_logic := '1';
+   signal m_q          : std_logic_vector(63 downto 0);
+   signal m_invalid    : std_logic;
+
+   -- Whether ready_proc drives m_ready randomly, instead of always high
+   signal backpressure : boolean   := false;
+
+   -- Number of results verified by check_proc
+   signal num_verified : natural   := 0;
+
+   signal low_count    : natural   := 0;
+   signal high_count   : natural   := 0;
+
+   -- A queue of the inputs (n & d) of the divisions that have been started,
+   -- but whose results have not been verified yet
+   type   queue_type is protected
+      procedure push (arg : std_logic_vector(63 downto 0));
+      impure function pop return std_logic_vector;
+   end protected queue_type;
+
+   type   queue_type is protected body
+      type     array_type is array (0 to 15) of std_logic_vector(63 downto 0);
+      variable data  : array_type;
+      variable first : natural range 0 to 15 := 0;
+      variable count : natural range 0 to 16 := 0;
+
+      procedure push (arg : std_logic_vector(63 downto 0)) is
+      begin
+         assert count < 16
+            report "queue is full"
+            severity failure;
+         data((first + count) mod 16) := arg;
+         count                        := count + 1;
+      end procedure push;
+
+      impure function pop return std_logic_vector is
+         variable res_v : std_logic_vector(63 downto 0);
+      begin
+         assert count > 0
+            report "Got a result, but no division was started"
+            severity failure;
+         res_v := data(first);
+         first := (first + 1) mod 16;
+         count := count - 1;
+         return res_v;
+      end function pop;
+
+   end protected body queue_type;
+
+   shared variable queue : queue_type;
 
 begin
 
@@ -61,16 +118,193 @@ begin
          G_PLA => G_PLA
       )
       port map (
-         clk_i         => clk,
-         n_i           => n,
-         d_i           => d,
-         q_o           => q,
-         invalid_o     => invalid,
-         start_over_i  => start_over,
-         busy_o        => busy
-      );
+         clk_i       => clk,
+         s_valid_i   => s_valid,
+         s_ready_o   => s_ready,
+         s_n_i       => s_n,
+         s_d_i       => s_d,
+         m_valid_o   => m_valid,
+         m_ready_i   => m_ready,
+         m_q_o       => m_q,
+         m_invalid_o => m_invalid
+      ); -- srt_inst
 
-   test_proc : process
+   stim_proc : process
+
+      -- Number of divisions started, and how many of them were started while
+      -- the previous result was waiting on the output
+      variable num_started : natural := 0;
+      variable num_overlap : natural := 0;
+
+      -- Start a division. The inputs are given as vectors, since a natural
+      -- can not hold values of 2^31 or more. s_valid is cleared again at the
+      -- end, but if another division is started right away, it stays high.
+      procedure start_division(arg_n : std_logic_vector(31 downto 0);
+                               arg_d : std_logic_vector(31 downto 0)) is
+      begin
+         s_n     <= arg_n;
+         s_d     <= arg_d;
+         s_valid <= '1';
+         wait until rising_edge(clk) and s_ready = '1';
+         queue.push(arg_n & arg_d);
+         num_started := num_started + 1;
+         if m_valid = '1' and m_ready = '0' then
+            num_overlap := num_overlap + 1;
+         end if;
+         s_valid     <= '0';
+      end procedure start_division;
+
+      procedure start_division(arg_n : natural; arg_d : natural) is
+      begin
+         start_division(to_stdlogicvector(arg_n, 32), to_stdlogicvector(arg_d, 32));
+      end procedure start_division;
+
+      variable start_time : time;
+      variable end_time   : time;
+
+      constant MAX_D : natural := 100;
+      constant MAX_N : natural := 100;
+
+      -- The largest input value supported by srt
+      constant C_MAX : natural := 2 ** 29 - 1;
+
+      -- The number of random divisions, and the random seeds (fixed, so the
+      -- test is reproducible)
+      constant C_NUM_RANDOM : natural := 20000;
+      variable seed1_v      : positive := 1;
+      variable seed2_v      : positive := 42;
+      variable n_v          : natural;
+      variable d_v          : natural;
+      variable gap_v        : real;
+
+      -- Return a random value 0 <= x < 2^e, where the number of bits e is
+      -- itself random, between 0 and 29. So small and large values are both
+      -- likely.
+      impure function random_value return natural is
+         variable r_v    : real;
+         variable bits_v : natural range 0 to 29;
+      begin
+         uniform(seed1_v, seed2_v, r_v);
+         bits_v := natural(floor(r_v * 30.0));
+         uniform(seed1_v, seed2_v, r_v);
+         return natural(floor(r_v * 2.0 ** bits_v));
+      end function random_value;
+   begin
+      wait for 100 ns;
+      wait until rising_edge(clk);
+
+      report "Using the quotient digit table """ & G_PLA & """";
+      report "Testing edge cases";
+
+      -- Invalid inputs: Division by zero, and inputs of 2^29 or more. The next
+      -- division checks that m_invalid is cleared again.
+      start_division(X"00000000", X"00000000");
+      start_division(X"00000001", X"00000000");
+      start_division(X"1FFFFFFF", X"00000000");
+      start_division(X"20000000", X"00000001");
+      start_division(X"00000001", X"20000000");
+      start_division(X"FFFFFFFF", X"00000003");
+      start_division(X"FFFFFFFF", X"FFFFFFFF");
+      start_division(X"FFFFFFFF", X"00000000");
+
+      -- Zero dividend
+      start_division(0, 1);
+      start_division(0, 7);
+      start_division(0, C_MAX);
+
+      -- Largest inputs
+      start_division(C_MAX, 1);
+      start_division(C_MAX, 3);
+      start_division(C_MAX, C_MAX);
+      start_division(C_MAX - 1, C_MAX);
+      start_division(1, C_MAX);
+      start_division(123456789, 1000);
+
+      -- The division that exposed the Pentium's FDIV bug, see check_proc
+      start_division(4195835, 3145727);
+
+      -- Every normalization shift, with the smallest and largest mantissas
+      for i in 0 to 28 loop
+         for j in 0 to 28 loop
+            start_division(2 ** i, 2 ** j);
+            start_division(2 ** (i + 1) - 1, 2 ** j);
+            start_division(2 ** i, 2 ** (j + 1) - 1);
+            start_division(2 ** (i + 1) - 1, 2 ** (j + 1) - 1);
+         end loop;
+      end loop;
+
+      report "Testing all divisions n/d with 1 <= n, d <= " & to_string(MAX_N);
+      start_time := now;
+      for di in 1 to MAX_D loop
+         for ni in 1 to MAX_N loop
+            start_division(ni, di);
+         end loop;
+      end loop;
+      end_time := now;
+      report to_string(real((end_time-start_time) / 10 ns) / real(MAX_D*MAX_N)) &
+         " clock cycles per division";
+
+      report "Testing " & to_string(C_NUM_RANDOM) & " random divisions";
+      backpressure <= true;
+      for i in 1 to C_NUM_RANDOM loop
+         n_v := random_value;
+         d_v := random_value;
+         if d_v = 0 then
+            d_v := 1;
+         end if;
+         start_division(n_v, d_v);
+
+         -- Sometimes wait up to 64 clock cycles, with s_valid low. Longer
+         -- than a division, so srt sometimes waits for the next input.
+         uniform(seed1_v, seed2_v, gap_v);
+         if gap_v < 0.25 then
+            for j in 0 to natural(floor(gap_v * 256.0)) loop
+               wait until rising_edge(clk);
+            end loop;
+         end if;
+      end loop;
+
+      -- Wait for the remaining results
+      while num_verified < num_started loop
+         wait until rising_edge(clk);
+      end loop;
+
+      report to_string(num_overlap) &
+         " divisions were started while the previous result was waiting";
+      assert num_overlap > 0
+         report "No division was started while the previous result was waiting";
+
+      report "Test finished";
+      report "low_count=" & to_string(low_count);
+      report "high_count=" & to_string(high_count);
+      wait until rising_edge(clk);
+      running <= '0';
+      wait;
+   end process stim_proc;
+
+   -- Take each result in a clock cycle where m_ready is high. With
+   -- backpressure, m_ready is only high in one of 40 clock cycles, so a
+   -- result often waits longer than a division takes.
+   ready_proc : process
+      variable seed1_v : positive := 7;
+      variable seed2_v : positive := 99;
+      variable r_v     : real;
+   begin
+      wait until rising_edge(clk);
+      if backpressure then
+         uniform(seed1_v, seed2_v, r_v);
+         if r_v < 0.025 then
+            m_ready <= '1';
+         else
+            m_ready <= '0';
+         end if;
+      else
+         m_ready <= '1';
+      end if;
+   end process ready_proc;
+
+   -- Verify each result when it is taken, against the inputs from the queue
+   check_proc : process
 
       -- Calculate the fractional part of arg_n/arg_d as a 32-bit value, rounded
       -- to nearest. This uses binary long division with one extra bit for
@@ -97,192 +331,87 @@ begin
          return frac_v(32 downto 1);
       end function get_frac;
 
-      -- Start a single division, wait for the result, and verify it.
-      procedure verify_division(arg_n : natural; arg_d : natural) is
-         variable exp_q_high : std_logic_vector(31 downto 0) := to_stdlogicvector(arg_n / arg_d, 32);
-         variable exp_q_low  : std_logic_vector(31 downto 0) := get_frac(arg_n, arg_d);
+      -- "n/d" in decimal, for valid inputs
+      pure function division_string(arg_n : std_logic_vector; arg_d : std_logic_vector) return string is
       begin
-         report "verify: n=" & to_string(arg_n) & ", d=" & to_string(arg_d);
+         return to_string(to_integer(arg_n)) & "/" & to_string(to_integer(arg_d));
+      end function division_string;
 
-         n          <= to_stdlogicvector(arg_n, 32);
-         d          <= to_stdlogicvector(arg_d, 32);
-         start_over <= '1';
-         wait until rising_edge(clk);
-         start_over <= '0';
-         wait until rising_edge(clk);
-         assert busy = '1';
-         wait until busy = '0';
-         assert q(63 downto 32) = exp_q_high
-            report "HIGH: Calculating " & to_string(arg_n) & "/" & to_string(arg_d) &
-               ". Got 0x" & to_hstring(q(63 downto 32)) & ", expected 0x" & to_hstring(exp_q_high);
-         assert q(31 downto 0)  = exp_q_low
-            report "LOW: Calculating " & to_string(arg_n) & "/" & to_string(arg_d) &
-               ". Got 0x" & to_hstring(q(31 downto 0)) & ", expected 0x" & to_hstring(exp_q_low);
-         assert invalid = '0'
-            report "Calculating " & to_string(arg_n) & "/" & to_string(arg_d) &
-               ". invalid_o is set";
+      -- The Pentium's wrong result for 4195835/3145727, the division that
+      -- exposed its FDIV bug. With the original Pentium table, this divider
+      -- has the same bug: it gives the same wrong result as the Pentium, and
+      -- as the model ("./srt.py 4195835 3145727 --pla pentium").
+      constant C_FDIV_N     : natural := 4195835;
+      constant C_FDIV_D     : natural := 3145727;
+      constant C_FDIV_WRONG : std_logic_vector(63 downto 0) := X"00000001556FEC72";
+
+      variable nd_v       : std_logic_vector(63 downto 0);
+      variable n_v        : std_logic_vector(31 downto 0);
+      variable d_v        : std_logic_vector(31 downto 0);
+      variable exp_q_high : std_logic_vector(31 downto 0);
+      variable exp_q_low  : std_logic_vector(31 downto 0);
+   begin
+      wait until rising_edge(clk) and m_valid = '1' and m_ready = '1';
+      nd_v := queue.pop;
+      n_v  := nd_v(63 downto 32);
+      d_v  := nd_v(31 downto 0);
+      report "verify: n=0x" & to_hstring(n_v) & ", d=0x" & to_hstring(d_v);
+
+      if n_v(31 downto 29) /= "000" or d_v(31 downto 29) /= "000" or d_v = 0 then
+         -- Invalid inputs: The result must be all ones, and m_invalid set
+         assert m_q = X"FFFFFFFFFFFFFFFF"
+            report "Calculating 0x" & to_hstring(n_v) & "/0x" & to_hstring(d_v) &
+               ". Got 0x" & to_hstring(m_q) & ", expected 0xFFFFFFFFFFFFFFFF";
+         assert m_invalid = '1'
+            report "Calculating 0x" & to_hstring(n_v) & "/0x" & to_hstring(d_v) &
+               ". m_invalid_o is not set";
+
+      elsif G_PLA = "pentium" and to_integer(n_v) = C_FDIV_N and to_integer(d_v) = C_FDIV_D then
+         assert m_q = C_FDIV_WRONG
+            report "FDIV: Calculating 4195835/3145727. Got 0x" & to_hstring(m_q) &
+               ", expected the Pentium's wrong result 0x" & to_hstring(C_FDIV_WRONG);
+
+      else
+         exp_q_high := to_stdlogicvector(to_integer(n_v) / to_integer(d_v), 32);
+         exp_q_low  := get_frac(to_integer(n_v), to_integer(d_v));
+         assert m_q(63 downto 32) = exp_q_high
+            report "HIGH: Calculating " & division_string(n_v, d_v) &
+               ". Got 0x" & to_hstring(m_q(63 downto 32)) & ", expected 0x" & to_hstring(exp_q_high);
+         assert m_q(31 downto 0)  = exp_q_low
+            report "LOW: Calculating " & division_string(n_v, d_v) &
+               ". Got 0x" & to_hstring(m_q(31 downto 0)) & ", expected 0x" & to_hstring(exp_q_low);
+         assert m_invalid = '0'
+            report "Calculating " & division_string(n_v, d_v) & ". m_invalid_o is set";
 
          -- Count the rounding errors (only relevant if the asserts above are
          -- not fatal)
-         if q(31 downto 0) < exp_q_low then
+         if m_q(31 downto 0) < exp_q_low then
             low_count <= low_count + 1;
          end if;
-         if q(31 downto 0) > exp_q_low then
+         if m_q(31 downto 0) > exp_q_low then
             high_count <= high_count + 1;
          end if;
-      end procedure verify_division;
+      end if;
 
-      -- Start a division with invalid inputs, and verify that the result is
-      -- all ones, and that invalid_o is set. The inputs are given as vectors,
-      -- since a natural can not hold values of 2^31 or more.
-      procedure verify_invalid(arg_n : std_logic_vector(31 downto 0);
-                               arg_d : std_logic_vector(31 downto 0)) is
-      begin
-         report "verify: n=0x" & to_hstring(arg_n) & ", d=0x" & to_hstring(arg_d);
+      num_verified <= num_verified + 1;
+   end process check_proc;
 
-         n          <= arg_n;
-         d          <= arg_d;
-         start_over <= '1';
-         wait until rising_edge(clk);
-         start_over <= '0';
-         wait until rising_edge(clk);
-         assert busy = '1';
-         wait until busy = '0';
-         assert q = X"FFFFFFFFFFFFFFFF"
-            report "Calculating 0x" & to_hstring(arg_n) & "/0x" & to_hstring(arg_d) &
-               ". Got 0x" & to_hstring(q) & ", expected 0xFFFFFFFFFFFFFFFF";
-         assert invalid = '1'
-            report "Calculating 0x" & to_hstring(arg_n) & "/0x" & to_hstring(arg_d) &
-               ". invalid_o is not set";
-      end procedure verify_invalid;
-
-      -- Calculate 4195835/3145727, the division that exposed the Pentium's
-      -- FDIV bug. With the original Pentium table, this divider has the same
-      -- bug: it gives the same wrong result as the Pentium, and as the model
-      -- ("./srt.py 4195835 3145727 --pla pentium"). Otherwise the result is
-      -- correct.
-      procedure verify_fdiv_bug is
-         constant C_WRONG : std_logic_vector(63 downto 0) := X"00000001556FEC72";
-      begin
-         if G_PLA /= "pentium" then
-            verify_division(4195835, 3145727);
-            return;
-         end if;
-
-         report "verify: n=4195835, d=3145727 (FDIV bug)";
-         n          <= to_stdlogicvector(4195835, 32);
-         d          <= to_stdlogicvector(3145727, 32);
-         start_over <= '1';
-         wait until rising_edge(clk);
-         start_over <= '0';
-         wait until rising_edge(clk);
-         assert busy = '1';
-         wait until busy = '0';
-         assert q = C_WRONG
-            report "FDIV: Calculating 4195835/3145727. Got 0x" & to_hstring(q) &
-               ", expected the Pentium's wrong result 0x" & to_hstring(C_WRONG);
-      end procedure verify_fdiv_bug;
-
-      variable start_time : time;
-      variable end_time   : time;
-
-      constant MAX_D : natural := 100;
-      constant MAX_N : natural := 100;
-
-      -- The largest input value supported by srt
-      constant C_MAX : natural := 2 ** 29 - 1;
-
-      -- The number of random divisions, and the random seeds (fixed, so the
-      -- test is reproducible)
-      constant C_NUM_RANDOM : natural := 20000;
-      variable seed1_v      : positive := 1;
-      variable seed2_v      : positive := 42;
-      variable n_v          : natural;
-      variable d_v          : natural;
-
-      -- Return a random value 0 <= x < 2^e, where the number of bits e is
-      -- itself random, between 0 and 29. So small and large values are both
-      -- likely.
-      impure function random_value return natural is
-         variable r_v    : real;
-         variable bits_v : natural range 0 to 29;
-      begin
-         uniform(seed1_v, seed2_v, r_v);
-         bits_v := natural(floor(r_v * 30.0));
-         uniform(seed1_v, seed2_v, r_v);
-         return natural(floor(r_v * 2.0 ** bits_v));
-      end function random_value;
+   -- Verify the handshake on the output: Once m_valid is high, it stays high,
+   -- and m_q and m_invalid stay unchanged, until the result is taken
+   axi_proc : process (clk)
+      variable waiting_v : boolean := false;
+      variable q_v       : std_logic_vector(63 downto 0);
+      variable invalid_v : std_logic;
    begin
-      wait for 100 ns;
-      wait until rising_edge(clk);
-
-      report "Using the quotient digit table """ & G_PLA & """";
-      report "Testing edge cases";
-
-      -- Invalid inputs: Division by zero, and inputs of 2^29 or more. The next
-      -- division checks that invalid_o is cleared again.
-      verify_invalid(X"00000000", X"00000000");
-      verify_invalid(X"00000001", X"00000000");
-      verify_invalid(X"1FFFFFFF", X"00000000");
-      verify_invalid(X"20000000", X"00000001");
-      verify_invalid(X"00000001", X"20000000");
-      verify_invalid(X"FFFFFFFF", X"00000003");
-      verify_invalid(X"FFFFFFFF", X"FFFFFFFF");
-      verify_invalid(X"FFFFFFFF", X"00000000");
-
-      -- Zero dividend
-      verify_division(0, 1);
-      verify_division(0, 7);
-      verify_division(0, C_MAX);
-
-      -- Largest inputs
-      verify_division(C_MAX, 1);
-      verify_division(C_MAX, 3);
-      verify_division(C_MAX, C_MAX);
-      verify_division(C_MAX - 1, C_MAX);
-      verify_division(1, C_MAX);
-      verify_division(123456789, 1000);
-
-      -- The division that exposed the Pentium's FDIV bug
-      verify_fdiv_bug;
-
-      -- Every normalization shift, with the smallest and largest mantissas
-      for i in 0 to 28 loop
-         for j in 0 to 28 loop
-            verify_division(2 ** i, 2 ** j);
-            verify_division(2 ** (i + 1) - 1, 2 ** j);
-            verify_division(2 ** i, 2 ** (j + 1) - 1);
-            verify_division(2 ** (i + 1) - 1, 2 ** (j + 1) - 1);
-         end loop;
-      end loop;
-
-      report "Testing all divisions n/d with 1 <= n, d <= " & to_string(MAX_N);
-      start_time := now;
-      for di in 1 to MAX_D loop
-         for ni in 1 to MAX_N loop
-            verify_division(ni, di);
-         end loop;
-      end loop;
-      end_time := now;
-      report to_string(real((end_time-start_time) / 10 ns) / real(MAX_D*MAX_N)) &
-         " clock cycles per division";
-
-      report "Testing " & to_string(C_NUM_RANDOM) & " random divisions";
-      for i in 1 to C_NUM_RANDOM loop
-         n_v := random_value;
-         d_v := random_value;
-         if d_v = 0 then
-            d_v := 1;
+      if rising_edge(clk) then
+         if waiting_v then
+            assert m_valid = '1' and m_q = q_v and m_invalid = invalid_v
+               report "The result changed before it was taken";
          end if;
-         verify_division(n_v, d_v);
-      end loop;
-
-      report "Test finished";
-      report "low_count=" & to_string(low_count);
-      report "high_count=" & to_string(high_count);
-      wait until rising_edge(clk);
-      running <= '0';
-   end process;
+         waiting_v := m_valid = '1' and m_ready = '0';
+         q_v       := m_q;
+         invalid_v := m_invalid;
+      end if;
+   end process axi_proc;
 
 end architecture simulation;
-

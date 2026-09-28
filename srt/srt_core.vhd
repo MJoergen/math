@@ -17,16 +17,18 @@ library work;
 --
 -- Number formats (G_SIZE bits, two's complement with 4 integer bits including
 -- the sign, i.e. bit G_SIZE-4 has weight 1):
---   n_i, d_i : Must be normalized, i.e. the top nibble must be "0001", so
---              1 <= n_i, d_i < 2. As a special case n_i = 0 is allowed.
+--   s_n_i    : The dividend. Must be normalized, i.e. the top nibble must be
+--              "0001", so 1 <= s_n_i < 2. As a special case s_n_i = 0 is
+--              allowed.
+--   s_d_i    : The divisor. Must be normalized, so 1 <= s_d_i < 2.
 --   n        : The partial remainder, n = n_s + n_c (see below). It stays
 --              within |n/d| < 8/3, which is the radix 4 times the redundancy
 --              factor 2/3 of the digit set. Formal verification shows that
 --              -4.5 <= n < 4.5.
---   q_o      : Unsigned, with 2 integer bits and 2*G_SIZE+2 fractional bits.
+--   m_q_o    : Unsigned, with 2 integer bits and 2*G_SIZE+2 fractional bits.
 --              The quotient digit from iteration k has weight 4^(-k). Since
---              1/2 < n_i/d_i < 2 the first digit is always 1 or 2
---              (unless n_i = 0).
+--              1/2 < s_n_i/s_d_i < 2 the first digit is always 1 or 2
+--              (unless s_n_i = 0).
 --
 -- The partial remainder is kept in carry-save form, like in the Pentium: two
 -- registers n_s (the sums) and n_c (the carries), with n = n_s + n_c. Then
@@ -52,7 +54,7 @@ library work;
 -- Each digit is first stored in the register digit, and only appended to
 -- quot in the next iteration. This keeps the quotient registers (about 140
 -- loads) off the output of the PLA, which is on the critical path. The
--- quotient q_o is quot with the last digit appended, so it is still valid
+-- quotient m_q_o is quot with the last digit appended, so it is still valid
 -- in the same clock cycle as before.
 --
 -- The generic G_PLA selects the quotient digit table:
@@ -67,9 +69,14 @@ library work;
 -- column (it holds 0 above the q = 2 region), so the Pentium tables use a
 -- lookup in the table instead. They are only meant for simulation.
 --
--- Usage: Pulse start_i for one clock cycle. The inputs n_i and d_i are only
--- sampled in that cycle. The result is valid on q_o when busy_o returns low,
--- until the next division is started.
+-- Usage: Both ports use AXI-style handshaking, i.e. a value is transferred in
+-- a clock cycle where both valid and ready are high.
+-- * Input: Set s_valid_i together with s_n_i and s_d_i, and keep them
+--   unchanged until s_ready_o is high. s_ready_o is only high when no
+--   division is in progress, and the previous result has been taken.
+-- * Output: m_valid_o is set together with the quotient m_q_o, G_SIZE+3
+--   clock cycles after the input transfer. They stay unchanged until
+--   m_ready_i is high.
 
 entity srt_core is
    generic (
@@ -78,18 +85,24 @@ entity srt_core is
       G_PLA   : string := "srt"
    );
    port (
-      clk_i   : in    std_logic;
-      n_i     : in    std_logic_vector(G_SIZE - 1 downto 0);     -- dividend (normalized)
-      d_i     : in    std_logic_vector(G_SIZE - 1 downto 0);     -- divisor (normalized)
-      start_i : in    std_logic;
-      q_o     : out   std_logic_vector(2 * G_SIZE + 3 downto 0); -- quotient
-      busy_o  : out   std_logic
+      clk_i     : in    std_logic;
+
+      -- Input
+      s_valid_i : in    std_logic;
+      s_ready_o : out   std_logic;
+      s_n_i     : in    std_logic_vector(G_SIZE - 1 downto 0);     -- dividend (normalized)
+      s_d_i     : in    std_logic_vector(G_SIZE - 1 downto 0);     -- divisor (normalized)
+
+      -- Output
+      m_valid_o : out   std_logic;
+      m_ready_i : in    std_logic;
+      m_q_o     : out   std_logic_vector(2 * G_SIZE + 3 downto 0)  -- quotient
    );
 end entity srt_core;
 
 architecture synthesis of srt_core is
 
-   -- Number of quotient digits. Each digit is two bits, so this fills q_o.
+   -- Number of quotient digits. Each digit is two bits, so this fills m_q_o.
    constant C_NUM_ITERS : natural                         := G_SIZE + 2;
 
    signal   iter : natural range 0 to C_NUM_ITERS - 1;
@@ -142,7 +155,8 @@ architecture synthesis of srt_core is
    signal   new_quot    : std_logic_vector(2 * G_SIZE + 3 downto 0);
    signal   new_quot_m1 : std_logic_vector(2 * G_SIZE + 3 downto 0);
 
-   type     state_type is (IDLE_ST, BUSY_ST);
+   -- DONE_ST: The result is valid on m_q_o, and waits to be taken
+   type     state_type is (IDLE_ST, BUSY_ST, DONE_ST);
    signal   state : state_type                            := IDLE_ST;
 
    -- The severity of the assertions in get_n. With the original Pentium table,
@@ -259,8 +273,10 @@ architecture synthesis of srt_core is
 
 begin
 
-   busy_o <= '1' when state /= IDLE_ST else
-             '0';
+   s_ready_o <= '1' when state = IDLE_ST else
+                '0';
+   m_valid_o <= '1' when state = DONE_ST else
+                '0';
 
    n     <= n_s + n_c;
    n_est <= (n_s(G_SIZE - 1 downto G_SIZE - 7) + n_c(G_SIZE - 1 downto G_SIZE - 7)) &
@@ -310,7 +326,7 @@ begin
 
    -- After the last iteration, digit holds the last digit, and quot holds
    -- all the digits before it.
-   q_o <= new_quot;
+   m_q_o <= new_quot;
 
    srt_core_proc : process (clk_i)
       variable next_v : std_logic_vector(2 * G_SIZE - 1 downto 0);
@@ -345,22 +361,27 @@ begin
                if iter < C_NUM_ITERS - 1 then
                   iter <= iter + 1;
                else
+                  state <= DONE_ST;
+               end if;
+
+            when DONE_ST =>
+               if m_ready_i = '1' then
                   state <= IDLE_ST;
                end if;
 
          end case;
 
-         if start_i then
+         if s_valid_i = '1' and s_ready_o = '1' then
             -- The inputs must be normalized. A zero dividend is fine too,
             -- since the PLA will then select q = 0 in every iteration.
-            f_valid_n : assert n_i(G_SIZE - 1 downto G_SIZE - 4) = "0001" or n_i = 0
-               report "srt_core: Dividend 0x" & to_hstring(n_i) & " is not normalized.";
-            f_valid_d : assert d_i(G_SIZE - 1 downto G_SIZE - 4) = "0001"
-               report "srt_core: Divisor 0x" & to_hstring(d_i) & " is not normalized.";
-            n_s     <= n_i;
+            f_valid_n : assert s_n_i(G_SIZE - 1 downto G_SIZE - 4) = "0001" or s_n_i = 0
+               report "srt_core: Dividend 0x" & to_hstring(s_n_i) & " is not normalized.";
+            f_valid_d : assert s_d_i(G_SIZE - 1 downto G_SIZE - 4) = "0001"
+               report "srt_core: Divisor 0x" & to_hstring(s_d_i) & " is not normalized.";
+            n_s     <= s_n_i;
             n_c     <= (others => '0');
-            d       <= d_i;
-            col     <= get_col(get_d4(d_i));
+            d       <= s_d_i;
+            col     <= get_col(get_d4(s_d_i));
             iter    <= 0;
             quot    <= (others => '0');                -- 0
             quot_m1 <= (others => '1');                -- -1

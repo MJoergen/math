@@ -29,7 +29,7 @@ vunit srt_core_inst (srt_core(synthesis))
    --    f_q  := 4*f_q  + digit
    --    f_qd := 4*f_qd + digit*d
    -- So by construction f_qd = f_q*d. Since digit*d is just a shift of d,
-   -- this uses only additions. We then check that q_o = f_q, and that
+   -- this uses only additions. We then check that m_q_o = f_q, and that
    -- N*2^(2*G_SIZE+2) - f_qd is small.
    --
    -- To help the solver, we also check in every clock cycle that the partial
@@ -68,7 +68,8 @@ vunit srt_core_inst (srt_core(synthesis))
 
    -- Whether the quotient is correct, i.e. whether 3*|err| < 2*d, where
    -- err = N*2^(2*G_SIZE+2) - q*d. This means that the quotient differs from
-   -- the exact value N/d by less than 2/3 of the least significant bit of q_o.
+   -- the exact value N/d by less than 2/3 of the least significant bit of
+   -- m_q_o.
    signal f_res_ok : boolean;
 
    f_track_proc : process (clk_i)
@@ -76,7 +77,7 @@ vunit srt_core_inst (srt_core(synthesis))
       variable qd_v : std_logic_vector(C_W - 1 downto 0);
    begin
       if rising_edge(clk_i) then
-         if busy_o = '1' then
+         if state = BUSY_ST then
             f_n4 <= f_n4(C_W - 3 downto 0) & "00";
 
             q_v  := f_q(2 * G_SIZE + 1 downto 0) & "00";
@@ -108,9 +109,9 @@ vunit srt_core_inst (srt_core(synthesis))
 
          end if;
 
-         if start_i = '1' then
-            f_n  <= n_i;
-            f_n4 <= (C_W - 1 downto G_SIZE => '0') & n_i;
+         if s_valid_i = '1' and s_ready_o = '1' then
+            f_n  <= s_n_i;
+            f_n4 <= (C_W - 1 downto G_SIZE => '0') & s_n_i;
             f_q  <= (others => '0');
             f_qd <= (others => '0');
          end if;
@@ -127,7 +128,7 @@ vunit srt_core_inst (srt_core(synthesis))
    begin
       -- Check f_n4. During a division k = iter, and after the division
       -- k = C_NUM_ITERS.
-      if busy_o = '1' then
+      if state = BUSY_ST then
          f_n4_ok <= f_n4 = ((C_W - 1 downto G_SIZE => '0') & f_n) sll (2 * iter);
       else
          f_n4_ok <= f_n4 = ((C_W - 1 downto G_SIZE => '0') & f_n) sll (2 * C_NUM_ITERS);
@@ -157,44 +158,57 @@ vunit srt_core_inst (srt_core(synthesis))
    -- ASSERTIONS ABOUT OUTPUTS
    -----------------------------
 
-   -- Verify the helper signals in every clock cycle. q_o is quot with the
+   -- Verify the helper signals in every clock cycle. m_q_o is quot with the
    -- stored digit appended, i.e. all the digits so far.
    f_n4_check  : assert always f_started = '1' -> f_n4_ok;
    f_invariant : assert always f_started = '1' -> f_inv_ok;
    f_remainder : assert always f_started = '1' -> f_rem_ok;
-   f_digits    : assert always f_started = '1' -> q_o = f_q and quot_m1 = quot - 1;
+   f_digits    : assert always f_started = '1' -> m_q_o = f_q and quot_m1 = quot - 1;
 
    -- For induction: The stored divisor and dividend are valid
    f_d_norm    : assert always f_started = '1' -> d(G_SIZE-1 downto G_SIZE-4) = "0001";
    f_n_valid   : assert always f_started = '1' -> (f_n(G_SIZE-1 downto G_SIZE-4) = "0001" or f_n = 0);
 
-   -- When a division finishes, verify that the quotient matches the digits.
+   -- For induction: The first division starts in the first clock cycle, see
+   -- f_start_first below
+   f_idle_first : assert always f_started = '0' -> state = IDLE_ST;
+
+   -- For induction: state holds one of its three values. It is stored in two
+   -- bits, so induction could otherwise start from the fourth value.
+   f_state : assert always state = IDLE_ST or state = BUSY_ST or state = DONE_ST;
+
+   -- While the result is valid, verify that the quotient matches the digits.
    -- This is modulo 2^(2*G_SIZE+4), but f_result below shows that the true
    -- quotient is less than 2, so there is no overflow.
-   f_quotient : assert always {busy_o; not busy_o} |-> {q_o = f_q};
+   f_quotient : assert always m_valid_o = '1' -> m_q_o = f_q;
 
-   -- One clock cycle after a division finishes, verify that the quotient is
-   -- correct
-   f_result : assert always {busy_o; not busy_o; not busy_o} |-> {f_res_ok};
+   -- One clock cycle after the result is valid, verify that the quotient is
+   -- correct. No new division can start while the result is valid, so the
+   -- helper signals still belong to this division.
+   f_result : assert always {m_valid_o = '1'} |=> {f_res_ok};
+
+   -- The handshake: The result stays valid and unchanged until it is taken
+   f_hold : assert always {m_valid_o = '1' and m_ready_i = '0'} |=>
+      {m_valid_o = '1' and m_q_o = prev(m_q_o)};
 
 
    -----------------------------
    -- ASSUMPTIONS ABOUT INPUTS
    -----------------------------
 
-   -- Require reset at startup.
-   f_reset : assume {start_i};
+   -- Require a division to start at startup.
+   f_reset : assume {s_valid_i = '1'};
 
    -- For induction: The helper signals are only invalid before the first
    -- division is started, i.e. in the first clock cycle, where f_reset
    -- requires a start anyway.
-   f_start_first : assume always f_started = '0' -> start_i = '1';
+   f_start_first : assume always f_started = '0' -> s_valid_i = '1';
 
    -- Require valid input: The divisor must be normalized, and the dividend
    -- must be either normalized or zero.
-   f_valid : assume always {start_i} |->
-      {(n_i(G_SIZE-1 downto G_SIZE-4) = "0001" or n_i = 0) and
-        d_i(G_SIZE-1 downto G_SIZE-4) = "0001"};
+   f_valid : assume always s_valid_i = '1' ->
+      ((s_n_i(G_SIZE-1 downto G_SIZE-4) = "0001" or s_n_i = 0) and
+        s_d_i(G_SIZE-1 downto G_SIZE-4) = "0001");
 
 
    --------------------------------------------
@@ -217,10 +231,16 @@ vunit srt_core_inst (srt_core(synthesis))
    f_small_n : cover {n(G_SIZE-1 downto G_SIZE-12) = "101110000000"};
 
    -- Verify that a division can complete, so f_result is not vacuous
-   f_done : cover {busy_o; not busy_o};
+   f_done : cover {m_valid_o = '1'};
 
    -- Verify that a division with a zero dividend can complete
-   f_done_zero : cover {busy_o; busy_o = '0' and f_n = 0};
+   f_done_zero : cover {m_valid_o = '1' and f_n = 0};
+
+   -- Verify that the result can wait to be taken, so f_hold is not vacuous
+   f_wait : cover {m_valid_o = '1' and m_ready_i = '0'; m_valid_o = '1' and m_ready_i = '1'};
+
+   -- Verify that the next division can start after the result is taken
+   f_next : cover {m_valid_o = '1' and m_ready_i = '1'; s_valid_i = '1' and s_ready_o = '1'};
 
 
    --------------------------------------------
