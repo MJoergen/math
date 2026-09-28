@@ -87,7 +87,7 @@ checks a few invariants in every clock cycle. See the comments in
 `srt_core.psl`.
 
 The properties are proven with k-induction, so they hold in every clock cycle,
-not just for a bounded number of them. This takes about a minute. The
+not just for a bounded number of them. This takes about two minutes. The
 invariants that are checked in every clock cycle are what makes this possible:
 each clock cycle is a small local step for the solver.
 
@@ -110,8 +110,8 @@ Type `make` to list the supported targets. The most important ones are:
   GTKWave.
 * `make formal` runs the formal verification. This requires
   [SymbiYosys](https://github.com/YosysHQ/sby), the GHDL plugin for Yosys, and
-  the [Yices 2](https://github.com/SRI-CSL/yices2) solver. It takes about a
-  minute.
+  the [Yices 2](https://github.com/SRI-CSL/yices2) solver. It takes about two
+  minutes.
   If it fails, use `make show_prove` or `make show_induct` to view the
   counterexample in GTKWave, and `make show_cover` to view the cover trace.
 * `make model` (or `./srt.py` and `./srt.py --exact`) checks the quotient

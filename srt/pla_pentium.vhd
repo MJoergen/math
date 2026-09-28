@@ -220,7 +220,7 @@ architecture synthesis of pla_pentium is
    constant pla_rom : rom_type(0 to 2047)        := init_rom;
 
    signal pla_addr : std_logic_vector(10 downto 0);
-   signal pla_data : std_logic_vector(1 downto 0);
+   signal pla_data : std_logic_vector(1 downto 0) := (others => '0');  -- Defined at time 0
 
 begin
 
@@ -236,9 +236,15 @@ begin
       end if;
    end process pla_addr_proc;
 
+   -- At time 0 the address may be undefined for a delta cycle. The check
+   -- avoids a metavalue warning from to_integer.
    rom_proc : process (all)
    begin
-      pla_data <= pla_rom(to_integer(pla_addr));
+      if is_x(pla_addr) then
+         pla_data <= (others => '0');
+      else
+         pla_data <= pla_rom(to_integer(pla_addr));
+      end if;
    end process rom_proc;
 
    -- Apply the sign of n to the quotient digit

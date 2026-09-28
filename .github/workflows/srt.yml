@@ -46,7 +46,7 @@ jobs:
           ./srt.py 4195835 3145727 --pla pentium | grep 'WRONG'
           ./srt.py 4195835 3145727 --pla pentium_fixed | grep -v 'WRONG' | grep '= 1.3338204492$'
 
-  # Run the complete testbench (about 30 seconds)
+  # Run the complete testbench (about a minute, twice)
   sim:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
@@ -68,7 +68,7 @@ jobs:
       - name: Check that the testbench with the Pentium table ran to the end
         run: grep 'Test finished' sim_pentium.log
 
-  # Run the formal verification of srt_core.vhd (about a minute)
+  # Run the formal verification of srt_core.vhd (about two minutes)
   formal:
     runs-on: ubuntu-24.04
     timeout-minutes: 20

@@ -37,9 +37,9 @@ vunit srt_core_inst (srt_core(synthesis))
    --    n = f_n4 - 4*f_qd, where f_n4 = N*4^k
    -- after k iterations. This follows by induction from n := 4*(n - digit*d).
    -- The solver assumes that the assertions hold in all previous clock
-   -- cycles, so each clock cycle is a small local check. For the same reason,
-   -- the final result is checked one clock cycle after the division is
-   -- finished.
+   -- cycles, so each clock cycle is a small local check. The final result is
+   -- then checked in every clock cycle while it is valid, which follows from
+   -- these checks in the same clock cycle.
 
    constant C_W : natural := 3 * G_SIZE + 6;
 
@@ -182,10 +182,11 @@ vunit srt_core_inst (srt_core(synthesis))
    -- quotient is less than 2, so there is no overflow.
    f_quotient : assert always m_valid_o = '1' -> m_q_o = f_q;
 
-   -- One clock cycle after the result is valid, verify that the quotient is
-   -- correct. No new division can start while the result is valid, so the
-   -- helper signals still belong to this division.
-   f_result : assert always {m_valid_o = '1'} |=> {f_res_ok};
+   -- While the result is valid, verify that the quotient is correct. No new
+   -- division can start while the result is valid, so the helper signals
+   -- still belong to this division. (Checking this one clock cycle later
+   -- instead, with |=>, makes the proof with G_SIZE=32 several times slower.)
+   f_result : assert always m_valid_o = '1' -> f_res_ok;
 
    -- The handshake: The result stays valid and unchanged until it is taken
    f_hold : assert always {m_valid_o = '1' and m_ready_i = '0'} |=>
