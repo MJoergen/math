@@ -1,0 +1,52 @@
+[*]
+[*] GTKWave save file for the waveform booth.ghw from "make debug", see
+[*] https://github.com/gtkwave/gtkwave
+[*] booth.ghw is written by GHDL in its GHW format, see the option --wave in
+[*] https://ghdl.github.io/ghdl/using/Simulation.html#cmdoption-ghdl-wave
+[*] "make debug" simulates booth.vhd (radix 4) with G_DATA_SIZE=8. The
+[*] numbers are shown as signed decimals, and the working register prod
+[*] (P & Q & Q(-1), see ALGORITHM.md) in binary.
+[*]
+[timestart] 0
+[size] 1610 1030
+[pos] -1 -1
+*-28.150000 0 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] top.
+[treeopen] top.tb_booth.
+[treeopen] top.tb_booth.dut_gen.
+[treeopen] top.tb_booth.dut_gen.booth_inst.
+[sst_width] 249
+[signals_width] 300
+[sst_expanded] 1
+[sst_vpaned_height] 298
+@800200
+-tb_booth
+@28
+top.tb_booth.clk
+top.tb_booth.rst
+top.tb_booth.s_valid
+top.tb_booth.s_ready
+@424
+top.tb_booth.s_a[7:0]
+top.tb_booth.s_b[7:0]
+@28
+top.tb_booth.m_valid
+top.tb_booth.m_ready
+@424
+top.tb_booth.m_res[15:0]
+@1000200
+-tb_booth
+@800200
+-booth
+@28
+top.tb_booth.dut_gen.booth_inst.state
+@24
+top.tb_booth.dut_gen.booth_inst.count
+@424
+top.tb_booth.dut_gen.booth_inst.mcand[9:0]
+@28
+top.tb_booth.dut_gen.booth_inst.prod[18:0]
+@1000200
+-booth
+[pattern_trace] 1
+[pattern_trace] 0

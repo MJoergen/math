@@ -29,6 +29,7 @@ hardware.
 | [`booth.vhd`](booth.vhd) | The Booth multiplier (radix 4).
 | [`booth_radix2.vhd`](booth_radix2.vhd) | The same multiplier with radix 2, for comparison, see [Radix 2 versus radix 4](ALGORITHM.md#radix-2-versus-radix-4).
 | [`tb_booth.vhd`](tb_booth.vhd) | Testbench for both designs.
+| [`booth.gtkw`](booth.gtkw) | GTKWave setup for viewing the waveform from `make debug`.
 | [`booth.psl`](booth.psl), [`booth.sby`](booth.sby) | Formal verification of both designs, see [Formal verification](#formal-verification).
 | [`Makefile`](Makefile) | Runs the simulation, the formal verification, and the synthesis, see [Running](#running).
 | [`ALGORITHM.md`](ALGORITHM.md) | Detailed explanation of the algorithm, and the comparison of radix 2 and radix 4.
@@ -67,7 +68,8 @@ Type `make` to list the supported targets:
   `make sim RADIX=2` tests only `booth_radix2.vhd`.
 * `make debug` runs a short simulation of `booth.vhd` (20 multiplications),
   and writes a waveform to `booth.ghw`. Use `make show_debug` to view it in
-  [GTKWave](https://github.com/gtkwave/gtkwave).
+  [GTKWave](https://github.com/gtkwave/gtkwave), with the signals selected in
+  `booth.gtkw`.
 * `make formal` runs the formal verification (see [below](#formal-verification)).
   This requires [SymbiYosys](https://github.com/YosysHQ/sby), the GHDL plugin
   for Yosys, and the [Boolector](https://github.com/Boolector/boolector) solver.

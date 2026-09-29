@@ -49,10 +49,11 @@ debug: $(SRC) ## Run a short simulation of booth.vhd, and write a waveform to bo
 	ghdl -e --std=08 tb_booth
 	ghdl -r --std=08 tb_booth -gG_DATA_SIZE=8 -gG_EXHAUSTIVE=false -gG_NUM_TESTS=20 --wave=booth.ghw
 
-# GTKWave, see https://github.com/gtkwave/gtkwave
+# GTKWave, see https://github.com/gtkwave/gtkwave. booth.gtkw selects the
+# signals of tb_booth and the most relevant internal signals of booth.
 .PHONY: show_debug
 show_debug: ## Show the waveform from "make debug" in GTKWave
-	gtkwave booth.ghw
+	gtkwave booth.ghw booth.gtkw
 
 
 #######################
