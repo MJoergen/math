@@ -1,10 +1,13 @@
 # The SRT division algorithm
-This explains the radix-4 SRT division algorithm used in this directory, and
-why it works. It is inspired by [Ken Shirriff's analysis of the Pentium division bug](https://www.righto.com/2024/12/this-die-photo-of-pentium-shows.html).
+This explains the radix-4
+[SRT division](https://en.wikipedia.org/wiki/Division_algorithm#SRT_division)
+algorithm used in this directory, and why it works. It is inspired by Ken
+Shirriff's article
+[Intel's \$475 million error: the silicon behind the Pentium division bug](https://www.righto.com/2024/12/this-die-photo-of-pentium-shows.html).
 
 ## Overview
-Like long division by hand, SRT division produces the quotient one digit at a
-time. Each iteration does:
+Like [long division](https://en.wikipedia.org/wiki/Long_division) by hand,
+SRT division produces the quotient one digit at a time. Each iteration does:
 ```
 q := PLA(n, d)      -- select quotient digit
 n := 4*(n - q*d)    -- update partial remainder
@@ -15,7 +18,8 @@ $1 \le N < 2$ (or $N = 0$).
 
 The quotient digit $q$ is one of $\{-2, -1, 0, 1, 2\}$. It is selected by a
 small lookup table that only looks at the top 7 bits of $n$ and the 4 bits of
-$d$ after its leading one. In the Pentium this table was a PLA (programmable
+$d$ after its leading one. In the Pentium this table was a
+[PLA](https://en.wikipedia.org/wiki/Programmable_logic_array) (programmable
 logic array), so the table is called the PLA here too, even though this
 design does not use one. This works because the digit only needs to be
 approximately right: a slightly wrong digit is corrected by the later digits,
@@ -39,8 +43,9 @@ bits.
 Ordinary base-4 digits would be $\{0, 1, 2, 3\}$. SRT instead uses the digits
 $\{-2, -1, 0, 1, 2\}$. Since there are five of them, storing a digit takes
 three bits (a sign and a two-bit magnitude), although each digit still only
-adds two bits to the quotient. This digit set is *redundant*: many quotients
-can be written in more than one way, e.g.
+adds two bits to the quotient. This digit set is *redundant* (a
+[signed-digit representation](https://en.wikipedia.org/wiki/Signed-digit_representation)):
+many quotients can be written in more than one way, e.g.
 $1.5 = 1 + 2 \cdot 4^{-1} = 2 - 2 \cdot 4^{-1}$. This has two advantages:
 * The multiples $q \cdot d$ are $0$, $\pm d$, and $\pm 2d$, which are just shifts
   of $d$. The digit 3 would require calculating $3d$.
@@ -83,16 +88,18 @@ Calculating $n - qd$ normally needs a carry-propagating addition across all
 the bits of $n$, in every iteration. To avoid this, the partial remainder is
 kept in *carry-save* form, like in the Pentium: as two numbers, the sums $s$
 and the carries $c$, with $n = s + c$. Each bit of $n - qd$ is then calculated
-by a full adder of three bits, from $s$, $c$, and $-qd$, without any carry
-chain.
+by a [full adder](https://en.wikipedia.org/wiki/Adder_(electronics)#Full_adder)
+of three bits, from $s$, $c$, and $-qd$, without any carry chain, like in a
+[carry-save adder](https://en.wikipedia.org/wiki/Carry-save_adder).
 
 The table needs $n$ itself, though. So the top 7 bits of $s$ and $c$ are added
-(in the Pentium with a small carry-lookahead adder), and the result is used as
-the table index. This ignores the carry from the lower bits, which can make
-the result one less in its last bit. So **the table may see $n$ one row too
-low**: it sees either the row that $n$ is in, or the row below. Each table
-entry must therefore hold a digit that is valid not just for its own row, but
-also for the row above it.
+(in the Pentium with a small
+[carry-lookahead adder](https://en.wikipedia.org/wiki/Carry-lookahead_adder)),
+and the result is used as the table index. This ignores the carry from the
+lower bits, which can make the result one less in its last bit. So **the table
+may see $n$ one row too low**: it sees either the row that $n$ is in, or the
+row below. Each table entry must therefore hold a digit that is valid not just
+for its own row, but also for the row above it.
 
 The rest of this document assumes this carry-save estimate, unless it says
 otherwise. `./srt.py --exact` uses an exact partial remainder instead, for
@@ -100,8 +107,10 @@ comparison.
 
 ## Why 7 bits of n and 4 bits of d
 The overlap between neighbouring intervals is what allows the table to look at
-only the top bits of $n$ and $d$. Both digit $k$ and digit $k+1$ are allowed in
-the band
+only the top bits of $n$ and $d$. D. E. Atkins analysed this in detail in
+[Higher-Radix Division Using Estimates of the Divisor and Partial Remainders](http://degiorgi.math.hr/aaa_sem/Div/925-934.pdf)
+(IEEE Transactions on Computers, 1968). Both digit $k$ and digit $k+1$ are
+allowed in the band
 ```math
 \left(k + \tfrac{1}{3}\right) d \;\le\; n \;\le\; \left(k + \tfrac{2}{3}\right) d ,
 ```
@@ -152,7 +161,8 @@ between $\frac{17}{16}$ and $\frac{9}{8}$, between the digits $-2$ and $-1$).
 `srt.py` checks the actual table, see [The table](#the-table). Other designs
 have made other choices: according to
 [Ken Shirriff's analysis](https://www.righto.com/2024/12/this-die-photo-of-pentium-shows.html),
-the MIPS R3010 used 9 bits of the partial remainder and 9 bits of the divisor.
+the [MIPS R3010](https://en.wikipedia.org/wiki/R3000) used 9 bits of the
+partial remainder and 9 bits of the divisor.
 
 ## The table
 ![Diagram of the quotient digit table](pla.svg)
@@ -270,7 +280,10 @@ chains, which would limit the clock frequency.
 ### Converting the digits on the fly
 Appending a negative digit to the quotient would normally require a
 subtraction, i.e. a carry chain. Instead, this design converts the digits to
-an ordinary binary number *on the fly*: Two registers hold the quotient so
+an ordinary binary number *on the fly*, a technique described by Ercegovac and
+Lang in
+[On-the-Fly Conversion of Redundant into Conventional Representations](https://doi.org/10.1109/TC.1987.1676986)
+(IEEE Transactions on Computers, 1987). Two registers hold the quotient so
 far, $Q$, and $Q - 1$ (in units of the last digit). Since
 $4Q + q = 4(Q - 1) + (4 + q)$, a negative digit is appended to $Q - 1$
 instead. In the table below, & means appending two bits:
@@ -308,8 +321,9 @@ magnitude of the digit only depends on $m = |n_0 + \frac{1}{8}|$:
 \end{cases}
 ```
 and its sign is the sign of $n_0$. In units of $\frac{1}{8}$, $m = n_0 + 1$
-for $n_0 \ge 0$, and $m = -n_0 - 1$ (the one's complement of $n_0$) for
-$n_0 < 0$.
+for $n_0 \ge 0$, and $m = -n_0 - 1$ (the
+[one's complement](https://en.wikipedia.org/wiki/Ones%27_complement) of
+$n_0$) for $n_0 < 0$.
 
 The divisor does not change during a division, so `srt_core.vhd` looks up $t_0$
 and $t_1$ for its column when the division starts, and stores them in a
@@ -326,8 +340,15 @@ above the $q = 2$ region, and its upper edge is not the same for positive and
 negative $n$. So `pla_pentium.vhd` (see below) uses a lookup in the table.
 
 ## The Pentium FDIV bug
-In the Pentium, the table's unused entries held 0. In 1994 Intel stated that
-the FDIV bug was caused by five entries that were omitted from the table.
+The [FDIV bug](https://en.wikipedia.org/wiki/Pentium_FDIV_bug) was found in
+1994. Coe, Mathisen, Moler, and Pratt tell the story of how it was found in
+[Computational Aspects of the Pentium Affair](https://people.cs.vt.edu/~naren/Courses/CS3414/assignments/pentium.pdf)
+(IEEE Computational Science and Engineering, 1995).
+
+In the Pentium, the table's unused entries held 0. In 1994 Intel stated, in
+its white paper
+[Statistical Analysis of Floating Point Flaw in the Pentium Processor](https://www.ardent-tool.com/CPU/Intel/fdiv/white11.pdf),
+that the bug was caused by five entries that were omitted from the table.
 [Ken Shirriff's analysis](https://www.righto.com/2024/12/this-die-photo-of-pentium-shows.html)
 shows that in fact 16 entries were missing, one in each column, along the top
 edge of the $q = 2$ region: they overlap the region $|n| \le \frac{8}{3}d$, so
@@ -340,7 +361,8 @@ top edge is not one of them, but it was moved down anyway.
 Only five of the 16 missing entries can be reached by a division, and only
 because of the carry-save estimate: `./srt.py --bounds --pla pentium` shows
 that the partial remainder is unbounded in exactly these five columns. Even
-these five entries are only reached in about 1 in 9 billion random divisions.
+these five entries are only reached in about 1 in 9 billion random divisions,
+according to Intel's white paper.
 
 The fix filled all the unused entries above the $q = 2$ region and below the
 $q = -2$ region with 2, which also made the PLA smaller.
