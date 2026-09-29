@@ -80,7 +80,10 @@ Type `make` to list the supported targets:
 signals, and for each design it:
 
 * Tests all pairs of inputs for `G_DATA_SIZE` from 1 to 7.
-* Tests 5000 random pairs of inputs for `G_DATA_SIZE` of 16, 17, and 32.
+* Tests 5000 pairs of inputs for `G_DATA_SIZE` of 16, 17, and 32: first all
+  pairs of the values most negative, -1, 0, 1, and largest positive, and then
+  random pairs. Random inputs almost never hit the most negative value at these
+  sizes, which is the case that P needs its two extra bits for.
 * Verifies the throughput when there are no stalls, for `G_DATA_SIZE` of 8
   and 9: one product every `ceil(G_DATA_SIZE/2)` clock cycles for radix 4, and
   every `G_DATA_SIZE` clock cycles for radix 2.

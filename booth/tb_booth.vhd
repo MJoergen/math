@@ -8,7 +8,9 @@ library ieee;
 -- G_RADIX selects the design: 4 for booth.vhd, and 2 for booth_radix2.vhd.
 --
 -- If G_EXHAUSTIVE is true, all pairs of inputs are tested. Otherwise
--- G_NUM_TESTS random pairs are tested.
+-- G_NUM_TESTS pairs are tested: First all 25 pairs of the values most
+-- negative, -1, 0, 1, and largest positive (these are rarely generated at
+-- random for larger G_DATA_SIZE), and then random pairs.
 --
 -- In each clock cycle, VALID and READY are asserted randomly with the
 -- probabilities G_VALID_PCT and G_READY_PCT. When both probabilities are 100%,
@@ -77,6 +79,26 @@ architecture simulation of tb_booth is
    signal   m_ready : std_logic := '0';
    signal   m_res   : std_logic_vector(2 * G_DATA_SIZE - 1 downto 0);
 
+   -- The values tested before the random values, when G_EXHAUSTIVE is false:
+   -- most negative, -1, 0, 1, and largest positive. They are built bit by bit,
+   -- so they are also valid for G_DATA_SIZE of 1 and 2.
+   constant C_NUM_CORNERS : natural := 5;
+
+   pure function corner_value (
+      idx : natural range 0 to C_NUM_CORNERS - 1
+   ) return signed is
+      variable res_v : signed(G_DATA_SIZE - 1 downto 0);
+   begin
+      case idx is
+         when 0      => res_v := (others => '0'); res_v(G_DATA_SIZE - 1) := '1';
+         when 1      => res_v := (others => '1');
+         when 2      => res_v := (others => '0');
+         when 3      => res_v := (others => '0'); res_v(0) := '1';
+         when others => res_v := (others => '1'); res_v(G_DATA_SIZE - 1) := '0';
+      end case;
+      return res_v;
+   end function corner_value;
+
    -- Generate the i'th pair of inputs. The random generator state is passed in,
    -- so that the stimulus and verification processes can independently generate
    -- the same sequence of inputs.
@@ -103,6 +125,9 @@ architecture simulation of tb_booth is
       if G_EXHAUSTIVE then
          a := to_signed(i mod 2 ** G_DATA_SIZE - 2 ** (G_DATA_SIZE - 1), G_DATA_SIZE);
          b := to_signed(i / 2 ** G_DATA_SIZE - 2 ** (G_DATA_SIZE - 1), G_DATA_SIZE);
+      elsif i < C_NUM_CORNERS ** 2 then
+         a := corner_value(i mod C_NUM_CORNERS);
+         b := corner_value(i / C_NUM_CORNERS);
       else
          a := random_signed;
          b := random_signed;
