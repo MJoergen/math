@@ -127,7 +127,7 @@ Type `make` to list the supported targets. The most important ones are:
   (or `PLA=pentium_fixed`). Then the divider has the Pentium's FDIV bug, and
   the testbench verifies that 4195835/3145727 gives the Pentium's wrong
   result.
-* `make debug` runs only the first 10 us of the testbench (about 25 divisions),
+* `make debug` runs only the first 10 µs of the testbench (about 25 divisions),
   and writes a waveform to `srt.ghw`. Use `make show_debug` to view it in
   GTKWave.
 * `make formal` runs the formal verification. This requires
@@ -139,7 +139,7 @@ Type `make` to list the supported targets. The most important ones are:
   If it fails, use `make show_prove` or `make show_induct` to view the
   counterexample in GTKWave, and `make show_cover` to view the cover trace.
 * `make model` (or `./srt.py` and `./srt.py --exact`) checks the quotient
-  digit table, and tests the model. See below.
+  digit table, and tests the model. See [below](#the-model).
 * `make vivado` runs synthesis and implementation in Vivado, and fails if the
   design does not meet the 200 MHz timing constraint. The timing report is
   written to `timing_summary.rpt`. No I/O pins are assigned, so the bitstream
