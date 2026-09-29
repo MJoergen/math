@@ -16,7 +16,7 @@ Here $d$ is the divisor, and $n$ is the partial remainder, which starts out as
 the dividend $N$. Both are normalized first, so $1 \le d < 2$ and
 $1 \le N < 2$ (or $N = 0$).
 
-The quotient digit $q$ is one of $\{-2, -1, 0, 1, 2\}$. It is selected by a
+The quotient digit $q$ is one of $\lbrace -2, -1, 0, 1, 2 \rbrace$. It is selected by a
 small lookup table that only looks at the top 7 bits of $n$ and the 4 bits of
 $d$ after its leading one. In the Pentium this table was a
 [PLA](https://en.wikipedia.org/wiki/Programmable_logic_array) (programmable
@@ -40,10 +40,10 @@ bits wide (`G_SIZE = 32`), and the divider runs $K = 34$ iterations
 (`G_SIZE + 2`), which gives a quotient with 2 integer bits and 66 fractional
 bits.
 
-Ordinary base-4 digits would be $\{0, 1, 2, 3\}$. SRT instead uses the digits
-$\{-2, -1, 0, 1, 2\}$. Since there are five of them, storing a digit takes
-three bits (a sign and a two-bit magnitude), although each digit still only
-adds two bits to the quotient. This digit set is *redundant* (a
+Ordinary base-4 digits would be $\lbrace 0, 1, 2, 3 \rbrace$. SRT instead uses
+the digits $\lbrace -2, -1, 0, 1, 2 \rbrace$. Since there are five of them,
+storing a digit takes three bits (a sign and a two-bit magnitude), although
+each digit still only adds two bits to the quotient. This digit set is *redundant* (a
 [signed-digit representation](https://en.wikipedia.org/wiki/Signed-digit_representation)):
 many quotients can be written in more than one way, e.g.
 $1.5 = 1 + 2 \cdot 4^{-1} = 2 - 2 \cdot 4^{-1}$. This has two advantages:

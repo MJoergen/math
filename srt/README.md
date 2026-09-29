@@ -12,9 +12,12 @@ hand. Each iteration does:
 q := PLA(n, d)      -- select quotient digit
 n := 4*(n - q*d)    -- update partial remainder
 ```
-where $d$ is the divisor and $n$ is the partial remainder. With radix 4, each
-digit $q$ is one of $\{-2, -1, 0, 1, 2\}$, so the quotient gains two bits per
-iteration. The digit is selected by a small lookup table that only looks at the
+where $d$ is the divisor and $n$ is the partial remainder. The algorithm uses
+radix 4, so the quotient gains one base-4 digit, i.e. two bits, per iteration.
+Instead of the ordinary base-4 digits $\lbrace 0, 1, 2, 3 \rbrace$, each
+quotient digit $q$ is one of $\lbrace -2, -1, 0, 1, 2 \rbrace$, see
+[Radix 4 and the redundant digits](ALGORITHM.md#radix-4-and-the-redundant-digits).
+The digit is selected by a small lookup table that only looks at the
 top bits of $n$ and $d$. This works because the digit only needs to be
 approximately right, since a slightly wrong digit is corrected by the later
 digits. D. E. Atkins analysed this in
