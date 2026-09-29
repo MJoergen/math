@@ -1,0 +1,10 @@
+# Generated files
+
+# Simulation (sim.sh)
+work-obj08.cf
+*.o
+tb_booth
+*.ghw
+
+# Synthesis (synth.sh)
+synth/

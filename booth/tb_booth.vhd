@@ -4,12 +4,21 @@ library ieee;
    use ieee.math_real.all;
 
 -- Testbench for the Booth multiplier.
--- If G_EXHAUSTIVE is true, all pairs of inputs are tested. Otherwise G_NUM_TESTS random pairs are tested.
--- The VALID and READY signals are asserted randomly with probabilities G_VALID_PCT and G_READY_PCT.
--- When both probabilities are 100%, the throughput is verified as well.
+--
+-- G_RADIX selects the design: 4 for booth.vhd, and 2 for booth_radix2.vhd.
+--
+-- If G_EXHAUSTIVE is true, all pairs of inputs are tested. Otherwise
+-- G_NUM_TESTS random pairs are tested.
+--
+-- In each clock cycle, VALID and READY are asserted randomly with the
+-- probabilities G_VALID_PCT and G_READY_PCT. When both probabilities are 100%,
+-- the throughput is verified as well: one product every ceil(G_DATA_SIZE/2)
+-- clock cycles for radix 4 (for G_DATA_SIZE >= 3), and every G_DATA_SIZE
+-- clock cycles for radix 2 (for G_DATA_SIZE >= 2).
 
 entity tb_booth is
    generic (
+      G_RADIX      : positive := 4;
       G_DATA_SIZE  : positive := 4;
       G_EXHAUSTIVE : boolean  := true;
       G_NUM_TESTS  : natural  := 5000;
@@ -33,8 +42,28 @@ architecture simulation of tb_booth is
 
    constant C_NUM_TESTS : natural := num_tests;
 
-   -- Expected number of clock cycles per result, when there are no stalls
-   constant C_ITERS     : natural := (G_DATA_SIZE + 1) / 2;
+   -- Expected number of clock cycles per result when there are no stalls, and
+   -- the smallest G_DATA_SIZE where this holds
+   pure function get_iters return natural is
+   begin
+      if G_RADIX = 2 then
+         return G_DATA_SIZE;
+      else
+         return (G_DATA_SIZE + 1) / 2;
+      end if;
+   end function get_iters;
+
+   pure function get_min_size return natural is
+   begin
+      if G_RADIX = 2 then
+         return 2;
+      else
+         return 3;
+      end if;
+   end function get_min_size;
+
+   constant C_ITERS     : natural := get_iters;
+   constant C_MIN_SIZE  : natural := get_min_size;
 
    signal   clk     : std_logic := '1';
    signal   rst     : std_logic := '1';
@@ -48,9 +77,9 @@ architecture simulation of tb_booth is
    signal   m_ready : std_logic := '0';
    signal   m_res   : std_logic_vector(2 * G_DATA_SIZE - 1 downto 0);
 
-   -- Generate the i'th pair of inputs.
-   -- The random generator state is passed in, so that the stimulus and verification
-   -- processes can independently generate the same sequence of inputs.
+   -- Generate the i'th pair of inputs. The random generator state is passed in,
+   -- so that the stimulus and verification processes can independently generate
+   -- the same sequence of inputs.
    procedure get_inputs (
       i         : natural;
       seed1     : inout positive;
@@ -85,21 +114,49 @@ begin
    clk <= running and not clk after C_CLK_PERIOD / 2;
    rst <= '1', '0' after 10 * C_CLK_PERIOD;
 
-   booth_inst : entity work.booth
-      generic map (
-         G_DATA_SIZE => G_DATA_SIZE
-      )
-      port map (
-         clk_i     => clk,
-         rst_i     => rst,
-         s_valid_i => s_valid,
-         s_ready_o => s_ready,
-         s_a_i     => s_a,
-         s_b_i     => s_b,
-         m_valid_o => m_valid,
-         m_ready_i => m_ready,
-         m_res_o   => m_res
-      );
+   dut_gen : if G_RADIX = 2 generate
+
+      booth_radix2_inst : entity work.booth_radix2
+         generic map (
+            G_DATA_SIZE => G_DATA_SIZE
+         )
+         port map (
+            clk_i     => clk,
+            rst_i     => rst,
+            s_valid_i => s_valid,
+            s_ready_o => s_ready,
+            s_a_i     => s_a,
+            s_b_i     => s_b,
+            m_valid_o => m_valid,
+            m_ready_i => m_ready,
+            m_res_o   => m_res
+         );
+
+   elsif G_RADIX = 4 generate
+
+      booth_inst : entity work.booth
+         generic map (
+            G_DATA_SIZE => G_DATA_SIZE
+         )
+         port map (
+            clk_i     => clk,
+            rst_i     => rst,
+            s_valid_i => s_valid,
+            s_ready_o => s_ready,
+            s_a_i     => s_a,
+            s_b_i     => s_b,
+            m_valid_o => m_valid,
+            m_ready_i => m_ready,
+            m_res_o   => m_res
+         );
+
+   else generate
+
+      assert false
+         report "tb_booth: G_RADIX must be 2 or 4"
+         severity failure;
+
+   end generate dut_gen;
 
    stim_proc : process
       variable seed1_v    : positive := 42;
@@ -170,8 +227,9 @@ begin
                    " gave 0x" & to_hstring(m_res) & ", expected 0x" & to_hstring(exp_v)
             severity failure;
 
-         -- Without any stalls, a new result must be produced every ceil(G_DATA_SIZE/2) clock cycles
-         if G_VALID_PCT >= 100 and G_READY_PCT >= 100 and G_DATA_SIZE >= 3 and i > 0 then
+         -- Without any stalls, a new result must be produced every C_ITERS
+         -- clock cycles
+         if G_VALID_PCT >= 100 and G_READY_PCT >= 100 and G_DATA_SIZE >= C_MIN_SIZE and i > 0 then
             assert now - last_v = C_ITERS * C_CLK_PERIOD
                report "Throughput: " & to_string((now - last_v) / C_CLK_PERIOD) &
                       " clock cycles between results, expected " & to_string(C_ITERS)
@@ -182,8 +240,8 @@ begin
 
       m_ready <= '0';
       wait until rising_edge(clk);
-      report "Test finished: " & to_string(C_NUM_TESTS) & " tests passed with G_DATA_SIZE=" &
-             to_string(G_DATA_SIZE);
+      report "Test finished: " & to_string(C_NUM_TESTS) & " tests passed with G_RADIX=" &
+             to_string(G_RADIX) & ", G_DATA_SIZE=" & to_string(G_DATA_SIZE);
       running <= '0';
       wait;
    end process verify_proc;
