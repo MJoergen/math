@@ -1,13 +1,21 @@
--- Formal verification of srt_core.vhd. Run with "make formal".
+-- Formal verification of srt_core.vhd, written in PSL (see
+-- https://en.wikipedia.org/wiki/Property_Specification_Language). Run with
+-- "make formal", which uses SymbiYosys (see https://github.com/YosysHQ/sby).
 -- In addition to the properties in this file, the assertions inside
 -- srt_core.vhd (e.g. in the function get_n) are verified too.
 --
 -- The properties are proven with k-induction (see srt_core.sby): If they hold
 -- in a few consecutive clock cycles, then they also hold in the next one.
 -- This works because the assertions below check invariants in every clock
--- cycle, so each clock cycle is a small local step. Some extra assertions (marked
--- "for induction") rule out states that can never be reached, but from which
--- induction could otherwise start.
+-- cycle, so each clock cycle is a small local step. Some extra assertions
+-- (marked "for induction") rule out states that can never be reached, but
+-- from which induction could otherwise start.
+--
+-- k-induction was introduced by Sheeran, Singh, and Stalmarck in "Checking
+-- Safety Properties Using Induction and a SAT-Solver", FMCAD 2000:
+-- https://doi.org/10.1007/3-540-40922-X_8
+-- The number of clock cycles k is the depth option in srt_core.sby, see
+-- https://yosyshq.readthedocs.io/projects/sby/en/latest/reference.html#options-section
 
 vunit srt_core_inst (srt_core(synthesis))
 {
@@ -23,9 +31,10 @@ vunit srt_core_inst (srt_core(synthesis))
    -- The dividend of the current division is called N.
    --
    -- To verify the result, we want to check that N*2^(2*G_SIZE+2) - q*d is
-   -- small. However, the SMT solvers are very slow at multiplication. Instead,
-   -- the signals f_q and f_qd below are updated alongside the divider, using
-   -- the same quotient digits:
+   -- small. However, the SMT solvers (see
+   -- https://en.wikipedia.org/wiki/Satisfiability_modulo_theories) are very
+   -- slow at multiplication. Instead, the signals f_q and f_qd below are
+   -- updated alongside the divider, using the same quotient digits:
    --    f_q  := 4*f_q  + digit
    --    f_qd := 4*f_qd + digit*d
    -- So by construction f_qd = f_q*d. Since digit*d is just a shift of d,
