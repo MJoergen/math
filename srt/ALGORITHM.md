@@ -286,10 +286,9 @@ an ordinary binary number *on the fly*, a technique described by Ercegovac and
 Lang in
 [On-the-Fly Conversion of Redundant into Conventional Representations](https://doi.org/10.1109/TC.1987.1676986)
 (IEEE Transactions on Computers, 1987). Two registers hold the quotient so
-far, $Q$, and $Q - 1$ (in units of the last digit). Since
-$4Q + q = 4(Q - 1) + (4 + q)$, a negative digit is appended to $Q - 1$
-instead. Both registers are updated in every iteration, to the new values
-$4Q + q$ and $4Q + q - 1$. In the table below, & means appending two bits:
+far, $Q$, and $Q - 1$ (in units of the last digit). Both registers are
+updated in every iteration, to the new values $4Q + q$ and $4Q + q - 1$. In
+the table below, & means appending two bits:
 
 | $q$  | New $Q$           | New $Q - 1$       |
 | ---- | ----------------- | ----------------- |
