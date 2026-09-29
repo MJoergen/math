@@ -288,7 +288,8 @@ Lang in
 (IEEE Transactions on Computers, 1987). Two registers hold the quotient so
 far, $Q$, and $Q - 1$ (in units of the last digit). Since
 $4Q + q = 4(Q - 1) + (4 + q)$, a negative digit is appended to $Q - 1$
-instead. In the table below, & means appending two bits:
+instead. Both registers are updated in every iteration, to the new values
+$4Q + q$ and $4Q + q - 1$. In the table below, & means appending two bits:
 
 | $q$  | New $Q$           | New $Q - 1$       |
 | ---- | ----------------- | ----------------- |
@@ -298,8 +299,34 @@ instead. In the table below, & means appending two bits:
 | -1   | $Q - 1$ & `11`    | $Q - 1$ & `10`    |
 | -2   | $Q - 1$ & `10`    | $Q - 1$ & `01`    |
 
-So each iteration only selects one of the two registers and appends two bits,
-without any carry chain, and after the last iteration $Q$ is the quotient.
+So each new value is one of the two old values with two bits appended, which
+needs only a multiplexer and no carry chain. The two registers never need to be
+combined: the second register always holds exactly the first minus one, and is
+only there so that the next digit can be appended without a subtraction. Before
+the first iteration $Q = 0$ and $Q - 1 = -1$, i.e. all ones in two's
+complement. After the last iteration, $Q$ is the quotient, and $Q - 1$ is
+simply not used.
+
+For example, the digits $2, -1, 0, -2, 1$ give the quotient
+$2 \cdot 256 - 1 \cdot 64 + 0 \cdot 16 - 2 \cdot 4 + 1 = 441$. The table below
+shows the registers as two's complement numbers in binary, starting with just
+a sign bit. In each row, the bits copied from the old $Q$ are
+$\color{blue}{\text{blue}}$, the bits copied from the old $Q - 1$ are
+$\color{red}{\text{red}}$, and the two appended bits are not coloured:
+
+| $q$  | New $Q$                                                        | New $Q - 1$                                                    |
+| ---- | -------------------------------------------------------------- | -------------------------------------------------------------- |
+|      | $\texttt{0} = 0$                                               | $\texttt{1} = -1$                                              |
+| 2    | $\color{blue}{\texttt{0}}\texttt{10} = 2$                      | $\color{blue}{\texttt{0}}\texttt{01} = 1$                      |
+| -1   | $\color{red}{\texttt{001}}\texttt{11} = 7$                     | $\color{red}{\texttt{001}}\texttt{10} = 6$                     |
+| 0    | $\color{blue}{\texttt{00111}}\texttt{00} = 28$                 | $\color{red}{\texttt{00110}}\texttt{11} = 27$                  |
+| -2   | $\color{red}{\texttt{0011011}}\texttt{10} = 110$               | $\color{red}{\texttt{0011011}}\texttt{01} = 109$               |
+| 1    | $\color{blue}{\texttt{001101110}}\texttt{01} = 441$            | $\color{blue}{\texttt{001101110}}\texttt{00} = 440$            |
+
+The digits $2$ and $1$ copy $Q$ to both registers, the digits $-1$ and $-2$
+copy $Q - 1$ to both, and only the digit $0$ uses both. In every row, the two
+registers differ by exactly one, and the last row holds the quotient $441$ in
+$Q$.
 
 In `srt_core.vhd` each digit is first stored in a register, and only appended in
 the next iteration, and the quotient output is $Q$ with the stored digit
