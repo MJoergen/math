@@ -235,7 +235,9 @@ so by induction $n < U$ in every iteration. The lower limit $L$ is found the
 same way, from the smallest values in each range. Each limit is linear in $d$,
 so within a column the extremes are at the ends of the column. Calculating
 this for all 16 columns gives $-4.5 < n < 4.5$. (With an exact partial
-remainder, the ranges end at $t_q$ instead, which gives $-4.5 < n < 4$.)
+remainder, digit $q$ is only used for $t_{q-1} \le n < t_q$. This lowers the
+upper limits in the table by $\frac{1}{2}$, but leaves the lower limits
+unchanged, which gives $-4.5 < n < 4$.)
 `./srt.py --bounds` (and `./srt.py --bounds --exact`) confirms these limits
 numerically for each column, by extending the range of $n$ until it no longer
 changes.
