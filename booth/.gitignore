@@ -8,3 +8,12 @@ tb_booth
 
 # Synthesis (make synth)
 synth/
+
+# Formal verification (make formal)
+booth_radix2.psl
+/booth/
+booth_prove4/
+booth_prove4_odd/
+booth_prove2/
+booth_cover4/
+booth_cover2/

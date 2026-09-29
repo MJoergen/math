@@ -1,0 +1,269 @@
+-- Formal verification of booth.vhd, written in PSL (see
+-- https://en.wikipedia.org/wiki/Property_Specification_Language). Run with
+-- "make formal", which uses SymbiYosys (see https://github.com/YosysHQ/sby).
+-- The same properties are verified for booth_radix2.vhd: the Makefile
+-- generates booth_radix2.psl from this file, by changing only the vunit
+-- binding below. This works because both designs use the same names for
+-- their internal signals and constants.
+--
+-- The checker below models the multiplier at its ports: a queue of the input
+-- pairs that have been accepted, but whose product has not been taken yet.
+-- The multiplier holds at most two: one in the output register, and one in
+-- the calculation. The properties are:
+-- * Every product is correct, and they come out in order: none is lost, and
+--   none is duplicated.
+-- * The product stays valid and unchanged until it is taken.
+-- * If the consumer is ready, the product is valid C_ITERS clock cycles after
+--   the input was accepted.
+-- * If the consumer is always ready, a new input is accepted every C_ITERS
+--   clock cycles (for C_ITERS >= 2), i.e. the throughput.
+--
+-- The properties are proven with k-induction (see booth.sby): If they hold in
+-- a few consecutive clock cycles, then they also hold in the next one. This
+-- needs the assertions marked "for induction", which relate the internal
+-- state of the multiplier to the checker. The most important one is the
+-- invariant of Booth's algorithm (see ALGORITHM.md): After k iterations, P
+-- together with the bits shifted into Q equals M times the low R*k bits of Q
+-- (as a signed number), where R is the number of bits per iteration.
+--
+-- The solver is given the multiplication a*b directly, so this is only
+-- practical for small G_DATA_SIZE, see booth.sby.
+
+vunit booth_inst (booth(synthesis))
+{
+   -- set all declarations to run on clk_i
+   default clock is rising_edge(clk_i);
+
+   -----------------------------
+   -- AUXILIARY SIGNALS
+   -----------------------------
+
+   -- Number of bits of Q per iteration: 2 for radix 4, and 1 for radix 2
+   constant C_R : positive := C_Q_SIZE / C_ITERS;
+
+   -- Width of P & Q
+   constant C_W : positive := C_P_SIZE + C_Q_SIZE;
+
+   -- Set after the first clock cycle, when the signals below are valid
+   signal f_started : std_logic := '0';
+
+   -- The handshakes on the input and the output
+   signal f_push : std_logic;
+   signal f_pop  : std_logic;
+
+   -- The queue of input pairs whose product has not been taken yet. f_a0 and
+   -- f_b0 are the oldest pair. The number of pairs is f_cnt.
+   signal f_cnt  : natural range 0 to 2;
+   signal f_a0   : signed(G_DATA_SIZE - 1 downto 0);
+   signal f_b0   : signed(G_DATA_SIZE - 1 downto 0);
+   signal f_a1   : signed(G_DATA_SIZE - 1 downto 0);
+   signal f_b1   : signed(G_DATA_SIZE - 1 downto 0);
+
+   -- The number of clock cycles since the last input was accepted (up to
+   -- C_ITERS), and whether m_ready_i has been high and rst_i low in all of
+   -- them
+   signal f_since : natural range 0 to C_ITERS;
+   signal f_flow  : std_logic;
+
+   -- The results of the checks, see f_check_proc
+   signal f_out_ok    : boolean;
+   signal f_engine_ok : boolean;
+
+   f_push <= s_valid_i and s_ready_o;
+   f_pop  <= m_valid_o and m_ready_i;
+
+   f_track_proc : process (clk_i)
+      variable cnt_v : natural range 0 to 2;
+   begin
+      if rising_edge(clk_i) then
+         cnt_v := f_cnt;
+
+         if f_pop = '1' and cnt_v > 0 then
+            f_a0  <= f_a1;
+            f_b0  <= f_b1;
+            cnt_v := cnt_v - 1;
+         end if;
+
+         -- f_no_overflow below verifies that the queue is not full here
+         if f_push = '1' and cnt_v < 2 then
+            if cnt_v = 0 then
+               f_a0 <= signed(s_a_i);
+               f_b0 <= signed(s_b_i);
+            else
+               f_a1 <= signed(s_a_i);
+               f_b1 <= signed(s_b_i);
+            end if;
+            cnt_v := cnt_v + 1;
+         end if;
+
+         f_cnt <= cnt_v;
+
+         if f_push = '1' then
+            f_since <= 0;
+            f_flow  <= not rst_i;
+         else
+            if f_since < C_ITERS then
+               f_since <= f_since + 1;
+            end if;
+            f_flow <= f_flow and m_ready_i and not rst_i;
+         end if;
+
+         if rst_i = '1' then
+            f_cnt <= 0;
+         end if;
+
+         f_started <= '1';
+      end if;
+   end process f_track_proc;
+
+   f_check_proc : process (all)
+      variable a_v   : signed(G_DATA_SIZE - 1 downto 0);  -- The pair in the calculation
+      variable b_v   : signed(G_DATA_SIZE - 1 downto 0);
+      variable q_v   : signed(C_Q_SIZE - 1 downto 0);     -- Q, sign-extended
+      variable qm_v  : signed(C_Q_SIZE downto 0);         -- Q & Q(-1)
+      variable k_v   : natural range 0 to C_Q_SIZE;       -- Bits of Q processed
+      variable low_v : signed(C_Q_SIZE - 1 downto 0);     -- The low k_v bits of Q, as a signed number
+      variable x_v   : signed(C_W - 1 downto 0);          -- P and the bits shifted into Q
+      variable rem_v : signed(C_Q_SIZE - 1 downto 0);     -- The bits of Q not yet processed
+      variable ok_v  : boolean;
+   begin
+      -- The output register holds the product of the oldest pair
+      f_out_ok <= f_cnt >= 1 and signed(m_res_o) = f_a0 * f_b0;
+
+      -- The calculation works on the newest pair
+      if m_valid_o = '1' then
+         a_v := f_a1;
+         b_v := f_b1;
+      else
+         a_v := f_a0;
+         b_v := f_b0;
+      end if;
+
+      q_v  := resize(b_v, C_Q_SIZE);
+      qm_v := q_v & '0';
+      k_v  := C_R * (C_ITERS - count);
+
+      -- The multiplicand
+      ok_v := mcand = resize(a_v, C_P_SIZE);
+
+      -- Q(-1) is the last bit of Q that was processed (initially zero)
+      ok_v := ok_v and prod(0) = qm_v(k_v);
+
+      -- The low C_Q_SIZE - k_v bits of the Q field hold the rest of Q
+      rem_v := shift_right(q_v, k_v);
+      for i in 0 to C_Q_SIZE - 1 loop
+         if i < C_Q_SIZE - k_v then
+            ok_v := ok_v and prod(i + 1) = rem_v(i);
+         end if;
+      end loop;
+
+      -- The invariant of Booth's algorithm: P and the top k_v bits of the Q
+      -- field equal M times the low k_v bits of Q, as a signed number
+      low_v := shift_right(shift_left(q_v, C_Q_SIZE - k_v), C_Q_SIZE - k_v);
+      x_v   := shift_right(prod(C_W downto 1), C_Q_SIZE - k_v);
+      ok_v  := ok_v and x_v = resize(a_v * low_v, C_W);
+
+      f_engine_ok <= ok_v;
+   end process f_check_proc;
+
+
+   -----------------------------
+   -- ASSERTIONS ABOUT OUTPUTS
+   -----------------------------
+
+   -- Every product is correct, and no product is output without an input
+   f_out : assert always f_started = '1' and m_valid_o = '1' -> f_out_ok;
+
+   -- No input is accepted while the multiplier already holds two pairs
+   f_no_overflow : assert always f_started = '1' -> not (f_push = '1' and f_pop = '0' and f_cnt = 2);
+
+   -- The product stays valid and unchanged until it is taken
+   f_hold : assert always {f_started = '1' and m_valid_o = '1' and m_ready_i = '0' and rst_i = '0'} |=>
+      {m_valid_o = '1' and m_res_o = prev(m_res_o)};
+
+   -- Latency: In the last clock cycle of the calculation, if the consumer is
+   -- ready, the product is valid in the next clock cycle
+   f_latency : assert always {f_started = '1' and f_flow = '1' and f_since = C_ITERS - 1 and
+                              m_ready_i = '1' and rst_i = '0'} |=> {m_valid_o = '1'};
+
+   -- Throughput: If the consumer has been ready since the last input was
+   -- accepted, the next input is accepted in the last clock cycle of the
+   -- calculation, i.e. every C_ITERS clock cycles. (For C_ITERS = 1 the
+   -- previous product may still be waiting, see README.md.)
+   f_throughput : assert always f_started = '1' and f_flow = '1' and f_since = C_ITERS - 1 and C_ITERS >= 2 ->
+      s_ready_o = '1';
+
+
+   -----------------------------
+   -- ASSERTIONS FOR INDUCTION
+   -----------------------------
+
+   -- None of the pairs is lost or duplicated: The queue holds one pair for the
+   -- output register (if valid) and one for the calculation (if not idle)
+   f_count : assert always f_started = '1' ->
+      (f_cnt = 0 and state = IDLE_ST and m_valid_o = '0') or
+      (f_cnt = 1 and state = IDLE_ST and m_valid_o = '1') or
+      (f_cnt = 1 and state = BUSY_ST and m_valid_o = '0') or
+      (f_cnt = 2 and state = BUSY_ST and m_valid_o = '1') or
+      (f_cnt = 2 and state = FULL_ST and m_valid_o = '1');
+
+   -- The calculation matches the pair in the queue
+   f_engine : assert always f_started = '1' and state /= IDLE_ST -> f_engine_ok;
+
+   -- The calculation takes C_ITERS clock cycles, since the last input was
+   -- accepted
+   f_busy : assert always f_started = '1' and state = BUSY_ST -> count >= 1 and f_since = C_ITERS - count;
+
+   -- When the calculation has finished, all iterations are done
+   f_finished : assert always f_started = '1' and state = FULL_ST -> count = 0;
+
+   -- Without a reset, the calculation is still running
+   f_flow_busy : assert always f_started = '1' and f_flow = '1' and f_since < C_ITERS -> state = BUSY_ST;
+
+   -- If the consumer is ready, the previous product is taken in the first
+   -- clock cycle of the calculation
+   f_flow_empty : assert always f_started = '1' and f_flow = '1' and f_since >= 1 and f_since < C_ITERS ->
+      m_valid_o = '0';
+
+   -- state holds one of its three values. It is stored in two bits, so
+   -- induction could otherwise start from the fourth value.
+   f_state : assert always state = IDLE_ST or state = BUSY_ST or state = FULL_ST;
+
+
+   -----------------------------
+   -- ASSUMPTIONS ABOUT INPUTS
+   -----------------------------
+
+   -- Require a reset at startup
+   f_reset : assume {rst_i = '1'};
+
+   -- For induction: The signals above are only invalid in the first clock
+   -- cycle, where f_reset requires a reset anyway
+   f_start_first : assume always f_started = '0' -> rst_i = '1';
+
+
+   --------------------------------------------
+   -- COVER STATEMENTS TO VERIFY REACHABILITY
+   --------------------------------------------
+
+   -- A product is taken, so f_out is not vacuous
+   f_done : cover {f_started = '1' and f_pop = '1'};
+
+   -- The product of the most negative numbers
+   f_most_negative : cover {f_started = '1' and f_pop = '1' and
+                            f_a0 = to_signed(-2 ** (G_DATA_SIZE - 1), G_DATA_SIZE) and
+                            f_b0 = to_signed(-2 ** (G_DATA_SIZE - 1), G_DATA_SIZE)};
+
+   -- The calculation finishes while the output register is still occupied
+   f_full : cover {state = FULL_ST};
+
+   -- A new input is accepted in the last clock cycle of a calculation
+   f_overlap : cover {f_started = '1' and f_push = '1' and state = BUSY_ST};
+
+   -- The product waits to be taken, so f_hold is not vacuous
+   f_wait : cover {f_started = '1' and m_valid_o = '1' and m_ready_i = '0'; m_valid_o = '1' and m_ready_i = '1'};
+
+   -- A reset during a calculation
+   f_reset_busy : cover {f_started = '1' and state = BUSY_ST and rst_i = '1'};
+
+} -- vunit booth_inst (booth(synthesis))

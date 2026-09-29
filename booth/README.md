@@ -29,7 +29,8 @@ hardware.
 | [`booth.vhd`](booth.vhd) | The Booth multiplier (radix 4).
 | [`booth_radix2.vhd`](booth_radix2.vhd) | The same multiplier with radix 2, for comparison, see [Radix 2 versus radix 4](ALGORITHM.md#radix-2-versus-radix-4).
 | [`tb_booth.vhd`](tb_booth.vhd) | Testbench for both designs.
-| [`Makefile`](Makefile) | Runs the simulation and the synthesis, see [Running](#running).
+| [`booth.psl`](booth.psl), [`booth.sby`](booth.sby) | Formal verification of both designs, see [Formal verification](#formal-verification).
+| [`Makefile`](Makefile) | Runs the simulation, the formal verification, and the synthesis, see [Running](#running).
 | [`ALGORITHM.md`](ALGORITHM.md) | Detailed explanation of the algorithm, and the comparison of radix 2 and radix 4.
 
 ## Interface
@@ -67,6 +68,12 @@ Type `make` to list the supported targets:
 * `make debug` runs a short simulation of `booth.vhd` (20 multiplications),
   and writes a waveform to `booth.ghw`. Use `make show_debug` to view it in
   [GTKWave](https://github.com/gtkwave/gtkwave).
+* `make formal` runs the formal verification (see [below](#formal-verification)).
+  This requires [SymbiYosys](https://github.com/YosysHQ/sby), the GHDL plugin
+  for Yosys, and the [Boolector](https://github.com/Boolector/boolector) solver.
+  It takes about 1.5 minutes. If it fails, use `make show_prove TASK=prove4`
+  or `make show_induct TASK=prove4` to view the counterexample in GTKWave,
+  where the task is one of those in `booth.sby`.
 * `make synth` estimates the resource usage of both designs, and prints the
   numbers for the table in [Resource usage](ALGORITHM.md#resource-usage). This requires
   [Yosys](https://github.com/YosysHQ/yosys) and the
@@ -91,3 +98,31 @@ signals, and for each design it:
 
 It prints "All tests passed" at the end, and stops with an error at the first
 wrong product.
+
+## Formal verification
+The formal verification (`booth.psl`, `booth.sby`) proves for both designs,
+for every sequence of inputs and stalls, including resets:
+* Every product is correct, and they come out in order: none is lost, and none
+  is duplicated.
+* The product stays valid and unchanged until it is taken.
+* If the consumer is ready, the product is valid one calculation after the
+  input was accepted: `ceil(G_DATA_SIZE/2)` clock cycles for radix 4, and
+  `G_DATA_SIZE` clock cycles for radix 2.
+* If the consumer is always ready, a new input is accepted after every
+  calculation, i.e. the throughput (for `G_DATA_SIZE >= 3` in radix 4, and
+  `G_DATA_SIZE >= 2` in radix 2).
+
+`booth.psl` models the multiplier at its ports: a queue of the input pairs
+whose product has not been taken yet. The properties are proven with
+k-induction, so they hold in every clock cycle, not just for a bounded number
+of them. This relies on the invariant of Booth's algorithm (see
+[Theory of operation](ALGORITHM.md#theory-of-operation)), which relates the
+working register to the pair in the queue. Cover statements show that the
+interesting cases are reached, e.g. the product of the most negative numbers,
+and a calculation that finishes while the previous product is still waiting.
+
+The solver is given the multiplication `a*b` directly, which is only practical
+for small sizes. So the proofs use `G_DATA_SIZE=8` for both designs, and
+`G_DATA_SIZE=7` for an odd size in radix 4, where Q is sign-extended. With
+`G_DATA_SIZE=16` they do not finish within 10 minutes. The design is the same
+for every size, and the simulation tests the larger sizes.

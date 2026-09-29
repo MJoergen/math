@@ -49,6 +49,14 @@ Then the entire register is shifted two bits to the right (arithmetic shift).
 After `ceil(G_DATA_SIZE/2)` iterations the product is the low `2*G_DATA_SIZE`
 bits of `P & Q`. The upper bits are just sign extension.
 
+Why this works: After k iterations, the partial product P, together with the
+2k bits that have been shifted into the Q field, equals M times the low 2k bits
+of Q, read as a signed number. This follows by induction, since the recoded
+digits of the low 2k bits of Q add up to exactly that signed number. After the
+last iteration, the low bits of Q are all of Q, so the result is M*Q. This
+invariant is also what the formal verification checks in every clock cycle,
+see [`booth.psl`](booth.psl).
+
 Since 2M is just M shifted one bit to the left, only a single adder is needed.
 The operand (0, M, or 2M) is selected first, and subtraction is performed by
 inverting the operand and setting the carry input of the adder.

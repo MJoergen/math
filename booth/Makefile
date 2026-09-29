@@ -95,6 +95,36 @@ synth: booth.vhd booth_radix2.vhd ## Estimate the resource usage of both designs
 	done; done
 
 
+#######################
+# Formal verification
+#######################
+
+# The properties for booth_radix2.vhd are the same as for booth.vhd, see
+# booth.psl. Only the vunit binding is different.
+booth_radix2.psl: booth.psl
+	sed 's/(booth(synthesis))/(booth_radix2(synthesis))/' $< > $@
+
+# This runs all the tasks defined in booth.sby, using SymbiYosys (see
+# https://github.com/YosysHQ/sby). "yosys -m ghdl" loads the GHDL plugin for
+# Yosys (see https://github.com/ghdl/ghdl-yosys-plugin), which reads the VHDL
+# and PSL files.
+.PHONY: formal
+formal: booth.sby booth.psl booth_radix2.psl booth.vhd booth_radix2.vhd ## Run the formal verification of both designs (about 1.5 minutes)
+	sby --yosys "yosys -m ghdl" -f booth.sby
+
+# The traces are VCD files, which GTKWave can show. $(TASK) is one of the
+# tasks in booth.sby.
+TASK ?= prove4
+
+.PHONY: show_prove
+show_prove: ## Show the counterexample from a failing "make formal" in GTKWave (TASK=prove4)
+	gtkwave booth_$(TASK)/engine_0/trace.vcd
+
+.PHONY: show_induct
+show_induct: ## Show the trace from a failing induction step in GTKWave (TASK=prove4)
+	gtkwave booth_$(TASK)/engine_0/trace_induct.vcd
+
+
 .PHONY: clean
 clean: ## Remove the generated files
-	rm -rf work-obj08.cf *.o tb_booth booth.ghw synth
+	rm -rf work-obj08.cf *.o tb_booth booth.ghw synth booth_radix2.psl booth booth_prove4 booth_prove4_odd booth_prove2 booth_cover4 booth_cover2
