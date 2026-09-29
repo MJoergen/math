@@ -3,10 +3,11 @@
 # in https://yosyshq.readthedocs.io/projects/sby/en/latest/reference.html
 #
 # The prove tasks use k-induction (see srt_core.psl, and
-# https://doi.org/10.1007/3-540-40922-X_8), so the properties are proven for
-# every clock cycle, not just for a bounded number of them. The depth option
-# is k. "prove" uses G_SIZE=16, which matches srt_core.gtkw, and "prove32"
-# uses G_SIZE=32, as in srt.
+# https://doi.org/10.1007/3-540-40922-X_8, with a free preprint at
+# https://www.di.ens.fr/~pouzet/cours/mpri/bib/sheeran-FMCAD00.pdf), so the
+# properties are proven for every clock cycle, not just for a bounded number
+# of them. The depth option is k. "prove" uses G_SIZE=16, which matches
+# srt_core.gtkw, and "prove32" uses G_SIZE=32, as in srt.
 #
 # The cover task shows that the cover statements in srt_core.psl can be
 # reached. With G_SIZE=16 a division takes 18 iterations, and the result is

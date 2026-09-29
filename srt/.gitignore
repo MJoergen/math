@@ -43,3 +43,6 @@ srt.hw/
 srt.ip_user_files/
 srt.runs/
 srt.sim/
+
+# Downloaded papers (not generated, but not redistributed either)
+doc/
