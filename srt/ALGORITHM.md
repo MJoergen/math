@@ -17,11 +17,11 @@ the dividend $N$. Both are normalized first, so $1 \le d < 2$ and
 $1 \le N < 2$ (or $N = 0$).
 
 The quotient digit $q$ is one of $\lbrace -2, -1, 0, 1, 2 \rbrace$. It is selected by a
-small lookup table that only looks at the top 7 bits of $n$ and the 4 bits of
-$d$ after its leading one. In the Pentium this table was a
-[PLA](https://en.wikipedia.org/wiki/Programmable_logic_array) (programmable
-logic array), so the table is called the PLA here too, even though this
-design does not use one. This works because the digit only needs to be
+small lookup table, called the PLA after the
+[programmable logic array](https://en.wikipedia.org/wiki/Programmable_logic_array)
+that held it in the Pentium, even though this design does not use one. The
+table only looks at the top 7 bits of $n$ and the 4 bits of $d$ after its
+leading one. This works because the digit only needs to be
 approximately right: a slightly wrong digit is corrected by the later digits,
 as long as the partial remainder stays within $|n| \le \frac{8}{3}d$. The
 sections below explain these digits, why this bound holds, and why so few
