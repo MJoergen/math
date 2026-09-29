@@ -1,18 +1,30 @@
-# Formal verification of srt_core.vhd, see srt_core.psl.
+# Formal verification of srt_core.vhd, see srt_core.psl. This file is run by
+# SymbiYosys (see https://github.com/YosysHQ/sby), and its format is described
+# in https://yosyshq.readthedocs.io/projects/sby/en/latest/reference.html
 #
-# The prove tasks use k-induction, so the properties are proven for every
-# clock cycle, not just for a bounded number of them. "prove" uses
-# G_SIZE=16, which matches srt_core.gtkw, and "prove32" uses G_SIZE=32, as in
-# srt.
+# The prove tasks use k-induction (see srt_core.psl, and
+# https://doi.org/10.1007/3-540-40922-X_8), so the properties are proven for
+# every clock cycle, not just for a bounded number of them. The depth option
+# is k. "prove" uses G_SIZE=16, which matches srt_core.gtkw, and "prove32"
+# uses G_SIZE=32, as in srt.
 #
 # The cover task shows that the cover statements in srt_core.psl can be
 # reached. With G_SIZE=16 a division takes 18 iterations, and the result is
 # ready in step 19, so the depth must be larger than that.
 #
-# "memory_map -rom-only" turns the thresholds of the columns of the quotient
-# digit table (a ROM, see get_col in pla.vhd) into logic. The initial contents
-# of a memory only hold in the first clock cycle, but induction starts from an
-# arbitrary clock cycle, and could otherwise use any contents.
+# The smtbmc engine (see
+# https://yosyshq.readthedocs.io/projects/sby/en/latest/reference.html#smtbmc-engine)
+# uses the Yices 2 SMT solver by default (see https://github.com/SRI-CSL/yices2).
+#
+# The script reads the VHDL and PSL files with the GHDL plugin for Yosys (see
+# https://github.com/ghdl/ghdl-yosys-plugin).
+#
+# "memory_map -rom-only" (see
+# https://yosyshq.readthedocs.io/projects/yosys/en/latest/cmd/index_passes_memory.html#cmd-memory_map)
+# turns the thresholds of the columns of the quotient digit table (a ROM, see
+# get_col in pla.vhd) into logic. The initial contents of a memory only hold
+# in the first clock cycle, but induction starts from an arbitrary clock
+# cycle, and could otherwise use any contents.
 #
 # pla.vhd is read first, since srt_core.vhd uses its package pla_pkg.
 
