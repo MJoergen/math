@@ -20,8 +20,8 @@ shifting and inverting, with a single adder.
 
 [ALGORITHM.md](ALGORITHM.md) explains the algorithm in detail: the Booth
 recoding, how `booth.vhd` implements it, and a comparison of radix 2 and radix
-4. Radix 4 needs half as many clock cycles as radix 2, for about the same
-hardware.
+4. Radix 4 needs half as many clock cycles as radix 2, for the same number of
+flip-flops and logic levels, but somewhat more LUTs.
 
 ## Files
 | File | Description

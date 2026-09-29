@@ -59,7 +59,8 @@ see [`booth.psl`](booth.psl).
 
 Since 2M is just M shifted one bit to the left, only a single adder is needed.
 The operand (0, M, or 2M) is selected first, and subtraction is performed by
-inverting the operand and setting the carry input of the adder.
+inverting the operand and setting the carry input of the adder. The operand is
+selected one clock cycle in advance, see [Timing](#timing).
 
 P is two bits wider than M, so that the operation P - 2M does not overflow when
 M is the most negative number, i.e. `-2^(G_DATA_SIZE-1)`.
@@ -72,27 +73,28 @@ it examines two bits in each iteration, shifts one bit, and P is only one bit
 wider than M.
 
 ### Resource usage
-Estimated with [Yosys](https://github.com/YosysHQ/yosys) 0.56 (`synth_xilinx`,
+Estimated with [Yosys](https://github.com/YosysHQ/yosys) 0.69 (`synth_xilinx`,
 for Xilinx 7-series FPGAs), by running `make synth`:
 
 | `G_DATA_SIZE` | Clock cycles | LUT       | FF        | CARRY4  | Logic levels |
 | ------------- | ------------ | --------- | --------- | ------- | ------------ |
-|  8            |  8 /  4      |  49 /  52 |  48 /  47 |  4 /  4 |  6 /  6      |
-| 16            | 16 /  8      |  77 /  74 |  89 /  88 |  7 /  6 |  7 /  7      |
-| 32            | 32 / 16      | 172 / 175 | 170 / 169 | 11 / 11 | 12 / 12      |
-| 64            | 64 / 32      | 330 / 331 | 331 / 330 | 19 / 19 | 19 / 19      |
+|  8            |  8 /  4      |  33 /  63 |  55 /  54 |  4 /  4 |  4 /  4      |
+| 16            | 16 /  8      |  57 /  90 | 104 / 103 |  7 /  6 |  6 /  6      |
+| 32            | 32 / 16      | 106 / 170 | 201 / 200 | 11 / 11 | 10 / 10      |
+| 64            | 64 / 32      | 202 / 331 | 394 / 393 | 19 / 19 | 18 / 18      |
 
 Each entry is radix 2 / radix 4. LUT, FF, and CARRY4 are the numbers of cells
 in the whole design. "Logic levels" is the largest number of LUT and CARRY4
 cells on any path between two registers, as Vivado counts logic levels. They
-are the CARRY4 cells of the adder's carry chain, plus two or three LUTs.
+are the CARRY4 cells of the adder's carry chain, plus one LUT.
 
 ### Performance
 Radix 4 needs half as many clock cycles for each product. This halves the
 latency and doubles the throughput, for the same clock frequency.
 
 ### Utilization
-The two options use essentially the same amount of hardware:
+The two options use the same number of flip-flops and CARRY4 cells, but radix 4
+needs more LUTs:
 
 * FF: The partial product P is one bit wider in radix 4, but the iteration
   counter is one bit narrower. For odd `G_DATA_SIZE`, the multiplier Q is also
@@ -103,28 +105,42 @@ The two options use essentially the same amount of hardware:
   4.
 * LUT: Radix 4 must additionally choose between M and 2M. But 2M is just M
   shifted one bit to the left, so this is just a 2-to-1 multiplexer on each bit,
-  and no extra adder is needed. The LUT counts differ by at most 6%, in either
-  direction.
+  and no extra adder is needed. Still, the operand selection for each bit is a
+  function of M(i), M(i-1), Q(1), Q(0), and Q(-1), and when a new pair of
+  inputs is accepted, of the corresponding input bits instead. In radix 2 this
+  fits into one LUT for each bit, but not in radix 4. So radix 4 uses about 60%
+  more LUTs in the table above. With Vivado the difference is about 30%.
 
 ### Timing
-The critical path is the same in both cases: From the registers, through the
-operand selection logic, through the carry chain of the adder, and back into
-the working register.
+The critical path is the same in both cases: From the registers, through a
+single LUT (P(i) XOR the operand bit), through the carry chain of the adder, and
+back into the working register. The carry chain is one bit longer in radix 4.
+In the table above, both designs have the same number of logic levels for
+every `G_DATA_SIZE`.
 
-* The carry chain is one bit longer in radix 4.
-* The operand selection logic for each bit is a function of P(i), M(i), Q(0),
-  and Q(-1) in radix 2 (four inputs), and of P(i), M(i), M(i-1), Q(1), Q(0),
-  and Q(-1) in radix 4 (six inputs). On an FPGA with 6-input LUTs, both fit
-  into a single LUT. In the table above, both designs have the same number of
-  logic levels for every `G_DATA_SIZE`.
+The operand selection logic is not on the critical path, because the operand
+is selected one clock cycle in advance, and stored in a register (`opd`). This
+is possible because the bits of Q that select the operand are never changed by
+the adder: They are shifted down from higher bits of Q, which are only
+overwritten by the low bits of P after they have been used. The register costs
+`G_DATA_SIZE+2` (radix 2) or `G_DATA_SIZE+3` (radix 4) flip-flops, but it
+makes the adder depend only on registers next to it. Without it, Q(1), Q(0),
+and Q(-1) would have to be routed to every bit of the adder in the same clock
+cycle, which costs about 0.5 ns of routing delay.
 
-On an FPGA with 4-input LUTs (or in an ASIC), the extra multiplexer in radix 4
-does add a logic level in front of the adder, which slightly lowers the maximum
-clock frequency.
+So the carry chain is the bottleneck: Its delay grows by about 0.1 ns for every
+4 bits (one CARRY4 cell). With Vivado 2025.1 and the Artix-7 part of
+`make vivado`, the maximum clock frequency of radix 4 is roughly 420 MHz for
+`G_DATA_SIZE=16`, 365 MHz for 32, and 285 MHz for 64, and about the same for
+radix 2.
+
+Because the operand selection has its own register stage, this also holds on
+an FPGA with 4-input LUTs, where the operand selection of radix 4 needs two
+levels of LUTs, as long as these are faster than the carry chain.
 
 ### Trade-off
-There is hardly any trade-off: Radix 4 gives twice the performance for roughly
-the same hardware, and on an FPGA with 6-input LUTs the same number of logic
+There is hardly any trade-off: Radix 4 gives twice the performance for some
+more LUTs, but the same number of flip-flops and the same number of logic
 levels. So the time for each product (the number of clock cycles times the
 clock period) is close to half that of radix 2.
 

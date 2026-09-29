@@ -42,10 +42,13 @@ top.tb_booth.m_res[15:0]
 top.tb_booth.dut_gen.booth_inst.state
 @24
 top.tb_booth.dut_gen.booth_inst.count
+@28
+top.tb_booth.dut_gen.booth_inst.last
 @424
 top.tb_booth.dut_gen.booth_inst.mcand[9:0]
 @28
 top.tb_booth.dut_gen.booth_inst.prod[18:0]
+top.tb_booth.dut_gen.booth_inst.opd[10:0]
 @1000200
 -booth
 [pattern_trace] 1

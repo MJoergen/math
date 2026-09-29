@@ -11,9 +11,9 @@
 # Design Suite Tcl Command Reference Guide":
 # https://docs.amd.com/r/en-US/ug835-vivado-tcl-commands
 #
-# With Vivado 2025.1, booth.vhd meets 250 MHz for G_DATA_SIZE of 16 and 32 with
-# a slack of about 0.6 ns, but for G_DATA_SIZE=64 only with a slack of 0.04 ns,
-# because of the longer carry chain.
+# With Vivado 2025.1, booth.vhd meets 250 MHz with a slack of about 1.2 ns for
+# G_DATA_SIZE=16, 0.8 ns for 32, and 0.3 ns for 64. The critical path is the
+# carry chain of the adder, see "Timing" in ALGORITHM.md.
 create_clock -name clk -period 4.00 [get_ports {clk_i}]; # 250 MHz
 
 # In a real design, the clock comes from a global clock buffer. Without this

@@ -68,13 +68,19 @@ architecture synthesis of booth_radix2 is
    constant C_P_SIZE : positive := G_DATA_SIZE + 1;
 
    -- IDLE_ST : Waiting for new inputs.
-   -- BUSY_ST : Calculation in progress.
-   -- FULL_ST : Calculation finished, but the output register is still occupied.
-   type     state_type is (IDLE_ST, BUSY_ST, FULL_ST);
+   -- BUSY_ST : Calculation in progress. If the output register is still
+   --           occupied in the last iteration, the calculation waits there,
+   --           so that the output register is always loaded directly from
+   --           the adder.
+   type     state_type is (IDLE_ST, BUSY_ST);
    signal   state : state_type := IDLE_ST;
 
    -- Number of remaining iterations
-   signal   count : natural range 0 to C_ITERS;
+   signal   count : natural range 1 to C_ITERS;
+
+   -- Set in the last iteration, i.e. when count = 1. This is a separate
+   -- register, so that s_ready_o does not depend on the comparison of count.
+   signal   last : std_logic;
 
    -- Sign-extended multiplicand M
    signal   mcand : signed(C_P_SIZE - 1 downto 0);
@@ -82,21 +88,25 @@ architecture synthesis of booth_radix2 is
    -- Working register P & Q & Q(-1)
    signal   prod : signed(C_P_SIZE + C_Q_SIZE downto 0);
 
-   -- Perform a single iteration of Booth's algorithm.
-   -- To make sure only a single adder is synthesized, the operand (0 or M) is
-   -- selected first, and subtraction is performed by inverting the operand and
-   -- setting the carry input.
-   pure function booth_step (
+   -- The operand and the carry input for the current iteration, i.e.
+   -- booth_opd(prod, mcand). This is calculated one clock cycle in advance,
+   -- so that the adder only depends on registers next to it. This is possible
+   -- because the bits of Q that select the operand are never changed by the
+   -- adder.
+   signal   opd : signed(C_P_SIZE downto 0);
+
+   -- The operand of an iteration of Booth's algorithm, as selected by the
+   -- least significant bits of the working register. To make sure only a
+   -- single adder is synthesized, the operand (0 or M) is selected first,
+   -- and subtraction is performed by inverting the operand and setting the
+   -- carry input. The carry input is appended as the LSB.
+   pure function booth_opd (
       arg_prod  : signed(C_P_SIZE + C_Q_SIZE downto 0);
       arg_mcand : signed(C_P_SIZE - 1 downto 0)
    ) return signed is
-      variable p_v   : signed(C_P_SIZE - 1 downto 0);
       variable opd_v : signed(C_P_SIZE - 1 downto 0);
       variable sub_v : std_logic;
-      variable sum_v : signed(C_P_SIZE downto 0);
    begin
-      p_v := arg_prod(C_P_SIZE + C_Q_SIZE downto C_Q_SIZE + 1);
-
       case std_logic_vector(arg_prod(1 downto 0)) is
 
          when "01" | "10" =>
@@ -113,9 +123,23 @@ architecture synthesis of booth_radix2 is
          opd_v := not opd_v;
       end if;
 
-      -- The appended LSBs implement the carry input, so this calculates
-      -- P + opd_v + sub_v
-      sum_v := (p_v & '1') + (opd_v & sub_v);
+      return opd_v & sub_v;
+   end function booth_opd;
+
+   -- Perform a single iteration of Booth's algorithm, with the operand from
+   -- booth_opd.
+   pure function booth_step (
+      arg_prod : signed(C_P_SIZE + C_Q_SIZE downto 0);
+      arg_opd  : signed(C_P_SIZE downto 0)
+   ) return signed is
+      variable p_v   : signed(C_P_SIZE - 1 downto 0);
+      variable sum_v : signed(C_P_SIZE downto 0);
+   begin
+      p_v := arg_prod(C_P_SIZE + C_Q_SIZE downto C_Q_SIZE + 1);
+
+      -- The appended LSB of P and the carry input appended to the operand
+      -- give P + operand + carry input
+      sum_v := (p_v & '1') + arg_opd;
       p_v   := sum_v(C_P_SIZE downto 1);
 
       return shift_right(p_v & arg_prod(C_Q_SIZE downto 0), 1);
@@ -135,11 +159,12 @@ begin
    -- Accept new inputs when idle, or in the last iteration if the output
    -- register is empty (because then the current product is guaranteed to be
    -- moved to the output register).
-   s_ready_o <= '1' when state = IDLE_ST or (state = BUSY_ST and count = 1 and m_valid_o = '0') else
+   s_ready_o <= '1' when state = IDLE_ST or (state = BUSY_ST and last = '1' and m_valid_o = '0') else
                 '0';
 
    fsm_proc : process (clk_i)
-      variable prod_v : signed(C_P_SIZE + C_Q_SIZE downto 0);
+      variable prod_v  : signed(C_P_SIZE + C_Q_SIZE downto 0);
+      variable mcand_v : signed(C_P_SIZE - 1 downto 0);
    begin
       if rising_edge(clk_i) then
          if m_ready_i = '1' then
@@ -152,23 +177,19 @@ begin
                null;
 
             when BUSY_ST =>
-               prod_v := booth_step(prod, mcand);
-               prod   <= prod_v;
-               count  <= count - 1;
+               prod_v := booth_step(prod, opd);
 
-               if count = 1 then
-                  if m_valid_o = '0' or m_ready_i = '1' then
-                     m_res_o   <= get_result(prod_v);
-                     m_valid_o <= '1';
-                     state     <= IDLE_ST;
-                  else
-                     state <= FULL_ST;
+               if last = '0' then
+                  prod  <= prod_v;
+                  opd   <= booth_opd(prod_v, mcand);
+                  count <= count - 1;
+                  if count = 2 then
+                     last <= '1';
                   end if;
-               end if;
-
-            when FULL_ST =>
-               if m_valid_o = '0' or m_ready_i = '1' then
-                  m_res_o   <= get_result(prod);
+               elsif m_valid_o = '0' or m_ready_i = '1' then
+                  -- The last iteration. Otherwise wait here until the output
+                  -- register is free. prod is not needed afterwards.
+                  m_res_o   <= get_result(prod_v);
                   m_valid_o <= '1';
                   state     <= IDLE_ST;
                end if;
@@ -177,11 +198,15 @@ begin
 
          -- This takes priority over the state machine above
          if s_valid_i = '1' and s_ready_o = '1' then
-            mcand                   <= resize(signed(s_a_i), C_P_SIZE);
-            prod                    <= (others => '0');
-            prod(C_Q_SIZE downto 1) <= signed(s_b_i);
-            count                   <= C_ITERS;
-            state                   <= BUSY_ST;
+            mcand_v                   := resize(signed(s_a_i), C_P_SIZE);
+            prod_v                    := (others => '0');
+            prod_v(C_Q_SIZE downto 1) := signed(s_b_i);
+            mcand                     <= mcand_v;
+            prod                      <= prod_v;
+            opd                       <= booth_opd(prod_v, mcand_v);
+            count                     <= C_ITERS;
+            last                      <= '1' when C_ITERS = 1 else '0';
+            state                     <= BUSY_ST;
          end if;
 
          if rst_i = '1' then

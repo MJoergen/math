@@ -204,18 +204,22 @@ vunit booth_inst (booth(synthesis))
       (f_cnt = 0 and state = IDLE_ST and m_valid_o = '0') or
       (f_cnt = 1 and state = IDLE_ST and m_valid_o = '1') or
       (f_cnt = 1 and state = BUSY_ST and m_valid_o = '0') or
-      (f_cnt = 2 and state = BUSY_ST and m_valid_o = '1') or
-      (f_cnt = 2 and state = FULL_ST and m_valid_o = '1');
+      (f_cnt = 2 and state = BUSY_ST and m_valid_o = '1');
 
    -- The calculation matches the pair in the queue
    f_engine : assert always f_started = '1' and state /= IDLE_ST -> f_engine_ok;
 
    -- The calculation takes C_ITERS clock cycles, since the last input was
-   -- accepted
-   f_busy : assert always f_started = '1' and state = BUSY_ST -> count >= 1 and f_since = C_ITERS - count;
+   -- accepted. The last iteration may wait longer, until the output register
+   -- is free.
+   f_busy : assert always f_started = '1' and state = BUSY_ST ->
+      f_since = C_ITERS - count or (count = 1 and f_since = C_ITERS);
 
-   -- When the calculation has finished, all iterations are done
-   f_finished : assert always f_started = '1' and state = FULL_ST -> count = 0;
+   -- The operand for the current iteration was calculated in advance
+   f_opd : assert always f_started = '1' and state = BUSY_ST -> opd = booth_opd(prod, mcand);
+
+   -- last is set in the last iteration
+   f_last : assert always f_started = '1' and state = BUSY_ST -> (last = '1') = (count = 1);
 
    -- Without a reset, the calculation is still running
    f_flow_busy : assert always f_started = '1' and f_flow = '1' and f_since < C_ITERS -> state = BUSY_ST;
@@ -224,10 +228,6 @@ vunit booth_inst (booth(synthesis))
    -- clock cycle of the calculation
    f_flow_empty : assert always f_started = '1' and f_flow = '1' and f_since >= 1 and f_since < C_ITERS ->
       m_valid_o = '0';
-
-   -- state holds one of its three values. It is stored in two bits, so
-   -- induction could otherwise start from the fourth value.
-   f_state : assert always state = IDLE_ST or state = BUSY_ST or state = FULL_ST;
 
 
    -----------------------------
@@ -254,8 +254,8 @@ vunit booth_inst (booth(synthesis))
                             f_a0 = to_signed(-2 ** (G_DATA_SIZE - 1), G_DATA_SIZE) and
                             f_b0 = to_signed(-2 ** (G_DATA_SIZE - 1), G_DATA_SIZE)};
 
-   -- The calculation finishes while the output register is still occupied
-   f_full : cover {state = FULL_ST};
+   -- The last iteration waits, because the output register is still occupied
+   f_full : cover {state = BUSY_ST and last = '1' and m_valid_o = '1' and m_ready_i = '0'};
 
    -- A new input is accepted in the last clock cycle of a calculation
    f_overlap : cover {f_started = '1' and f_push = '1' and state = BUSY_ST};
