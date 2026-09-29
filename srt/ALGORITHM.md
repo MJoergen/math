@@ -315,9 +315,9 @@ last column $t_0 = \frac{7}{8}$ and $t_{-1} = -1$), and within a column, the
 magnitude of the digit only depends on $m = |n_0 + \frac{1}{8}|$:
 ```math
 |q| = \begin{cases}
-0 & \text{for } m < t_0 + \frac{1}{8} \\
-1 & \text{for } t_0 + \frac{1}{8} \le m < t_1 + \frac{1}{8} \\
-2 & \text{for } t_1 + \frac{1}{8} \le m
+0 & \text{for } m < t_0 + \frac{1}{8}
+\\ 1 & \text{for } t_0 + \frac{1}{8} \le m < t_1 + \frac{1}{8}
+\\ 2 & \text{for } t_1 + \frac{1}{8} \le m
 \end{cases}
 ```
 and its sign is the sign of $n_0$. In units of $\frac{1}{8}$, $m = n_0 + 1$
