@@ -1,10 +1,10 @@
-# Generated files
+# Generated files, see "make clean"
 
-# Simulation (sim.sh)
+# Simulation (make sim, make debug)
 work-obj08.cf
 *.o
 tb_booth
 *.ghw
 
-# Synthesis (synth.sh)
+# Synthesis (make synth)
 synth/

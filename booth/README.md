@@ -15,8 +15,7 @@ per two bits.
 | [`booth.vhd`](booth.vhd) | The Booth multiplier (radix 4).
 | [`booth_radix2.vhd`](booth_radix2.vhd) | The same multiplier with radix 2, for comparison, see [Radix 2 versus radix 4](#radix-2-versus-radix-4).
 | [`tb_booth.vhd`](tb_booth.vhd) | Testbench for both designs.
-| [`sim.sh`](sim.sh) | Runs the testbench, see [Simulation](#simulation).
-| [`synth.py`](synth.py) | Estimates the resource usage of both designs, see [Resource usage](#resource-usage).
+| [`Makefile`](Makefile) | Runs the simulation and the synthesis, see [Running](#running).
 
 ## Interface
 Both the input and the output use an
@@ -94,18 +93,19 @@ structure. Only the parts that depend on the radix are different.
 
 ### Resource usage
 Estimated with [Yosys](https://github.com/YosysHQ/yosys) 0.56 (`synth_xilinx`,
-for Xilinx 7-series FPGAs), by running [`./synth.py`](synth.py):
+for Xilinx 7-series FPGAs), by running `make synth`:
 
-| `G_DATA_SIZE` | Clock cycles | LUT       | FF        | CARRY4  | LUT levels |
-| ------------- | ------------ | --------- | --------- | ------- | ---------- |
-|  8            |  8 /  4      |  49 /  52 |  48 /  47 |  4 /  4 | 3 / 3      |
-| 16            | 16 /  8      |  77 /  74 |  89 /  88 |  7 /  6 | 2 / 2      |
-| 32            | 32 / 16      | 172 / 175 | 170 / 169 | 11 / 11 | 3 / 3      |
-| 64            | 64 / 32      | 330 / 331 | 331 / 330 | 19 / 19 | 2 / 2      |
+| `G_DATA_SIZE` | Clock cycles | LUT       | FF        | CARRY4  | Logic levels |
+| ------------- | ------------ | --------- | --------- | ------- | ------------ |
+|  8            |  8 /  4      |  49 /  52 |  48 /  47 |  4 /  4 |  6 /  6      |
+| 16            | 16 /  8      |  77 /  74 |  89 /  88 |  7 /  6 |  7 /  7      |
+| 32            | 32 / 16      | 172 / 175 | 170 / 169 | 11 / 11 | 12 / 12      |
+| 64            | 64 / 32      | 330 / 331 | 331 / 330 | 19 / 19 | 19 / 19      |
 
 Each entry is radix 2 / radix 4. LUT, FF, and CARRY4 are the numbers of cells
-in the whole design. "LUT levels" is the largest number of LUTs on any path
-between two registers.
+in the whole design. "Logic levels" is the largest number of LUT and CARRY4
+cells on any path between two registers, as Vivado counts logic levels. They
+are the CARRY4 cells of the adder's carry chain, plus two or three LUTs.
 
 ### Performance
 Radix 4 needs half as many clock cycles for each product. This halves the
@@ -136,7 +136,7 @@ the working register.
   and Q(-1) in radix 2 (four inputs), and of P(i), M(i), M(i-1), Q(1), Q(0),
   and Q(-1) in radix 4 (six inputs). On an FPGA with 6-input LUTs, both fit
   into a single LUT. In the table above, both designs have the same number of
-  LUT levels for every `G_DATA_SIZE`.
+  logic levels for every `G_DATA_SIZE`.
 
 On an FPGA with 4-input LUTs (or in an ASIC), the extra multiplexer in radix 4
 does add a logic level in front of the adder, which slightly lowers the maximum
@@ -161,11 +161,25 @@ So radix 8 gives 33% fewer clock cycles than radix 4, at the cost of
 significantly more hardware and a longer critical path. Radix 4 is therefore
 the sweet spot for this kind of sequential multiplier.
 
+## Running
+Type `make` to list the supported targets:
+* `make sim` runs the testbench (see [below](#simulation)). This requires
+  [GHDL](https://github.com/ghdl/ghdl). It takes about 10 seconds.
+  `make sim RADIX=2` tests only `booth_radix2.vhd`.
+* `make debug` runs a short simulation of `booth.vhd` (20 multiplications),
+  and writes a waveform to `booth.ghw`. Use `make show_debug` to view it in
+  [GTKWave](https://github.com/gtkwave/gtkwave).
+* `make synth` estimates the resource usage of both designs, and prints the
+  numbers for the table in [Resource usage](#resource-usage). This requires
+  [Yosys](https://github.com/YosysHQ/yosys) and the
+  [GHDL plugin](https://github.com/ghdl/ghdl-yosys-plugin) for Yosys. It takes
+  about 20 seconds.
+* `make clean` removes the generated files.
+
 ## Simulation
-Run `./sim.sh` (from any directory). It runs the testbench `tb_booth.vhd` with
-[GHDL](https://github.com/ghdl/ghdl), for both `booth.vhd` and
-`booth_radix2.vhd`, and takes about 10 seconds. The testbench randomly stalls
-both the VALID and READY signals, and for each design it:
+`make sim` runs the testbench `tb_booth.vhd` for both `booth.vhd` and
+`booth_radix2.vhd`. The testbench randomly stalls both the VALID and READY
+signals, and for each design it:
 
 * Tests all pairs of inputs for `G_DATA_SIZE` from 1 to 7.
 * Tests 5000 random pairs of inputs for `G_DATA_SIZE` of 16, 17, and 32.
@@ -174,4 +188,5 @@ both the VALID and READY signals, and for each design it:
   every `G_DATA_SIZE` clock cycles for radix 2.
 * Tests a slow consumer, which is ready in only 10% of the clock cycles.
 
-It prints "All tests passed" at the end, and stops at the first error.
+It prints "All tests passed" at the end, and stops with an error at the first
+wrong product.
