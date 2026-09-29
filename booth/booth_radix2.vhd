@@ -9,7 +9,7 @@ library ieee;
 -- This is the radix 2 counterpart of booth.vhd (radix 4), for comparison. It
 -- has the same interface, the same output register, and the same single-adder
 -- structure. Only the parts that depend on the radix are different. See
--- "Radix 2 versus radix 4" in README.md.
+-- "Radix 2 versus radix 4" in ALGORITHM.md.
 --
 -- Latency and throughput:
 -- The calculation takes one clock cycle per bit, i.e. G_DATA_SIZE clock

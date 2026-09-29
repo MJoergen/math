@@ -59,7 +59,7 @@ show_debug: ## Show the waveform from "make debug" in GTKWave
 # Synthesis
 #######################
 
-# Estimate the resource usage of both designs, for the table in README.md.
+# Estimate the resource usage of both designs, for the table in ALGORITHM.md.
 #
 # Each design is synthesized for Xilinx 7-series FPGAs with Yosys (see
 # https://github.com/YosysHQ/yosys, command synth_xilinx), using the GHDL plugin

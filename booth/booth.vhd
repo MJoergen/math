@@ -6,8 +6,8 @@ library ieee;
 -- algorithm with radix 4, see
 -- https://en.wikipedia.org/wiki/Booth%27s_multiplication_algorithm
 -- Both inputs are G_DATA_SIZE bits wide, and the product is 2*G_DATA_SIZE bits
--- wide. See README.md for more details, and booth_radix2.vhd for the radix 2
--- version.
+-- wide. See README.md and ALGORITHM.md for more details, and booth_radix2.vhd
+-- for the radix 2 version.
 --
 -- Interface:
 -- The inputs are accepted when s_valid_i and s_ready_o are both asserted on
