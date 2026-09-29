@@ -1,7 +1,9 @@
 # SRT
-This divides two numbers using the SRT algorithm (with radix 4), in VHDL for
-an FPGA. It is inspired by
-[Ken Shirriff's analysis of the Pentium division bug](https://www.righto.com/2024/12/this-die-photo-of-pentium-shows.html).
+This divides two numbers using the
+[SRT algorithm](https://en.wikipedia.org/wiki/Division_algorithm#SRT_division)
+(with radix 4), in VHDL for an FPGA. It is inspired by Ken Shirriff's article
+[Intel's \$475 million error: the silicon behind the Pentium division bug](https://www.righto.com/2024/12/this-die-photo-of-pentium-shows.html),
+which analyses the Pentium's divider from a photo of the die.
 
 ## The algorithm
 SRT division produces the quotient one digit at a time, like long division by
@@ -15,9 +17,18 @@ digit $q$ is one of $\{-2, -1, 0, 1, 2\}$, so the quotient gains two bits per
 iteration. The digit is selected by a small lookup table that only looks at the
 top bits of $n$ and $d$. This works because the digit only needs to be
 approximately right, since a slightly wrong digit is corrected by the later
-digits. In the Pentium this table was a PLA (programmable logic array), so it
-is called the PLA here too, and missing entries in it caused the famous FDIV
-bug.
+digits. D. E. Atkins analysed this in
+[Higher-Radix Division Using Estimates of the Divisor and Partial Remainders](http://degiorgi.math.hr/aaa_sem/Div/925-934.pdf)
+(IEEE Transactions on Computers, 1968).
+
+In the Pentium this table was a
+[PLA](https://en.wikipedia.org/wiki/Programmable_logic_array) (programmable
+logic array), so it is called the PLA here too. Missing entries in it caused
+the famous [FDIV bug](https://en.wikipedia.org/wiki/Pentium_FDIV_bug). The
+story of how the bug was found is told in
+[Computational Aspects of the Pentium Affair](https://people.cs.vt.edu/~naren/Courses/CS3414/assignments/pentium.pdf)
+by Coe, Mathisen, Moler, and Pratt (IEEE Computational Science and
+Engineering, 1995).
 
 [ALGORITHM.md](ALGORITHM.md) explains the algorithm in detail: why it works,
 why the table only needs 7 bits of $n$ and 4 bits of $d$, the range of the
@@ -35,15 +46,17 @@ partial remainder, and the Pentium bug. It also has a diagram of the table.
 | [`tb_srt.vhd`](tb_srt.vhd) | Testbench for `srt`.
 | [`srt_core.psl`](srt_core.psl), [`srt_core.sby`](srt_core.sby) | Formal verification of `srt_core`.
 | [`srt_core.gtkw`](srt_core.gtkw) | GTKWave setup for viewing the formal verification traces.
-| [`srt.gtkw`](srt.gtkw) | GTKWave setup for viewing the waveform from `make debug`.
-| [`srt.xpr`](srt.xpr) | Vivado project (Artix-7 xc7a200tfbg484-2), for use in the Vivado GUI. `make vivado` does not use it.
+| [`srt.gtkw`](srt.gtkw) | [GTKWave](https://github.com/gtkwave/gtkwave) setup for viewing the waveform from `make debug`.
+| [`srt.xpr`](srt.xpr) | [Vivado](https://www.amd.com/en/products/software/adaptive-socs-and-fpgas/vivado.html) project (Artix-7 xc7a200tfbg484-2), for use in the Vivado GUI. `make vivado` does not use it.
 | [`srt.xdc`](srt.xdc) | Timing constraint (200 MHz), for synthesis.
 | [`srt.py`](srt.py) | Bit-exact model of `srt`, and a checker for the quotient digit table.
 | [`pla.tex`](pla.tex), [`pla_steps.tex`](pla_steps.tex), [`pla.svg`](pla.svg) | Diagram of the quotient digit table.
 | [`ALGORITHM.md`](ALGORITHM.md) | Detailed explanation of the algorithm.
 
 ## Interface of `srt`
-Both the input and the output use AXI-style handshaking: a value is
+Both the input and the output use
+[AXI](https://en.wikipedia.org/wiki/Advanced_eXtensible_Interface)-style
+handshaking: a value is
 transferred in a clock cycle where both valid and ready are high. The sender
 keeps valid high and the value unchanged until then.
 
@@ -64,13 +77,16 @@ output, so with `m_ready_i` high, a division can start every 37 clock cycles.
 `m_q_o`. It only accepts a new input once its result has been taken.
 
 ## Number format
-Internally (in `srt_core.vhd` and `pla.vhd`) the values are two's complement
-with 4 integer bits (including the sign). The inputs to `srt_core` are
+Internally (in `srt_core.vhd` and `pla.vhd`) the values are
+[two's complement](https://en.wikipedia.org/wiki/Two%27s_complement)
+[fixed point](https://en.wikipedia.org/wiki/Fixed-point_arithmetic) with 4
+integer bits (including the sign). The inputs to `srt_core` are
 normalized so the top nibble is `0001`, i.e. they are in the range [1, 2).
 
-The partial remainder `n` is kept in carry-save form (a sum and a carry, like
-in the Pentium), so calculating the next partial remainder needs no carry
-chain, see
+The partial remainder `n` is kept in
+[carry-save](https://en.wikipedia.org/wiki/Carry-save_adder) form (a sum and a
+carry, like in the Pentium), so calculating the next partial remainder needs
+no carry chain, see
 [The carry-save partial remainder](ALGORITHM.md#the-carry-save-partial-remainder).
 
 The partial remainder stays in the range $-4.5 < n < 4.5$, see
@@ -89,7 +105,8 @@ inputs, including a zero dividend:
   2/3 of its least significant bit.
 * The result stays valid and unchanged until it is taken.
 
-SMT solvers are slow at multiplication, so instead of calculating q*d directly,
+[SMT solvers](https://en.wikipedia.org/wiki/Satisfiability_modulo_theories)
+are slow at multiplication, so instead of calculating q*d directly,
 `srt_core.psl` tracks q*d alongside the divider using only additions, and
 checks a few invariants in every clock cycle. See the comments in
 `srt_core.psl`.
@@ -111,7 +128,9 @@ Type `make` to list the supported targets. The most important ones are:
   and writes a waveform to `srt.ghw`. Use `make show_debug` to view it in
   GTKWave.
 * `make formal` runs the formal verification. This requires
-  [SymbiYosys](https://github.com/YosysHQ/sby), the GHDL plugin for Yosys, and
+  [SymbiYosys](https://github.com/YosysHQ/sby), the
+  [GHDL plugin](https://github.com/ghdl/ghdl-yosys-plugin) for
+  [Yosys](https://github.com/YosysHQ/yosys), and
   the [Yices 2](https://github.com/SRI-CSL/yices2) solver. It takes about two
   minutes.
   If it fails, use `make show_prove` or `make show_induct` to view the
@@ -150,9 +169,9 @@ exactly the same quotient as the VHDL, including when the table is modified.
   must satisfy this too. With a carry-save partial remainder the table may see
   n one row too low, so this must also hold for the row above the entry. This
   check is slightly conservative: it may flag entries near the edge that are
-  never used. It then prints the range of the partial remainder, and tests over 100000
-  divisions against the exact result. It exits with an error if any of the
-  divisions is wrong.
+  never used. It then prints the range of the partial remainder, and tests
+  over 100000 divisions against the exact result. It exits with an error if
+  any of the divisions is wrong.
 * `./srt.py --exact` does the same with an exact partial remainder, i.e.
   without carry-save. The table in `pla.vhd` passes the check in both cases,
   see [The table](ALGORITHM.md#the-table).
@@ -172,26 +191,11 @@ exactly the same quotient as the VHDL, including when the table is modified.
   * with `--exact`: a division that uses each failing entry. It searches
     backwards from the entry, because some entries are used by very few
     divisions: in the Pentium, only about one in nine billion random
-    divisions reached a missing entry.
+    divisions reached a missing entry, according to Intel's
+    [Statistical Analysis of Floating Point Flaw in the Pentium Processor](https://www.ardent-tool.com/CPU/Intel/fdiv/white11.pdf)
+    (1994).
 * `./srt.py --pla pentium` uses the Pentium's original table from
   `pla_pentium.vhd` instead (`--pla pentium_fixed` for the fixed one). This
   reproduces the FDIV bug: `./srt.py 4195835 3145727 --pla pentium` gives the
   Pentium's wrong result. See
   [The Pentium FDIV bug](ALGORITHM.md#the-pentium-fdiv-bug).
-
-## Links
-* Ken Shirriff:
-  [Intel's \$475 million error: the silicon behind the Pentium division bug](https://www.righto.com/2024/12/this-die-photo-of-pentium-shows.html)
-  (2024). The analysis this design is based on, including the Pentium's
-  table.
-* D. E. Atkins:
-  [Higher-Radix Division Using Estimates of the Divisor and Partial Remainders](http://degiorgi.math.hr/aaa_sem/Div/925-934.pdf),
-  IEEE Transactions on Computers, 1968. The theory of selecting quotient
-  digits from truncated values.
-* Wikipedia: [SRT division](https://en.wikipedia.org/wiki/Division_algorithm#SRT_division).
-* H. P. Sharangpani (Intel):
-  [Statistical Analysis of Floating Point Flaw in the Pentium Processor](https://www.ardent-tool.com/CPU/Intel/fdiv/white11.pdf)
-  (1994). Intel's white paper on the FDIV bug.
-* [Computational Aspects of the Pentium Affair](https://people.cs.vt.edu/~naren/Courses/CS3414/assignments/pentium.pdf),
-  IEEE Computational Science and Engineering, 1995.
-
