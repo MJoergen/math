@@ -31,6 +31,7 @@ hardware.
 | [`tb_booth.vhd`](tb_booth.vhd) | Testbench for both designs.
 | [`booth.gtkw`](booth.gtkw) | GTKWave setup for viewing the waveform from `make debug`.
 | [`booth.psl`](booth.psl), [`booth.sby`](booth.sby) | Formal verification of both designs, see [Formal verification](#formal-verification).
+| [`booth.xdc`](booth.xdc), [`vivado.tcl`](vivado.tcl) | Timing constraint (250 MHz) and script for synthesis with Vivado, see `make vivado`.
 | [`Makefile`](Makefile) | Runs the simulation, the formal verification, and the synthesis, see [Running](#running).
 | [`ALGORITHM.md`](ALGORITHM.md) | Detailed explanation of the algorithm, and the comparison of radix 2 and radix 4.
 
@@ -81,6 +82,16 @@ Type `make` to list the supported targets:
   [Yosys](https://github.com/YosysHQ/yosys) and the
   [GHDL plugin](https://github.com/ghdl/ghdl-yosys-plugin) for Yosys. It takes
   about 20 seconds.
+* `make vivado` synthesizes and implements `booth.vhd` with `G_DATA_SIZE=16`,
+  using [Vivado](https://www.amd.com/en/products/software/adaptive-socs-and-fpgas/vivado.html)
+  for the Artix-7 part xc7a200tfbg484-2. The design is implemented out of
+  context, i.e. as a module inside a larger design, so only the paths between
+  registers are timed. It fails if the design does not meet the 250 MHz clock
+  constraint in `booth.xdc`. At the end it prints the number of cells and the
+  slack and logic levels of the worst path, and the reports are written to
+  `vivado/booth_16/`. E.g. `make vivado VIVADO_TOP=booth_radix2 VIVADO_SIZE=32`
+  selects another design and size. It takes about 1.5 minutes, and expects
+  Vivado in `/opt/Xilinx/2025.1/Vivado` (the variable `XILINX_DIR`).
 * `make clean` removes the generated files.
 
 ## Simulation

@@ -17,3 +17,7 @@ booth_prove4_odd/
 booth_prove2/
 booth_cover4/
 booth_cover2/
+
+# Vivado (make vivado)
+vivado/
+.Xil/

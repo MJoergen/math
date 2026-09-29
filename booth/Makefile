@@ -97,6 +97,38 @@ synth: booth.vhd booth_radix2.vhd ## Estimate the resource usage of both designs
 
 
 #######################
+# Synthesis using Vivado
+#######################
+
+XILINX_DIR = /opt/Xilinx/2025.1/Vivado
+
+# The design and G_DATA_SIZE, e.g.
+# "make vivado VIVADO_TOP=booth_radix2 VIVADO_SIZE=32"
+VIVADO_TOP  ?= booth
+VIVADO_SIZE ?= 16
+VIVADO_PART  = xc7a200tfbg484-2
+VIVADO_DIR   = vivado/$(VIVADO_TOP)_$(VIVADO_SIZE)
+
+# Synthesize and implement the design out of context (see vivado.tcl), and
+# write the reports timing_summary.rpt and utilization.rpt to $(VIVADO_DIR).
+# This fails if the design does not meet the clock constraint in booth.xdc.
+#
+# -mode batch, NOT -mode tcl. In tcl mode Vivado exits 0 even when the sourced
+# script raises an error, so an aborted build would be reported as success to
+# make. Batch mode propagates the error as a non-zero exit status. The modes
+# are described in UG894, "Vivado Design Suite User Guide: Using Tcl
+# Scripting": https://docs.amd.com/r/en-US/ug894-vivado-tcl-scripting
+.PHONY: vivado
+vivado: $(VIVADO_DIR)/post_route.dcp ## Run synthesis and implementation using Vivado (about 1.5 minutes)
+
+$(VIVADO_DIR)/post_route.dcp: vivado.tcl $(VIVADO_TOP).vhd booth.xdc
+	mkdir -p $(VIVADO_DIR)
+	cd $(VIVADO_DIR) && bash -c "source $(XILINX_DIR)/settings64.sh ; \
+	   vivado -mode batch -nojournal -log vivado.log -source $(CURDIR)/vivado.tcl \
+	   -tclargs $(VIVADO_TOP) $(VIVADO_SIZE) $(VIVADO_PART) $(CURDIR)"
+
+
+#######################
 # Formal verification
 #######################
 
@@ -128,4 +160,4 @@ show_induct: ## Show the trace from a failing induction step in GTKWave (TASK=pr
 
 .PHONY: clean
 clean: ## Remove the generated files
-	rm -rf work-obj08.cf *.o tb_booth booth.ghw synth booth_radix2.psl booth booth_prove4 booth_prove4_odd booth_prove2 booth_cover4 booth_cover2
+	rm -rf work-obj08.cf *.o tb_booth booth.ghw synth vivado .Xil booth_radix2.psl booth booth_prove4 booth_prove4_odd booth_prove2 booth_cover4 booth_cover2
