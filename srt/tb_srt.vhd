@@ -38,8 +38,9 @@ library ieee;
 --
 -- The generic G_PLA selects the quotient digit table, see srt_core.vhd. For
 -- instance, "make sim PLA=pentium" runs the testbench with the original
--- Pentium table. Then the divider has the Pentium's FDIV bug, and the
--- testbench verifies that 4195835/3145727 gives the Pentium's wrong result.
+-- Pentium table. Then the divider has the Pentium's FDIV bug (see
+-- https://en.wikipedia.org/wiki/Pentium_FDIV_bug), and the testbench
+-- verifies that 4195835/3145727 gives the Pentium's wrong result.
 -- The other divisions are still correct, since the bug is so rare.
 
 entity tb_srt is

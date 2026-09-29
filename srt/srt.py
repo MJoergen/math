@@ -1,14 +1,17 @@
 #! /usr/bin/env python3
 
-# Bit-exact model of the SRT divider in this directory.
+# Bit-exact model of the SRT divider in this directory. For SRT division, see
+# https://en.wikipedia.org/wiki/Division_algorithm#SRT_division
+# and ALGORITHM.md.
 #
 # This models srt.vhd (with srt_core.vhd, pla.vhd, normalizer.vhd, and
 # shifter.vhd) using integers, so the quotient is exactly the same as the one
 # calculated by the VHDL. The quotient digit table is built the same way as in
-# pla.vhd, and the partial remainder is kept in carry-save form, like in
-# srt_core.vhd. Alternatively, the Pentium's table can be used (pla_pentium.vhd),
-# which reproduces the FDIV bug, and the partial remainder can be calculated
-# exactly instead (--exact).
+# pla.vhd, and the partial remainder is kept in carry-save form (see
+# https://en.wikipedia.org/wiki/Carry-save_adder), like in srt_core.vhd.
+# Alternatively, the Pentium's table can be used (pla_pentium.vhd), which
+# reproduces the FDIV bug (see https://en.wikipedia.org/wiki/Pentium_FDIV_bug),
+# and the partial remainder can be calculated exactly instead (--exact).
 #
 # It can also check every entry of the table: It verifies that the chosen
 # quotient digit keeps the partial remainder within bounds, for all values of n
@@ -134,8 +137,9 @@ def pla(n, d, table, g=G_SIZE):
 #
 # With carry_save, the partial remainder is kept in carry-save form, like in
 # srt_core.vhd and in the Pentium: n = s + c. Then n - q*d is calculated with a
-# carry-save adder, without propagating any carries. A positive q*d is subtracted by adding its
-# complement, and adding the 1 as the lowest bit of the carries. For the table
+# carry-save adder, without propagating any carries. A positive q*d is
+# subtracted by adding its complement, and adding the 1 as the lowest bit of
+# the carries. For the table
 # lookup, only the top 7 bits of s and c are added. This ignores the carries
 # from the lower bits, so the lookup can use the table row just below n. With
 # the original Pentium table, this very rarely reaches a missing entry.
@@ -205,7 +209,9 @@ def expected(n_i, d_i):
 # Exhaustive check of the table
 # -------------------------------------------------------------------------
 
-# Clip a convex polygon to the half-plane a*n + b*d + c >= 0
+# Clip a convex polygon to the half-plane a*n + b*d + c >= 0. This is one step
+# of the Sutherland-Hodgman algorithm, see
+# https://en.wikipedia.org/wiki/Sutherland%E2%80%93Hodgman_algorithm
 def clip(poly, a, b, c):
     out = []
     for i, p in enumerate(poly):
@@ -225,7 +231,8 @@ def clip(poly, a, b, c):
 # next partial remainder 4*(n - q*d) satisfies the invariant too.
 #
 # The conditions are linear in n and d, so it is enough to check the corners of
-# the region, using exact rational arithmetic. A corner where the condition
+# the region, using exact rational arithmetic (the Python module fractions,
+# see https://docs.python.org/3/library/fractions.html). A corner where the condition
 # only just fails (with equality) is fine, if it lies on an edge of the region
 # that is excluded, e.g. n = n_hi.
 #
@@ -362,8 +369,8 @@ def print_bounds(bounds, per_column):
 # Diagram of the table
 # -------------------------------------------------------------------------
 
-# Print the boundaries between the quotient digits in the table as TikZ paths,
-# for the diagram in pla.tex. In each column of the table (i.e. range of d),
+# Print the boundaries between the quotient digits in the table as TikZ paths
+# (see https://tikz.dev/), for the diagram in pla.tex. In each column of the table (i.e. range of d),
 # the boundary between digit k and k+1 is at the smallest n where the table
 # selects a digit larger than k. So each boundary is a staircase.
 def print_tikz(table):
@@ -386,7 +393,10 @@ def print_tikz(table):
 # -------------------------------------------------------------------------
 
 # Some table entries are only used by very few divisions (in the Pentium, about
-# one in nine billion), so a random search will not find them. Instead, this
+# one in nine billion, according to Intel's white paper "Statistical Analysis
+# of Floating Point Flaw in the Pentium Processor", 1994:
+# https://www.ardent-tool.com/CPU/Intel/fdiv/white11.pdf), so a random search
+# will not find them. Instead, this
 # works backwards: Choose a partial remainder n_next in the table entry, and a
 # divisor d. The previous partial remainder must then be n = n_next/4 + q*d,
 # for one of the digits q that the table would actually select for (n, d).

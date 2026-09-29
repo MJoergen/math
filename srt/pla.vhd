@@ -3,7 +3,9 @@ library ieee;
    use ieee.numeric_std_unsigned.all;
 
 -- This is the quotient digit selection table of the SRT divider, corresponding
--- to the PLA (programmable logic array) in the Pentium processor.
+-- to the PLA (programmable logic array, see
+-- https://en.wikipedia.org/wiki/Programmable_logic_array) in the Pentium
+-- processor.
 --
 -- The table is indexed by only 11 bits, just like in the Pentium:
 -- * The top 7 bits of the partial remainder n (sign, 3 integer bits, and
@@ -13,6 +15,11 @@ library ieee;
 -- The table therefore has 2^11 = 2048 entries. Each entry stores |q| (as an
 -- unsigned number, so 2 is "10"), and the sign of q is taken from the sign of
 -- n.
+--
+-- Why so few bits are enough is explained in ALGORITHM.md. For the theory,
+-- see D. E. Atkins, "Higher-Radix Division Using Estimates of the Divisor and
+-- Partial Remainders", IEEE Transactions on Computers, 1968:
+-- http://degiorgi.math.hr/aaa_sem/Div/925-934.pdf
 --
 -- The input format is the same as in srt_core.vhd: two's complement with 4
 -- integer bits including the sign, and d must be normalized (1 <= d < 2).

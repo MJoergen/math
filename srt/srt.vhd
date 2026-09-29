@@ -2,8 +2,10 @@ library ieee;
    use ieee.std_logic_1164.all;
    use ieee.numeric_std_unsigned.all;
 
--- This divides two numbers using the SRT algorithm (with radix 4).
--- It is inspired by this analysis: https://www.righto.com/2024/12/this-die-photo-of-pentium-shows.html
+-- This divides two numbers using the SRT algorithm (with radix 4), see
+-- https://en.wikipedia.org/wiki/Division_algorithm#SRT_division
+-- and ALGORITHM.md. It is inspired by Ken Shirriff's analysis of the Pentium
+-- division bug: https://www.righto.com/2024/12/this-die-photo-of-pentium-shows.html
 --
 -- This is the top level. It divides two unsigned integers and returns a
 -- fixed-point quotient with 32 integer bits and 32 fractional bits, rounded to
@@ -20,8 +22,10 @@ library ieee;
 -- and m_q_o is all ones (the largest value). For inputs in range, m_invalid_o
 -- is cleared.
 --
--- Usage: Both ports use AXI-style handshaking, i.e. a value is transferred in
--- a clock cycle where both valid and ready are high.
+-- Usage: Both ports use AXI-style handshaking (see
+-- https://en.wikipedia.org/wiki/Advanced_eXtensible_Interface),
+-- i.e. a value is transferred in a clock cycle where both valid and ready are
+-- high.
 -- * Input: Set s_valid_i together with the dividend s_n_i and the divisor
 --   s_d_i, and keep them unchanged until s_ready_o is high.
 -- * Output: m_valid_o is set together with the quotient m_q_o and

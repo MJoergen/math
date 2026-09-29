@@ -5,8 +5,10 @@ library ieee;
 library work;
    use work.pla_pkg.all;
 
--- This divides two numbers using the SRT algorithm (with radix 4).
--- It is inspired by this analysis: https://www.righto.com/2024/12/this-die-photo-of-pentium-shows.html
+-- This divides two numbers using the SRT algorithm (with radix 4), see
+-- https://en.wikipedia.org/wiki/Division_algorithm#SRT_division
+-- and ALGORITHM.md. It is inspired by Ken Shirriff's analysis of the Pentium
+-- division bug: https://www.righto.com/2024/12/this-die-photo-of-pentium-shows.html
 --
 -- Each iteration selects a quotient digit q in {-2, -1, 0, 1, 2} from a small
 -- lookup table (the "PLA", see pla.vhd), and then updates the partial
@@ -29,7 +31,8 @@ library work;
 --              1/2 < s_n_i/s_d_i < 2 the first digit is always 1 or 2
 --              (unless s_n_i = 0).
 --
--- The partial remainder is kept in carry-save form, like in the Pentium: two
+-- The partial remainder is kept in carry-save form (see
+-- https://en.wikipedia.org/wiki/Carry-save_adder), like in the Pentium: two
 -- registers n_s (the sums) and n_c (the carries), with n = n_s + n_c. Then
 -- n - q*d is calculated with a carry-save adder, i.e. each bit is a full
 -- adder of n_s, n_c, and -q*d, without any carry chain. A positive q*d is
@@ -49,7 +52,10 @@ library work;
 -- q is then handled by appending (4 + q) to quot_m1, since
 --    4*quot + q = 4*quot_m1 + (4 + q)
 -- So each iteration only selects one of the two registers and appends two
--- bits. See the table in append_proc.
+-- bits. See the table in append_proc. This technique is described by
+-- Ercegovac and Lang in "On-the-Fly Conversion of Redundant into Conventional
+-- Representations", IEEE Transactions on Computers, 1987:
+-- https://doi.org/10.1109/TC.1987.1676986
 --
 -- Each digit is first stored in the register digit, and only appended to
 -- quot in the next iteration. This keeps the quotient registers (about 140
@@ -64,13 +70,16 @@ library work;
 --   "pentium_fixed" : pla_pentium.vhd, the fixed Pentium table.
 -- With the Pentium tables the partial remainder has a larger range, see
 -- pla_pentium.vhd. With the original Pentium table, this divider has the FDIV
--- bug, e.g. for 4195835/3145727. The formal verification only covers pla.vhd.
+-- bug (see https://en.wikipedia.org/wiki/Pentium_FDIV_bug), e.g. for
+-- 4195835/3145727. The formal verification only covers pla.vhd.
 -- The original Pentium table cannot be expressed with two thresholds per
 -- column (it holds 0 above the q = 2 region), so the Pentium tables use a
 -- lookup in the table instead. They are only meant for simulation.
 --
--- Usage: Both ports use AXI-style handshaking, i.e. a value is transferred in
--- a clock cycle where both valid and ready are high.
+-- Usage: Both ports use AXI-style handshaking (see
+-- https://en.wikipedia.org/wiki/Advanced_eXtensible_Interface),
+-- i.e. a value is transferred in a clock cycle where both valid and ready are
+-- high.
 -- * Input: Set s_valid_i together with s_n_i and s_d_i, and keep them
 --   unchanged until s_ready_o is high. s_ready_o is only high when no
 --   division is in progress, and the previous result has been taken.

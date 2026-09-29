@@ -1,5 +1,8 @@
 [*]
-[*] GTKWave save file for the waveform srt.ghw from "make debug"
+[*] GTKWave save file for the waveform srt.ghw from "make debug", see
+[*] https://github.com/gtkwave/gtkwave
+[*] srt.ghw is written by GHDL in its GHW format, see the option --wave in
+[*] https://ghdl.github.io/ghdl/using/Simulation.html#cmdoption-ghdl-wave
 [*]
 [timestart] 0
 [size] 1610 1030

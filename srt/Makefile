@@ -14,6 +14,10 @@ help: ## Show this help message
 # Simulation
 #######################
 
+# The simulation uses GHDL, see https://github.com/ghdl/ghdl
+# For the command line options, see
+# https://ghdl.github.io/ghdl/using/InvokingGHDL.html
+
 SIM_SRC = srt.vhd pla.vhd pla_pentium.vhd normalizer.vhd srt_core.vhd shifter.vhd tb_srt.vhd
 
 # The quotient digit table used by the testbench: srt (pla.vhd), pentium (the
@@ -37,7 +41,7 @@ debug: $(SIM_SRC) ## Run the first 10 us of the testbench, and write a waveform 
 	ghdl -r --std=08 tb_srt -gG_PLA=$(PLA) --assert-level=error --wave=srt.ghw --stop-time=10us
 
 # srt.gtkw selects the most relevant signals of srt, normalizer, srt_core,
-# and shifter
+# and shifter, for GTKWave (see https://github.com/gtkwave/gtkwave)
 .PHONY: show_debug
 show_debug: ## Show the waveform from "make debug" in GTKWave
 	gtkwave srt.ghw srt.gtkw
@@ -59,7 +63,10 @@ model: ## Check the quotient digit table, and test the bit-exact model srt.py
 # Diagram of the table
 #######################
 
-# The diagram is included in ALGORITHM.md as pla.svg
+# The diagram is included in ALGORITHM.md as pla.svg. pla.tex is drawn with
+# TikZ (see https://tikz.dev/) and built with latexmk (see
+# https://ctan.org/pkg/latexmk). pdftocairo, which is part of Poppler (see
+# https://poppler.freedesktop.org/), converts the PDF to SVG.
 pla_steps.tex: srt.py
 	./srt.py --tikz > $@
 
@@ -83,13 +90,18 @@ VIVADO_SRC  = pla.vhd pla_pentium.vhd normalizer.vhd srt_core.vhd shifter.vhd sr
 # -mode batch, NOT -mode tcl. In tcl mode Vivado exits 0 even when the sourced
 # script raises an error, so an aborted build -- on the timing check below, or
 # inside synth_design/route_design -- would otherwise be reported as success
-# to make. Batch mode propagates the error as a non-zero exit status.
+# to make. Batch mode propagates the error as a non-zero exit status. The
+# modes are described in UG894, "Vivado Design Suite User Guide: Using Tcl
+# Scripting": https://docs.amd.com/r/en-US/ug894-vivado-tcl-scripting
 .PHONY: vivado
 vivado: $(VIVADO_TOP).bit ## Run synthesis and implementation using Vivado (batch mode)
 
 $(VIVADO_TOP).bit: vivado_build.tcl $(VIVADO_SRC) srt.xdc
 	bash -c "source $(XILINX_DIR)/settings64.sh ; vivado -mode batch -source $<"
 
+# The Tcl commands below are described in UG835, "Vivado Design Suite Tcl
+# Command Reference Guide": https://docs.amd.com/r/en-US/ug835-vivado-tcl-commands
+#
 # report_timing_summary writes timing_summary.rpt next to the bitstream, and
 # the check after it aborts the build on negative slack. write_bitstream
 # succeeds even when timing is violated, so without that check a bitstream is
@@ -128,7 +140,10 @@ SRC += $(DUT).vhd
 SRC += pla.vhd
 SRC += pla_pentium.vhd
 
-# This runs all the tasks defined in $(DUT).sby
+# This runs all the tasks defined in $(DUT).sby, using SymbiYosys (see
+# https://github.com/YosysHQ/sby). "yosys -m ghdl" loads the GHDL plugin for
+# Yosys (see https://github.com/ghdl/ghdl-yosys-plugin), which reads the VHDL
+# and PSL files.
 .PHONY: formal
 formal: $(DUT).sby $(DUT).psl $(SRC) ## Run the formal verification of srt_core.vhd (about two minutes)
 	sby --yosys "yosys -m ghdl" -f $(DUT).sby
