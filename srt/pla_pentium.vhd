@@ -3,10 +3,10 @@ library ieee;
    use ieee.numeric_std_unsigned.all;
 
 -- This is the quotient digit selection table (the PLA, i.e. programmable logic
--- array) of the Intel Pentium,
--- both the original version with the FDIV bug and the later, fixed version.
--- It can be used in srt_core.vhd instead of pla.vhd, see the generic G_PLA
--- there.
+-- array) of the Intel Pentium, both the original version with the FDIV bug
+-- (see https://en.wikipedia.org/wiki/Pentium_FDIV_bug) and the later, fixed
+-- version. It can be used in srt_core.vhd instead of pla.vhd, see the generic
+-- G_PLA there.
 --
 -- The table contents are taken from Ken Shirriff's analysis of the PLA on the
 -- Pentium die: https://www.righto.com/2024/12/this-die-photo-of-pentium-shows.html
@@ -20,7 +20,10 @@ library ieee;
 -- The original table (G_FIXED = false) has 16 missing entries, one in each
 -- column along the top edge of the +2 region. They should hold 2, but hold 0.
 -- Only five of them can be reached by a division, and these are marked below
--- (see "The Pentium FDIV bug" in ALGORITHM.md). The unused entries above the
+-- (see "The Pentium FDIV bug" in ALGORITHM.md). Intel's white paper on the
+-- bug, "Statistical Analysis of Floating Point Flaw in the Pentium Processor"
+-- (1994), describes how the entries were omitted:
+-- https://www.ardent-tool.com/CPU/Intel/fdiv/white11.pdf The unused entries above the
 -- +2 region and below the -2 region also hold 0. In the fixed table
 -- (G_FIXED = true), all of these entries hold 2. Otherwise the two tables are
 -- identical.
