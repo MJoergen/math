@@ -310,23 +310,23 @@ simply not used.
 For example, the digits $2, -1, 0, -2, 1$ give the quotient
 $2 \cdot 256 - 1 \cdot 64 + 0 \cdot 16 - 2 \cdot 4 + 1 = 441$. The table below
 shows the registers as two's complement numbers in binary, starting with just
-a sign bit. In each row, the bits copied from the old $Q$ are
-$\color{blue}{\text{blue}}$, the bits copied from the old $Q - 1$ are
-$\color{red}{\text{red}}$, and the two appended bits are not coloured:
+a sign bit, so each new value is the old value in one of the two columns with
+two bits appended. When that old value is not the one directly above, i.e. it
+is taken from the other register, it is shown in bold:
 
-| $q$  | New $Q$                                                        | New $Q - 1$                                                    |
-| ---- | -------------------------------------------------------------- | -------------------------------------------------------------- |
-|      | $\texttt{0} = 0$                                               | $\texttt{1} = -1$                                              |
-| 2    | $\color{blue}{\texttt{0}}\texttt{10} = 2$                      | $\color{blue}{\texttt{0}}\texttt{01} = 1$                      |
-| -1   | $\color{red}{\texttt{001}}\texttt{11} = 7$                     | $\color{red}{\texttt{001}}\texttt{10} = 6$                     |
-| 0    | $\color{blue}{\texttt{00111}}\texttt{00} = 28$                 | $\color{red}{\texttt{00110}}\texttt{11} = 27$                  |
-| -2   | $\color{red}{\texttt{0011011}}\texttt{10} = 110$               | $\color{red}{\texttt{0011011}}\texttt{01} = 109$               |
-| 1    | $\color{blue}{\texttt{001101110}}\texttt{01} = 441$            | $\color{blue}{\texttt{001101110}}\texttt{00} = 440$            |
+| $q$  | New $Q$             | New $Q - 1$           |
+| ---- | ------------------- | --------------------- |
+|      | 0 = 0               | 1 = -1                |
+| 2    | 010 = 2             | **0**01 = 1           |
+| -1   | **001**11 = 7       | 00110 = 6             |
+| 0    | 0011100 = 28        | 0011011 = 27          |
+| -2   | **0011011**10 = 110 | 001101101 = 109       |
+| 1    | 00110111001 = 441   | **001101110**00 = 440 |
 
-The digits $2$ and $1$ copy $Q$ to both registers, the digits $-1$ and $-2$
-copy $Q - 1$ to both, and only the digit $0$ uses both. In every row, the two
-registers differ by exactly one, and the last row holds the quotient $441$ in
-$Q$.
+So the digits $2$ and $1$ take the new $Q - 1$ from the old $Q$, the digits
+$-1$ and $-2$ take the new $Q$ from the old $Q - 1$, and the digit $0$ takes
+each register from its own old value. In every row, the two registers differ
+by exactly one, and the last row holds the quotient $441$ in $Q$.
 
 In `srt_core.vhd` each digit is first stored in a register, and only appended in
 the next iteration, and the quotient output is $Q$ with the stored digit
