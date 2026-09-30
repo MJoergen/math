@@ -9,8 +9,23 @@ Input: The range of values is [1, 4[, and the value is encoded as fixed point 2.
 Output: The range of values is [1, 2[, and the fractional part is encoded as fixed point
         0.22 (the integer part is constant 1).
 
-## FPGA Reources
+It is a 2-stage pipeline: It accepts a new input in every clock cycle, and the result
+is available 2 clock cycles after the input.
+
+## FPGA Resources
 This implementation uses two BRAMs and one DSP, and a small amount of extra logic.
+The exact numbers for each value of G_EXTRA_BITS are listed under
+[Test results](#test-results).
+
+It can run at a clock speed of 125 MHz (clock period 8 ns). The numbers are from
+Vivado 2025.1, implementing the project [`pipeline_sqrt.xpr`](pipeline_sqrt.xpr) out of
+context (part xc7a200tfbg484-2, default strategies), which meets the timing constraint in
+[`pipeline_sqrt.xdc`](pipeline_sqrt.xdc) with a slack of at least 1.7 ns.
+
+The clock period cannot be reduced much: With a clock period of 7.5 ns or less, Vivado
+synthesis implements some or all of the ROMs in LUTs (and F7 and F8 muxes) instead of
+Block RAM, e.g. 383 LUTs and 1 BRAM at 7.5 ns, and 807 LUTs and 0 BRAM at 6 ns (both
+with G_EXTRA_BITS = 2).
 
 ## Theory of operation
 The calculation performed is x = sqrt(y), where y is the real input number and x is the
@@ -42,6 +57,47 @@ function f(a) is calculated to 22 bits accuracy, and only the lower 18 bits are 
 BRAM. The upper 4 bits are calculated combinatorially. This is controlled by the generic
 G_EXTRA_BITS.
 
+## Files
+| File | Description
+| ---- | -----------
+| [`pipeline_sqrt.vhd`](pipeline_sqrt.vhd) | The square root.
+| [`tb_pipeline_sqrt.vhd`](tb_pipeline_sqrt.vhd) | Testbench.
+| [`pipeline_sqrt.gtkw`](pipeline_sqrt.gtkw) | GTKWave setup for viewing the waveform from `make debug`.
+| [`pipeline_sqrt.xdc`](pipeline_sqrt.xdc) | Timing constraint (125 MHz).
+| [`pipeline_sqrt.xpr`](pipeline_sqrt.xpr) | Vivado project for synthesis, out of context with G_EXTRA_BITS = 2.
+| [`Makefile`](Makefile) | Runs the simulation, see [Running](#running).
+
+## Interface
+| Name | Kind | Description
+| ---- | ---- | -----------
+| `G_EXTRA_BITS` | generic | The number of upper bits of f(a) that are calculated combinatorially, from 0 to 4, see [Theory of operation](#theory-of-operation).
+| `clk_i` | in | Clock.
+| `data_i` | in | The input y, fixed point 2.20 in the range [1, 4[.
+| `data_o` | out | The fractional part of x = sqrt(y), fixed point 0.22. The integer part is constant 1.
+
+There is no valid signal and no reset: `data_o` is the square root of the value of
+`data_i` 2 clock cycles earlier.
+
+## Running
+Type `make` to list the supported targets:
+* `make sim` runs the testbench five times, for G_EXTRA_BITS from 0 to 4. This requires
+  [GHDL](https://github.com/ghdl/ghdl). Each run takes about 3 to 4 minutes. E.g.
+  `make sim EXTRA_BITS=2` runs only G_EXTRA_BITS = 2.
+* `make debug` runs the testbench for 25 us with G_EXTRA_BITS = 2, and writes a waveform
+  to `pipeline_sqrt.ghw`. `make show_debug` shows it in
+  [GTKWave](https://github.com/gtkwave/gtkwave).
+* `make clean` removes the generated files.
+
+## Simulation
+The testbench cycles through all 3*2^20 valid values of the input, from 0x100000 (1.0)
+to 0x3FFFFF (just below 4.0), one in each clock cycle, and compares each output with the
+exact square root, rounded down. It prints the input and the output whenever the error is larger than any
+previous error. These are the tables under [Test results](#test-results). The errors do
+not stop the simulation.
+
+GHDL also prints a few "metavalue detected" warnings at 5 ns and 15 ns, before the
+pipeline is filled. They can be ignored.
+
 # Test results
 
 To verify the implementation in simulation, there is a testbench that cycles through all
@@ -50,10 +106,11 @@ the error is larger than any previous error.
 
 It takes approx 3 minutes to run the entire simulation for each value of G_EXTRA_BITS.
 
-The shell script ghdl.sh runs the simulation five times for different values of
-G_EXTRA_BITS.
+`make sim` runs the simulation five times for different values of G_EXTRA_BITS, see
+[Running](#running).
 
-The main results are:
+The main results are below. The synthesis reports are from Vivado 2025.1 with a clock
+period of 8 ns, see [FPGA Resources](#fpga-resources).
 
 ## G_EXTRA_BITS = 0:
 
@@ -174,7 +231,7 @@ Analysis of the final row:
 * data_out  = 0x009FFD
 
 Synthesis report
-* LUT  = 6
+* LUT  = 4
 * REG  = 6
 * BRAM = 2
 * DSP  = 1
@@ -203,7 +260,7 @@ Analysis of the final row:
 * data_out  = 0x00735E
 
 Synthesis report
-* LUT   = 13
+* LUT   = 16
 * REG   = 8
 * F7MUX = 3
 * F8MUX = 1

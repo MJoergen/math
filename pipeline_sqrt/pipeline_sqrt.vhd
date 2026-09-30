@@ -9,9 +9,13 @@ use ieee.math_real.all; -- Used to populate the lookup tables (BRAMs).
 --        The integer part (upper two bits) must be nonzero.
 -- Output: The range of values is [1, 2[, and the
 --         fractional part is encoded as fixed point 0.22 (the integer part is constant 1).
+-- Timing: This is a 2-stage pipeline. It accepts a new input in every clock cycle,
+--         and the result is available 2 clock cycles after the input.
 
--- FPGA Reources:
+-- FPGA Resources:
 -- This implementation uses two BRAMs and one DSP, and a small amount of extra logic.
+-- With a clock period of 7.5 ns or less, Vivado 2025.1 synthesis implements some
+-- or all of the ROMs in LUTs instead, see README.md.
 
 -- Theory of operation:
 -- The calculation performed is x = sqrt(y), where y is the real input number and x is the

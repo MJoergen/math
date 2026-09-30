@@ -1,0 +1,16 @@
+# Generated files, see "make clean"
+
+# Simulation (make sim, make debug)
+work-obj08.cf
+*.o
+tb_pipeline_sqrt
+*.ghw
+
+# Vivado (pipeline_sqrt.xpr project)
+pipeline_sqrt.cache/
+pipeline_sqrt.gen/
+pipeline_sqrt.hw/
+pipeline_sqrt.ip_user_files/
+pipeline_sqrt.runs/
+pipeline_sqrt.sim/
+.Xil/
