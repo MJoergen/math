@@ -9,9 +9,10 @@ Input: The range of values is [1, 4[, and the value is encoded as fixed point 2.
 Output: The range of values is [1, 2[, and the fractional part is encoded as fixed point
         0.22 (the integer part is constant 1).
 
-It is a 2-stage pipeline: It accepts a new input in every clock cycle, and the result
-is available 2 clock cycles after the input. The input and the output use an AXI-style
-VALID/READY handshake, see [Interface](#interface).
+It is a 2-stage pipeline: It accepts a new input in every clock cycle, and the latency
+is 16 ns, at the 125 MHz clock constraint in [`pipeline_sqrt.xdc`](pipeline_sqrt.xdc).
+The input and the output use an AXI-style VALID/READY handshake, see
+[Interface](#interface).
 
 ## FPGA resources
 This implementation uses two BRAMs and one DSP, and a small amount of extra logic.

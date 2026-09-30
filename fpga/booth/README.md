@@ -6,16 +6,19 @@ using [Booth's algorithm](https://en.wikipedia.org/wiki/Booth%27s_multiplication
 with radix 4, in VHDL for an FPGA. Both inputs are `G_DATA_SIZE` bits wide, and
 the product is `2*G_DATA_SIZE` bits wide.
 
-The calculation takes `ceil(G_DATA_SIZE/2)` clock cycles, i.e. one clock cycle
-per two bits.
+The latency is 32 ns for `G_DATA_SIZE=16`, at the 250 MHz clock constraint in
+[`booth.xdc`](booth.xdc), and it grows in proportion to `G_DATA_SIZE`, since
+each clock cycle handles two bits.
 
 [`booth_csa.vhd`](booth_csa.vhd) is a faster version with the same interface:
 It keeps the partial product in carry-save form, so that there is no carry
 chain in the iterations, and handles several Booth digits (`G_DIGITS`, default
-4) in each clock cycle. With `G_DIGITS=4` it takes `ceil(G_DATA_SIZE/8) + 2`
-clock cycles, at a clock frequency (about 400 MHz) that hardly depends on
-`G_DATA_SIZE`. So the time for each product is 2 to 4 times shorter, for about
-5 times as many LUTs. See
+4) in each clock cycle. With `G_DIGITS=4` and `G_DATA_SIZE=16` the latency is
+16 ns at the same clock, and it grows much more slowly with `G_DATA_SIZE`. It
+also runs at a higher clock frequency (about 400 MHz), which hardly depends on
+`G_DATA_SIZE`. So at the highest clock frequency of each design, the latency
+is 2 to 4 times shorter (e.g. 9.7 ns instead of 19.0 ns for 16 bits), for
+about 5 times as many LUTs. See
 [Carry-save version](ALGORITHM.md#carry-save-version).
 
 ## The algorithm

@@ -4,6 +4,9 @@ This calculates `tan(angle)` for `angle` in the range `[0.0, pi/4[`, using a har
 adaptation of the algorithm used by the Intel 8087 math co-processor, as described in
 [this article](https://www.righto.com/2026/09/8087-tangent-cordic.html).
 
+The latency is 480 ns with the default configuration, at the 125 MHz clock
+constraint in [`tan_cordic.xdc`](tan_cordic.xdc), see [Timing](#timing).
+
 ## Theory of operation
 The classical CORDIC algorithm calculates `sin` and `cos` by rotating the vector
 `(1, 0)` by the target angle, one step at a time, using only additions, subtractions,

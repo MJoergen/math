@@ -5,6 +5,9 @@ This divides two numbers using the
 [Intel's \$475 million error: the silicon behind the Pentium division bug](https://www.righto.com/2024/12/this-die-photo-of-pentium-shows.html),
 which analyses the Pentium's divider from a photo of the die.
 
+The latency of a division is 185 ns, at the 200 MHz clock constraint in
+[`srt.xdc`](srt.xdc).
+
 ## The algorithm
 SRT division produces the quotient one digit at a time, like long division by
 hand. Each iteration does:

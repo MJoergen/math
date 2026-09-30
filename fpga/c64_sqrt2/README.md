@@ -1,14 +1,14 @@
 # Square root, version 2
 This calculates the square root of a C64 floating point number, using an
 iterative method with multipliers, in VHDL for an FPGA. It has the same
-interface as [`c64_sqrt`](../c64_sqrt), but takes 5 to 9 clock cycles
-(7.1 on average in the testbench) instead of 34. The number of clock cycles
-depends on how many iterations are needed.
+interface as [`c64_sqrt`](../c64_sqrt), but has a latency of 66 to 119 ns
+(94 ns on average in the testbench) instead of 139 ns, at a lower clock
+frequency (75.8 MHz). The latency depends on how many iterations are needed.
 
 When `C_ROM_SIZE=6` and `C_GUARDS=4` (see [`c64_sqrt2.vhd`](c64_sqrt2.vhd))
 we have the following statistics:
 
-* Cycles = 8.1
+* Latency = 94 ns (average)
 * low\_count = 275
 * high\_count = 189
 * Period = 13.2 ns
@@ -17,9 +17,11 @@ we have the following statistics:
 * FF = 234
 * Slice = 158
 
-Cycles, `low_count`, and `high_count` are printed by the testbench, see
-[Simulation](#simulation). Cycles is the average number of clock cycles per
-calculation when there are no stalls, i.e. the latency plus one clock cycle.
+The latency, `low_count`, and `high_count` are from the testbench, see
+[Simulation](#simulation). The testbench prints the average number of clock
+cycles per calculation when there are no stalls, 8.1. This is the latency
+plus the clock cycle where the input is accepted, so the latency is 7.1 clock
+cycles of 13.2 ns.
 
 The other numbers are from Vivado 2025.1, with `make vivado` (see
 [Running](#running)), which implements the design out of context for the part

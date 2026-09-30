@@ -1,10 +1,10 @@
 # Sine and cosine
 This calculates both the sine and the cosine of a C64 floating point number,
 using the [CORDIC](https://en.wikipedia.org/wiki/CORDIC) algorithm, in VHDL
-for an FPGA. It takes 37 clock cycles.
+for an FPGA.
 
-It can safely run at a clock speed of 156 MHz (clock period 6.4 ns). The total
-latency is thus 237 ns.
+It can safely run at a clock speed of 156 MHz (clock period 6.4 ns), and the
+latency is 237 ns.
 
 The resource usage is:
 

@@ -1,9 +1,9 @@
 # Square root
 This calculates the square root of a C64 floating point number, using a simple
-bit-shifting algorithm, in VHDL for an FPGA. It takes 34 clock cycles.
+bit-shifting algorithm, in VHDL for an FPGA.
 
-It can safely run at a clock speed of 244 MHz (clock period 4.1 ns). The total
-latency is thus 139 ns.
+It can safely run at a clock speed of 244 MHz (clock period 4.1 ns), and the
+latency is 139 ns.
 
 The resource usage is:
 

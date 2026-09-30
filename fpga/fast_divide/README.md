@@ -2,12 +2,13 @@
 This divides two 32-bit unsigned integers using
 [Goldschmidt division](https://en.wikipedia.org/wiki/Division_algorithm#Goldschmidt_division),
 in VHDL for an FPGA. The quotient is a 64-bit fixed-point number, with 32
-integer bits and 32 fraction bits. It takes at most 7 clock cycles (6.74 on
-average in the testbench).
+integer bits and 32 fraction bits.
 
 The timing constraint in [`fast_divide.xdc`](fast_divide.xdc) is 50 MHz (clock
-period 20 ns), which is met with a slack of 3.8 ns. So the design can run at
-about 60 MHz (clock period 16.2 ns).
+period 20 ns), which is met with a slack of 3.8 ns. At this clock frequency
+the latency is at most 140 ns (135 ns on average in the testbench). The design
+can run at about 60 MHz (clock period 16.2 ns), and then the latency is at most
+113 ns.
 
 The resource usage is:
 
