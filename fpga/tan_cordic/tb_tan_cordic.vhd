@@ -8,12 +8,12 @@ library ieee;
 -- corner cases (zero, and angles just below pi/4). The VALID and READY signals are
 -- asserted randomly with probabilities G_VALID_PCT and G_READY_PCT.
 --
--- The required accuracy scales with min(G_ITERATIONS, G_FRAC_BITS), since that many
--- bits limits either the CORDIC part or the fixed-point representation itself.
+-- The expected result is calculated with the Taylor series (see ref_tan), and the
+-- tolerance (see C_TOLERANCE) follows from the error analysis in ALGORITHM.md.
 
 entity tb_tan_cordic is
    generic (
-      G_ITERATIONS : positive := 16;
+      G_ITERATIONS : positive := 6;
       G_FRAC_BITS  : positive := 24;
       G_NUM_TESTS  : positive := 1000;
       G_VALID_PCT  : natural  := 70;  -- Probability (in percent) of asserting VALID
@@ -25,19 +25,33 @@ architecture simulation of tb_tan_cordic is
 
    constant C_CLK_PERIOD : time := 10 ns;
 
-   pure function minimum (a, b : natural) return natural is
-   begin
-      if a < b then
-         return a;
-      else
-         return b;
-      end if;
-   end function minimum;
+   -- The largest error, from "Accuracy and the number of iterations" in
+   -- ALGORITHM.md: Two units of the last bit (from rounding the angle to
+   -- G_FRAC_BITS bits, and from truncating the quotient), and the error of the
+   -- Pade approximation, z^5/45 with z < 2^(1-G_ITERATIONS), times 2 (the
+   -- largest slope of tan). The tolerance is twice this.
+   constant C_TOLERANCE : real := 2.0 * (2.0 ** (1 - G_FRAC_BITS) +
+                                         2.0 * 2.0 ** (-5 * (G_ITERATIONS - 1)) / 45.0);
 
-   -- Required accuracy is generous (a factor of 8) compared to the number of
-   -- bits that limit the calculation, to allow for the algorithm's own
-   -- approximation error without masking a genuine regression.
-   constant C_TOLERANCE : real := 2.0 ** (3 - minimum(G_ITERATIONS, G_FRAC_BITS));
+   -- The tangent, from the Taylor series of the sine and the cosine. The tan
+   -- of ieee.math_real is not accurate enough as a reference: GHDL calculates
+   -- it with CORDIC (with 28 iterations), so its error is about 2^(-28).
+   pure function ref_tan (
+      arg : real
+   ) return real is
+      variable sin_term_v : real := arg;
+      variable sin_v      : real := arg;
+      variable cos_term_v : real := 1.0;
+      variable cos_v      : real := 1.0;
+   begin
+      for n in 1 to 30 loop
+         sin_term_v := -sin_term_v * arg * arg / real((2 * n) * (2 * n + 1));
+         sin_v      := sin_v + sin_term_v;
+         cos_term_v := -cos_term_v * arg * arg / real((2 * n - 1) * (2 * n));
+         cos_v      := cos_v + cos_term_v;
+      end loop;
+      return sin_v / cos_v;
+   end function ref_tan;
 
    signal clk     : std_logic := '1';
    signal rst     : std_logic := '1';
@@ -150,7 +164,7 @@ begin
 
       for i in 0 to G_NUM_TESTS - 1 loop
          get_angle(i, seed1_v, seed2_v, angle_v);
-         exp_v := tan(angle_v);
+         exp_v := ref_tan(angle_v);
 
          -- Randomly assert READY, until a result is received
          loop

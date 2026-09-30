@@ -31,8 +31,10 @@ library ieee;
 
 entity tan_cordic is
    generic (
-      -- Number of CORDIC iterations. The 8087 uses up to 16.
-      G_ITERATIONS : positive := 16;
+      -- Number of CORDIC iterations. The 8087 uses up to 16, for 64 bits.
+      -- About G_FRAC_BITS/4 are enough, since the Pade approximation gains
+      -- about 5 bits per iteration, see ALGORITHM.md.
+      G_ITERATIONS : positive := 6;
 
       -- Number of fractional bits in the input angle and output tangent.
       G_FRAC_BITS  : positive := 24
@@ -67,16 +69,28 @@ architecture synthesis of tan_cordic is
    subtype angle_type is sfixed(0 downto -C_FRAC);
 
    -- Holds the tiny residual angle left after REDUCE_ST, i.e. the "z" used by the
-   -- Padé approximation. After the last pseudo-division iteration (index
-   -- G_ITERATIONS-1), the residual is always strictly less than
-   -- arctan(2**-(G_ITERATIONS-1)) < 2**-(G_ITERATIONS-1), so all of its bits above
-   -- weight 2**(1-G_ITERATIONS) are provably zero and can be dropped before
-   -- squaring it -- this keeps the multiplier (and hence the number of DSP48E1
-   -- tiles it needs) as small as possible. The "maximum" guards against
-   -- G_ITERATIONS being so large (relative to C_FRAC) that no bits would be left;
-   -- in that corner case this is simply the same range as angle_type, i.e. no
-   -- narrowing takes place.
-   subtype small_angle_type is sfixed(maximum(1 - G_ITERATIONS, -C_FRAC) downto -C_FRAC);
+   -- Padé approximation, narrowed for the multiplication z*z. This keeps the
+   -- multiplier (and hence the number of DSP48E1 tiles it needs) as small as
+   -- possible:
+   -- * Upper bits: After the last pseudo-division iteration (index
+   --   G_ITERATIONS-1), the residual is always strictly less than
+   --   arctan(2**-(G_ITERATIONS-1)) < 2**-(G_ITERATIONS-1), so all of its bits
+   --   above weight 2**(1-G_ITERATIONS) are provably zero and can be dropped.
+   -- * Lower bits: z*z only needs to be precise to about 2**-(G_FRAC_BITS+4).
+   --   Truncating z to its bits down to weight 2**-m changes z*z by less than
+   --   2**-(m+G_ITERATIONS-2), and the result by a third of that. With
+   --   m = G_FRAC_BITS - G_ITERATIONS + 4 (C_SQ_LOW = -m), this is below
+   --   2**-(G_FRAC_BITS+3.6), i.e. less than 1/12 of the last bit of the result.
+   --   See ALGORITHM.md.
+   -- With the default generics z has 18 bits (weights 2**-5 to 2**-22), so the
+   -- multiplier fits in a single DSP48E1. If G_ITERATIONS is so large that z*z
+   -- is always below this precision, only the sign bit is left, i.e. z*z is
+   -- zero. The "maximum" guards against G_ITERATIONS being so large (relative
+   -- to C_FRAC) that no bits would be left.
+   constant C_SQ_LOW : integer := maximum(-C_FRAC,
+                                          minimum(G_ITERATIONS - G_FRAC_BITS - 4, 1 - G_ITERATIONS));
+
+   subtype small_angle_type is sfixed(maximum(1 - G_ITERATIONS, -C_FRAC) downto C_SQ_LOW);
 
    -- Holds the (x, y) vector during pseudo-multiplication. The vector grows from
    -- its initial length of about 3.0 by at most the CORDIC gain of about 1.647,
@@ -178,14 +192,17 @@ begin
                -- The multiply z*z is registered here, separately from the
                -- subsequent subtraction in PADE_ST, so that each of the two
                -- following clock cycles has a shorter combinational path. "angle"
-               -- is also narrowed to small_angle_type here (see its declaration):
-               -- this is lossless, and keeps the multiplier itself as small as
-               -- possible.
-               z_v  := resize(angle, small_angle_type'high, small_angle_type'low);
+               -- is narrowed to small_angle_type for the multiplication (see its
+               -- declaration), which keeps the multiplier as small as possible.
+               -- The dropped upper bits are always zero, so wrapping is
+               -- lossless, and truncation needs no adder. z_reg keeps all the
+               -- bits of z.
+               z_v  := resize(angle, small_angle_type'high, small_angle_type'low,
+                              fixed_wrap, fixed_truncate);
                zz_v := z_v * z_v;
 
                zz_reg <= resize(zz_v, vec_type'high, vec_type'low);
-               z_reg  <= resize(z_v, vec_type'high, vec_type'low);
+               z_reg  <= resize(angle, vec_type'high, vec_type'low);
 
                state <= PADE_ST;
 

@@ -15,7 +15,7 @@ length of the vector, the usual CORDIC scale-factor correction can be skipped
 entirely when only the tangent is wanted.
 
 Doing this angle-by-angle correction for a full 64-bit result would need 64
-iterations. To get a fast result with only `G_ITERATIONS` (e.g. 16) iterations, this
+iterations. To get a fast result with only `G_ITERATIONS` (6 by default) iterations, this
 module (like the 8087) instead splits the calculation into three phases, followed by
 a division:
 
@@ -69,11 +69,24 @@ multiplication `z*z` is registered on its own, before it is subtracted from `3` 
 the next cycle. This does not change the result; it exists purely to shorten the
 longest combinational path (see [Timing](#timing)).
 
-`z` is also narrowed to `small_angle_type` before squaring it. Since
-$z < 2^{-(n-1)}$, its bits above that weight are always zero and can be
-dropped -- for the default configuration this shrinks the multiplier from 33x33 bits
-down to 18x18 bits, which fits in a single `DSP48E1` tile instead of a two-tile
-cascade. This too is lossless; it only removes bits that were always zero.
+`z` is also narrowed to `small_angle_type` before squaring it, so that the
+multiplier is as small as possible:
+* **Upper bits:** Since $z < 2^{-(n-1)}$, its bits above that weight are always
+  zero and can be dropped. This is lossless.
+* **Lower bits:** The square only needs to be precise to about
+  $2^{-(F+4)}$, where $F$ is `G_FRAC_BITS`. Truncating $z$ to its bits down to
+  weight $2^{-m}$ (an error $e < 2^{-m}$) changes the square by
+  $e(2z - e) < 2^{-(m+n-2)}$. Since $x \approx 3$ and $\tan\theta \le 1$, the
+  result changes by less than a third of that. With $m = F - n + 4$, this is
+  below $2^{-(F+3.6)}$, i.e. less than $\frac{1}{12}$ of the last bit of the
+  result. `z` itself (for $3z$) keeps all its bits.
+
+For the default configuration ($n = 6$, $F = 24$), $z$ then has 18 bits (weights
+$2^{-5}$ to $2^{-22}$), and the multiplier is 18x18 bits, which fits in a single
+`DSP48E1` tile. Without the truncation it would be 28x28 bits, a cascade of four
+tiles, which does not meet the timing, see [Timing](#timing). The largest errors
+in [Accuracy and the number of iterations](#accuracy-and-the-number-of-iterations)
+are the same with and without the truncation.
 
 ## Phase 3: Pseudo-multiplication
 The `(x, y)` vector is now rotated by exactly the special angles that were used
@@ -140,38 +153,42 @@ tangent of the rounded angle, i.e. the angle that the design actually gets,
 the error with 6 iterations (24 bits) or 7 iterations (28 bits) is at most
 $2^{-24.0}$ and $2^{-28.0}$, i.e. one unit, the same as with 16 iterations.
 
-So the default of 16 iterations (as in the 8087, which aims at 64 bits) is far
-more than needed for `G_FRAC_BITS = 24`: 6 iterations give the same accuracy,
-with a latency of 40 instead of 60 clock cycles (320 instead of 480 ns). In
-general, about `G_FRAC_BITS/4` iterations are enough. The testbench's
-tolerance, $2^{3 - \min(n, F)}$, is therefore very generous when the number of
-iterations is small.
+So 16 iterations (as in the 8087, which aims at 64 bits) are far more than
+needed for `G_FRAC_BITS = 24`, and the design uses 6 by default. This gives
+the same accuracy, with a latency of 40 instead of 60 clock cycles (320 instead
+of 480 ns). In general, about `G_FRAC_BITS/4` iterations are enough.
+
+The testbench's tolerance follows from this analysis: twice the sum of two
+units of the last bit, $2^{1-F}$, and the error of the Padé approximation,
+$2 \cdot 2^{-5(n-1)} / 45$ (including the slope of up to 2).
 
 ## Timing
-A full calculation takes `2*G_ITERATIONS + G_FRAC_BITS + 5` clock cycles (61 for the
+A full calculation takes `2*G_ITERATIONS + G_FRAC_BITS + 5` clock cycles (41 for the
 default configuration): one cycle to accept the input, `G_ITERATIONS` for
 pseudo-division, two for the Padé approximation, `G_ITERATIONS` for
 pseudo-multiplication, one to load the divider, `G_FRAC_BITS` for the final division,
 and one to hold the result until it is consumed. The result is valid (`m_valid_o`
-high) 60 clock cycles after the clock cycle where the input is accepted.
+high) 40 clock cycles after the clock cycle where the input is accepted.
 
 Synthesized, placed and routed with Vivado 2025.1 for `xc7a200tfbg484-2` (the part
 used elsewhere in this repo), out-of-context, at the default configuration, with
 `make vivado`. The current version meets the 8 ns clock constraint in
-`tan_cordic.xdc` with a slack of 0.320 ns. The two earlier versions are from the git
-history (commits 677aa4e and 59e9417), implemented the same way, but with a clock
-period of 14 ns and 11 ns, which they meet with a slack of 0.535 ns and 0.291 ns. The
-critical path is the clock period minus the slack, and the wall time is the critical
-path times the number of clock cycles per calculation (60 for the original version,
-61 for the others). The Slice LUTs are from `utilization.rpt`. The summary printed by
-`make vivado` counts LUT cells instead, which is higher (662 for the current version),
+`tan_cordic.xdc` with a slack of 0.782 ns. The three earlier versions are from the git
+history, with 16 iterations. The first two (commits 677aa4e and 59e9417) are
+implemented the same way, but with a clock period of 14 ns and 11 ns, which they meet
+with a slack of 0.535 ns and 0.291 ns. The critical path is the clock period minus the
+slack, and the wall time is the critical path times the number of clock cycles per
+calculation (60 for the original version, 61 for the next two, and 41 for the current
+version). The Slice LUTs are from `utilization.rpt`. The summary printed by
+`make vivado` counts LUT cells instead, which is higher (691 for the current version),
 since two LUT cells can share one slice LUT:
 
 | | Slice LUTs | Registers | DSP48E1 | Critical path | Fmax | Wall time/calc |
 | --- | --- | --- | --- | --- | --- | --- |
 | Original (single-cycle Padé) | 624 | 254 | 4 | 13.47 ns | ~74 MHz | ~808 ns |
 | Split Padé (`PADE_MUL_ST` + `PADE_ST`) | 826 | 333 | 4 | 10.71 ns | ~93 MHz | ~653 ns |
-| ...and narrowed `z*z` multiplier (current) | 561 | 282 | 1 | 7.68 ns | ~130 MHz | ~468 ns |
+| ...and narrowed `z*z` multiplier | 561 | 282 | 1 | 7.68 ns | ~130 MHz | ~468 ns |
+| ...and 6 instead of 16 iterations (current) | 556 | 310 | 1 | 7.22 ns | ~139 MHz | ~296 ns |
 
 Splitting the Padé phase across two cycles removes the multiplier from the same
 combinational path as the following 36-bit-wide subtraction, at the cost of one
@@ -182,17 +199,25 @@ multiplier and its registers are themselves smaller. The two changes together
 bring wall time down by about 42%, using fewer LUTs and DSPs than the original
 version, at the cost of 28 more registers.
 
-The remaining critical path still runs into `zz_reg`, but only just: the next paths
-are about 1.3 to 1.4 ns behind, and there are several of them: into `angle` (the
-compare-and-subtract of the pseudo-division in `REDUCE_ST`), into `x` (the
-pseudo-multiplication add/subtract in `ROTATE_ST`), and into `rem_reg` (the
-restoring division in `DIVIDE_ST`). Closing that gap further would mean pipelining
+Reducing the number of iterations from 16 to 6, see
+[Accuracy and the number of iterations](#accuracy-and-the-number-of-iterations),
+saves 20 clock cycles. But it makes the residual angle $z$ larger (up to $2^{-5}$
+instead of $2^{-15}$), so the multiplier for $z^2$ grew to 28x28 bits, a cascade of
+four `DSP48E1` tiles, and the design missed the 8 ns constraint by 4.85 ns. Truncating
+the lower bits of $z$ before squaring it (see
+[Phase 2](#phase-2-padé-approximation)) brings the multiplier back to 18x18 bits and a
+single tile, without changing the accuracy. Altogether, the wall time is now about
+63% lower than in the original version.
+
+The remaining critical path still runs into `zz_reg`, but the next paths are only
+about 0.8 to 1.4 ns behind, and there are several of them: into `x` (the
+pseudo-multiplication add/subtract in `ROTATE_ST`), into `rem_reg` (the restoring
+division in `DIVIDE_ST`), and into `angle` (the compare-and-subtract of the
+pseudo-division in `REDUCE_ST`). Closing that gap further would mean pipelining
 all three iterative phases (e.g. splitting the shift and the add/subtract of
 `ROTATE_ST` across two cycles), which -- unlike the changes above -- would add one
 extra cycle *per iteration* (about `2*G_ITERATIONS + G_FRAC_BITS` more cycles in
 total), a much larger latency cost for a smaller, less clear-cut potential gain.
-That trade-off has not been attempted here. Reducing `G_ITERATIONS`, see
-[Accuracy and the number of iterations](#accuracy-and-the-number-of-iterations),
-saves far more.
+That trade-off has not been attempted here.
 
 Utilization remains well under 1% of the device throughout.

@@ -19,8 +19,8 @@ help: ## Show this help message
 SRC = tan_cordic.vhd tb_tan_cordic.vhd
 
 # The values of G_ITERATIONS and G_FRAC_BITS to sweep, e.g.
-# "make sim ITERATIONS=16 FRAC_BITS=24"
-ITERATIONS ?= 4 8 12 16 20
+# "make sim ITERATIONS=6 FRAC_BITS=24"
+ITERATIONS ?= 2 4 6 8 16 20
 FRAC_BITS  ?= 8 16 20 24 28
 
 # Run the testbench with:
@@ -28,7 +28,7 @@ FRAC_BITS  ?= 8 16 20 24 28
 #   with random stalls.
 # * 500 random angles without stalls, and with a slow consumer or a slow
 #   producer, which is ready (or valid) in only 10% of the clock cycles.
-# * 5000 random angles with the default G_ITERATIONS=16 and G_FRAC_BITS=24,
+# * 5000 random angles with the default G_ITERATIONS=6 and G_FRAC_BITS=24,
 #   with random stalls.
 .PHONY: sim
 sim: $(SRC) ## Run the testbench for all the configurations (about 10 seconds)
@@ -66,7 +66,7 @@ show_debug: ## Show the waveform from "make debug" in GTKWave
 XILINX_DIR = /opt/Xilinx/2025.1/Vivado
 
 # The generics, e.g. "make vivado VIVADO_ITERATIONS=8 VIVADO_FRAC_BITS=16"
-VIVADO_ITERATIONS ?= 16
+VIVADO_ITERATIONS ?= 6
 VIVADO_FRAC_BITS  ?= 24
 VIVADO_PART        = xc7a200tfbg484-2
 VIVADO_DIR         = vivado/tan_cordic_$(VIVADO_ITERATIONS)_$(VIVADO_FRAC_BITS)

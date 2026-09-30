@@ -13,7 +13,7 @@ precise it is, and the trade-offs.
 | [`c64_sqrt2`](c64_sqrt2) | Square root of a C64 floating point number, using Goldschmidt's algorithm with multipliers. | 40 to 119 ns
 | [`pipeline_sqrt`](pipeline_sqrt) | Pipelined square root of a fixed-point number, using lookup tables and one multiplier, with one result per clock cycle. | 16 ns
 | [`c64_sincos`](c64_sincos) | Sine and cosine of a C64 floating point number, using CORDIC. | 237 ns
-| [`tan_cordic`](tan_cordic) | Tangent of a fixed-point angle, using the CORDIC variant of the Intel 8087. | 480 ns
+| [`tan_cordic`](tan_cordic) | Tangent of a fixed-point angle, using the CORDIC variant of the Intel 8087. | 320 ns
 
 The latency is the time from when the input is accepted until the result is
 valid, at the clock frequency of the timing constraint in the `.xdc` file of
