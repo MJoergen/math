@@ -67,9 +67,16 @@ architecture synthesis of c64_sqrt is
    type   state_type is (IDLE_ST, CALC_ST, DONE_ST);
    signal state : state_type := IDLE_ST;
 
-   signal val  : unsigned(33 downto 0);
-   signal mant : unsigned(33 downto 0);
-   signal mask : unsigned(33 downto 0);
+   -- The digit-by-digit calculation, see ALGORITHM.md. The radicand x (in
+   -- [0.25, 1)) is scaled by 2^34, and the root r = sqrt(x) (in [0.5, 1)) is
+   -- calculated in mant, also scaled by 2^34, one bit in each clock cycle,
+   -- from bit 33 down to bit 1. mask holds the bit being calculated. val is
+   -- the remainder x - r^2, scaled by 2^(34+k) after k iterations. mant(1)
+   -- is the extra bit used for rounding, and bit 0 of val, mant, and mask is
+   -- needed for the comparison in the last iteration.
+   signal val  : unsigned(34 downto 0);
+   signal mant : unsigned(34 downto 0);
+   signal mask : unsigned(34 downto 0);
 
    -- The exponent of the result, and whether the input is negative
    signal exp : unsigned(7 downto 0);
@@ -95,27 +102,29 @@ begin
                null;
 
             when CALC_ST =>
-               if val >= (mant or ("0" & mask(33 downto 1))) then
-                  val(33 downto 1) <= val(32 downto 0) - (mant(32 downto 0) or mask(33 downto 1));
+               -- Set the bit if (r + mask)^2 <= x, i.e. if
+               -- x - r^2 >= 2*r*mask + mask^2
+               if val >= (mant or ("0" & mask(34 downto 1))) then
+                  val(34 downto 1) <= val(33 downto 0) - (mant(33 downto 0) or mask(34 downto 1));
                   val(0)           <= '0';
                   mant             <= mant or mask;
                else
-                  val <= val(32 downto 0) & "0";
+                  val <= val(33 downto 0) & "0";
                end if;
-               mask <= "0" & mask(33 downto 1);
+               mask <= "0" & mask(34 downto 1);
 
-               if mask(0) = '1' then
+               if mask(1) = '1' then
                   state <= DONE_ST;
                end if;
 
             when DONE_ST =>
                -- Wait until the output register is free. The extra bit
-               -- mant(0) rounds the result to nearest.
+               -- mant(1) rounds the result to nearest.
                if m_valid_o = '0' or m_ready_i = '1' then
-                  if mant(0) = '0' then
-                     m_mant_o <= "0" & std_logic_vector(mant(31 downto 1));
+                  if mant(1) = '0' then
+                     m_mant_o <= "0" & std_logic_vector(mant(32 downto 2));
                   else
-                     m_mant_o <= "0" & std_logic_vector(mant(31 downto 1) + 1);
+                     m_mant_o <= "0" & std_logic_vector(mant(32 downto 2) + 1);
                   end if;
                   m_exp_o   <= std_logic_vector(exp);
                   m_error_o <= neg;
@@ -129,15 +138,15 @@ begin
          if s_valid_i = '1' and s_ready_o = '1' then
             val <= (others => '0');
             if s_exp_i(0) = '0' then
-               val(32 downto 1) <= unsigned(s_mant_i) or X"80000000";
+               val(33 downto 2) <= unsigned(s_mant_i) or X"80000000";
                exp              <= ("0" & unsigned(s_exp_i(7 downto 1))) + X"40";
             else
-               val(31 downto 0) <= unsigned(s_mant_i) or X"80000000";
+               val(32 downto 1) <= unsigned(s_mant_i) or X"80000000";
                exp              <= ("0" & unsigned(s_exp_i(7 downto 1))) + X"41";
             end if;
             mant     <= (others => '0');
             mask     <= (others => '0');
-            mask(32) <= '1';
+            mask(33) <= '1';
             neg      <= s_mant_i(31);
 
             if s_mant_i(31) = '1' or s_exp_i = X"00" then

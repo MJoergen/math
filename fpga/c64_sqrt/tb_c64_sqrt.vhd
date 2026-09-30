@@ -6,8 +6,10 @@ library ieee;
 -- Testbench for the square root.
 --
 -- It calculates the square root of 0, 1, 2, 3, 4, 0.5, and -1 (which gives an
--- error), and of 15938 values from 0.031 to 8. Each result is compared with the
--- exact square root, rounded to nearest.
+-- error), of 1 - 2^(-32) and 1 + 2^(-31) (0x80:7FFFFFFF and 0x81:00000001,
+-- where the last digit decides the rounding), and of 15938 values from 0.031
+-- to 8. Each result is checked to be the exact square root, rounded to
+-- nearest, see is_sqrt.
 --
 -- In each clock cycle, VALID and READY are asserted randomly with the
 -- probabilities G_VALID_PCT and G_READY_PCT. At the end, the average number of
@@ -34,12 +36,12 @@ architecture simulation of tb_c64_sqrt is
    -- The test values: First a few fixed values, and then values from
    -- C_MAX_VAL/16 to 16*C_MAX_VAL-1, divided by 2*C_MAX_VAL.
    constant C_MAX_VAL   : natural := 1000;
-   constant C_NUM_FIXED : natural := 7;
+   constant C_NUM_FIXED : natural := 9;
    constant C_NUM_TESTS : natural := C_NUM_FIXED + 16 * C_MAX_VAL - C_MAX_VAL / 16;
 
    type real_array_type is array (natural range <>) of real;
 
-   constant C_FIXED : real_array_type(0 to C_NUM_FIXED - 1) := (0.0, 1.0, 2.0, 3.0, 4.0, 0.5, -1.0);
+   constant C_FIXED : real_array_type(0 to C_NUM_FIXED - 1) := (0.0, 1.0, 2.0, 3.0, 4.0, 0.5, -1.0, 1.0 - 2.0 ** (-32), 1.0 + 2.0 ** (-31));
 
    pure function get_value (
       i : natural
@@ -114,6 +116,46 @@ architecture simulation of tb_c64_sqrt is
       return res_v;
    end function float2real;
 
+   -- Whether res is the square root of arg (a positive number), rounded to
+   -- nearest. This is checked exactly, with integers, since the square root
+   -- in real (double precision) is not always precise enough to decide the
+   -- rounding. Let X = x*2^64, where the radicand x (in [0.25, 1)) is the
+   -- mantissa of arg, halved if the exponent is odd. And let M be the
+   -- mantissa of res, including the leading one, times 2^32. Then M is
+   -- correctly rounded if |sqrt(X) - M| <= 1/2, i.e. if
+   -- (2M-1)^2 <= 4X <= (2M+1)^2. (There are no ties, since X is an integer.)
+   -- The exponent of res must be (e-128)/2 + 128 if the exponent e of arg is
+   -- even, and (e-127)/2 + 128 if it is odd.
+   pure function is_sqrt (
+      arg : float_type;
+      res : float_type
+   ) return boolean is
+      variable e_v   : natural;
+      variable exp_v : natural;
+      variable x_v   : unsigned(31 downto 0);
+      variable m_v   : unsigned(31 downto 0);
+      variable x4_v  : unsigned(65 downto 0);
+      variable m2_v  : unsigned(32 downto 0);
+   begin
+      -- The mantissas with the leading one
+      x_v     := unsigned(arg.mant);
+      x_v(31) := '1';
+      m_v     := unsigned(res.mant);
+      m_v(31) := '1';
+
+      e_v := to_integer(unsigned(arg.exp));
+      if e_v mod 2 = 0 then
+         exp_v := e_v / 2 + 64;
+         x4_v  := x_v & X"00000000" & "00";
+      else
+         exp_v := (e_v + 1) / 2 + 64;
+         x4_v  := "0" & x_v & X"00000000" & "0";
+      end if;
+      m2_v := m_v & "0";
+      return res.mant(31) = '0' and to_integer(unsigned(res.exp)) = exp_v and
+             x4_v >= (m2_v - 1) * (m2_v - 1) and (m2_v + 1) * (m2_v + 1) >= x4_v;
+   end function is_sqrt;
+
    signal clk     : std_logic := '1';
    signal rst     : std_logic := '1';
    signal running : std_logic := '1';
@@ -185,8 +227,6 @@ begin
       variable r_v          : real;
       variable val_v        : real;
       variable float_v      : float_type;
-      variable exp_real_v   : real;
-      variable exp_float_v  : float_type;
       variable start_time_v : time;
    begin
       m_ready <= '0';
@@ -212,13 +252,15 @@ begin
             assert m_error = '1' and m_float = C_ZERO
                report "Calculating sqrt(" & to_string(val_v) & "). Expected an error, got 0x" &
                       to_hstring(m_float) & " and m_error=" & to_string(m_error);
+         elsif val_v = 0.0 then
+            assert m_error = '0' and m_float = C_ZERO
+               report "Calculating sqrt(0). Got 0x" & to_hstring(m_float) & " and m_error=" &
+                      to_string(m_error);
          else
-            exp_real_v  := sqrt(float2real(float_v));
-            exp_float_v := real2float(exp_real_v);
-            assert m_error = '0' and m_float = exp_float_v
-               report "Calculating sqrt(" & to_string(val_v) & ") = " & to_string(exp_real_v) &
-                      ", i.e. " & to_hstring(float_v) & " -> " & to_hstring(exp_float_v) &
-                      ". Got 0x" & to_hstring(m_float) & " and m_error=" & to_string(m_error);
+            assert m_error = '0' and is_sqrt(float_v, m_float)
+               report "Calculating sqrt(" & to_string(val_v) & ") = " & to_string(sqrt(val_v)) &
+                      ", i.e. sqrt(0x" & to_hstring(float_v) & "). Got 0x" & to_hstring(m_float) &
+                      " and m_error=" & to_string(m_error);
          end if;
       end loop;
 

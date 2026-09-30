@@ -7,14 +7,14 @@ latency is 139 ns.
 
 The resource usage is:
 
-* LUT   : 188
-* FF    : 152
-* Slice :  63
+* LUT   : 191
+* FF    : 154
+* Slice :  75
 
 These numbers are from Vivado 2025.1, with `make vivado` (see
 [Running](#running)), which implements the design out of context for the part
 xc7a200tfbg484-2, and meets the timing constraint in
-[`c64_sqrt.xdc`](c64_sqrt.xdc) with a slack of 0.064 ns.
+[`c64_sqrt.xdc`](c64_sqrt.xdc) with a slack of 0.124 ns.
 
 [`c64_sqrt2`](../c64_sqrt2) is a faster version, which uses multipliers.
 
@@ -98,9 +98,11 @@ Type `make` to list the supported targets:
 
 ## Simulation
 The testbench calculates the square root of 0, 1, 2, 3, 4, 0.5, and -1 (which
-gives an error), and of 15938 values from 0.031 to 8. It compares each result
-with the exact square root, rounded to nearest, and stops at the first
-mismatch. There are no mismatches.
+gives an error), of 1 - 2^(-32) and 1 + 2^(-31) (the two inputs where the last
+iteration decides the rounding), and of 15938 values from 0.031 to 8. It checks that each result is the exact square root, rounded
+to nearest, and stops at the first mismatch. There are no mismatches. The
+check is done exactly with integers, since the square root in double
+precision is not always precise enough to decide the rounding.
 
 The valid signal of the input and the ready signal of the output are asserted
 randomly, with the probabilities given by the generics `G_VALID_PCT` and

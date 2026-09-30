@@ -42,9 +42,9 @@ top.tb_c64_sqrt.c64_sqrt_inst.m_error_o
 @28
 top.tb_c64_sqrt.c64_sqrt_inst.state
 @22
-top.tb_c64_sqrt.c64_sqrt_inst.val[33:0]
-top.tb_c64_sqrt.c64_sqrt_inst.mant[33:0]
-top.tb_c64_sqrt.c64_sqrt_inst.mask[33:0]
+top.tb_c64_sqrt.c64_sqrt_inst.val[34:0]
+top.tb_c64_sqrt.c64_sqrt_inst.mant[34:0]
+top.tb_c64_sqrt.c64_sqrt_inst.mask[34:0]
 top.tb_c64_sqrt.c64_sqrt_inst.exp[7:0]
 @28
 top.tb_c64_sqrt.c64_sqrt_inst.neg
