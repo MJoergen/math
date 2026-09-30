@@ -12,8 +12,10 @@ library work;
 -- This module takes a C64 floating point number (exp_i, mant_i) and returns the
 -- sine and cosine as a C64 floating point number (exp_o, mant_o).
 --
--- It takes a total of 42 clock cycles to perform the calculation.
--- It calculates four extra bits in order to reduce rounding error.
+-- It takes a total of 32 clock cycles to perform the calculation, i.e. ready_o
+-- goes high 32 clock cycles after the clock cycle where start_i is high.
+-- It calculates C_GUARD_BITS (see fast_sincos_pkg) extra bits in order to
+-- reduce rounding error.
 --
 -- Input and output are given in C64 floating point format (5-byte).
 -- * exp is the exponent byte.
