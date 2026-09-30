@@ -54,8 +54,8 @@ MAXR = 8000
 # factorization of all integers up to some given maximum.
 
 def primefaclist(n:int) -> List[Dict[int,int]]:
-    a = [dict() for i in range(n)]
-    old_percent = -1
+    a: List[Dict[int,int]] = [dict() for i in range(n)]
+    old_percent = -1.0
     for p in range(2, len(a)):
         if len(a[p]) > 0:
             continue
@@ -86,7 +86,7 @@ primefac=primefaclist(MAXR*MAXR+1)
 # https://en.wikipedia.org/wiki/Sum_of_squares_function
 # The implementation here uses the primefactorization to
 # quickly evaluate the result.
-def r2(n):
+def r2(n:int) -> int:
     #ml = list(primefac.primefac(n))
     #md = {i:ml.count(i) for i in ml}
     md = primefac[n]
@@ -102,13 +102,13 @@ def r2(n):
     return res
 
 # This calculates the sum from 1 to R^2 of H(k)/k.
-def calc_all_sums(maxr) -> Iterator[Tuple[int, float]]:
+def calc_all_sums(maxr:int) -> Iterator[Tuple[int, float]]:
     sum = 0.0
     for k in range(1, maxr*maxr+1):
         sum += r2(k) / k
         yield(k, sum)
 
-def main():
+def main() -> None:
     pi = 4.0*math.atan(1.0)
     r = MAXR//2
     for i,sum in calc_all_sums(MAXR):
