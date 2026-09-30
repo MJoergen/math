@@ -1,0 +1,19 @@
+# Generated files, see "make clean"
+
+# Simulation (make sim, make debug)
+work-obj08.cf
+*.o
+tb_c64_sincos
+*.ghw
+
+# Vivado (make vivado)
+vivado/
+
+# Vivado (c64_sincos.xpr project)
+c64_sincos.cache/
+c64_sincos.gen/
+c64_sincos.hw/
+c64_sincos.ip_user_files/
+c64_sincos.runs/
+c64_sincos.sim/
+.Xil/

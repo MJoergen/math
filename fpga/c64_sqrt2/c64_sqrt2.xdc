@@ -1,5 +1,5 @@
-# Timing constraints for synthesizing fast_sqrt.vhd in Vivado, both with
-# "make vivado" (see the Makefile) and in the project fast_sqrt.xpr. The XDC
+# Timing constraints for synthesizing c64_sqrt2.vhd in Vivado, both with
+# "make vivado" (see the Makefile) and in the project c64_sqrt2.xpr. The XDC
 # format is described in UG903, "Vivado Design Suite User Guide: Using
 # Constraints": https://docs.amd.com/r/en-US/ug903-vivado-using-constraints
 #
@@ -10,7 +10,7 @@
 # Clock definition. For create_clock, see UG903 above, and UG835, "Vivado
 # Design Suite Tcl Command Reference Guide":
 # https://docs.amd.com/r/en-US/ug835-vivado-tcl-commands
-create_clock -name clk -period 4.10 [get_ports {clk_i}]; # 244 MHz
+create_clock -name clk -period 13.20 [get_ports {clk_i}]; # 75.8 MHz
 
 # In a real design, the clock comes from a global clock buffer. Without this
 # property, the timing out of context only estimates the clock delay and skew.

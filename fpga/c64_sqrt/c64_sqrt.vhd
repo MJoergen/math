@@ -23,7 +23,7 @@ library ieee;
 -- The algorithm is taken from
 -- https://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Binary_numeral_system_(base_2).
 
-entity fast_sqrt is
+entity c64_sqrt is
    port (
       clk_i   : in  std_logic;
       start_i : in  std_logic;                -- Assert to restart calculation.
@@ -34,9 +34,9 @@ entity fast_sqrt is
       exp_o   : out unsigned( 7 downto 0);    -- Exponent
       mant_o  : out unsigned(31 downto 0)     -- Mantissa
    );
-end entity fast_sqrt;
+end entity c64_sqrt;
 
-architecture synthesis of fast_sqrt is
+architecture synthesis of c64_sqrt is
 
    type   state_type is (IDLE_ST, CALC_ST);
    signal state : state_type := IDLE_ST;

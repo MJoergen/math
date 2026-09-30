@@ -3,10 +3,10 @@ library ieee;
    use ieee.numeric_std.all;
    use ieee.math_real.all;
 
-entity tb_fast_sincos is
-end entity tb_fast_sincos;
+entity tb_c64_sincos is
+end entity tb_c64_sincos;
 
-architecture simulation of tb_fast_sincos is
+architecture simulation of tb_c64_sincos is
 
    constant C_PI    : real                  := 3.141592653589793;
    constant C_DEBUG : boolean               := false;
@@ -103,7 +103,7 @@ begin
 
    clk <= running and not clk after 5 ns;
 
-   fast_sincos_inst : entity work.fast_sincos
+   c64_sincos_inst : entity work.c64_sincos
       generic map (
          G_DEBUG => C_DEBUG
       )
@@ -117,7 +117,7 @@ begin
          cos_mant_o => c64float_out_cos.mant,
          sin_exp_o  => c64float_out_sin.exp,
          sin_mant_o => c64float_out_sin.mant
-      ); -- fast_sincos_inst
+      ); -- c64_sincos_inst
 
    -- The main test procedure
    test_proc : process

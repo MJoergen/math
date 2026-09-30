@@ -1,11 +1,11 @@
 # Square root, version 2
 This calculates the square root of a C64 floating point number, using an
 iterative method with multipliers, in VHDL for an FPGA. It has the same
-interface as [`fast_sqrt`](../fast_sqrt), but takes 5 to 9 clock cycles
+interface as [`c64_sqrt`](../c64_sqrt), but takes 5 to 9 clock cycles
 (7.1 on average in the testbench) instead of 33. The number of clock cycles
 depends on how many iterations are needed.
 
-When `C_ROM_SIZE=6` and `C_GUARDS=4` (see [`fast_sqrt2.vhd`](fast_sqrt2.vhd))
+When `C_ROM_SIZE=6` and `C_GUARDS=4` (see [`c64_sqrt2.vhd`](c64_sqrt2.vhd))
 we have the following statistics:
 
 * Cycles = 8.1
@@ -23,7 +23,7 @@ Cycles, `low_count`, and `high_count` are printed by the testbench, see
 The other numbers are from Vivado 2025.1, with `make vivado` (see
 [Running](#running)), which implements the design out of context for the part
 xc7a200tfbg484-2, and meets the timing constraint in
-[`fast_sqrt2.xdc`](fast_sqrt2.xdc), a clock period of 13.2 ns (75.8 MHz), with a
+[`c64_sqrt2.xdc`](c64_sqrt2.xdc), a clock period of 13.2 ns (75.8 MHz), with a
 slack of 0.086 ns. The timing is sensitive to placement: with a clock period
 of 12.5 to 13.0 ns, the timing is missed by up to 0.6 ns.
 
@@ -42,7 +42,7 @@ leading one. An exponent of zero means the value 0.0.
 |  -1.0 | 0x81 | 0x80000000
 
 ## The algorithm
-The exponent is handled as in `fast_sqrt`: It is halved, and the mantissa is
+The exponent is handled as in `c64_sqrt`: It is halved, and the mantissa is
 placed one bit differently depending on whether the exponent is even or odd.
 The square root s of the mantissa is calculated with the form of
 [Goldschmidt's algorithm](https://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Goldschmidt%E2%80%99s_algorithm)
@@ -72,12 +72,12 @@ the top half of the bits of r are zero.
 ## Files
 | File | Description
 | ---- | -----------
-| [`fast_sqrt2.vhd`](fast_sqrt2.vhd) | The square root.
+| [`c64_sqrt2.vhd`](c64_sqrt2.vhd) | The square root.
 | [`dsp.vhd`](dsp.vhd) | A combinatorial multiply-add, `a*b+c`, intended for the DSP blocks.
-| [`tb_fast_sqrt2.vhd`](tb_fast_sqrt2.vhd) | Testbench.
-| [`fast_sqrt2.gtkw`](fast_sqrt2.gtkw) | GTKWave setup for viewing the waveform from `make debug`.
-| [`fast_sqrt2.xdc`](fast_sqrt2.xdc), [`vivado.tcl`](vivado.tcl) | Timing constraint (75.8 MHz) and script for synthesis with Vivado, see `make vivado`.
-| [`fast_sqrt2.xpr`](fast_sqrt2.xpr) | Vivado project, for use in the Vivado GUI. It has the same settings as `make vivado`.
+| [`tb_c64_sqrt2.vhd`](tb_c64_sqrt2.vhd) | Testbench.
+| [`c64_sqrt2.gtkw`](c64_sqrt2.gtkw) | GTKWave setup for viewing the waveform from `make debug`.
+| [`c64_sqrt2.xdc`](c64_sqrt2.xdc), [`vivado.tcl`](vivado.tcl) | Timing constraint (75.8 MHz) and script for synthesis with Vivado, see `make vivado`.
+| [`c64_sqrt2.xpr`](c64_sqrt2.xpr) | Vivado project, for use in the Vivado GUI. It has the same settings as `make vivado`.
 | [`Makefile`](Makefile) | Runs the simulation and the synthesis, see [Running](#running).
 
 ## Interface
@@ -98,14 +98,14 @@ stays high. There is no reset.
 Type `make` to list the supported targets:
 * `make sim` runs the testbench. This requires
   [GHDL](https://github.com/ghdl/ghdl). It takes about 20 seconds.
-* `make debug` does the same, and also writes a waveform to `fast_sqrt2.ghw`.
+* `make debug` does the same, and also writes a waveform to `c64_sqrt2.ghw`.
   `make show_debug` shows it in [GTKWave](https://github.com/gtkwave/gtkwave).
-* `make vivado` synthesizes and implements `fast_sqrt2.vhd`, using
+* `make vivado` synthesizes and implements `c64_sqrt2.vhd`, using
   [Vivado](https://www.amd.com/en/products/software/adaptive-socs-and-fpgas/vivado.html)
   for the Artix-7 part xc7a200tfbg484-2. The design is implemented out of
   context, i.e. as a module inside a larger design, so only the paths between
   registers are timed. It fails if the design does not meet the 75.8 MHz clock
-  constraint in `fast_sqrt2.xdc`. At the end it prints the number of cells and the
+  constraint in `c64_sqrt2.xdc`. At the end it prints the number of cells and the
   slack of the worst path, and the reports are written to `vivado/`. It takes
   about 2 minutes, and expects Vivado in `/opt/Xilinx/2025.1/Vivado` (the variable
   `XILINX_DIR`).

@@ -3,10 +3,10 @@ library ieee;
    use ieee.numeric_std.all;
    use ieee.math_real.all;
 
-entity tb_fast_sqrt2 is
-end entity tb_fast_sqrt2;
+entity tb_c64_sqrt is
+end entity tb_c64_sqrt;
 
-architecture simulation of tb_fast_sqrt2 is
+architecture simulation of tb_c64_sqrt is
 
    type float_type is record
       exp  : unsigned( 7 downto 0);
@@ -22,14 +22,11 @@ architecture simulation of tb_fast_sqrt2 is
    signal float_out : float_type;
    signal count     : natural := 0;
 
-   signal low_count  : natural := 0;
-   signal high_count : natural := 0;
-
 begin
 
    clk <= running and not clk after 5 ns;
 
-   fast_sqrt2_inst : entity work.fast_sqrt2
+   c64_sqrt_inst : entity work.c64_sqrt
       port map (
          clk_i   => clk,
          start_i => start,
@@ -39,7 +36,7 @@ begin
          mant_i  => float_in.mant,
          exp_o   => float_out.exp,
          mant_o  => float_out.mant
-      ); -- fast_sqrt2_inst
+      ); -- c64_sqrt_inst
 
    test_proc : process
       pure function to_hstring(arg : float_type) return string is
@@ -126,18 +123,14 @@ begin
             exp_real_res_v  := sqrt(float2real(float_val_v));
             exp_float_res_v := real2float(exp_real_res_v);
             assert ready = '0';
-            wait until ready = '1';
+            while ready = '0' loop
+               wait until rising_edge(clk);
+            end loop;
             assert err = '0';
             assert float_out = exp_float_res_v
                report "Calculating sqrt(" & to_string(real_val) & ") = " & to_string(exp_real_res_v) &
                       ", i.e. " & to_hstring(float_val_v) & " -> " & to_hstring(exp_float_res_v) &
                       ". Got 0x" & to_hstring(float_out);
-            if float2real(float_out) < float2real(exp_float_res_v) then
-               low_count <= low_count + 1;
-            end if;
-            if float2real(float_out) > float2real(exp_float_res_v) then
-               high_count <= high_count + 1;
-            end if;
          else
             assert ready = '1';
             assert err = '1';
@@ -170,8 +163,6 @@ begin
       report "Test finished, " &
              to_string(real((end_time_v-start_time_v) / 10 ns) / real(count)) &
              " clock cycles per calculation";
-      report "low_count=" & to_string(low_count);
-      report "high_count=" & to_string(high_count);
       wait until rising_edge(clk);
       running    <= '0';
    end process test_proc;

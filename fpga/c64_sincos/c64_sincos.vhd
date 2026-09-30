@@ -7,14 +7,14 @@ library ieee;
 -- and the helper functions real2fraction and fraction2real.
 
 library work;
-   use work.fast_sincos_pkg.all;
+   use work.c64_sincos_pkg.all;
 
 -- This module takes a C64 floating point number (exp_i, mant_i) and returns the
 -- sine and cosine as a C64 floating point number (exp_o, mant_o).
 --
 -- It takes a total of 32 clock cycles to perform the calculation, i.e. ready_o
 -- goes high 32 clock cycles after the clock cycle where start_i is high.
--- It calculates C_GUARD_BITS (see fast_sincos_pkg) extra bits in order to
+-- It calculates C_GUARD_BITS (see c64_sincos_pkg) extra bits in order to
 -- reduce rounding error.
 --
 -- Input and output are given in C64 floating point format (5-byte).
@@ -37,7 +37,7 @@ library work;
 -- Step 4 is to construct the output result using the octant.
 -- Step 5 is to normalize (i.e. to calculate the exponent).
 
-entity fast_sincos is
+entity c64_sincos is
    generic (
       G_DEBUG : boolean := false
    );
@@ -52,9 +52,9 @@ entity fast_sincos is
       cos_exp_o  : out unsigned( 7 downto 0);
       cos_mant_o : out unsigned(31 downto 0)
    );
-end entity fast_sincos;
+end entity c64_sincos;
 
-architecture synthesis of fast_sincos is
+architecture synthesis of c64_sincos is
 
    -- C_ANGLE_NUM is the number of CORDIC iterations.
    constant C_ANGLE_NUM : natural         := 29;

@@ -37,7 +37,7 @@ library ieee;
 -- xn -> sqrt(s)
 -- hn -> 0.5/sqrt(s)
 
-entity fast_sqrt2 is
+entity c64_sqrt2 is
    port (
       clk_i   : in  std_logic;
       start_i : in  std_logic;                -- Assert to restart calculation.
@@ -48,9 +48,9 @@ entity fast_sqrt2 is
       exp_o   : out unsigned( 7 downto 0);    -- Exponent
       mant_o  : out unsigned(31 downto 0)     -- Mantissa
    );
-end entity fast_sqrt2;
+end entity c64_sqrt2;
 
-architecture synthesis of fast_sqrt2 is
+architecture synthesis of c64_sqrt2 is
 
    type float_type is record
       exp  : unsigned( 7 downto 0);

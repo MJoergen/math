@@ -16,7 +16,7 @@ help: ## Show this help message
 
 # The simulation uses GHDL, see https://github.com/ghdl/ghdl
 
-SRC = dsp.vhd fast_sqrt2.vhd tb_fast_sqrt2.vhd
+SRC = dsp.vhd c64_sqrt2.vhd tb_c64_sqrt2.vhd
 
 # The testbench calculates the square root of 0, 1, 2, 3, 4, 0.5, and -1
 # (which gives an error), and of 15938 values from 0.031 to 8, and prints the
@@ -26,20 +26,20 @@ SRC = dsp.vhd fast_sqrt2.vhd tb_fast_sqrt2.vhd
 .PHONY: sim
 sim: $(SRC) ## Run the testbench (about 20 seconds)
 	ghdl -a --std=08 $(SRC)
-	ghdl -e --std=08 tb_fast_sqrt2
-	ghdl -r --std=08 tb_fast_sqrt2 --stop-time=6000us
+	ghdl -e --std=08 tb_c64_sqrt2
+	ghdl -r --std=08 tb_c64_sqrt2 --stop-time=6000us
 
 # The same, but also write a waveform (about 33 MB)
 .PHONY: debug
-debug: $(SRC) ## Run the testbench, and write a waveform to fast_sqrt2.ghw
+debug: $(SRC) ## Run the testbench, and write a waveform to c64_sqrt2.ghw
 	ghdl -a --std=08 $(SRC)
-	ghdl -e --std=08 tb_fast_sqrt2
-	ghdl -r --std=08 tb_fast_sqrt2 --stop-time=6000us --wave=fast_sqrt2.ghw
+	ghdl -e --std=08 tb_c64_sqrt2
+	ghdl -r --std=08 tb_c64_sqrt2 --stop-time=6000us --wave=c64_sqrt2.ghw
 
 # GTKWave, see https://github.com/gtkwave/gtkwave
 .PHONY: show_debug
 show_debug: ## Show the waveform from "make debug" in GTKWave
-	gtkwave fast_sqrt2.ghw fast_sqrt2.gtkw
+	gtkwave c64_sqrt2.ghw c64_sqrt2.gtkw
 
 
 #######################
@@ -48,14 +48,14 @@ show_debug: ## Show the waveform from "make debug" in GTKWave
 
 XILINX_DIR = /opt/Xilinx/2025.1/Vivado
 
-VIVADO_SRC  = dsp.vhd fast_sqrt2.vhd
+VIVADO_SRC  = dsp.vhd c64_sqrt2.vhd
 VIVADO_PART = xc7a200tfbg484-2
 VIVADO_DIR  = vivado
 
 # Synthesize and implement the design out of context (see vivado.tcl), and
 # write the reports timing_summary.rpt and utilization.rpt to $(VIVADO_DIR).
 # This fails if the design does not meet the clock constraint in
-# fast_sqrt2.xdc. The project fast_sqrt2.xpr uses the same settings.
+# c64_sqrt2.xdc. The project c64_sqrt2.xpr uses the same settings.
 #
 # -mode batch, NOT -mode tcl. In tcl mode Vivado exits 0 even when the sourced
 # script raises an error, so an aborted build would be reported as success to
@@ -65,7 +65,7 @@ VIVADO_DIR  = vivado
 .PHONY: vivado
 vivado: $(VIVADO_DIR)/post_route.dcp ## Run synthesis and implementation using Vivado (about 2 minutes)
 
-$(VIVADO_DIR)/post_route.dcp: vivado.tcl $(VIVADO_SRC) fast_sqrt2.xdc
+$(VIVADO_DIR)/post_route.dcp: vivado.tcl $(VIVADO_SRC) c64_sqrt2.xdc
 	mkdir -p $(VIVADO_DIR)
 	cd $(VIVADO_DIR) && bash -c "source $(XILINX_DIR)/settings64.sh ; \
 	   vivado -mode batch -nojournal -log vivado.log -source $(CURDIR)/vivado.tcl \
@@ -74,4 +74,4 @@ $(VIVADO_DIR)/post_route.dcp: vivado.tcl $(VIVADO_SRC) fast_sqrt2.xdc
 
 .PHONY: clean
 clean: ## Remove the generated files
-	rm -rf work-obj08.cf *.o tb_fast_sqrt2 fast_sqrt2.ghw vivado .Xil
+	rm -rf work-obj08.cf *.o tb_c64_sqrt2 c64_sqrt2.ghw vivado .Xil

@@ -16,7 +16,7 @@ help: ## Show this help message
 
 # The simulation uses GHDL, see https://github.com/ghdl/ghdl
 
-SRC = fast_sincos_pkg.vhd fast_sincos.vhd tb_fast_sincos.vhd
+SRC = c64_sincos_pkg.vhd c64_sincos.vhd tb_c64_sincos.vhd
 
 # The testbench calculates the sine and cosine of 121 angles from 0 to pi/4,
 # and prints the average number of clock cycles per calculation and the
@@ -25,20 +25,20 @@ SRC = fast_sincos_pkg.vhd fast_sincos.vhd tb_fast_sincos.vhd
 .PHONY: sim
 sim: $(SRC) ## Run the testbench (about 1 second)
 	ghdl -a --std=08 $(SRC)
-	ghdl -e --std=08 tb_fast_sincos
-	ghdl -r --std=08 tb_fast_sincos --stop-time=6000us
+	ghdl -e --std=08 tb_c64_sincos
+	ghdl -r --std=08 tb_c64_sincos --stop-time=6000us
 
 # The same, but also write a waveform (about 1 MB)
 .PHONY: debug
-debug: $(SRC) ## Run the testbench, and write a waveform to fast_sincos.ghw
+debug: $(SRC) ## Run the testbench, and write a waveform to c64_sincos.ghw
 	ghdl -a --std=08 $(SRC)
-	ghdl -e --std=08 tb_fast_sincos
-	ghdl -r --std=08 tb_fast_sincos --stop-time=6000us --wave=fast_sincos.ghw
+	ghdl -e --std=08 tb_c64_sincos
+	ghdl -r --std=08 tb_c64_sincos --stop-time=6000us --wave=c64_sincos.ghw
 
 # GTKWave, see https://github.com/gtkwave/gtkwave
 .PHONY: show_debug
 show_debug: ## Show the waveform from "make debug" in GTKWave
-	gtkwave fast_sincos.ghw fast_sincos.gtkw
+	gtkwave c64_sincos.ghw c64_sincos.gtkw
 
 
 #######################
@@ -47,14 +47,14 @@ show_debug: ## Show the waveform from "make debug" in GTKWave
 
 XILINX_DIR = /opt/Xilinx/2025.1/Vivado
 
-VIVADO_SRC  = fast_sincos_pkg.vhd fast_sincos.vhd
+VIVADO_SRC  = c64_sincos_pkg.vhd c64_sincos.vhd
 VIVADO_PART = xc7a200tfbg484-2
 VIVADO_DIR  = vivado
 
 # Synthesize and implement the design out of context (see vivado.tcl), and
 # write the reports timing_summary.rpt and utilization.rpt to $(VIVADO_DIR).
 # This fails if the design does not meet the clock constraint in
-# fast_sincos.xdc. The project fast_sincos.xpr uses the same settings.
+# c64_sincos.xdc. The project c64_sincos.xpr uses the same settings.
 #
 # -mode batch, NOT -mode tcl. In tcl mode Vivado exits 0 even when the sourced
 # script raises an error, so an aborted build would be reported as success to
@@ -64,7 +64,7 @@ VIVADO_DIR  = vivado
 .PHONY: vivado
 vivado: $(VIVADO_DIR)/post_route.dcp ## Run synthesis and implementation using Vivado (about 2.5 minutes)
 
-$(VIVADO_DIR)/post_route.dcp: vivado.tcl $(VIVADO_SRC) fast_sincos.xdc
+$(VIVADO_DIR)/post_route.dcp: vivado.tcl $(VIVADO_SRC) c64_sincos.xdc
 	mkdir -p $(VIVADO_DIR)
 	cd $(VIVADO_DIR) && bash -c "source $(XILINX_DIR)/settings64.sh ; \
 	   vivado -mode batch -nojournal -log vivado.log -source $(CURDIR)/vivado.tcl \
@@ -73,4 +73,4 @@ $(VIVADO_DIR)/post_route.dcp: vivado.tcl $(VIVADO_SRC) fast_sincos.xdc
 
 .PHONY: clean
 clean: ## Remove the generated files
-	rm -rf work-obj08.cf *.o tb_fast_sincos fast_sincos.ghw vivado .Xil
+	rm -rf work-obj08.cf *.o tb_c64_sincos c64_sincos.ghw vivado .Xil

@@ -6,7 +6,7 @@ library ieee;
 -- This package provides a convenient type fraction_type.
 -- It can either represent an unsigned real value in [0.0, 2.0[,
 -- or a signed real value in [-1.0, 1.0[.
-package fast_sincos_pkg is
+package c64_sincos_pkg is
 
    -- The nominal precision of the fraction_type is 32 bits.
    -- However, to avoid accumulation of rounding errors, some
@@ -23,9 +23,9 @@ package fast_sincos_pkg is
 
    pure function fraction2real (arg : fraction_type) return real;
 
-end package fast_sincos_pkg;
+end package c64_sincos_pkg;
 
-package body fast_sincos_pkg is
+package body c64_sincos_pkg is
 
    -- Expects a real number in the interval [0.0, 1.0[.
    pure function real2fraction (arg : real) return fraction_type is
@@ -57,5 +57,5 @@ package body fast_sincos_pkg is
       end if;
    end function fraction2real;
 
-end package body fast_sincos_pkg;
+end package body c64_sincos_pkg;
 

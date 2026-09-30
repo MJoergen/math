@@ -1,0 +1,19 @@
+# Generated files, see "make clean"
+
+# Simulation (make sim, make debug)
+work-obj08.cf
+*.o
+tb_c64_sqrt2
+*.ghw
+
+# Vivado (make vivado)
+vivado/
+
+# Vivado (c64_sqrt2.xpr project)
+c64_sqrt2.cache/
+c64_sqrt2.gen/
+c64_sqrt2.hw/
+c64_sqrt2.ip_user_files/
+c64_sqrt2.runs/
+c64_sqrt2.sim/
+.Xil/
