@@ -86,6 +86,8 @@ library work;
 -- * Output: m_valid_o is set together with the quotient m_q_o, G_SIZE+3
 --   clock cycles after the input transfer. They stay unchanged until
 --   m_ready_i is high.
+-- rst_i is a synchronous reset (active high). It clears m_valid_o, and
+-- abandons a division in progress.
 
 entity srt_core is
    generic (
@@ -95,6 +97,7 @@ entity srt_core is
    );
    port (
       clk_i     : in  std_logic;
+      rst_i     : in  std_logic;
 
       -- Input
       s_valid_i : in  std_logic;
@@ -395,6 +398,10 @@ begin
             quot_m1 <= (others => '1');                                                    -- -1
             digit   <= 0;
             state   <= BUSY_ST;
+         end if;
+
+         if rst_i = '1' then
+            state <= IDLE_ST;
          end if;
       end if;
    end process srt_core_proc;

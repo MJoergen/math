@@ -10,7 +10,8 @@ Output: The range of values is [1, 2[, and the fractional part is encoded as fix
         0.22 (the integer part is constant 1).
 
 It is a 2-stage pipeline: It accepts a new input in every clock cycle, and the result
-is available 2 clock cycles after the input.
+is available 2 clock cycles after the input. The input and the output use an AXI-style
+VALID/READY handshake, see [Interface](#interface).
 
 ## FPGA resources
 This implementation uses two BRAMs and one DSP, and a small amount of extra logic.
@@ -71,22 +72,38 @@ G_EXTRA_BITS.
 The generic `G_EXTRA_BITS` is the number of upper bits of f(a) that are calculated
 combinatorially, from 0 to 4, see [Theory of operation](#theory-of-operation).
 
+Both the input and the output use an
+[AXI](https://en.wikipedia.org/wiki/Advanced_eXtensible_Interface)-style
+VALID/READY handshake: a value is transferred in a clock cycle where both valid
+and ready are high. The sender keeps valid high and the value unchanged until
+then.
+
 | Port | Direction | Description
 | ---- | --------- | -----------
 | `clk_i` | in | Clock.
-| `data_i` | in | The input y, fixed point 2.20 in the range [1, 4[.
-| `data_o` | out | The fractional part of x = sqrt(y), fixed point 0.22. The integer part is constant 1.
+| `rst_i` | in | Synchronous reset, active high. Clears `m_valid_o`, and discards the values in the pipeline.
+| `s_valid_i`, `s_ready_o` | in, out | Handshake of the input.
+| `s_data_i` | in | The input y, fixed point 2.20 in the range [1, 4[.
+| `m_valid_o`, `m_ready_i` | out, in | Handshake of the output.
+| `m_data_o` | out | The fractional part of x = sqrt(y), fixed point 0.22. The integer part is constant 1.
 
-There is no valid signal and no reset: `data_o` is the square root of the value of
-`data_i` 2 clock cycles earlier.
+None of the output signals depend combinatorially on any of the input signals.
+
+`m_valid_o` goes high 2 clock cycles after the input is transferred. When
+`m_ready_i` is high, a new input is accepted in every clock cycle. When the output
+register is full and `m_ready_i` is low, the whole pipeline stalls. Since
+`s_ready_o` is a register, it only goes low one clock cycle later. An input that is
+accepted in the meantime is stored in a skid buffer, and enters the pipeline when the
+stall is over.
 
 ## Running
 Type `make` to list the supported targets:
-* `make sim` runs the testbench five times, for G_EXTRA_BITS from 0 to 4. This requires
-  [GHDL](https://github.com/ghdl/ghdl). Each run takes about 3 to 4 minutes. E.g.
-  `make sim EXTRA_BITS=2` runs only G_EXTRA_BITS = 2.
-* `make debug` runs the testbench for 25 us with G_EXTRA_BITS = 2, and writes a waveform
-  to `pipeline_sqrt.ghw`. `make show_debug` shows it in
+* `make sim` runs the testbench five times, for G_EXTRA_BITS from 0 to 4, and then once
+  more with random stalls. This requires [GHDL](https://github.com/ghdl/ghdl). Each run
+  takes about 3 to 4 minutes. E.g. `make sim EXTRA_BITS=2` runs only G_EXTRA_BITS = 2
+  (and the run with stalls).
+* `make debug` runs the testbench for 2000 inputs with G_EXTRA_BITS = 2 and random
+  stalls, and writes a waveform to `pipeline_sqrt.ghw`. `make show_debug` shows it in
   [GTKWave](https://github.com/gtkwave/gtkwave).
 * `make vivado` synthesizes and implements `pipeline_sqrt.vhd` with G_EXTRA_BITS = 2,
   using
@@ -103,12 +120,16 @@ Type `make` to list the supported targets:
 ## Simulation
 The testbench cycles through all 3*2^20 valid values of the input, from 0x100000 (1.0)
 to 0x3FFFFF (just below 4.0), one in each clock cycle, and compares each output with the
-exact square root, rounded down. It prints the input and the output whenever the error is larger than any
-previous error. These are the tables under [Test results](#test-results). The errors do
-not stop the simulation.
+exact square root, rounded down. It prints the input and the output whenever the error is
+larger than any previous error. These are the tables under [Test results](#test-results).
+The testbench stops if the error is larger than 0x20, or if there is not a result in
+every clock cycle.
 
-GHDL also prints a few "metavalue detected" warnings at 5 ns and 15 ns, before the
-pipeline is filled. They can be ignored.
+The last run of `make sim` has random stalls: The valid signal of the input and the
+ready signal of the output are asserted randomly, with the probabilities given by the
+generics `G_VALID_PCT` and `G_READY_PCT` (70%). The inputs are taken in a scrambled
+order (the generic `G_STRIDE`), so that consecutive inputs differ a lot, and a lost or
+duplicated value would give a large error.
 
 ## Test results
 
@@ -123,6 +144,8 @@ It takes approx 3 minutes to run the entire simulation for each value of G_EXTRA
 
 The main results are below. The synthesis reports are from Vivado 2025.1 with a clock
 period of 8 ns, from `make vivado VIVADO_EXTRA_BITS=n`, see [FPGA resources](#fpga-resources).
+About 29 LUTs and 25 registers are for the handshake (the skid buffer, the valid bits,
+and the clock enable of the pipeline); the rest grows with G_EXTRA_BITS.
 
 ### G_EXTRA_BITS = 0
 
@@ -149,10 +172,10 @@ Analysis of the final row:
 * data_out = 0x0150E2
 
 Synthesis report
-* BRAM = 2
-* DSP  = 1
-* LUT  = 0
-* REG  = 0
+* LUT   = 29
+* REG   = 25
+* BRAM  = 2
+* DSP   = 1
 
 
 ### G_EXTRA_BITS = 1
@@ -181,10 +204,10 @@ Analysis of the final row:
 * data_out  = 0x00FFB6
 
 Synthesis report
-* LUT  = 1
-* REG  = 2
-* BRAM = 2
-* DSP  = 1
+* LUT   = 31
+* REG   = 27
+* BRAM  = 2
+* DSP   = 1
 
 
 ### G_EXTRA_BITS = 2
@@ -213,10 +236,10 @@ Analysis of the final row:
 * data_out  = 0x00FFBA
 
 Synthesis report
-* LUT  = 2
-* REG  = 4
-* BRAM = 2
-* DSP  = 1
+* LUT   = 34
+* REG   = 29
+* BRAM  = 2
+* DSP   = 1
 
 
 ### G_EXTRA_BITS = 3
@@ -243,10 +266,10 @@ Analysis of the final row:
 * data_out  = 0x009FFD
 
 Synthesis report
-* LUT  = 4
-* REG  = 6
-* BRAM = 2
-* DSP  = 1
+* LUT   = 40
+* REG   = 31
+* BRAM  = 2
+* DSP   = 1
 
 
 ### G_EXTRA_BITS = 4
@@ -272,10 +295,9 @@ Analysis of the final row:
 * data_out  = 0x00735E
 
 Synthesis report
-* LUT   = 16
-* REG   = 8
-* F7MUX = 3
-* F8MUX = 1
+* LUT   = 47
+* REG   = 33
+* F7MUX = 1
 * BRAM  = 2
 * DSP   = 1
 

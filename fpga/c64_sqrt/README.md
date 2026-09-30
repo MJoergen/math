@@ -1,20 +1,20 @@
 # Square root
 This calculates the square root of a C64 floating point number, using a simple
-bit-shifting algorithm, in VHDL for an FPGA. It takes 33 clock cycles.
+bit-shifting algorithm, in VHDL for an FPGA. It takes 34 clock cycles.
 
 It can safely run at a clock speed of 244 MHz (clock period 4.1 ns). The total
-latency is thus 135 ns.
+latency is thus 139 ns.
 
 The resource usage is:
 
-* LUT   : 166
-* FF    : 111
-* Slice :  60
+* LUT   : 188
+* FF    : 152
+* Slice :  63
 
 These numbers are from Vivado 2025.1, with `make vivado` (see
 [Running](#running)), which implements the design out of context for the part
 xc7a200tfbg484-2, and meets the timing constraint in
-[`c64_sqrt.xdc`](c64_sqrt.xdc) with a slack of 0.100 ns.
+[`c64_sqrt.xdc`](c64_sqrt.xdc) with a slack of 0.064 ns.
 
 [`c64_sqrt2`](../c64_sqrt2) is a faster version, which uses multipliers.
 
@@ -54,24 +54,36 @@ bit, which is used for rounding the result to nearest.
 | [`Makefile`](Makefile) | Runs the simulation and the synthesis, see [Running](#running).
 
 ## Interface
+Both the input and the output use an
+[AXI](https://en.wikipedia.org/wiki/Advanced_eXtensible_Interface)-style
+VALID/READY handshake: a value is transferred in a clock cycle where both valid
+and ready are high. The sender keeps valid high and the value unchanged until
+then.
+
 | Port | Direction | Description
 | ---- | --------- | -----------
 | `clk_i` | in | Clock.
-| `start_i` | in | Starts a new calculation, also if a calculation is in progress.
-| `exp_i`, `mant_i` | in | The input, a C64 floating point number.
-| `ready_o` | out | High when the result is ready.
-| `error_o` | out | High when the input is negative. Then no calculation is started.
-| `exp_o`, `mant_o` | out | The square root, a C64 floating point number.
+| `rst_i` | in | Synchronous reset, active high. Clears `m_valid_o`, and abandons a calculation in progress.
+| `s_valid_i`, `s_ready_o` | in, out | Handshake of the input.
+| `s_exp_i`, `s_mant_i` | in | The input, a C64 floating point number.
+| `m_valid_o`, `m_ready_i` | out, in | Handshake of the output.
+| `m_exp_o`, `m_mant_o` | out | The square root, a C64 floating point number.
+| `m_error_o` | out | High when the input is negative. Then the result is zero.
 
-`ready_o` goes low in the clock cycle after `start_i`, and high again when the
-result is ready. When the input is zero, the result is zero, and `ready_o`
-stays high. There is no reset.
+None of the output signals depend combinatorially on any of the input signals.
+
+`m_valid_o` goes high 34 clock cycles after the input is transferred (1 clock
+cycle when the input is zero or negative, since the result is then zero). The
+result is written to a separate output register, and in the same clock cycle a new
+input is accepted, provided the output register is empty. So when there are no
+stalls, a new input is accepted every 34 clock cycles.
 
 ## Running
 Type `make` to list the supported targets:
-* `make sim` runs the testbench. This requires
-  [GHDL](https://github.com/ghdl/ghdl). It takes about 5 seconds.
-* `make debug` does the same, and also writes a waveform to `c64_sqrt.ghw`.
+* `make sim` runs the testbench twice, with and without random stalls. This
+  requires [GHDL](https://github.com/ghdl/ghdl). It takes about 10 seconds.
+* `make debug` runs the testbench with random stalls, and also writes a
+  waveform to `c64_sqrt.ghw`.
   `make show_debug` shows it in [GTKWave](https://github.com/gtkwave/gtkwave).
 * `make vivado` synthesizes and implements `c64_sqrt.vhd`, using
   [Vivado](https://www.amd.com/en/products/software/adaptive-socs-and-fpgas/vivado.html)
@@ -88,5 +100,10 @@ Type `make` to list the supported targets:
 The testbench calculates the square root of 0, 1, 2, 3, 4, 0.5, and -1 (which
 gives an error), and of 15938 values from 0.031 to 8. It compares each result
 with the exact square root, rounded to nearest, and stops at the first
-mismatch. There are no mismatches. It also prints the average number of clock
-cycles per calculation, which is 35 including the overhead of the testbench.
+mismatch. There are no mismatches.
+
+The valid signal of the input and the ready signal of the output are asserted
+randomly, with the probabilities given by the generics `G_VALID_PCT` and
+`G_READY_PCT` (70% by default). `make sim` also runs the testbench with both at
+100%, i.e. without stalls. At the end the testbench prints the average number
+of clock cycles per calculation, which is 34 in both cases.

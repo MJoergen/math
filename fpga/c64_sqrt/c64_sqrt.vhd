@@ -2,11 +2,9 @@ library ieee;
    use ieee.std_logic_1164.all;
    use ieee.numeric_std.all;
 
--- This module takes a floating point number (exp_i, mant_i) and returns the
--- square root as a floating point number (exp_o, mant_o).
+-- This module takes a floating point number (s_exp_i, s_mant_i) and returns
+-- the square root as a floating point number (m_exp_o, m_mant_o).
 --
--- It takes a total of 33 clock cycles to perform the calculation, i.e. ready_o
--- goes high 33 clock cycles after the clock cycle where start_i is high.
 -- It calculates one extra bit in order to perform the correct rounding.
 --
 -- Input and output are given in C64 floating point format (5-byte).
@@ -22,43 +20,78 @@ library ieee;
 --
 -- The algorithm is taken from
 -- https://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Binary_numeral_system_(base_2).
+--
+-- Interface:
+-- The input is accepted when s_valid_i and s_ready_o are both asserted on the
+-- same clock edge. The result is presented when m_valid_o is asserted, and is
+-- held stable until m_ready_i is asserted. None of the output signals depend
+-- combinatorially on any of the input signals. rst_i is a synchronous reset
+-- (active high). It clears m_valid_o, and abandons a calculation in progress.
+--
+-- If the input is negative, m_error_o is set, and the result is zero. If the
+-- input is zero, the result is zero.
+--
+-- Latency and throughput:
+-- m_valid_o is asserted 34 clock cycles after the input is accepted (1 clock
+-- cycle for a negative or zero input). The result is written to a separate
+-- output register, so in the clock cycle where the result is written, a new
+-- input is accepted provided the output register is empty. So if m_ready_i is
+-- constantly asserted, a new input is accepted every 34 clock cycles.
 
 entity c64_sqrt is
    port (
-      clk_i   : in  std_logic;
-      start_i : in  std_logic;                -- Assert to restart calculation.
-      ready_o : out std_logic := '1';         -- Asserted when output is ready.
-      error_o : out std_logic := '0';         -- Asserted when input is negative.
-      exp_i   : in  unsigned( 7 downto 0);    -- Exponent
-      mant_i  : in  unsigned(31 downto 0);    -- Mantissa
-      exp_o   : out unsigned( 7 downto 0);    -- Exponent
-      mant_o  : out unsigned(31 downto 0)     -- Mantissa
+      clk_i     : in  std_logic;
+      rst_i     : in  std_logic;
+
+      -- Input
+      s_valid_i : in  std_logic;
+      s_ready_o : out std_logic;
+      s_exp_i   : in  std_logic_vector( 7 downto 0);   -- Exponent
+      s_mant_i  : in  std_logic_vector(31 downto 0);   -- Mantissa
+
+      -- Output
+      m_valid_o : out std_logic;
+      m_ready_i : in  std_logic;
+      m_exp_o   : out std_logic_vector( 7 downto 0);   -- Exponent
+      m_mant_o  : out std_logic_vector(31 downto 0);   -- Mantissa
+      m_error_o : out std_logic                        -- The input was negative
    );
 end entity c64_sqrt;
 
 architecture synthesis of c64_sqrt is
 
-   type   state_type is (IDLE_ST, CALC_ST);
+   -- IDLE_ST : Waiting for a new input.
+   -- CALC_ST : Calculation in progress, one bit in each clock cycle.
+   -- DONE_ST : The result is ready. It is written to the output register as
+   --           soon as the output register is free.
+   type   state_type is (IDLE_ST, CALC_ST, DONE_ST);
    signal state : state_type := IDLE_ST;
 
    signal val  : unsigned(33 downto 0);
    signal mant : unsigned(33 downto 0);
    signal mask : unsigned(33 downto 0);
 
+   -- The exponent of the result, and whether the input is negative
+   signal exp : unsigned(7 downto 0);
+   signal neg : std_logic;
+
 begin
 
-   mant_o(30 downto 0) <= mant(31 downto 1) when mant(0) = '0' else
-                          mant(31 downto 1) + 1;
-   mant_o(31)          <= '0';
+   -- Accept a new input when idle, or when the result is written to the
+   -- output register
+   s_ready_o <= '1' when state = IDLE_ST or (state = DONE_ST and m_valid_o = '0') else
+                '0';
 
    fsm_proc : process (clk_i)
-      variable tmp_v : unsigned(33 downto 0);
    begin
       if rising_edge(clk_i) then
+         if m_ready_i = '1' then
+            m_valid_o <= '0';
+         end if;
 
          case state is
+
             when IDLE_ST =>
-               -- Calculation is finished
                null;
 
             when CALC_ST =>
@@ -72,42 +105,55 @@ begin
                mask <= "0" & mask(33 downto 1);
 
                if mask(0) = '1' then
-                  if exp_i(0) = '0' then
-                     exp_o <= ("0" & exp_i(7 downto 1)) + X"40";
-                  else
-                     exp_o <= ("0" & exp_i(7 downto 1)) + X"41";
-                  end if;
-                  ready_o <= '1';
-                  state   <= IDLE_ST;
+                  state <= DONE_ST;
                end if;
+
+            when DONE_ST =>
+               -- Wait until the output register is free. The extra bit
+               -- mant(0) rounds the result to nearest.
+               if m_valid_o = '0' or m_ready_i = '1' then
+                  if mant(0) = '0' then
+                     m_mant_o <= "0" & std_logic_vector(mant(31 downto 1));
+                  else
+                     m_mant_o <= "0" & std_logic_vector(mant(31 downto 1) + 1);
+                  end if;
+                  m_exp_o   <= std_logic_vector(exp);
+                  m_error_o <= neg;
+                  m_valid_o <= '1';
+                  state     <= IDLE_ST;
+               end if;
+
          end case;
 
-         -- start_i can be asserted at any time, even in the middle of a calculation.
-         if start_i = '1' then
-            error_o <= '0';                                                                        -- Clear any previous errors.
-            if mant_i(31) = '1' then
-               error_o <= '1';                                                                     -- Error if number is negative.
+         -- This takes priority over the state machine above
+         if s_valid_i = '1' and s_ready_o = '1' then
+            val <= (others => '0');
+            if s_exp_i(0) = '0' then
+               val(32 downto 1) <= unsigned(s_mant_i) or X"80000000";
+               exp              <= ("0" & unsigned(s_exp_i(7 downto 1))) + X"40";
             else
-               if exp_i(0) = '0' then
-                  val               <= (others => '0');
-                  val(32 downto  1) <= mant_i or X"80000000";
-               else
-                  val               <= (others => '0');
-                  val(31 downto  0) <= mant_i or X"80000000";
-               end if;
-               mant     <= (others => '0');
-               mask     <= (others => '0');
-               mask(32) <= '1';
-               if exp_i /= X"00" then
-                  ready_o <= '0';
-                  state   <= CALC_ST;
-               else
-                  exp_o <= X"00";
-               end if;
+               val(31 downto 0) <= unsigned(s_mant_i) or X"80000000";
+               exp              <= ("0" & unsigned(s_exp_i(7 downto 1))) + X"41";
             end if;
+            mant     <= (others => '0');
+            mask     <= (others => '0');
+            mask(32) <= '1';
+            neg      <= s_mant_i(31);
+
+            if s_mant_i(31) = '1' or s_exp_i = X"00" then
+               -- The result is zero, since mant is zero
+               exp   <= X"00";
+               state <= DONE_ST;
+            else
+               state <= CALC_ST;
+            end if;
+         end if;
+
+         if rst_i = '1' then
+            m_valid_o <= '0';
+            state     <= IDLE_ST;
          end if;
       end if;
    end process fsm_proc;
 
 end architecture synthesis;
-

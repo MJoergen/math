@@ -101,19 +101,22 @@ The generic `G_ITERATIONS` is the number of CORDIC iterations (default 16, as in
 8087), and `G_FRAC_BITS` is the number of fractional bits of the angle and the result
 (default 24).
 
+Both the input and the output use an
+[AXI](https://en.wikipedia.org/wiki/Advanced_eXtensible_Interface)-style
+VALID/READY handshake: a value is transferred in a clock cycle where both valid
+and ready are high. The sender keeps valid high and the value unchanged until
+then.
+
 | Port | Direction | Description
 | ---- | --------- | -----------
 | `clk_i` | in | Clock.
-| `rst_i` | in | Synchronous reset, active high.
+| `rst_i` | in | Synchronous reset, active high. Clears `m_valid_o`, and abandons a calculation in progress.
 | `s_valid_i`, `s_ready_o` | in, out | Handshake of the input.
 | `s_angle_i` | in | The angle, in radians.
 | `m_valid_o`, `m_ready_i` | out, in | Handshake of the output.
 | `m_tan_o` | out | The result, `tan(angle)`.
 
-Both input and output use an AXI-style VALID/READY handshake:
-
-* The input angle `s_angle_i` uses the handshake signals `s_valid_i` and `s_ready_o`.
-* The result `m_tan_o` uses the handshake signals `m_valid_o` and `m_ready_i`.
+None of the output signals depend combinatorially on any of the input signals.
 
 The angle and the result are both unsigned fixed-point numbers with `G_FRAC_BITS`
 fractional bits and no integer bits, i.e. `value = bits / 2**G_FRAC_BITS`. The input

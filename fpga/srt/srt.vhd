@@ -34,7 +34,11 @@ library ieee;
 -- cycles for inputs out of range), unless the previous result is still waiting on
 -- the output. A new division can start while the previous result is waiting
 -- on the output, so with m_ready_i high, a division can start every 37 clock
--- cycles.
+-- cycles. None of the output signals depend combinatorially on any of the
+-- input signals.
+--
+-- rst_i is a synchronous reset (active high). It clears m_valid_o, and
+-- abandons a division in progress.
 
 entity srt is
    generic (
@@ -43,6 +47,7 @@ entity srt is
    );
    port (
       clk_i       : in  std_logic;
+      rst_i       : in  std_logic;
 
       -- Input
       s_valid_i   : in  std_logic;
@@ -161,6 +166,11 @@ begin
                state   <= ROUND_ST;
             end if;
          end if;
+
+         if rst_i = '1' then
+            m_valid <= '0';
+            state   <= IDLE_ST;
+         end if;
       end if;
    end process srt_proc;
 
@@ -188,6 +198,7 @@ begin
       )
       port map (
          clk_i     => clk_i,
+         rst_i     => rst_i,
          s_valid_i => core_s_valid,
          s_ready_o => core_s_ready,
          s_n_i     => norm_n,

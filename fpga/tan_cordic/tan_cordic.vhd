@@ -19,7 +19,15 @@ library ieee;
 --
 -- A final restoring division y/x produces the actual tangent value.
 --
--- Input and output use an AXI-style VALID/READY handshake.
+-- Interface:
+-- The input is accepted when s_valid_i and s_ready_o are both asserted on the
+-- same clock edge. The result is presented when m_valid_o is asserted, and is
+-- held stable until m_ready_i is asserted. None of the output signals depend
+-- combinatorially on any of the input signals. rst_i is a synchronous reset
+-- (active high). It clears m_valid_o, and abandons a calculation in progress.
+--
+-- Only one calculation is in progress at a time: a new angle is accepted only
+-- when the previous result has been consumed.
 
 entity tan_cordic is
    generic (

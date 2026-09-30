@@ -53,6 +53,7 @@ architecture simulation of tb_srt is
 
    signal running : std_logic := '1';
    signal clk     : std_logic := '1';
+   signal rst     : std_logic := '1';
 
    signal s_valid   : std_logic := '0';
    signal s_ready   : std_logic;
@@ -113,6 +114,7 @@ architecture simulation of tb_srt is
 begin
 
    clk <= running and not clk after 5 ns;
+   rst <= '1', '0' after 50 ns;
 
    srt_inst : entity work.srt
       generic map (
@@ -120,6 +122,7 @@ begin
       )
       port map (
          clk_i       => clk,
+         rst_i       => rst,
          s_valid_i   => s_valid,
          s_ready_o   => s_ready,
          s_n_i       => s_n,

@@ -9,11 +9,10 @@ library ieee;
 library work;
    use work.c64_sincos_pkg.all;
 
--- This module takes a C64 floating point number (exp_i, mant_i) and returns the
--- sine and cosine as a C64 floating point number (exp_o, mant_o).
+-- This module takes a C64 floating point number (s_exp_i, s_mant_i) and
+-- returns the sine (m_sin_exp_o, m_sin_mant_o) and the cosine (m_cos_exp_o,
+-- m_cos_mant_o) as C64 floating point numbers.
 --
--- It takes a total of 32 clock cycles to perform the calculation, i.e. ready_o
--- goes high 32 clock cycles after the clock cycle where start_i is high.
 -- It calculates C_GUARD_BITS (see c64_sincos_pkg) extra bits in order to
 -- reduce rounding error.
 --
@@ -36,21 +35,41 @@ library work;
 -- Step 3 is to apply the Cordic algorithm.
 -- Step 4 is to construct the output result using the octant.
 -- Step 5 is to normalize (i.e. to calculate the exponent).
+--
+-- Interface:
+-- The input is accepted when s_valid_i and s_ready_o are both asserted on the
+-- same clock edge. The result is presented when m_valid_o is asserted, and is
+-- held stable until m_ready_i is asserted. None of the output signals depend
+-- combinatorially on any of the input signals. rst_i is a synchronous reset
+-- (active high). It clears m_valid_o, and abandons a calculation in progress.
+--
+-- Latency and throughput:
+-- m_valid_o is asserted 32 clock cycles after the input is accepted. A new
+-- input is accepted in the clock cycle after the result is written to the
+-- output register. So if m_ready_i is constantly asserted, a new input is
+-- accepted every 33 clock cycles.
 
 entity c64_sincos is
    generic (
       G_DEBUG : boolean := false
    );
    port (
-      clk_i      : in  std_logic;
-      ready_o    : out std_logic := '1'; -- Asserted when output is ready.
-      start_i    : in  std_logic;        -- Assert to restart calculation.
-      arg_exp_i  : in  unsigned( 7 downto 0);
-      arg_mant_i : in  unsigned(31 downto 0);
-      sin_exp_o  : out unsigned( 7 downto 0);
-      sin_mant_o : out unsigned(31 downto 0);
-      cos_exp_o  : out unsigned( 7 downto 0);
-      cos_mant_o : out unsigned(31 downto 0)
+      clk_i        : in  std_logic;
+      rst_i        : in  std_logic;
+
+      -- Input
+      s_valid_i    : in  std_logic;
+      s_ready_o    : out std_logic;
+      s_exp_i      : in  std_logic_vector( 7 downto 0);   -- Angle in radians, exponent
+      s_mant_i     : in  std_logic_vector(31 downto 0);   -- Angle in radians, mantissa
+
+      -- Output
+      m_valid_o    : out std_logic;
+      m_ready_i    : in  std_logic;
+      m_sin_exp_o  : out std_logic_vector( 7 downto 0);   -- Sine, exponent
+      m_sin_mant_o : out std_logic_vector(31 downto 0);   -- Sine, mantissa
+      m_cos_exp_o  : out std_logic_vector( 7 downto 0);   -- Cosine, exponent
+      m_cos_mant_o : out std_logic_vector(31 downto 0)    -- Cosine, mantissa
    );
 end entity c64_sincos;
 
@@ -77,10 +96,16 @@ architecture synthesis of c64_sincos is
    constant C_SCALE       : fraction_type := calc_scaling;
    constant C_TWO_OVER_PI : fraction_type := real2fraction(0.6366197723675814);
 
+   -- IDLE_ST      : Waiting for a new input.
+   -- STAGE1_ST    : Wait for stage 1 (the multiplication by 2/pi).
+   -- STAGE2_ST    : Reduce the angle to [0, pi/4].
+   -- CALC_ST      : The CORDIC iterations, one in each clock cycle.
+   -- NORMALIZE_ST : The result is ready. It is written to the output register
+   --                as soon as the output register is free.
    type   state_type is (
-      STAGE1_ST, STAGE2_ST, CALC_ST, NORMALIZE_ST, DONE_ST
+      IDLE_ST, STAGE1_ST, STAGE2_ST, CALC_ST, NORMALIZE_ST
    );
-   signal state : state_type            := DONE_ST;
+   signal state : state_type            := IDLE_ST;
 
    signal arg_exp  : unsigned( 7 downto 0);                -- Exponent
    signal arg_mant : unsigned(31 downto 0);                -- Mantissa
@@ -109,6 +134,12 @@ architecture synthesis of c64_sincos is
    signal rotate_y : fraction_type;
    signal exp_x    : unsigned(7 downto 0);
    signal exp_y    : unsigned(7 downto 0);
+
+   -- The output registers
+   signal sin_exp  : unsigned( 7 downto 0);
+   signal sin_mant : unsigned(31 downto 0);
+   signal cos_exp  : unsigned( 7 downto 0);
+   signal cos_mant : unsigned(31 downto 0);
 
    pure function count_leading_zeros (arg : fraction_type) return natural is
    begin
@@ -202,26 +233,47 @@ begin
    stage1_angle  <= rotate(stage1_arg_mant_prod(C_SIZE + 32 downto 32), stage1_shift);
    stage1_octant <= stage1_angle(C_SIZE - 1 downto C_SIZE - 3);
 
+   s_ready_o <= '1' when state = IDLE_ST else
+                '0';
+
+   m_sin_exp_o  <= std_logic_vector(sin_exp);
+   m_sin_mant_o <= std_logic_vector(sin_mant);
+   m_cos_exp_o  <= std_logic_vector(cos_exp);
+   m_cos_mant_o <= std_logic_vector(cos_mant);
+
    fsm_proc : process (clk_i)
    begin
       if rising_edge(clk_i) then
-         exp_x    <= X"81" - count_leading_zeros(x);
-         exp_y    <= X"81" - count_leading_zeros(y);
-         rotate_x <= rotate_left(x, count_leading_zeros(x));
-         rotate_y <= rotate_left(y, count_leading_zeros(y));
-
-         -- x must never be greater than 1
-         if x(x'left) = '1' then
-            rotate_x <= (x'left => '1', others => '0');
+         if m_ready_i = '1' then
+            m_valid_o <= '0';
          end if;
 
-         -- y must never be less than 0
-         if y(y'left) = '1' then
-            rotate_y <= (others => '0');
-            exp_y    <= X"00";
+         -- The normalization of x and y. These registers are not updated in
+         -- NORMALIZE_ST, so that the result does not depend on how long it
+         -- waits for the output register. They therefore hold x and y from
+         -- before the last CORDIC iteration.
+         if state /= NORMALIZE_ST then
+            exp_x    <= X"81" - count_leading_zeros(x);
+            exp_y    <= X"81" - count_leading_zeros(y);
+            rotate_x <= rotate_left(x, count_leading_zeros(x));
+            rotate_y <= rotate_left(y, count_leading_zeros(y));
+
+            -- x must never be greater than 1
+            if x(x'left) = '1' then
+               rotate_x <= (x'left => '1', others => '0');
+            end if;
+
+            -- y must never be less than 0
+            if y(y'left) = '1' then
+               rotate_y <= (others => '0');
+               exp_y    <= X"00";
+            end if;
          end if;
 
          case state is
+
+            when IDLE_ST =>
+               null;
 
             when STAGE1_ST =>
                -- Wait for stage 1 to complete
@@ -265,104 +317,109 @@ begin
                end if;
 
             when NORMALIZE_ST =>
-               if G_DEBUG then
-                  report "octant = " & to_string(stage1_octant);
-                  report "exp_x  = " & to_string(exp_x);
-                  report "exp_y  = " & to_string(exp_y);
+               -- Wait until the output register is free
+               if m_valid_o = '0' or m_ready_i = '1' then
+                  if G_DEBUG then
+                     report "octant = " & to_string(stage1_octant);
+                     report "exp_x  = " & to_string(exp_x);
+                     report "exp_y  = " & to_string(exp_y);
+                  end if;
+
+                  case stage1_octant is
+
+                     when "000" =>
+                        cos_mant     <= rotate_x(C_SIZE downto C_SIZE - 31);
+                        sin_mant     <= rotate_y(C_SIZE downto C_SIZE - 31);
+                        cos_exp      <= exp_x;
+                        sin_exp      <= exp_y;
+                        cos_mant(31) <= '0';
+                        sin_mant(31) <= stage1_sign;
+
+                     when "001" =>
+                        cos_mant     <= rotate_y(C_SIZE downto C_SIZE - 31);
+                        sin_mant     <= rotate_x(C_SIZE downto C_SIZE - 31);
+                        cos_exp      <= exp_y;
+                        sin_exp      <= exp_x;
+                        cos_mant(31) <= '0';
+                        sin_mant(31) <= stage1_sign;
+
+                     when "010" =>
+                        cos_mant     <= rotate_y(C_SIZE downto C_SIZE - 31);
+                        sin_mant     <= rotate_x(C_SIZE downto C_SIZE - 31);
+                        cos_exp      <= exp_y;
+                        sin_exp      <= exp_x;
+                        cos_mant(31) <= '1';
+                        sin_mant(31) <= stage1_sign;
+
+                     when "011" =>
+                        cos_mant     <= rotate_x(C_SIZE downto C_SIZE - 31);
+                        sin_mant     <= rotate_y(C_SIZE downto C_SIZE - 31);
+                        cos_exp      <= exp_x;
+                        sin_exp      <= exp_y;
+                        cos_mant(31) <= '1';
+                        sin_mant(31) <= stage1_sign;
+
+                     when "100" =>
+                        cos_mant     <= rotate_x(C_SIZE downto C_SIZE - 31);
+                        sin_mant     <= rotate_y(C_SIZE downto C_SIZE - 31);
+                        cos_exp      <= exp_x;
+                        sin_exp      <= exp_y;
+                        cos_mant(31) <= '1';
+                        sin_mant(31) <= not stage1_sign;
+
+                     when "101" =>
+                        cos_mant     <= rotate_y(C_SIZE downto C_SIZE - 31);
+                        sin_mant     <= rotate_x(C_SIZE downto C_SIZE - 31);
+                        cos_exp      <= exp_y;
+                        sin_exp      <= exp_x;
+                        cos_mant(31) <= '1';
+                        sin_mant(31) <= not stage1_sign;
+
+                     when "110" =>
+                        cos_mant     <= rotate_y(C_SIZE downto C_SIZE - 31);
+                        sin_mant     <= rotate_x(C_SIZE downto C_SIZE - 31);
+                        cos_exp      <= exp_y;
+                        sin_exp      <= exp_x;
+                        cos_mant(31) <= '0';
+                        sin_mant(31) <= not stage1_sign;
+
+                     when "111" =>
+                        cos_mant     <= rotate_x(C_SIZE downto C_SIZE - 31);
+                        sin_mant     <= rotate_y(C_SIZE downto C_SIZE - 31);
+                        cos_exp      <= exp_x;
+                        sin_exp      <= exp_y;
+                        cos_mant(31) <= '0';
+                        sin_mant(31) <= not stage1_sign;
+
+                     when others =>
+                        null;
+
+                  end case;
+
+                  m_valid_o <= '1';
+                  state     <= IDLE_ST;
                end if;
-
-               case stage1_octant is
-
-                  when "000" =>
-                     cos_mant_o     <= rotate_x(C_SIZE downto C_SIZE - 31);
-                     sin_mant_o     <= rotate_y(C_SIZE downto C_SIZE - 31);
-                     cos_exp_o      <= exp_x;
-                     sin_exp_o      <= exp_y;
-                     cos_mant_o(31) <= '0';
-                     sin_mant_o(31) <= stage1_sign;
-
-                  when "001" =>
-                     cos_mant_o     <= rotate_y(C_SIZE downto C_SIZE - 31);
-                     sin_mant_o     <= rotate_x(C_SIZE downto C_SIZE - 31);
-                     cos_exp_o      <= exp_y;
-                     sin_exp_o      <= exp_x;
-                     cos_mant_o(31) <= '0';
-                     sin_mant_o(31) <= stage1_sign;
-
-                  when "010" =>
-                     cos_mant_o     <= rotate_y(C_SIZE downto C_SIZE - 31);
-                     sin_mant_o     <= rotate_x(C_SIZE downto C_SIZE - 31);
-                     cos_exp_o      <= exp_y;
-                     sin_exp_o      <= exp_x;
-                     cos_mant_o(31) <= '1';
-                     sin_mant_o(31) <= stage1_sign;
-
-                  when "011" =>
-                     cos_mant_o     <= rotate_x(C_SIZE downto C_SIZE - 31);
-                     sin_mant_o     <= rotate_y(C_SIZE downto C_SIZE - 31);
-                     cos_exp_o      <= exp_x;
-                     sin_exp_o      <= exp_y;
-                     cos_mant_o(31) <= '1';
-                     sin_mant_o(31) <= stage1_sign;
-
-                  when "100" =>
-                     cos_mant_o     <= rotate_x(C_SIZE downto C_SIZE - 31);
-                     sin_mant_o     <= rotate_y(C_SIZE downto C_SIZE - 31);
-                     cos_exp_o      <= exp_x;
-                     sin_exp_o      <= exp_y;
-                     cos_mant_o(31) <= '1';
-                     sin_mant_o(31) <= not stage1_sign;
-
-                  when "101" =>
-                     cos_mant_o     <= rotate_y(C_SIZE downto C_SIZE - 31);
-                     sin_mant_o     <= rotate_x(C_SIZE downto C_SIZE - 31);
-                     cos_exp_o      <= exp_y;
-                     sin_exp_o      <= exp_x;
-                     cos_mant_o(31) <= '1';
-                     sin_mant_o(31) <= not stage1_sign;
-
-                  when "110" =>
-                     cos_mant_o     <= rotate_y(C_SIZE downto C_SIZE - 31);
-                     sin_mant_o     <= rotate_x(C_SIZE downto C_SIZE - 31);
-                     cos_exp_o      <= exp_y;
-                     sin_exp_o      <= exp_x;
-                     cos_mant_o(31) <= '0';
-                     sin_mant_o(31) <= not stage1_sign;
-
-                  when "111" =>
-                     cos_mant_o     <= rotate_x(C_SIZE downto C_SIZE - 31);
-                     sin_mant_o     <= rotate_y(C_SIZE downto C_SIZE - 31);
-                     cos_exp_o      <= exp_x;
-                     sin_exp_o      <= exp_y;
-                     cos_mant_o(31) <= '0';
-                     sin_mant_o(31) <= not stage1_sign;
-
-                  when others =>
-                     null;
-
-               end case;
-
-               ready_o <= '1';
-               state   <= DONE_ST;
-
-            when DONE_ST =>
-               null;
 
          end case;
 
-         if start_i = '1' then
+         -- This takes priority over the state machine above
+         if s_valid_i = '1' and s_ready_o = '1' then
             if G_DEBUG then
-               report "arg_exp_i     = 0x" & to_hstring(arg_exp_i);
-               report "arg_mant_i    = " &
-                      to_string(fraction2real("0" & (arg_mant_i or X"80000000") & "0000000"), 11);
+               report "s_exp_i       = 0x" & to_hstring(s_exp_i);
+               report "s_mant_i      = " &
+                      to_string(fraction2real("0" & (unsigned(s_mant_i) or X"80000000") & "0000000"), 11);
                report "C_SCALE       = " & to_string(fraction2real(C_SCALE), 11);
                report "C_TWO_OVER_PI = " & to_string(fraction2real(C_TWO_OVER_PI), 11);
             end if;
 
-            arg_exp  <= arg_exp_i;
-            arg_mant <= arg_mant_i;
-            ready_o  <= '0';
+            arg_exp  <= unsigned(s_exp_i);
+            arg_mant <= unsigned(s_mant_i);
             state    <= STAGE1_ST;
+         end if;
+
+         if rst_i = '1' then
+            m_valid_o <= '0';
+            state     <= IDLE_ST;
          end if;
       end if;
    end process fsm_proc;

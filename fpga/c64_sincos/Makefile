@@ -19,21 +19,23 @@ help: ## Show this help message
 SRC = c64_sincos_pkg.vhd c64_sincos.vhd tb_c64_sincos.vhd
 
 # The testbench calculates the sine and cosine of 121 angles from 0 to pi/4,
-# and prints the average number of clock cycles per calculation and the
-# largest absolute error of each. It does not check the results against a
-# limit.
+# checks that the absolute error is less than 2^(-30), and prints the largest
+# absolute error of each. It runs twice: First with random stalls on the input
+# and the output, and then without any stalls. Each run prints the average
+# number of clock cycles per calculation.
 .PHONY: sim
-sim: $(SRC) ## Run the testbench (about 1 second)
+sim: $(SRC) ## Run the testbench, with and without stalls (about 1 second)
 	ghdl -a --std=08 $(SRC)
 	ghdl -e --std=08 tb_c64_sincos
-	ghdl -r --std=08 tb_c64_sincos --stop-time=6000us
+	ghdl -r --std=08 tb_c64_sincos --assert-level=error
+	ghdl -r --std=08 tb_c64_sincos -gG_VALID_PCT=100 -gG_READY_PCT=100 --assert-level=error
 
-# The same, but also write a waveform (about 1 MB)
+# The same, with random stalls, but also write a waveform (about 1 MB)
 .PHONY: debug
 debug: $(SRC) ## Run the testbench, and write a waveform to c64_sincos.ghw
 	ghdl -a --std=08 $(SRC)
 	ghdl -e --std=08 tb_c64_sincos
-	ghdl -r --std=08 tb_c64_sincos --stop-time=6000us --wave=c64_sincos.ghw
+	ghdl -r --std=08 tb_c64_sincos --assert-level=error --wave=c64_sincos.ghw
 
 # GTKWave, see https://github.com/gtkwave/gtkwave
 .PHONY: show_debug

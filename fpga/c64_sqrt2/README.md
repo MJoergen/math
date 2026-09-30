@@ -2,7 +2,7 @@
 This calculates the square root of a C64 floating point number, using an
 iterative method with multipliers, in VHDL for an FPGA. It has the same
 interface as [`c64_sqrt`](../c64_sqrt), but takes 5 to 9 clock cycles
-(7.1 on average in the testbench) instead of 33. The number of clock cycles
+(7.1 on average in the testbench) instead of 34. The number of clock cycles
 depends on how many iterations are needed.
 
 When `C_ROM_SIZE=6` and `C_GUARDS=4` (see [`c64_sqrt2.vhd`](c64_sqrt2.vhd))
@@ -13,19 +13,20 @@ we have the following statistics:
 * high\_count = 189
 * Period = 13.2 ns
 * DSP = 8
-* LUT = 394
-* FF = 213
-* Slice = 129
+* LUT = 528
+* FF = 234
+* Slice = 158
 
 Cycles, `low_count`, and `high_count` are printed by the testbench, see
-[Simulation](#simulation). Cycles includes the overhead of the testbench.
+[Simulation](#simulation). Cycles is the average number of clock cycles per
+calculation when there are no stalls, i.e. the latency plus one clock cycle.
 
 The other numbers are from Vivado 2025.1, with `make vivado` (see
 [Running](#running)), which implements the design out of context for the part
 xc7a200tfbg484-2, and meets the timing constraint in
 [`c64_sqrt2.xdc`](c64_sqrt2.xdc), a clock period of 13.2 ns (75.8 MHz), with a
-slack of 0.086 ns. The timing is sensitive to placement: with a clock period
-of 12.5 to 13.0 ns, the timing is missed by up to 0.6 ns.
+slack of 0.338 ns. The timing is sensitive to placement: with a clock period
+of 12.5 to 13.0 ns, the timing was missed by up to 0.6 ns.
 
 ## The number format
 The input and the output use the 5-byte floating point format of the C64
@@ -81,24 +82,35 @@ the top half of the bits of r are zero.
 | [`Makefile`](Makefile) | Runs the simulation and the synthesis, see [Running](#running).
 
 ## Interface
+Both the input and the output use an
+[AXI](https://en.wikipedia.org/wiki/Advanced_eXtensible_Interface)-style
+VALID/READY handshake: a value is transferred in a clock cycle where both valid
+and ready are high. The sender keeps valid high and the value unchanged until
+then.
+
 | Port | Direction | Description
 | ---- | --------- | -----------
 | `clk_i` | in | Clock.
-| `start_i` | in | Starts a new calculation, also if a calculation is in progress.
-| `exp_i`, `mant_i` | in | The input, a C64 floating point number.
-| `ready_o` | out | High when the result is ready.
-| `error_o` | out | High when the input is negative. Then no calculation is started.
-| `exp_o`, `mant_o` | out | The square root, a C64 floating point number.
+| `rst_i` | in | Synchronous reset, active high. Clears `m_valid_o`, and abandons a calculation in progress.
+| `s_valid_i`, `s_ready_o` | in, out | Handshake of the input.
+| `s_exp_i`, `s_mant_i` | in | The input, a C64 floating point number.
+| `m_valid_o`, `m_ready_i` | out, in | Handshake of the output.
+| `m_exp_o`, `m_mant_o` | out | The square root, a C64 floating point number.
+| `m_error_o` | out | High when the input is negative. Then the result is zero.
 
-`ready_o` goes low in the clock cycle after `start_i`, and high again when the
-result is ready. When the input is zero, the result is zero, and `ready_o`
-stays high. There is no reset.
+None of the output signals depend combinatorially on any of the input signals.
+
+`m_valid_o` goes high 5 to 9 clock cycles after the input is transferred (1
+clock cycle when the input is zero or negative, since the result is then zero).
+A new input is accepted in the clock cycle after the result is written to the
+output register.
 
 ## Running
 Type `make` to list the supported targets:
-* `make sim` runs the testbench. This requires
-  [GHDL](https://github.com/ghdl/ghdl). It takes about 20 seconds.
-* `make debug` does the same, and also writes a waveform to `c64_sqrt2.ghw`.
+* `make sim` runs the testbench twice, with and without random stalls. This
+  requires [GHDL](https://github.com/ghdl/ghdl). It takes about 40 seconds.
+* `make debug` runs the testbench with random stalls, and also writes a
+  waveform to `c64_sqrt2.ghw`.
   `make show_debug` shows it in [GTKWave](https://github.com/gtkwave/gtkwave).
 * `make vivado` synthesizes and implements `c64_sqrt2.vhd`, using
   [Vivado](https://www.amd.com/en/products/software/adaptive-socs-and-fpgas/vivado.html)
@@ -115,10 +127,14 @@ Type `make` to list the supported targets:
 The testbench calculates the square root of 0, 1, 2, 3, 4, 0.5, and -1 (which
 gives an error), and of 15938 values from 0.031 to 8. It compares each result
 with the exact square root, rounded to nearest, and prints the average number
-of clock cycles per calculation (8.1, including the overhead of the
-testbench).
+of clock cycles per calculation (8.1).
 
 The last bit of the mantissa is not always exact: 464 of the results report a
-mismatch. These mismatches are reported by the testbench, but do not stop the
-simulation. The summary at the end prints the number of results that are too
-low (`low_count`, 275) and too high (`high_count`, 189).
+mismatch. These mismatches are reported by the testbench as warnings, but do
+not stop the simulation. The summary at the end prints the number of results
+that are too low (`low_count`, 275) and too high (`high_count`, 189).
+
+The valid signal of the input and the ready signal of the output are asserted
+randomly, with the probabilities given by the generics `G_VALID_PCT` and
+`G_READY_PCT` (70% by default). `make sim` also runs the testbench with both at
+100%, i.e. without stalls. The results are the same in both cases.

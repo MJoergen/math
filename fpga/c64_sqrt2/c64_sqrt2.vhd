@@ -3,12 +3,9 @@ library ieee;
    use ieee.numeric_std.all;
    use ieee.math_real.all;
 
--- This module takes a floating point number (exp_i, mant_i) and returns the
--- square root as a floating point number (exp_o, mant_o).
+-- This module takes a floating point number (s_exp_i, s_mant_i) and returns
+-- the square root as a floating point number (m_exp_o, m_mant_o).
 --
--- The number of clock cycles to perform the calculation depends on how many
--- iterations are needed. In the testbench ready_o goes high 5 to 9 clock cycles
--- (7.1 on average) after the clock cycle where start_i is high.
 -- It calculates C_GUARDS extra bits in order to perform the correct rounding.
 --
 -- Input and output are given in C64 floating point format (5-byte).
@@ -36,17 +33,41 @@ library ieee;
 -- This converges to:
 -- xn -> sqrt(s)
 -- hn -> 0.5/sqrt(s)
+--
+-- Interface:
+-- The input is accepted when s_valid_i and s_ready_o are both asserted on the
+-- same clock edge. The result is presented when m_valid_o is asserted, and is
+-- held stable until m_ready_i is asserted. None of the output signals depend
+-- combinatorially on any of the input signals. rst_i is a synchronous reset
+-- (active high). It clears m_valid_o, and abandons a calculation in progress.
+--
+-- If the input is negative, m_error_o is set, and the result is zero. If the
+-- input is zero, the result is zero.
+--
+-- Latency and throughput:
+-- The number of clock cycles depends on how many iterations are needed. In the
+-- testbench m_valid_o is asserted 5 to 9 clock cycles (7.1 on average) after
+-- the input is accepted (1 clock cycle for a negative or zero input). A new
+-- input is accepted in the clock cycle after the result is written to the
+-- output register.
 
 entity c64_sqrt2 is
    port (
-      clk_i   : in  std_logic;
-      start_i : in  std_logic;                -- Assert to restart calculation.
-      ready_o : out std_logic := '1';         -- Asserted when output is ready.
-      error_o : out std_logic := '0';         -- Asserted when input is negative.
-      exp_i   : in  unsigned( 7 downto 0);    -- Exponent
-      mant_i  : in  unsigned(31 downto 0);    -- Mantissa
-      exp_o   : out unsigned( 7 downto 0);    -- Exponent
-      mant_o  : out unsigned(31 downto 0)     -- Mantissa
+      clk_i     : in  std_logic;
+      rst_i     : in  std_logic;
+
+      -- Input
+      s_valid_i : in  std_logic;
+      s_ready_o : out std_logic;
+      s_exp_i   : in  std_logic_vector( 7 downto 0);   -- Exponent
+      s_mant_i  : in  std_logic_vector(31 downto 0);   -- Mantissa
+
+      -- Output
+      m_valid_o : out std_logic;
+      m_ready_i : in  std_logic;
+      m_exp_o   : out std_logic_vector( 7 downto 0);   -- Exponent
+      m_mant_o  : out std_logic_vector(31 downto 0);   -- Mantissa
+      m_error_o : out std_logic                        -- The input was negative
    );
 end entity c64_sqrt2;
 
@@ -79,7 +100,14 @@ architecture synthesis of c64_sqrt2 is
       return res_v;
    end function inv_sqrt;
 
-   type   state_type is (IDLE_ST, INIT_ST, CALC_R_ST, CALC_XH_ST);
+   -- IDLE_ST    : Waiting for a new input.
+   -- INIT_ST    : Calculate x0 from the initial approximation.
+   -- CALC_R_ST  : Calculate r.
+   -- CALC_XH_ST : Calculate x and h. When r is close enough to 0, the result
+   --              is written to the output register as soon as it is free.
+   -- DONE_ST    : The result is zero. It is written to the output register as
+   --              soon as it is free.
+   type   state_type is (IDLE_ST, INIT_ST, CALC_R_ST, CALC_XH_ST, DONE_ST);
    signal state : state_type := IDLE_ST;
 
    type rom_type is array (natural range 0 to 2**C_ROM_SIZE-1) of unsigned(C_ROM_SIZE-1 downto 0);
@@ -108,6 +136,10 @@ architecture synthesis of c64_sqrt2 is
    signal dsp_1_b   : unsigned(31+C_GUARDS downto 0);
    signal dsp_1_c   : unsigned(31+C_GUARDS downto 0);
    signal dsp_1_res : unsigned(31+C_GUARDS downto 0);
+
+   -- The exponent of the result, and whether the input is negative
+   signal exp : unsigned(7 downto 0);
+   signal neg : std_logic;
 
 begin
 
@@ -142,10 +174,18 @@ begin
    dsp_1_c <= h when state = CALC_XH_ST else C_ZERO;
 
 
+   s_ready_o <= '1' when state = IDLE_ST else
+                '0';
+
    sqrt_proc : process (clk_i)
    begin
       if rising_edge(clk_i) then
+         if m_ready_i = '1' then
+            m_valid_o <= '0';
+         end if;
+
          case state is
+
             when IDLE_ST =>
                null;
 
@@ -158,48 +198,63 @@ begin
                state <= CALC_XH_ST;
 
             when CALC_XH_ST =>
-               x     <= dsp_0_res;
-               h     <= dsp_1_res;
-               state <= CALC_R_ST;
                if r(31+C_GUARDS downto (32+C_GUARDS)/2) = 0 then
-                  if dsp_0_res(C_GUARDS-1) = '0' then
-                     mant_o <= unsigned(dsp_0_res(31+C_GUARDS downto C_GUARDS));
-                  else
-                     mant_o <= unsigned(dsp_0_res(31+C_GUARDS downto C_GUARDS)) + 1;
+                  -- Wait until the output register is free. x and h are not
+                  -- updated, so the result stays the same while waiting.
+                  if m_valid_o = '0' or m_ready_i = '1' then
+                     if dsp_0_res(C_GUARDS-1) = '0' then
+                        m_mant_o <= std_logic_vector(dsp_0_res(31+C_GUARDS downto C_GUARDS));
+                     else
+                        m_mant_o <= std_logic_vector(dsp_0_res(31+C_GUARDS downto C_GUARDS) + 1);
+                     end if;
+                     m_mant_o(31) <= '0';
+                     m_exp_o      <= std_logic_vector(exp);
+                     m_error_o    <= '0';
+                     m_valid_o    <= '1';
+                     state        <= IDLE_ST;
                   end if;
-                  if exp_i(0) = '0' then
-                     exp_o <= ("0" & exp_i(7 downto 1)) + X"40";
-                  else
-                     exp_o <= ("0" & exp_i(7 downto 1)) + X"41";
-                  end if;
-                  ready_o    <= '1';
-                  mant_o(31) <= '0';
-                  state      <= IDLE_ST;
+               else
+                  x     <= dsp_0_res;
+                  h     <= dsp_1_res;
+                  state <= CALC_R_ST;
                end if;
+
+            when DONE_ST =>
+               if m_valid_o = '0' or m_ready_i = '1' then
+                  m_mant_o  <= (others => '0');
+                  m_exp_o   <= (others => '0');
+                  m_error_o <= neg;
+                  m_valid_o <= '1';
+                  state     <= IDLE_ST;
+               end if;
+
          end case;
 
-         if start_i = '1' then
-            error_o <= '0';
-            if mant_i(31) = '1' then
-               error_o <= '1';
+         -- This takes priority over the state machine above
+         if s_valid_i = '1' and s_ready_o = '1' then
+            h <= (others => '0');
+            r <= (others => '0');
+            if s_exp_i(0) = '0' then
+               r(31+C_GUARDS downto C_GUARDS)               <= unsigned(s_mant_i) or X"80000000";
+               h(31+C_GUARDS downto 32+C_GUARDS-C_ROM_SIZE) <= C_INV_SQRT(to_integer(unsigned("1" & s_mant_i(30 downto 32-C_ROM_SIZE))));
+               exp                                          <= ("0" & unsigned(s_exp_i(7 downto 1))) + X"40";
             else
-               h <= (others => '0');
-               if exp_i(0) = '0' then
-                  r                                            <= (others => '0');
-                  r(31+C_GUARDS downto C_GUARDS)               <= mant_i or X"80000000";
-                  h(31+C_GUARDS downto 32+C_GUARDS-C_ROM_SIZE) <= C_INV_SQRT(to_integer("1" & mant_i(30 downto 32-C_ROM_SIZE)));
-               else
-                  r                                            <= (others => '0');
-                  r(30+C_GUARDS downto C_GUARDS-1)             <= mant_i or X"80000000";
-                  h(31+C_GUARDS downto 32+C_GUARDS-C_ROM_SIZE) <= C_INV_SQRT(to_integer("01" & mant_i(30 downto 33-C_ROM_SIZE)));
-               end if;
-               if exp_i = X"00" then
-                  exp_o <= X"00";
-               else
-                  state   <= INIT_ST;
-                  ready_o <= '0';
-               end if;
+               r(30+C_GUARDS downto C_GUARDS-1)             <= unsigned(s_mant_i) or X"80000000";
+               h(31+C_GUARDS downto 32+C_GUARDS-C_ROM_SIZE) <= C_INV_SQRT(to_integer(unsigned("01" & s_mant_i(30 downto 33-C_ROM_SIZE))));
+               exp                                          <= ("0" & unsigned(s_exp_i(7 downto 1))) + X"41";
             end if;
+            neg <= s_mant_i(31);
+
+            if s_mant_i(31) = '1' or s_exp_i = X"00" then
+               state <= DONE_ST;
+            else
+               state <= INIT_ST;
+            end if;
+         end if;
+
+         if rst_i = '1' then
+            m_valid_o <= '0';
+            state     <= IDLE_ST;
          end if;
       end if;
    end process sqrt_proc;

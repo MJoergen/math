@@ -125,7 +125,9 @@ vunit srt_core_inst (srt_core(synthesis))
             f_qd <= (others => '0');
          end if;
 
-         f_started <= '1';
+         -- After a reset, the helper signals are invalid until the next
+         -- division is started
+         f_started <= not rst_i;
       end if;
    end process f_track_proc;
 
@@ -178,8 +180,9 @@ vunit srt_core_inst (srt_core(synthesis))
    f_d_norm    : assert always f_started = '1' -> d(G_SIZE-1 downto G_SIZE-4) = "0001";
    f_n_valid   : assert always f_started = '1' -> (f_n(G_SIZE-1 downto G_SIZE-4) = "0001" or f_n = 0);
 
-   -- For induction: The first division starts in the first clock cycle, see
-   -- f_start_first below
+   -- For induction: The first division starts in the first clock cycle, and
+   -- after a reset the next division starts right away, see f_start_first
+   -- below
    f_idle_first : assert always f_started = '0' -> state = IDLE_ST;
 
    -- For induction: state holds one of its three values. It is stored in two
@@ -198,8 +201,12 @@ vunit srt_core_inst (srt_core(synthesis))
    f_result : assert always m_valid_o = '1' -> f_res_ok;
 
    -- The handshake: The result stays valid and unchanged until it is taken
-   f_hold : assert always {m_valid_o = '1' and m_ready_i = '0'} |=>
+   -- (or until a reset)
+   f_hold : assert always {m_valid_o = '1' and m_ready_i = '0' and rst_i = '0'} |=>
       {m_valid_o = '1' and m_q_o = prev(m_q_o)};
+
+   -- A reset clears m_valid_o
+   f_rst : assert always {rst_i = '1'} |=> {m_valid_o = '0'};
 
 
    -----------------------------
@@ -211,7 +218,7 @@ vunit srt_core_inst (srt_core(synthesis))
 
    -- For induction: The helper signals are only invalid before the first
    -- division is started, i.e. in the first clock cycle, where f_reset
-   -- requires a start anyway.
+   -- requires a start anyway, and after a reset.
    f_start_first : assume always f_started = '0' -> s_valid_i = '1';
 
    -- Require valid input: The divisor must be normalized, and the dividend
@@ -253,6 +260,10 @@ vunit srt_core_inst (srt_core(synthesis))
 
    -- Verify that the next division can start after the result is taken
    f_next : cover {m_valid_o = '1' and m_ready_i = '1'; s_valid_i = '1' and s_ready_o = '1'};
+
+   -- Verify that a new division can start after a reset in the middle of a
+   -- division
+   f_restart : cover {state = BUSY_ST and rst_i = '1'; s_valid_i = '1' and s_ready_o = '1' and rst_i = '0'};
 
 
    --------------------------------------------

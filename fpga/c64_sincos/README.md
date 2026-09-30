@@ -8,15 +8,15 @@ latency is thus 205 ns.
 
 The resource usage is:
 
-* LUT   : 1083
+* LUT   : 1247
 * FF    :  384
-* Slice :  310
+* Slice :  327
 * DSP   :    4
 
 These numbers are from Vivado 2025.1, with `make vivado` (see
 [Running](#running)), which implements the design out of context for the part
 xc7a200tfbg484-2, and meets the timing constraint in
-[`c64_sincos.xdc`](c64_sincos.xdc) with a slack of 0.113 ns.
+[`c64_sincos.xdc`](c64_sincos.xdc) with a slack of 0.094 ns.
 
 The absolute deviation for angles in the range [0, pi/4] is 2^(-32).
 The absolute deviation for angles in the range [-2pi, 2pi] is 2^(-26).
@@ -69,24 +69,36 @@ to reduce the accumulation of rounding errors, see
 | [`Makefile`](Makefile) | Runs the simulation and the synthesis, see [Running](#running).
 
 ## Interface
+Both the input and the output use an
+[AXI](https://en.wikipedia.org/wiki/Advanced_eXtensible_Interface)-style
+VALID/READY handshake: a value is transferred in a clock cycle where both valid
+and ready are high. The sender keeps valid high and the value unchanged until
+then.
+
 | Port | Direction | Description
 | ---- | --------- | -----------
 | `clk_i` | in | Clock.
-| `start_i` | in | Starts a new calculation, also if a calculation is in progress.
-| `arg_exp_i`, `arg_mant_i` | in | The angle in radians, a C64 floating point number.
-| `ready_o` | out | High when the result is ready.
-| `sin_exp_o`, `sin_mant_o` | out | The sine, a C64 floating point number.
-| `cos_exp_o`, `cos_mant_o` | out | The cosine, a C64 floating point number.
+| `rst_i` | in | Synchronous reset, active high. Clears `m_valid_o`, and abandons a calculation in progress.
+| `s_valid_i`, `s_ready_o` | in, out | Handshake of the input.
+| `s_exp_i`, `s_mant_i` | in | The angle in radians, a C64 floating point number.
+| `m_valid_o`, `m_ready_i` | out, in | Handshake of the output.
+| `m_sin_exp_o`, `m_sin_mant_o` | out | The sine, a C64 floating point number.
+| `m_cos_exp_o`, `m_cos_mant_o` | out | The cosine, a C64 floating point number.
 
-`ready_o` goes low in the clock cycle after `start_i`, and high again when the
-result is ready. There is no reset. The generic `G_DEBUG` enables reports of
-the intermediate values in the simulation.
+None of the output signals depend combinatorially on any of the input signals.
+
+`m_valid_o` goes high 32 clock cycles after the input is transferred. A new
+input is accepted in the clock cycle after the result is written to the output
+register, so when there are no stalls, a new input is accepted every 33 clock
+cycles. The generic `G_DEBUG` enables reports of the intermediate values in
+the simulation.
 
 ## Running
 Type `make` to list the supported targets:
-* `make sim` runs the testbench. This requires
-  [GHDL](https://github.com/ghdl/ghdl). It takes about a second.
-* `make debug` does the same, and also writes a waveform to `c64_sincos.ghw`.
+* `make sim` runs the testbench twice, with and without random stalls. This
+  requires [GHDL](https://github.com/ghdl/ghdl). It takes about a second.
+* `make debug` runs the testbench with random stalls, and also writes a
+  waveform to `c64_sincos.ghw`.
   `make show_debug` shows it in [GTKWave](https://github.com/gtkwave/gtkwave).
 * `make vivado` synthesizes and implements `c64_sincos.vhd`, using
   [Vivado](https://www.amd.com/en/products/software/adaptive-socs-and-fpgas/vivado.html)
@@ -100,11 +112,16 @@ Type `make` to list the supported targets:
 * `make clean` removes the generated files.
 
 ## Simulation
-The testbench calculates the sine and cosine of 121 angles from 0 to pi/4. It
-prints the average number of clock cycles per calculation (36, including the
-overhead of the testbench), and the largest absolute error of the sine and of
-the cosine, and the angles where they occur. The errors are about 2^(-32). The
-testbench does not check the results against a limit.
+The testbench calculates the sine and cosine of 121 angles from 0 to pi/4, and
+checks that the absolute error is less than 2^(-30). It prints the average
+number of clock cycles per calculation (33), and the largest absolute error of
+the sine and of the cosine, and the angles where they occur. The errors are
+about 2^(-32).
+
+The valid signal of the input and the ready signal of the output are asserted
+randomly, with the probabilities given by the generics `G_VALID_PCT` and
+`G_READY_PCT` (70% by default). `make sim` also runs the testbench with both at
+100%, i.e. without stalls. The results are the same in both cases.
 
 GHDL prints a few warnings about metavalues in the first clock cycles, before
 the first calculation is started.

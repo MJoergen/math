@@ -65,6 +65,8 @@ keeps valid high and the value unchanged until then.
 
 | Port | Direction | Description
 | ---- | --------- | -----------
+| `clk_i` | in | Clock.
+| `rst_i` | in | Synchronous reset, active high. Clears `m_valid_o`, and abandons a division in progress.
 | `s_valid_i`, `s_ready_o` | in, out | Handshake of the input.
 | `s_n_i`, `s_d_i` | in | The dividend and divisor, unsigned integers. Both must be less than 2^29, and `s_d_i` must not be zero.
 | `m_valid_o`, `m_ready_i` | out, in | Handshake of the output.
@@ -75,9 +77,10 @@ The result is valid 37 clock cycles after the input is transferred (2 clock
 cycles for inputs out of range), unless the previous result is still waiting
 on the output. The next division can start while the result is waiting on the
 output, so with `m_ready_i` high, a division can start every 37 clock cycles.
+None of the output signals depend combinatorially on any of the input signals.
 
-`srt_core` has the same handshake, with the ports `s_n_i`, `s_d_i`, and
-`m_q_o`. It only accepts a new input once its result has been taken.
+`srt_core` has the same handshake and reset, with the ports `s_n_i`, `s_d_i`,
+and `m_q_o`. It only accepts a new input once its result has been taken.
 
 ## Number format
 Internally (in `srt_core.vhd` and `pla.vhd`) the values are

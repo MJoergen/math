@@ -18,22 +18,25 @@ help: ## Show this help message
 
 SRC = fast_divide.vhd tb_fast_divide.vhd
 
-# The testbench divides all pairs of numerator and denominator from 1 to 100,
-# and prints the average number of clock cycles per division. The last bits
-# of the fraction are not always exact, see README.md, so the mismatches are
-# reported, but they do not stop the simulation.
+# The testbench divides by zero twice, and then divides all pairs of numerator
+# and divisor from 1 to 100. The last bits of the fraction are not always
+# exact, see README.md, so these mismatches are reported as warnings, but they
+# do not stop the simulation. It runs twice: First with random stalls on the
+# input and the output, and then without any stalls. Each run prints the
+# average number of clock cycles per division.
 .PHONY: sim
-sim: $(SRC) ## Run the testbench (about 10 seconds)
+sim: $(SRC) ## Run the testbench, with and without stalls (about 20 seconds)
 	ghdl -a --std=08 $(SRC)
 	ghdl -e --std=08 tb_fast_divide
-	ghdl -r --std=08 tb_fast_divide --stop-time=2000us
+	ghdl -r --std=08 tb_fast_divide --assert-level=error
+	ghdl -r --std=08 tb_fast_divide -gG_VALID_PCT=100 -gG_READY_PCT=100 --assert-level=error
 
-# The same, but also write a waveform
+# The same, with random stalls, but also write a waveform
 .PHONY: debug
 debug: $(SRC) ## Run the testbench, and write a waveform to fast_divide.ghw
 	ghdl -a --std=08 $(SRC)
 	ghdl -e --std=08 tb_fast_divide
-	ghdl -r --std=08 tb_fast_divide --stop-time=2000us --wave=fast_divide.ghw
+	ghdl -r --std=08 tb_fast_divide --assert-level=error --wave=fast_divide.ghw
 
 # GTKWave, see https://github.com/gtkwave/gtkwave
 .PHONY: show_debug

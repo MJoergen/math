@@ -19,6 +19,7 @@
 -srt
 @28
 top.tb_srt.clk
+top.tb_srt.rst
 top.tb_srt.s_valid
 top.tb_srt.s_ready
 @22

@@ -1,40 +1,54 @@
 [*]
-[*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Sat Dec 30 20:35:41 2023
+[*] GTKWave save file for the waveform c64_sqrt.ghw from "make debug", see
+[*] https://github.com/gtkwave/gtkwave
+[*] c64_sqrt.ghw is written by GHDL in its GHW format, see the option --wave in
+[*] https://ghdl.github.io/ghdl/using/Simulation.html#cmdoption-ghdl-wave
+[*] The ports of c64_sqrt, and the registers of the digit-by-digit calculation,
+[*] all in hex.
 [*]
-[dumpfile] "/home/mike/git/MJoergen/math/c64_sqrt/c64_sqrt.ghw"
-[dumpfile_mtime] "Sat Dec 30 20:35:17 2023"
-[dumpfile_size] 2439
-[savefile] "/home/mike/git/MJoergen/math/c64_sqrt/c64_sqrt.gtkw"
 [timestart] 0
-[size] 1918 1009
-[pos] 2010 -1
-*-29.086586 42635810000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[size] 1610 1030
+[pos] -1 -1
+*-28.150000 0 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] top.
 [treeopen] top.tb_c64_sqrt.
 [treeopen] top.tb_c64_sqrt.c64_sqrt_inst.
 [sst_width] 249
-[signals_width] 352
+[signals_width] 300
 [sst_expanded] 1
-[sst_vpaned_height] 286
+[sst_vpaned_height] 298
 @800200
--c64_sqrt
+-c64_sqrt ports
 @28
 top.tb_c64_sqrt.c64_sqrt_inst.clk_i
-top.tb_c64_sqrt.c64_sqrt_inst.start_i
-top.tb_c64_sqrt.c64_sqrt_inst.ready_o
+top.tb_c64_sqrt.c64_sqrt_inst.rst_i
+top.tb_c64_sqrt.c64_sqrt_inst.s_valid_i
+top.tb_c64_sqrt.c64_sqrt_inst.s_ready_o
 @22
-#{top.tb_c64_sqrt.c64_sqrt_inst.exp_i[7:0]} top.tb_c64_sqrt.c64_sqrt_inst.exp_i[7] top.tb_c64_sqrt.c64_sqrt_inst.exp_i[6] top.tb_c64_sqrt.c64_sqrt_inst.exp_i[5] top.tb_c64_sqrt.c64_sqrt_inst.exp_i[4] top.tb_c64_sqrt.c64_sqrt_inst.exp_i[3] top.tb_c64_sqrt.c64_sqrt_inst.exp_i[2] top.tb_c64_sqrt.c64_sqrt_inst.exp_i[1] top.tb_c64_sqrt.c64_sqrt_inst.exp_i[0]
-#{top.tb_c64_sqrt.c64_sqrt_inst.mant_i[31:0]} top.tb_c64_sqrt.c64_sqrt_inst.mant_i[31] top.tb_c64_sqrt.c64_sqrt_inst.mant_i[30] top.tb_c64_sqrt.c64_sqrt_inst.mant_i[29] top.tb_c64_sqrt.c64_sqrt_inst.mant_i[28] top.tb_c64_sqrt.c64_sqrt_inst.mant_i[27] top.tb_c64_sqrt.c64_sqrt_inst.mant_i[26] top.tb_c64_sqrt.c64_sqrt_inst.mant_i[25] top.tb_c64_sqrt.c64_sqrt_inst.mant_i[24] top.tb_c64_sqrt.c64_sqrt_inst.mant_i[23] top.tb_c64_sqrt.c64_sqrt_inst.mant_i[22] top.tb_c64_sqrt.c64_sqrt_inst.mant_i[21] top.tb_c64_sqrt.c64_sqrt_inst.mant_i[20] top.tb_c64_sqrt.c64_sqrt_inst.mant_i[19] top.tb_c64_sqrt.c64_sqrt_inst.mant_i[18] top.tb_c64_sqrt.c64_sqrt_inst.mant_i[17] top.tb_c64_sqrt.c64_sqrt_inst.mant_i[16] top.tb_c64_sqrt.c64_sqrt_inst.mant_i[15] top.tb_c64_sqrt.c64_sqrt_inst.mant_i[14] top.tb_c64_sqrt.c64_sqrt_inst.mant_i[13] top.tb_c64_sqrt.c64_sqrt_inst.mant_i[12] top.tb_c64_sqrt.c64_sqrt_inst.mant_i[11] top.tb_c64_sqrt.c64_sqrt_inst.mant_i[10] top.tb_c64_sqrt.c64_sqrt_inst.mant_i[9] top.tb_c64_sqrt.c64_sqrt_inst.mant_i[8] top.tb_c64_sqrt.c64_sqrt_inst.mant_i[7] top.tb_c64_sqrt.c64_sqrt_inst.mant_i[6] top.tb_c64_sqrt.c64_sqrt_inst.mant_i[5] top.tb_c64_sqrt.c64_sqrt_inst.mant_i[4] top.tb_c64_sqrt.c64_sqrt_inst.mant_i[3] top.tb_c64_sqrt.c64_sqrt_inst.mant_i[2] top.tb_c64_sqrt.c64_sqrt_inst.mant_i[1] top.tb_c64_sqrt.c64_sqrt_inst.mant_i[0]
-#{top.tb_c64_sqrt.c64_sqrt_inst.exp_o[7:0]} top.tb_c64_sqrt.c64_sqrt_inst.exp_o[7] top.tb_c64_sqrt.c64_sqrt_inst.exp_o[6] top.tb_c64_sqrt.c64_sqrt_inst.exp_o[5] top.tb_c64_sqrt.c64_sqrt_inst.exp_o[4] top.tb_c64_sqrt.c64_sqrt_inst.exp_o[3] top.tb_c64_sqrt.c64_sqrt_inst.exp_o[2] top.tb_c64_sqrt.c64_sqrt_inst.exp_o[1] top.tb_c64_sqrt.c64_sqrt_inst.exp_o[0]
-#{top.tb_c64_sqrt.c64_sqrt_inst.mant_o[31:0]} top.tb_c64_sqrt.c64_sqrt_inst.mant_o[31] top.tb_c64_sqrt.c64_sqrt_inst.mant_o[30] top.tb_c64_sqrt.c64_sqrt_inst.mant_o[29] top.tb_c64_sqrt.c64_sqrt_inst.mant_o[28] top.tb_c64_sqrt.c64_sqrt_inst.mant_o[27] top.tb_c64_sqrt.c64_sqrt_inst.mant_o[26] top.tb_c64_sqrt.c64_sqrt_inst.mant_o[25] top.tb_c64_sqrt.c64_sqrt_inst.mant_o[24] top.tb_c64_sqrt.c64_sqrt_inst.mant_o[23] top.tb_c64_sqrt.c64_sqrt_inst.mant_o[22] top.tb_c64_sqrt.c64_sqrt_inst.mant_o[21] top.tb_c64_sqrt.c64_sqrt_inst.mant_o[20] top.tb_c64_sqrt.c64_sqrt_inst.mant_o[19] top.tb_c64_sqrt.c64_sqrt_inst.mant_o[18] top.tb_c64_sqrt.c64_sqrt_inst.mant_o[17] top.tb_c64_sqrt.c64_sqrt_inst.mant_o[16] top.tb_c64_sqrt.c64_sqrt_inst.mant_o[15] top.tb_c64_sqrt.c64_sqrt_inst.mant_o[14] top.tb_c64_sqrt.c64_sqrt_inst.mant_o[13] top.tb_c64_sqrt.c64_sqrt_inst.mant_o[12] top.tb_c64_sqrt.c64_sqrt_inst.mant_o[11] top.tb_c64_sqrt.c64_sqrt_inst.mant_o[10] top.tb_c64_sqrt.c64_sqrt_inst.mant_o[9] top.tb_c64_sqrt.c64_sqrt_inst.mant_o[8] top.tb_c64_sqrt.c64_sqrt_inst.mant_o[7] top.tb_c64_sqrt.c64_sqrt_inst.mant_o[6] top.tb_c64_sqrt.c64_sqrt_inst.mant_o[5] top.tb_c64_sqrt.c64_sqrt_inst.mant_o[4] top.tb_c64_sqrt.c64_sqrt_inst.mant_o[3] top.tb_c64_sqrt.c64_sqrt_inst.mant_o[2] top.tb_c64_sqrt.c64_sqrt_inst.mant_o[1] top.tb_c64_sqrt.c64_sqrt_inst.mant_o[0]
-@420
+top.tb_c64_sqrt.c64_sqrt_inst.s_exp_i[7:0]
+top.tb_c64_sqrt.c64_sqrt_inst.s_mant_i[31:0]
+@28
+top.tb_c64_sqrt.c64_sqrt_inst.m_valid_o
+top.tb_c64_sqrt.c64_sqrt_inst.m_ready_i
+@22
+top.tb_c64_sqrt.c64_sqrt_inst.m_exp_o[7:0]
+top.tb_c64_sqrt.c64_sqrt_inst.m_mant_o[31:0]
+@28
+top.tb_c64_sqrt.c64_sqrt_inst.m_error_o
+@1000200
+-c64_sqrt ports
+@800200
+-c64_sqrt internal
+@28
 top.tb_c64_sqrt.c64_sqrt_inst.state
 @22
-#{top.tb_c64_sqrt.c64_sqrt_inst.val[33:0]} top.tb_c64_sqrt.c64_sqrt_inst.val[33] top.tb_c64_sqrt.c64_sqrt_inst.val[32] top.tb_c64_sqrt.c64_sqrt_inst.val[31] top.tb_c64_sqrt.c64_sqrt_inst.val[30] top.tb_c64_sqrt.c64_sqrt_inst.val[29] top.tb_c64_sqrt.c64_sqrt_inst.val[28] top.tb_c64_sqrt.c64_sqrt_inst.val[27] top.tb_c64_sqrt.c64_sqrt_inst.val[26] top.tb_c64_sqrt.c64_sqrt_inst.val[25] top.tb_c64_sqrt.c64_sqrt_inst.val[24] top.tb_c64_sqrt.c64_sqrt_inst.val[23] top.tb_c64_sqrt.c64_sqrt_inst.val[22] top.tb_c64_sqrt.c64_sqrt_inst.val[21] top.tb_c64_sqrt.c64_sqrt_inst.val[20] top.tb_c64_sqrt.c64_sqrt_inst.val[19] top.tb_c64_sqrt.c64_sqrt_inst.val[18] top.tb_c64_sqrt.c64_sqrt_inst.val[17] top.tb_c64_sqrt.c64_sqrt_inst.val[16] top.tb_c64_sqrt.c64_sqrt_inst.val[15] top.tb_c64_sqrt.c64_sqrt_inst.val[14] top.tb_c64_sqrt.c64_sqrt_inst.val[13] top.tb_c64_sqrt.c64_sqrt_inst.val[12] top.tb_c64_sqrt.c64_sqrt_inst.val[11] top.tb_c64_sqrt.c64_sqrt_inst.val[10] top.tb_c64_sqrt.c64_sqrt_inst.val[9] top.tb_c64_sqrt.c64_sqrt_inst.val[8] top.tb_c64_sqrt.c64_sqrt_inst.val[7] top.tb_c64_sqrt.c64_sqrt_inst.val[6] top.tb_c64_sqrt.c64_sqrt_inst.val[5] top.tb_c64_sqrt.c64_sqrt_inst.val[4] top.tb_c64_sqrt.c64_sqrt_inst.val[3] top.tb_c64_sqrt.c64_sqrt_inst.val[2] top.tb_c64_sqrt.c64_sqrt_inst.val[1] top.tb_c64_sqrt.c64_sqrt_inst.val[0]
-#{top.tb_c64_sqrt.c64_sqrt_inst.mask[33:0]} top.tb_c64_sqrt.c64_sqrt_inst.mask[33] top.tb_c64_sqrt.c64_sqrt_inst.mask[32] top.tb_c64_sqrt.c64_sqrt_inst.mask[31] top.tb_c64_sqrt.c64_sqrt_inst.mask[30] top.tb_c64_sqrt.c64_sqrt_inst.mask[29] top.tb_c64_sqrt.c64_sqrt_inst.mask[28] top.tb_c64_sqrt.c64_sqrt_inst.mask[27] top.tb_c64_sqrt.c64_sqrt_inst.mask[26] top.tb_c64_sqrt.c64_sqrt_inst.mask[25] top.tb_c64_sqrt.c64_sqrt_inst.mask[24] top.tb_c64_sqrt.c64_sqrt_inst.mask[23] top.tb_c64_sqrt.c64_sqrt_inst.mask[22] top.tb_c64_sqrt.c64_sqrt_inst.mask[21] top.tb_c64_sqrt.c64_sqrt_inst.mask[20] top.tb_c64_sqrt.c64_sqrt_inst.mask[19] top.tb_c64_sqrt.c64_sqrt_inst.mask[18] top.tb_c64_sqrt.c64_sqrt_inst.mask[17] top.tb_c64_sqrt.c64_sqrt_inst.mask[16] top.tb_c64_sqrt.c64_sqrt_inst.mask[15] top.tb_c64_sqrt.c64_sqrt_inst.mask[14] top.tb_c64_sqrt.c64_sqrt_inst.mask[13] top.tb_c64_sqrt.c64_sqrt_inst.mask[12] top.tb_c64_sqrt.c64_sqrt_inst.mask[11] top.tb_c64_sqrt.c64_sqrt_inst.mask[10] top.tb_c64_sqrt.c64_sqrt_inst.mask[9] top.tb_c64_sqrt.c64_sqrt_inst.mask[8] top.tb_c64_sqrt.c64_sqrt_inst.mask[7] top.tb_c64_sqrt.c64_sqrt_inst.mask[6] top.tb_c64_sqrt.c64_sqrt_inst.mask[5] top.tb_c64_sqrt.c64_sqrt_inst.mask[4] top.tb_c64_sqrt.c64_sqrt_inst.mask[3] top.tb_c64_sqrt.c64_sqrt_inst.mask[2] top.tb_c64_sqrt.c64_sqrt_inst.mask[1] top.tb_c64_sqrt.c64_sqrt_inst.mask[0]
-#{top.tb_c64_sqrt.c64_sqrt_inst.mant[33:0]} top.tb_c64_sqrt.c64_sqrt_inst.mant[33] top.tb_c64_sqrt.c64_sqrt_inst.mant[32] top.tb_c64_sqrt.c64_sqrt_inst.mant[31] top.tb_c64_sqrt.c64_sqrt_inst.mant[30] top.tb_c64_sqrt.c64_sqrt_inst.mant[29] top.tb_c64_sqrt.c64_sqrt_inst.mant[28] top.tb_c64_sqrt.c64_sqrt_inst.mant[27] top.tb_c64_sqrt.c64_sqrt_inst.mant[26] top.tb_c64_sqrt.c64_sqrt_inst.mant[25] top.tb_c64_sqrt.c64_sqrt_inst.mant[24] top.tb_c64_sqrt.c64_sqrt_inst.mant[23] top.tb_c64_sqrt.c64_sqrt_inst.mant[22] top.tb_c64_sqrt.c64_sqrt_inst.mant[21] top.tb_c64_sqrt.c64_sqrt_inst.mant[20] top.tb_c64_sqrt.c64_sqrt_inst.mant[19] top.tb_c64_sqrt.c64_sqrt_inst.mant[18] top.tb_c64_sqrt.c64_sqrt_inst.mant[17] top.tb_c64_sqrt.c64_sqrt_inst.mant[16] top.tb_c64_sqrt.c64_sqrt_inst.mant[15] top.tb_c64_sqrt.c64_sqrt_inst.mant[14] top.tb_c64_sqrt.c64_sqrt_inst.mant[13] top.tb_c64_sqrt.c64_sqrt_inst.mant[12] top.tb_c64_sqrt.c64_sqrt_inst.mant[11] top.tb_c64_sqrt.c64_sqrt_inst.mant[10] top.tb_c64_sqrt.c64_sqrt_inst.mant[9] top.tb_c64_sqrt.c64_sqrt_inst.mant[8] top.tb_c64_sqrt.c64_sqrt_inst.mant[7] top.tb_c64_sqrt.c64_sqrt_inst.mant[6] top.tb_c64_sqrt.c64_sqrt_inst.mant[5] top.tb_c64_sqrt.c64_sqrt_inst.mant[4] top.tb_c64_sqrt.c64_sqrt_inst.mant[3] top.tb_c64_sqrt.c64_sqrt_inst.mant[2] top.tb_c64_sqrt.c64_sqrt_inst.mant[1] top.tb_c64_sqrt.c64_sqrt_inst.mant[0]
+top.tb_c64_sqrt.c64_sqrt_inst.val[33:0]
+top.tb_c64_sqrt.c64_sqrt_inst.mant[33:0]
+top.tb_c64_sqrt.c64_sqrt_inst.mask[33:0]
+top.tb_c64_sqrt.c64_sqrt_inst.exp[7:0]
+@28
+top.tb_c64_sqrt.c64_sqrt_inst.neg
 @1000200
--c64_sqrt
+-c64_sqrt internal
 [pattern_trace] 1
 [pattern_trace] 0

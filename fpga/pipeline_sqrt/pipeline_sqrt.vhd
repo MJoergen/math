@@ -12,6 +12,18 @@ library ieee;
 -- Timing: This is a 2-stage pipeline. It accepts a new input in every clock cycle,
 --         and the result is available 2 clock cycles after the input.
 
+-- Interface:
+-- The input is accepted when s_valid_i and s_ready_o are both asserted on the same
+-- clock edge. The result is presented when m_valid_o is asserted, and is held stable
+-- until m_ready_i is asserted. None of the output signals depend combinatorially on
+-- any of the input signals. rst_i is a synchronous reset (active high). It clears
+-- m_valid_o, and discards the values in the pipeline.
+--
+-- When the output register is full, and m_ready_i is not asserted, the whole pipeline
+-- stalls. s_ready_o is a register, so it is only deasserted one clock cycle later. An
+-- input that is accepted in the meantime is stored in a skid buffer, and enters the
+-- pipeline when the stall is over.
+
 -- FPGA Resources:
 -- This implementation uses two BRAMs and one DSP, and a small amount of extra logic.
 -- With a clock period of 7.5 ns or less, Vivado 2025.1 synthesis implements some
@@ -44,9 +56,18 @@ entity pipeline_sqrt is
       G_EXTRA_BITS : natural
    );
    port (
-      clk_i  : in  std_logic;
-      data_i : in  std_logic_vector(21 downto 0); -- Fixed point 2.20
-      data_o : out std_logic_vector(21 downto 0)  -- Fixed point 0.22
+      clk_i     : in  std_logic;
+      rst_i     : in  std_logic;
+
+      -- Input
+      s_valid_i : in  std_logic;
+      s_ready_o : out std_logic;
+      s_data_i  : in  std_logic_vector(21 downto 0);   -- Fixed point 2.20
+
+      -- Output
+      m_valid_o : out std_logic;
+      m_ready_i : in  std_logic;
+      m_data_o  : out std_logic_vector(21 downto 0)    -- Fixed point 0.22
    );
 end entity pipeline_sqrt;
 
@@ -137,6 +158,21 @@ architecture synthesis of pipeline_sqrt is
    constant C_SQRT_ROM_HIGH : bram_type := sqrt_rom_high_initial;
    constant C_INV_SQRT_ROM  : bram_type := inv_sqrt_rom_initial;
 
+   -- The whole pipeline advances when the output register is empty, or is
+   -- being read
+   signal ce : std_logic;
+
+   -- The skid buffer holds an input that was accepted while the pipeline was
+   -- stalled
+   signal skid_valid : std_logic;
+   signal skid_data  : std_logic_vector(21 downto 0);
+
+   -- The input to the pipeline: From the skid buffer, if it is full, or else
+   -- directly from s_data_i
+   signal in_valid : std_logic;
+   signal in_data  : std_logic_vector(21 downto 0);
+
+   signal stage1_valid     : std_logic;
    signal stage1_sqrt_low  : std_logic_vector(C_BRAM_DATA_BITS-1 downto 0);
    signal stage1_sqrt_high : std_logic_vector(G_EXTRA_BITS-1 downto 0);
    signal stage1_inv_sqrt  : std_logic_vector(C_BRAM_DATA_BITS-1 downto 0);
@@ -146,24 +182,57 @@ architecture synthesis of pipeline_sqrt is
    signal stage1_f         : signed(40 downto 0) := (others => '0');
    signal stage1_abc       : signed(40 downto 0);
 
-   signal stage2_data : std_logic_vector(21 downto 0);
-
 begin
+
+   ce <= m_ready_i or not m_valid_o;
+
+   s_ready_o <= not skid_valid;
+
+   in_valid <= s_valid_i or skid_valid;
+   in_data  <= skid_data when skid_valid = '1' else
+               s_data_i;
+
+   skid_proc : process (clk_i)
+   begin
+      if rising_edge(clk_i) then
+         if ce = '1' then
+            -- The skid buffer is emptied into the pipeline
+            skid_valid <= '0';
+         elsif s_valid_i = '1' and s_ready_o = '1' then
+            skid_valid <= '1';
+            skid_data  <= s_data_i;
+         end if;
+
+         if rst_i = '1' then
+            skid_valid <= '0';
+         end if;
+      end if;
+   end process skid_proc;
 
    stage1_proc : process (clk_i)
       variable ram_addr_v : natural range 0 to 2**C_BRAM_ADDR_BITS-1;
    begin
       if rising_edge(clk_i) then
-         assert data_i(21 downto 20) /= "00"; -- Integer part must be nonzero
+         if ce = '1' then
+            stage1_valid <= in_valid;
 
-         -- Calculate the lookup address
-         ram_addr_v := to_integer(unsigned(data_i(21 downto 11)));
+            if in_valid = '1' then
+               assert in_data(21 downto 20) /= "00"; -- Integer part must be nonzero
 
-         -- Perform the ROM lookups
-         stage1_sqrt_low  <= C_SQRT_ROM_LOW(ram_addr_v);
-         stage1_sqrt_high <= C_SQRT_ROM_HIGH(ram_addr_v)(C_BRAM_DATA_BITS-1 downto C_BRAM_DATA_BITS-G_EXTRA_BITS);
-         stage1_inv_sqrt  <= C_INV_SQRT_ROM(ram_addr_v);
-         stage1_data_lsb  <= data_i(10 downto 0);
+               -- Calculate the lookup address
+               ram_addr_v := to_integer(unsigned(in_data(21 downto 11)));
+
+               -- Perform the ROM lookups
+               stage1_sqrt_low  <= C_SQRT_ROM_LOW(ram_addr_v);
+               stage1_sqrt_high <= C_SQRT_ROM_HIGH(ram_addr_v)(C_BRAM_DATA_BITS-1 downto C_BRAM_DATA_BITS-G_EXTRA_BITS);
+               stage1_inv_sqrt  <= C_INV_SQRT_ROM(ram_addr_v);
+               stage1_data_lsb  <= in_data(10 downto 0);
+            end if;
+         end if;
+
+         if rst_i = '1' then
+            stage1_valid <= '0';
+         end if;
       end if;
    end process stage1_proc;
 
@@ -179,12 +248,20 @@ begin
    stage2_proc : process (clk_i)
    begin
       if rising_edge(clk_i) then
-         -- Combine the final result
-         stage2_data <= stage1_sqrt_high & std_logic_vector(stage1_abc(39-G_EXTRA_BITS downto 18));
+         if ce = '1' then
+            m_valid_o <= stage1_valid;
+
+            if stage1_valid = '1' then
+               -- Combine the final result
+               m_data_o <= stage1_sqrt_high & std_logic_vector(stage1_abc(39-G_EXTRA_BITS downto 18));
+            end if;
+         end if;
+
+         if rst_i = '1' then
+            m_valid_o <= '0';
+         end if;
       end if;
    end process stage2_proc;
-
-   data_o <= stage2_data;
 
 end architecture synthesis;
 

@@ -19,22 +19,24 @@ help: ## Show this help message
 SRC = dsp.vhd c64_sqrt2.vhd tb_c64_sqrt2.vhd
 
 # The testbench calculates the square root of 0, 1, 2, 3, 4, 0.5, and -1
-# (which gives an error), and of 15938 values from 0.031 to 8, and prints the
-# average number of clock cycles per calculation. The last bit of the mantissa
-# is not always exact, see README.md, so the mismatches are reported, but they
-# do not stop the simulation.
+# (which gives an error), and of 15938 values from 0.031 to 8. The last bit of
+# the mantissa is not always exact, see README.md, so these mismatches are
+# reported as warnings, but they do not stop the simulation. It runs twice:
+# First with random stalls on the input and the output, and then without any
+# stalls. Each run prints the average number of clock cycles per calculation.
 .PHONY: sim
-sim: $(SRC) ## Run the testbench (about 20 seconds)
+sim: $(SRC) ## Run the testbench, with and without stalls (about 40 seconds)
 	ghdl -a --std=08 $(SRC)
 	ghdl -e --std=08 tb_c64_sqrt2
-	ghdl -r --std=08 tb_c64_sqrt2 --stop-time=6000us
+	ghdl -r --std=08 tb_c64_sqrt2 --assert-level=error
+	ghdl -r --std=08 tb_c64_sqrt2 -gG_VALID_PCT=100 -gG_READY_PCT=100 --assert-level=error
 
-# The same, but also write a waveform (about 33 MB)
+# The same, with random stalls, but also write a waveform (about 33 MB)
 .PHONY: debug
 debug: $(SRC) ## Run the testbench, and write a waveform to c64_sqrt2.ghw
 	ghdl -a --std=08 $(SRC)
 	ghdl -e --std=08 tb_c64_sqrt2
-	ghdl -r --std=08 tb_c64_sqrt2 --stop-time=6000us --wave=c64_sqrt2.ghw
+	ghdl -r --std=08 tb_c64_sqrt2 --assert-level=error --wave=c64_sqrt2.ghw
 
 # GTKWave, see https://github.com/gtkwave/gtkwave
 .PHONY: show_debug

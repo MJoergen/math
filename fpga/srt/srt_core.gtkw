@@ -22,6 +22,7 @@
 -srt_core
 @28
 srt_core.clk_i
+srt_core.rst_i
 srt_core.s_valid_i
 srt_core.s_ready_o
 @22

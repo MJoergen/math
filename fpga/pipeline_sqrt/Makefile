@@ -22,24 +22,30 @@ SRC = pipeline_sqrt.vhd tb_pipeline_sqrt.vhd
 EXTRA_BITS ?= 0 1 2 3 4
 
 # For each value of G_EXTRA_BITS, the testbench calculates the square root of
-# all 3*2^20 valid inputs, from 0x100000 to 0x3FFFFF, and prints each result
-# whose error is larger than any previous error. The testbench stops the clock
-# after the last input (at about 31.5 ms), so --stop-time is just a safeguard.
+# all 3*2^20 valid inputs, from 0x100000 to 0x3FFFFF, without stalls, and
+# prints each result whose error is larger than any previous error. It also
+# verifies that there is a result in every clock cycle. Finally, it runs with
+# G_EXTRA_BITS=2 and random stalls on the input and the output, for 100000
+# inputs in a scrambled order (G_STRIDE, see tb_pipeline_sqrt.vhd).
 .PHONY: sim
-sim: $(SRC) ## Run the testbench for G_EXTRA_BITS from 0 to 4 (about 3 to 4 minutes each)
+sim: $(SRC) ## Run the testbench for G_EXTRA_BITS from 0 to 4 (about 3 to 4 minutes each), and with stalls
 	ghdl -a --std=08 $(SRC)
 	ghdl -e --std=08 tb_pipeline_sqrt
 	set -e; for bits in $(EXTRA_BITS); do \
 	   echo "G_EXTRA_BITS=$$bits"; \
-	   ghdl -r --std=08 tb_pipeline_sqrt -gG_EXTRA_BITS=$$bits --stop-time=50ms --assert-level=error; \
+	   ghdl -r --std=08 tb_pipeline_sqrt -gG_EXTRA_BITS=$$bits --assert-level=error; \
 	done
+	echo "G_EXTRA_BITS=2, with stalls"
+	ghdl -r --std=08 tb_pipeline_sqrt -gG_EXTRA_BITS=2 -gG_NUM_TESTS=100000 -gG_STRIDE=40507 \
+	   -gG_VALID_PCT=70 -gG_READY_PCT=70 --assert-level=error
 
-# A short run, which writes about 25 us of waveform
+# A short run with random stalls, which writes about 35 us of waveform
 .PHONY: debug
-debug: $(SRC) ## Run the testbench shortly with G_EXTRA_BITS=2, and write a waveform to pipeline_sqrt.ghw
+debug: $(SRC) ## Run the testbench shortly with G_EXTRA_BITS=2 and stalls, and write a waveform to pipeline_sqrt.ghw
 	ghdl -a --std=08 $(SRC)
 	ghdl -e --std=08 tb_pipeline_sqrt
-	ghdl -r --std=08 tb_pipeline_sqrt -gG_EXTRA_BITS=2 --stop-time=25us --wave=pipeline_sqrt.ghw
+	ghdl -r --std=08 tb_pipeline_sqrt -gG_EXTRA_BITS=2 -gG_NUM_TESTS=2000 -gG_STRIDE=40507 \
+	   -gG_VALID_PCT=70 -gG_READY_PCT=70 --assert-level=error --wave=pipeline_sqrt.ghw
 
 # GTKWave, see https://github.com/gtkwave/gtkwave
 .PHONY: show_debug

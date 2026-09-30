@@ -2,25 +2,59 @@ library ieee;
    use ieee.std_logic_1164.all;
    use ieee.numeric_std.all;
 
+-- This divides two 32-bit unsigned integers using Goldschmidt division, see
+-- https://en.wikipedia.org/wiki/Division_algorithm#Goldschmidt_division
+-- and README.md. The quotient is a 64-bit fixed-point number, with 32 integer
+-- bits and 32 fractional bits.
+--
+-- Interface:
+-- The inputs are accepted when s_valid_i and s_ready_o are both asserted on
+-- the same clock edge. The quotient is presented when m_valid_o is asserted,
+-- and is held stable until m_ready_i is asserted. None of the output signals
+-- depend combinatorially on any of the input signals. rst_i is a synchronous
+-- reset (active high). It clears m_valid_o, and abandons a calculation in
+-- progress.
+--
+-- A division by zero gives a quotient of all ones (the largest value).
+--
+-- Latency and throughput:
+-- m_valid_o is asserted at most 7 clock cycles after the inputs are accepted
+-- (1 clock cycle for a division by zero). A new pair of inputs is accepted in
+-- the clock cycle after the quotient is written to the output register.
+
 entity fast_divide is
    generic (
       G_DEBUG : boolean := false
    );
    port (
-      clk_i        : in  std_logic;
-      n_i          : in  unsigned(31 downto 0);
-      d_i          : in  unsigned(31 downto 0);
-      q_o          : out unsigned(63 downto 0);
-      start_over_i : in  std_logic;
-      busy_o       : out std_logic := '0'
+      clk_i     : in  std_logic;
+      rst_i     : in  std_logic;
+
+      -- Input
+      s_valid_i : in  std_logic;
+      s_ready_o : out std_logic;
+      s_n_i     : in  std_logic_vector(31 downto 0);   -- Numerator (unsigned)
+      s_d_i     : in  std_logic_vector(31 downto 0);   -- Divisor (unsigned)
+
+      -- Output
+      m_valid_o : out std_logic;
+      m_ready_i : in  std_logic;
+      m_q_o     : out std_logic_vector(63 downto 0)    -- Quotient (32.32 fixed point)
    );
 end entity fast_divide;
 
 architecture synthesis of fast_divide is
 
+   -- IDLE_ST   : Waiting for new inputs.
+   -- STEP_ST   : The iterations, one in each clock cycle.
+   -- OUTPUT_ST : The quotient is ready. It is written to the output register
+   --             as soon as the output register is free.
    type   state_type is (IDLE_ST, STEP_ST, OUTPUT_ST);
    signal state           : state_type := IDLE_ST;
    signal steps_remaining : integer range 0 to 5 := 0;
+
+   -- Set for a division by zero
+   signal div_zero : std_logic;
 
    signal dd : unsigned(35 downto 0) := to_unsigned(0, 36);
    signal nn : unsigned(67 downto 0) := to_unsigned(0, 68);
@@ -37,6 +71,9 @@ architecture synthesis of fast_divide is
 
 begin
 
+   s_ready_o <= '1' when state = IDLE_ST else
+                '0';
+
    fsm_proc : process (clk_i)
       variable temp64_v        : unsigned( 73 downto 0) := to_unsigned(0, 74);
       variable temp96_v        : unsigned(105 downto 0) := to_unsigned(0, 106);
@@ -49,15 +86,15 @@ begin
          if G_DEBUG then
             report "state is " & state_type'image(state);
          end if;
-         -- only for vunit test
-         -- report "q$" & to_hstring(q) & " = n$" & to_hstring(n) & " / d$" & to_hstring(d);
+
+         if m_ready_i = '1' then
+            m_valid_o <= '0';
+         end if;
+
          case state is
+
             when IDLE_ST =>
-               -- Deal with divide by zero
-               if dd = to_unsigned(0, 36) then
-                  q_o    <= (others => '1');
-                  busy_o <= '0';
-               end if;
+               null;
 
             when STEP_ST =>
                if G_DEBUG then
@@ -94,30 +131,38 @@ begin
                end if;
 
             when OUTPUT_ST =>
-               -- No idea why we need to add one, but we do to stop things like 4/2
-               -- giving a result of 1.999999999
-               temp64_v(67 downto  0) := nn;
-               temp64_v(73 downto 68) := (others => '0');
-               temp64_v               := temp64_v + 7;
-               if G_DEBUG then
-                  report "temp64=$" & to_hstring(temp64_v);
+               -- Wait until the output register is free
+               if m_valid_o = '0' or m_ready_i = '1' then
+                  -- No idea why we need to add one, but we do to stop things like 4/2
+                  -- giving a result of 1.999999999
+                  temp64_v(67 downto  0) := nn;
+                  temp64_v(73 downto 68) := (others => '0');
+                  temp64_v               := temp64_v + 7;
+                  if G_DEBUG then
+                     report "temp64=$" & to_hstring(temp64_v);
+                  end if;
+                  if div_zero = '1' then
+                     m_q_o <= (others => '1');
+                  else
+                     m_q_o <= std_logic_vector(temp64_v(67 downto 4));
+                  end if;
+                  m_valid_o <= '1';
+                  state     <= IDLE_ST;
                end if;
-               busy_o <= '0';
-               q_o    <= temp64_v(67 downto 4);
-               state  <= IDLE_ST;
 
          end case;
 
-         if start_over_i = '1' and d_i /= to_unsigned(0, 32) then
+         -- This takes priority over the state machine above
+         if s_valid_i = '1' and s_ready_o = '1' then
             if G_DEBUG then
-               report "Calculating $" & to_hstring(n_i) & " / $" & to_hstring(d_i);
+               report "Calculating $" & to_hstring(s_n_i) & " / $" & to_hstring(s_d_i);
             end if;
 
-            leading_zeros_v                                       := count_leading_zeros(d_i);
+            leading_zeros_v                                       := count_leading_zeros(unsigned(s_d_i));
             new_dd_v                                              := (others => '0');
-            new_dd_v(35 downto 4+leading_zeros_v)                 := d_i(31-leading_zeros_v downto 0);
+            new_dd_v(35 downto 4+leading_zeros_v)                 := unsigned(s_d_i(31-leading_zeros_v downto 0));
             new_nn_v                                              := (others => '0');
-            new_nn_v(35+leading_zeros_v downto 4+leading_zeros_v) := n_i;
+            new_nn_v(35+leading_zeros_v downto 4+leading_zeros_v) := unsigned(s_n_i);
             if G_DEBUG then
                report "Normalised to $" & to_hstring(new_nn_v(67 downto 36)) & "." &
                       to_hstring(new_nn_v(35 downto 4)) & "." & to_hstring(new_nn_v(3 downto 0))
@@ -128,11 +173,20 @@ begin
             state <= STEP_ST;
 
             steps_remaining <= 5;
-            busy_o          <= '1';
-         elsif start_over_i = '1' then
-            if G_DEBUG then
-               report "Ignoring divide by zero";
+            div_zero        <= '0';
+
+            if s_d_i = X"00000000" then
+               if G_DEBUG then
+                  report "Divide by zero";
+               end if;
+               div_zero <= '1';
+               state    <= OUTPUT_ST;
             end if;
+         end if;
+
+         if rst_i = '1' then
+            m_valid_o <= '0';
+            state     <= IDLE_ST;
          end if;
 
       end if;
