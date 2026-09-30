@@ -11,7 +11,7 @@ timing.
 | [`c64_sqrt`](c64_sqrt) | Square root of a C64 floating point number, using the digit-by-digit method, in 34 clock cycles.
 | [`c64_sqrt2`](c64_sqrt2) | Square root of a C64 floating point number, using Goldschmidt's algorithm with multipliers, in 5 to 9 clock cycles.
 | [`pipeline_sqrt`](pipeline_sqrt) | Pipelined square root of a fixed-point number, using lookup tables and one multiplier, with one result per clock cycle.
-| [`c64_sincos`](c64_sincos) | Sine and cosine of a C64 floating point number, using CORDIC, in 33 clock cycles.
+| [`c64_sincos`](c64_sincos) | Sine and cosine of a C64 floating point number, using CORDIC, in 37 clock cycles.
 | [`tan_cordic`](tan_cordic) | Tangent of a fixed-point angle, using the CORDIC variant of the Intel 8087.
 
 ## Interface

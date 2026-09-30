@@ -44,10 +44,10 @@ library work;
 -- (active high). It clears m_valid_o, and abandons a calculation in progress.
 --
 -- Latency and throughput:
--- m_valid_o is asserted 33 clock cycles after the input is accepted. A new
+-- m_valid_o is asserted 37 clock cycles after the input is accepted. A new
 -- input is accepted in the clock cycle after the result is written to the
 -- output register. So if m_ready_i is constantly asserted, a new input is
--- accepted every 34 clock cycles.
+-- accepted every 38 clock cycles.
 
 entity c64_sincos is
    generic (
@@ -76,7 +76,7 @@ end entity c64_sincos;
 architecture synthesis of c64_sincos is
 
    -- C_ANGLE_NUM is the number of CORDIC iterations.
-   constant C_ANGLE_NUM : natural         := 29;
+   constant C_ANGLE_NUM : natural         := 33;
 
    -- This calculates the scaling used in the CORDIC algorithm.
    -- The returned value is approximately 0.6072529350088812, in the limit

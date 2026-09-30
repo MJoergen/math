@@ -6,10 +6,10 @@ library ieee;
 -- Testbench for the sine and cosine.
 --
 -- It calculates the sine and cosine of 121 angles from 0 to pi/4, and checks
--- that the absolute error is less than 2^(-27.5). It prints the largest
+-- that the absolute error is less than 2^(-31). It prints the largest
 -- absolute error of each, and the angles where they occur. The limit is just
--- above the error of 2^(-28) of the 29 CORDIC iterations. (With only 28
--- iterations the error is 2^(-27).)
+-- above the error of about 2^(-31.4) of the 33 CORDIC iterations. (With one
+-- iteration less the error is about 2^(-30.8).)
 --
 -- In each clock cycle, VALID and READY are asserted randomly with the
 -- probabilities G_VALID_PCT and G_READY_PCT. At the end, the average number of
@@ -28,7 +28,7 @@ architecture simulation of tb_c64_sincos is
    constant C_PI         : real    := 3.141592653589793;
    constant C_DEBUG      : boolean := false;
    constant C_NUM_TESTS  : natural := 121;
-   constant C_MAX_ERROR  : real    := 2.0 ** (-27.5);
+   constant C_MAX_ERROR  : real    := 2.0 ** (-31);
 
    -- The i'th test angle
    pure function get_angle (
