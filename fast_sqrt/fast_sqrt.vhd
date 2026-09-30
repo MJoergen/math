@@ -5,7 +5,8 @@ use ieee.numeric_std.all;
 -- This module takes a floating point number (exp_i, mant_i) and returns the
 -- square root as a floating point number (exp_o, mant_o).
 --
--- It takes a total of 34 clock cycles to perform the calculation.
+-- It takes a total of 33 clock cycles to perform the calculation, i.e. ready_o
+-- goes high 33 clock cycles after the clock cycle where start_i is high.
 -- It calculates one extra bit in order to perform the correct rounding.
 --
 -- Input and output are given in C64 floating point format (5-byte).
