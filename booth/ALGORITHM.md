@@ -156,3 +156,110 @@ store it, and a wider multiplexer, which no longer fits in a single 6-input LUT.
 So radix 8 gives 33% fewer clock cycles than radix 4, at the cost of
 significantly more hardware and a longer critical path. Radix 4 is therefore
 the sweet spot for this kind of sequential multiplier.
+
+## Carry-save version
+In `booth.vhd`, the critical path is the carry chain of the adder, which
+grows with `G_DATA_SIZE`, see [Timing](#timing). And each clock cycle handles
+only two bits of Q. [`booth_csa.vhd`](booth_csa.vhd) removes both limits.
+Instead of a higher radix, which would need the hard multiple 3M, it handles
+several radix 4 digits (`G_DIGITS`) in each clock cycle.
+
+### Carry-save form
+P is kept as the sum of two vectors, s and c. Adding an operand to s + c is
+done with a 3:2 compressor: a full adder for each bit, whose sum bits form
+the new s, and whose carry bits (shifted one bit to the left) form the new c.
+There is no carry chain, so this is one LUT level for every bit, however wide
+P is. With k = `G_DIGITS`, each iteration adds k operands (operand j shifted
+2*j bits to the left) with k compressors in a tree, i.e. about log1.5(k+2)
+LUT levels.
+
+The low 2*k bits of the result are shifted out of P, into the product. They
+are added (with a small 2*k bit adder, and a carry into the next iteration)
+in the next clock cycle, so that this adder is not in series with the
+compressors.
+
+Two details make this work for signed numbers:
+* **Bias:** s and c cannot be sign-extended individually. So the design
+  stores P + B instead of P, where B = 2^(`G_DATA_SIZE`+1), which is never
+  negative. Each operand is added with the bias 3B (inverting its MSB and
+  prepending a one). The k biases add up to (4^k - 1)*B, so after the shift by
+  2*k bits the bias is B again, and the bits shifted out are unchanged. So all
+  the vectors are non-negative, and are simply shifted with zeros.
+* **Subtraction:** A negative operand is the inverted operand plus one. For
+  operand j, the one belongs at bit 2*j. It is split into 4^j - 1 (the free
+  bits below operand j, all set to one) and 1 (the free LSB of the carry
+  vector of compressor j). So no extra vector is needed.
+
+### Final addition
+After the last iteration, s and c must be added to give the upper bits of the
+product. This is done by a carry-select adder in two clock cycles:
+1. The bits are split into blocks of `G_CPA_SIZE` bits. Each block is added
+   twice, with carry input 0 and 1, giving two sums and two carry outputs.
+2. The carry input of each block is found by one short addition, with one bit
+   for each block. Then each block selects one of its two sums.
+
+So the latency is `ceil(G_DATA_SIZE/(2*G_DIGITS)) + 2` clock cycles, and the
+longest carry chain has `G_CPA_SIZE` bits (default 7) or one bit per block,
+independently of `G_DATA_SIZE`.
+
+### Results
+Implemented with Vivado 2025.1 for the Artix-7 part of `make vivado`. The
+maximum clock frequency is averaged over two or three runs with different
+clock constraints, since it varies by about 5% between runs. The time is the
+number of clock cycles times the clock period, i.e. the latency of a product.
+
+| Design                   | `G_DATA_SIZE` | Clock cycles | Clock (MHz) | Time (ns) | LUT  | FF   |
+| ------------------------ | ------------- | ------------ | ----------- | --------- | ---- | ---- |
+| `booth.vhd`              | 16            |  8           | 420         | 19.0      |   79 |  104 |
+| `booth_csa.vhd`, k=1     | 16            | 10           | 503         | 19.9      |  172 |  171 |
+| `booth_csa.vhd`, k=2     | 16            |  6           | 420         | 14.3      |  244 |  196 |
+| `booth_csa.vhd`, k=4     | 16            |  4           | 411         |  9.7      |  380 |  248 |
+| `booth_csa.vhd`, k=8     | 16            |  3           | 355         |  8.5      |  591 |  337 |
+| `booth.vhd`              | 32            | 16           | 365         | 43.8      |  144 |  201 |
+| `booth_csa.vhd`, k=1     | 32            | 18           | 408         | 44.1      |  325 |  326 |
+| `booth_csa.vhd`, k=2     | 32            | 10           | 415         | 24.1      |  441 |  370 |
+| `booth_csa.vhd`, k=4     | 32            |  6           | 399         | 15.0      |  701 |  454 |
+| `booth_csa.vhd`, k=8     | 32            |  4           | 334         | 12.0      | 1551 |  628 |
+| `booth.vhd`              | 64            | 32           | 285         | 112       |  274 |  394 |
+| `booth_csa.vhd`, k=1     | 64            | 34           | 395         | 86.1      |  629 |  636 |
+| `booth_csa.vhd`, k=2     | 64            | 18           | 367         | 49.0      |  848 |  711 |
+| `booth_csa.vhd`, k=4     | 64            | 10           | 386         | 25.9      | 1329 |  859 |
+| `booth_csa.vhd`, k=8     | 64            |  6           | 311         | 19.3      | 2478 | 1166 |
+
+k is `G_DIGITS`, and `G_CPA_SIZE` is 7. The throughput is one product per
+latency (the clock cycles above), for all designs.
+
+The resource usage estimated with Yosys (`make synth`, with the default
+`G_DIGITS=4`) is:
+
+| `G_DATA_SIZE` | LUT  | FF  | CARRY4 | Logic levels |
+| ------------- | ---- | --- | ------ | ------------ |
+|  8            |  159 | 133 | 11     | 4            |
+| 16            |  389 | 241 | 16     | 4            |
+| 32            |  722 | 439 | 29     | 4            |
+| 64            | 1398 | 832 | 44     | 5            |
+
+The number of logic levels hardly depends on `G_DATA_SIZE`, unlike for
+`booth.vhd` (see [Resource usage](#resource-usage)).
+
+### Trade-off
+* With one digit per clock cycle (k=1), the carry-save form alone does not
+  help much: The clock frequency no longer depends on `G_DATA_SIZE`, but the
+  final addition adds two clock cycles, so it only pays off for
+  `G_DATA_SIZE=64`.
+* The real gain is that more digits per clock cycle are now cheap: Each extra
+  digit costs about one more compressor (one LUT for each bit), instead of
+  another carry chain in series. Up to k=4 the clock frequency stays at about
+  400 MHz, so the time for a product drops almost in proportion to k.
+* At k=8 the compressor tree (4 LUT levels) becomes the critical path, and
+  the clock frequency drops to about 310-355 MHz. This still gives the shortest time, but it doubles the number
+  of LUTs compared to k=4.
+* The number of LUTs grows about linearly with k and with `G_DATA_SIZE`,
+  since there are k operands of `G_DATA_SIZE+3` bits each. k=4 is a good
+  compromise: 2 to 4 times shorter time than `booth.vhd`, for about 5 times
+  as many LUTs.
+
+What limits the clock frequency now are the short carry chains (in the final
+addition, and in the addition of the low bits), which take about 2.2-2.5 ns
+from register to register even with only 2 or 3 CARRY4 cells, because of the
+routing into and out of the chain.

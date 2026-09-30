@@ -6,6 +6,8 @@ library ieee;
 -- Testbench for the Booth multiplier.
 --
 -- G_RADIX selects the design: 4 for booth.vhd, and 2 for booth_radix2.vhd.
+-- If G_CSA is true, booth_csa.vhd (radix 4, with carry-save addition) is
+-- tested instead, with the generics G_DIGITS and G_CPA_SIZE.
 --
 -- If G_EXHAUSTIVE is true, all pairs of inputs are tested. Otherwise
 -- G_NUM_TESTS pairs are tested: First all 25 pairs of the values most
@@ -16,11 +18,16 @@ library ieee;
 -- probabilities G_VALID_PCT and G_READY_PCT. When both probabilities are 100%,
 -- the throughput is verified as well: one product every ceil(G_DATA_SIZE/2)
 -- clock cycles for radix 4 (for G_DATA_SIZE >= 3), and every G_DATA_SIZE
--- clock cycles for radix 2 (for G_DATA_SIZE >= 2).
+-- clock cycles for radix 2 (for G_DATA_SIZE >= 2). For booth_csa.vhd the
+-- final addition takes some extra clock cycles, see C_CYCLES in
+-- booth_csa.vhd.
 
 entity tb_booth is
    generic (
       G_RADIX      : positive := 4;
+      G_CSA        : boolean  := false;
+      G_DIGITS     : positive := 4;
+      G_CPA_SIZE   : positive := 7;
       G_DATA_SIZE  : positive := 4;
       G_EXHAUSTIVE : boolean  := true;
       G_NUM_TESTS  : natural  := 5000;
@@ -48,7 +55,10 @@ architecture simulation of tb_booth is
    -- the smallest G_DATA_SIZE where this holds
    pure function get_iters return natural is
    begin
-      if G_RADIX = 2 then
+      if G_CSA then
+         -- The iterations, and two clock cycles for the final addition
+         return (G_DATA_SIZE + 2 * G_DIGITS - 1) / (2 * G_DIGITS) + 2;
+      elsif G_RADIX = 2 then
          return G_DATA_SIZE;
       else
          return (G_DATA_SIZE + 1) / 2;
@@ -57,7 +67,9 @@ architecture simulation of tb_booth is
 
    pure function get_min_size return natural is
    begin
-      if G_RADIX = 2 then
+      if G_CSA then
+         return 1;
+      elsif G_RADIX = 2 then
          return 2;
       else
          return 3;
@@ -139,7 +151,27 @@ begin
    clk <= running and not clk after C_CLK_PERIOD / 2;
    rst <= '1', '0' after 10 * C_CLK_PERIOD;
 
-   dut_gen : if G_RADIX = 2 generate
+   dut_gen : if G_CSA generate
+
+      booth_csa_inst : entity work.booth_csa
+         generic map (
+            G_DATA_SIZE => G_DATA_SIZE,
+            G_DIGITS    => G_DIGITS,
+            G_CPA_SIZE  => G_CPA_SIZE
+         )
+         port map (
+            clk_i     => clk,
+            rst_i     => rst,
+            s_valid_i => s_valid,
+            s_ready_o => s_ready,
+            s_a_i     => s_a,
+            s_b_i     => s_b,
+            m_valid_o => m_valid,
+            m_ready_i => m_ready,
+            m_res_o   => m_res
+         );
+
+   elsif G_RADIX = 2 generate
 
       booth_radix2_inst : entity work.booth_radix2
          generic map (
@@ -266,7 +298,7 @@ begin
       m_ready <= '0';
       wait until rising_edge(clk);
       report "Test finished: " & to_string(C_NUM_TESTS) & " tests passed with G_RADIX=" &
-             to_string(G_RADIX) & ", G_DATA_SIZE=" & to_string(G_DATA_SIZE);
+             to_string(G_RADIX) & ", G_CSA=" & to_string(G_CSA) & ", G_DATA_SIZE=" & to_string(G_DATA_SIZE);
       running <= '0';
       wait;
    end process verify_proc;

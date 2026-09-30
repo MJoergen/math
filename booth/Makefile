@@ -16,11 +16,12 @@ help: ## Show this help message
 
 # The simulation uses GHDL, see https://github.com/ghdl/ghdl
 
-SRC = booth.vhd booth_radix2.vhd tb_booth.vhd
+SRC = booth.vhd booth_radix2.vhd booth_csa.vhd tb_booth.vhd
 
-# The designs to test: 4 (booth.vhd) and 2 (booth_radix2.vhd), see G_RADIX in
-# tb_booth.vhd. E.g. "make sim RADIX=2" tests only radix 2.
-RADIX ?= 4 2
+# The designs to test: 4 (booth.vhd), 2 (booth_radix2.vhd), and csa1 to csa4
+# (booth_csa.vhd with G_DIGITS from 1 to 4), see G_RADIX, G_CSA, and G_DIGITS
+# in tb_booth.vhd. E.g. "make sim DESIGNS=2" tests only radix 2.
+DESIGNS ?= 4 2 csa1 csa2 csa3 csa4
 
 # For each design, run the testbench with:
 # * All pairs of inputs for G_DATA_SIZE from 1 to 7, with random stalls.
@@ -29,11 +30,15 @@ RADIX ?= 4 2
 # * No stalls, for G_DATA_SIZE of 9 and 8, which also verifies the throughput.
 # * A slow consumer, which is ready in only 10% of the clock cycles.
 .PHONY: sim
-sim: $(SRC) ## Run the testbench for both designs (about 10 seconds)
+sim: $(SRC) ## Run the testbench for all the designs (about 1.5 minutes)
 	ghdl -a --std=08 $(SRC)
 	ghdl -e --std=08 tb_booth
-	set -e; for radix in $(RADIX); do \
-	   run="ghdl -r --std=08 tb_booth -gG_RADIX=$$radix --assert-level=error"; \
+	set -e; for design in $(DESIGNS); do \
+	   case $$design in \
+	      csa*) gen="-gG_CSA=true -gG_DIGITS=$${design#csa}";; \
+	      *)    gen=-gG_RADIX=$$design;; \
+	   esac; \
+	   run="ghdl -r --std=08 tb_booth $$gen --assert-level=error"; \
 	   for size in 1 2 3 4 5 6 7; do $$run -gG_DATA_SIZE=$$size; done; \
 	   for size in 16 17 32; do $$run -gG_DATA_SIZE=$$size -gG_EXHAUSTIVE=false; done; \
 	   $$run -gG_DATA_SIZE=9 -gG_EXHAUSTIVE=false -gG_VALID_PCT=100 -gG_READY_PCT=100; \
@@ -60,7 +65,8 @@ show_debug: ## Show the waveform from "make debug" in GTKWave
 # Synthesis
 #######################
 
-# Estimate the resource usage of both designs, for the table in ALGORITHM.md.
+# Estimate the resource usage of all three designs, for the tables in
+# ALGORITHM.md.
 #
 # Each design is synthesized for Xilinx 7-series FPGAs with Yosys (see
 # https://github.com/YosysHQ/yosys, command synth_xilinx), using the GHDL plugin
@@ -78,11 +84,11 @@ show_debug: ## Show the waveform from "make debug" in GTKWave
 SIZES ?= 8 16 32 64
 
 .PHONY: synth
-synth: booth.vhd booth_radix2.vhd ## Estimate the resource usage of both designs with Yosys (about 20 seconds)
+synth: booth.vhd booth_radix2.vhd booth_csa.vhd ## Estimate the resource usage of all three designs with Yosys (about 30 seconds)
 	@mkdir -p synth
 	@echo "| Design | G_DATA_SIZE | LUT | FF | CARRY4 | Logic levels |"
 	@echo "| ------ | ----------- | --- | -- | ------ | ------------ |"
-	@set -e; for size in $(SIZES); do for top in booth_radix2 booth; do \
+	@set -e; for size in $(SIZES); do for top in booth_radix2 booth booth_csa; do \
 	   log=synth/$${top}_$$size.log; \
 	   yosys -q -m ghdl -l $$log -p "ghdl --std=08 -gG_DATA_SIZE=$$size $$top.vhd -e $$top; \
 	      synth_xilinx -top $$top -flatten; stat; ltp t:LUT* t:MUXF* t:CARRY4 w:*"; \
@@ -142,7 +148,7 @@ booth_radix2.psl: booth.psl
 # Yosys (see https://github.com/ghdl/ghdl-yosys-plugin), which reads the VHDL
 # and PSL files.
 .PHONY: formal
-formal: booth.sby booth.psl booth_radix2.psl booth.vhd booth_radix2.vhd ## Run the formal verification of both designs (about 1.5 minutes)
+formal: booth.sby booth.psl booth_radix2.psl booth_csa.psl booth.vhd booth_radix2.vhd booth_csa.vhd ## Run the formal verification of all the designs (about 5 minutes)
 	sby --yosys "yosys -m ghdl" -f booth.sby
 
 # The traces are VCD files, which GTKWave can show. $(TASK) is one of the
@@ -160,4 +166,5 @@ show_induct: ## Show the trace from a failing induction step in GTKWave (TASK=pr
 
 .PHONY: clean
 clean: ## Remove the generated files
-	rm -rf work-obj08.cf *.o tb_booth booth.ghw synth vivado .Xil booth_radix2.psl booth booth_prove4 booth_prove4_odd booth_prove2 booth_cover4 booth_cover2
+	rm -rf work-obj08.cf *.o tb_booth booth.ghw synth vivado .Xil booth_radix2.psl booth booth_prove4 booth_prove4_odd booth_prove2 booth_cover4 booth_cover2 \
+	   booth_prove_csa1 booth_prove_csa2 booth_prove_csa2_odd booth_prove_csa3 booth_cover_csa2

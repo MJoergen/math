@@ -12,7 +12,9 @@
 # a larger depth finds a trace from the reset instead, but with a depth of 20
 # it takes several minutes.
 # The tasks use G_DATA_SIZE=8, and G_DATA_SIZE=7 for an odd size, where Q is
-# sign-extended. The solver is given the multiplication a*b directly, which
+# sign-extended. booth_csa.vhd is verified with G_DIGITS of 1, 2, and 3, and
+# with blocks of 3 bits in the final adder (G_CPA_SIZE=3), so that it has
+# several blocks. The solver is given the multiplication a*b directly, which
 # is slow for larger sizes: with G_DATA_SIZE=16 the proof does not finish
 # within 10 minutes. The design is the same for every size, and the
 # simulation tests larger sizes.
@@ -36,8 +38,13 @@
 prove4
 prove4_odd
 prove2
+prove_csa1
+prove_csa2
+prove_csa2_odd
+prove_csa3
 cover4
 cover2
+cover_csa2
 
 [options]
 prove4: mode prove
@@ -46,10 +53,20 @@ prove4_odd: mode prove
 prove4_odd: depth 4
 prove2: mode prove
 prove2: depth 4
+prove_csa1: mode prove
+prove_csa1: depth 4
+prove_csa2: mode prove
+prove_csa2: depth 4
+prove_csa2_odd: mode prove
+prove_csa2_odd: depth 4
+prove_csa3: mode prove
+prove_csa3: depth 4
 cover4: mode cover
 cover4: depth 16
 cover2: mode cover
 cover2: depth 24
+cover_csa2: mode cover
+cover_csa2: depth 12
 
 [engines]
 smtbmc boolector
@@ -60,14 +77,26 @@ prove4_odd: ghdl --std=08 -gG_DATA_SIZE=7 booth.vhd booth.psl -e booth
 cover4: ghdl --std=08 -gG_DATA_SIZE=8 booth.vhd booth.psl -e booth
 prove2: ghdl --std=08 -gG_DATA_SIZE=8 booth_radix2.vhd booth_radix2.psl -e booth_radix2
 cover2: ghdl --std=08 -gG_DATA_SIZE=8 booth_radix2.vhd booth_radix2.psl -e booth_radix2
+prove_csa1: ghdl --std=08 -gG_DATA_SIZE=8 -gG_DIGITS=1 -gG_CPA_SIZE=3 booth_csa.vhd booth_csa.psl -e booth_csa
+prove_csa2: ghdl --std=08 -gG_DATA_SIZE=8 -gG_DIGITS=2 -gG_CPA_SIZE=3 booth_csa.vhd booth_csa.psl -e booth_csa
+prove_csa2_odd: ghdl --std=08 -gG_DATA_SIZE=7 -gG_DIGITS=2 -gG_CPA_SIZE=3 booth_csa.vhd booth_csa.psl -e booth_csa
+prove_csa3: ghdl --std=08 -gG_DATA_SIZE=8 -gG_DIGITS=3 -gG_CPA_SIZE=3 booth_csa.vhd booth_csa.psl -e booth_csa
+cover_csa2: ghdl --std=08 -gG_DATA_SIZE=8 -gG_DIGITS=2 -gG_CPA_SIZE=3 booth_csa.vhd booth_csa.psl -e booth_csa
 prove4: prep -top booth
 prove4_odd: prep -top booth
 cover4: prep -top booth
 prove2: prep -top booth_radix2
 cover2: prep -top booth_radix2
+prove_csa1: prep -top booth_csa
+prove_csa2: prep -top booth_csa
+prove_csa2_odd: prep -top booth_csa
+prove_csa3: prep -top booth_csa
+cover_csa2: prep -top booth_csa
 
 [files]
 booth.vhd
 booth.psl
 booth_radix2.vhd
 booth_radix2.psl
+booth_csa.vhd
+booth_csa.psl

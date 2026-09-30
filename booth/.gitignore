@@ -17,6 +17,11 @@ booth_prove4_odd/
 booth_prove2/
 booth_cover4/
 booth_cover2/
+booth_prove_csa1/
+booth_prove_csa2/
+booth_prove_csa2_odd/
+booth_prove_csa3/
+booth_cover_csa2/
 
 # Vivado (make vivado)
 vivado/

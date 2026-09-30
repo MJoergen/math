@@ -1,0 +1,302 @@
+-- Formal verification of booth_csa.vhd, written in PSL (see
+-- https://en.wikipedia.org/wiki/Property_Specification_Language). Run with
+-- "make formal", which uses SymbiYosys (see https://github.com/YosysHQ/sby).
+--
+-- The checker at the ports, and the properties about the outputs, are the
+-- same as in booth.psl, except that the latency is C_CYCLES clock cycles (the
+-- iterations, and the two clock cycles of the final addition). See booth.psl.
+--
+-- The properties are proven with k-induction (see booth.sby). This needs the
+-- assertions marked "for induction", which relate the internal state of the
+-- multiplier to the checker. The most important one is the invariant of
+-- Booth's algorithm in carry-save form: After n iterations, P (i.e.
+-- (s + c)*4^k + lo_a + lo_b + cy - 4^k*B, see booth_csa.vhd) together with the
+-- finished bits shifted into r equals M times the low 2*k*n bits of Q (as a
+-- signed number), where k = G_DIGITS.
+--
+-- The solver is given the multiplication a*b directly, so this is only
+-- practical for small G_DATA_SIZE, see booth.sby.
+
+vunit booth_csa_inst (booth_csa(synthesis))
+{
+   -- set all declarations to run on clk_i
+   default clock is rising_edge(clk_i);
+
+   -----------------------------
+   -- AUXILIARY SIGNALS
+   -----------------------------
+
+   -- Width of P and the finished bits of the product, with some margin
+   constant C_W : positive := C_ROW_SIZE + C_Q_SIZE + 2;
+
+   -- Set after the first clock cycle, when the signals below are valid
+   signal f_started : std_logic := '0';
+
+   -- The handshakes on the input and the output
+   signal f_push : std_logic;
+   signal f_pop  : std_logic;
+
+   -- The queue of input pairs whose product has not been taken yet. f_a0 and
+   -- f_b0 are the oldest pair. The number of pairs is f_cnt.
+   signal f_cnt  : natural range 0 to 2;
+   signal f_a0   : signed(G_DATA_SIZE - 1 downto 0);
+   signal f_b0   : signed(G_DATA_SIZE - 1 downto 0);
+   signal f_a1   : signed(G_DATA_SIZE - 1 downto 0);
+   signal f_b1   : signed(G_DATA_SIZE - 1 downto 0);
+
+   -- The number of clock cycles since the last input was accepted (up to
+   -- C_CYCLES), and whether m_ready_i has been high and rst_i low in all of
+   -- them
+   signal f_since : natural range 0 to C_CYCLES;
+   signal f_flow  : std_logic;
+
+   -- The results of the checks, see f_check_proc
+   signal f_out_ok    : boolean;
+   signal f_engine_ok : boolean;
+
+   f_push <= s_valid_i and s_ready_o;
+   f_pop  <= m_valid_o and m_ready_i;
+
+   f_track_proc : process (clk_i)
+      variable cnt_v : natural range 0 to 2;
+   begin
+      if rising_edge(clk_i) then
+         cnt_v := f_cnt;
+
+         if f_pop = '1' and cnt_v > 0 then
+            f_a0  <= f_a1;
+            f_b0  <= f_b1;
+            cnt_v := cnt_v - 1;
+         end if;
+
+         -- f_no_overflow below verifies that the queue is not full here
+         if f_push = '1' and cnt_v < 2 then
+            if cnt_v = 0 then
+               f_a0 <= signed(s_a_i);
+               f_b0 <= signed(s_b_i);
+            else
+               f_a1 <= signed(s_a_i);
+               f_b1 <= signed(s_b_i);
+            end if;
+            cnt_v := cnt_v + 1;
+         end if;
+
+         f_cnt <= cnt_v;
+
+         if f_push = '1' then
+            f_since <= 0;
+            f_flow  <= not rst_i;
+         else
+            if f_since < C_CYCLES then
+               f_since <= f_since + 1;
+            end if;
+            f_flow <= f_flow and m_ready_i and not rst_i;
+         end if;
+
+         if rst_i = '1' then
+            f_cnt <= 0;
+         end if;
+
+         f_started <= '1';
+      end if;
+   end process f_track_proc;
+
+   f_check_proc : process (all)
+      variable a_v   : signed(G_DATA_SIZE - 1 downto 0);  -- The pair in the calculation
+      variable b_v   : signed(G_DATA_SIZE - 1 downto 0);
+      variable q_v   : signed(C_Q_SIZE - 1 downto 0);     -- Q, sign-extended
+      variable qm_v  : signed(C_Q_SIZE downto 0);         -- Q & Q(-1)
+      variable n_v   : natural range 0 to C_ITERS;        -- Iterations done
+      variable k_v   : natural range 0 to C_Q_SIZE;       -- Bits of Q processed
+      variable low_v : signed(C_Q_SIZE - 1 downto 0);     -- The low k_v bits of Q, as a signed number
+      variable p_v   : signed(C_W - 1 downto 0);          -- P
+      variable x_v   : signed(C_W - 1 downto 0);          -- P and the finished bits
+      variable va_v  : unsigned(C_SUM_SIZE - 1 downto 0); -- The operands of the final addition
+      variable vb_v  : unsigned(C_SUM_SIZE - 1 downto 0);
+      variable blk_v : unsigned(G_CPA_SIZE downto 0);
+      variable ok_v  : boolean;
+   begin
+      -- The output register holds the product of the oldest pair
+      f_out_ok <= f_cnt >= 1 and signed(m_res_o) = f_a0 * f_b0;
+
+      -- The calculation works on the newest pair
+      if m_valid_o = '1' then
+         a_v := f_a1;
+         b_v := f_b1;
+      else
+         a_v := f_a0;
+         b_v := f_b0;
+      end if;
+
+      q_v  := resize(b_v, C_Q_SIZE);
+      qm_v := q_v & '0';
+      if count >= 2 then
+         n_v := C_CYCLES - count;
+      else
+         n_v := C_ITERS;
+      end if;
+      k_v := C_STEP * n_v;
+
+      -- The multiplicand
+      ok_v := mcand = resize(a_v, C_P_SIZE);
+
+      -- The low bits of r hold the rest of Q & Q(-1)
+      for i in 0 to C_Q_SIZE loop
+         if i <= C_Q_SIZE - k_v then
+            ok_v := ok_v and r(i) = qm_v(i + k_v);
+         end if;
+      end loop;
+
+      if n_v = 0 then
+         -- P is zero, i.e. s + c = B, and there are no low bits yet
+         ok_v := ok_v and resize(s, C_P_SIZE + 1) + resize(c, C_P_SIZE + 1) = shift_left(to_unsigned(1, C_P_SIZE + 1), C_P_SIZE - 1);
+         ok_v := ok_v and lo_a = 0 and lo_b = 0 and cy = '0';
+      else
+         -- The first bits shifted into r (from the low bits before the first
+         -- iteration) are zero
+         for i in 0 to C_STEP - 1 loop
+            ok_v := ok_v and r(C_Q_SIZE - k_v + 1 + i) = '0';
+         end loop;
+
+         -- The invariant of Booth's algorithm: P, followed by the finished
+         -- bits in r, equals M times the low k_v bits of Q, as a signed number
+         p_v := signed(shift_left(resize(s, C_W) + resize(c, C_W), C_STEP) +
+                       resize(lo_a, C_W) + resize(lo_b, C_W) + unsigned'(0 => cy)) -
+                shift_left(to_signed(1, C_W), C_P_SIZE - 1 + C_STEP);
+         x_v := shift_left(p_v, k_v - C_STEP);
+         for i in 0 to C_Q_SIZE - 1 loop
+            if i < k_v - C_STEP then
+               x_v(i) := r(C_Q_SIZE - k_v + C_STEP + 1 + i);
+            end if;
+         end loop;
+         low_v := shift_right(shift_left(q_v, C_Q_SIZE - k_v), C_Q_SIZE - k_v);
+         ok_v  := ok_v and x_v = resize(a_v * low_v, C_W);
+      end if;
+
+      -- In the second clock cycle of the final addition, the sums of the
+      -- first clock cycle are ready
+      if count = 1 then
+         va_v := resize(s & lo_a, C_SUM_SIZE);
+         vb_v := resize(c & lo_b, C_SUM_SIZE);
+         for b in 0 to C_BLOCKS - 1 loop
+            blk_v := ('0' & va_v(b * G_CPA_SIZE + G_CPA_SIZE - 1 downto b * G_CPA_SIZE)) +
+                     ('0' & vb_v(b * G_CPA_SIZE + G_CPA_SIZE - 1 downto b * G_CPA_SIZE));
+            if b = 0 then
+               blk_v := blk_v + unsigned'(0 => cy);
+               ok_v  := ok_v and t(b) = g(b);
+            else
+               ok_v := ok_v and t(b) & sum1(b * G_CPA_SIZE + G_CPA_SIZE - 1 downto b * G_CPA_SIZE) = blk_v + 1;
+            end if;
+            ok_v := ok_v and g(b) & sum0(b * G_CPA_SIZE + G_CPA_SIZE - 1 downto b * G_CPA_SIZE) = blk_v;
+         end loop;
+      end if;
+
+      f_engine_ok <= ok_v;
+   end process f_check_proc;
+
+
+   -----------------------------
+   -- ASSERTIONS ABOUT OUTPUTS
+   -----------------------------
+
+   -- Every product is correct, and no product is output without an input
+   f_out : assert always f_started = '1' and m_valid_o = '1' -> f_out_ok;
+
+   -- No input is accepted while the multiplier already holds two pairs
+   f_no_overflow : assert always f_started = '1' -> not (f_push = '1' and f_pop = '0' and f_cnt = 2);
+
+   -- The product stays valid and unchanged until it is taken
+   f_hold : assert always {f_started = '1' and m_valid_o = '1' and m_ready_i = '0' and rst_i = '0'} |=>
+      {m_valid_o = '1' and m_res_o = prev(m_res_o)};
+
+   -- Latency: In the last clock cycle of the calculation, if the consumer is
+   -- ready, the product is valid in the next clock cycle
+   f_latency : assert always {f_started = '1' and f_flow = '1' and f_since = C_CYCLES - 1 and
+                              m_ready_i = '1' and rst_i = '0'} |=> {m_valid_o = '1'};
+
+   -- Throughput: If the consumer has been ready since the last input was
+   -- accepted, the next input is accepted in the last clock cycle of the
+   -- calculation, i.e. every C_CYCLES clock cycles
+   f_throughput : assert always f_started = '1' and f_flow = '1' and f_since = C_CYCLES - 1 ->
+      s_ready_o = '1';
+
+
+   -----------------------------
+   -- ASSERTIONS FOR INDUCTION
+   -----------------------------
+
+   -- None of the pairs is lost or duplicated: The queue holds one pair for the
+   -- output register (if valid) and one for the calculation (if not idle)
+   f_count : assert always f_started = '1' ->
+      (f_cnt = 0 and state = IDLE_ST and m_valid_o = '0') or
+      (f_cnt = 1 and state = IDLE_ST and m_valid_o = '1') or
+      (f_cnt = 1 and state = BUSY_ST and m_valid_o = '0') or
+      (f_cnt = 2 and state = BUSY_ST and m_valid_o = '1');
+
+   -- The calculation matches the pair in the queue
+   f_engine : assert always f_started = '1' and state /= IDLE_ST -> f_engine_ok;
+
+   -- The calculation takes C_CYCLES clock cycles, since the last input was
+   -- accepted. The last clock cycle may wait longer, until the output
+   -- register is free.
+   f_busy : assert always f_started = '1' and state = BUSY_ST ->
+      f_since = C_CYCLES - count or (count = 1 and f_since = C_CYCLES);
+
+   -- The operands for the current iteration were calculated in advance
+   f_opd : assert always f_started = '1' and state = BUSY_ST and count >= 3 -> opd = booth_opds(r, mcand);
+
+   -- The flags that are calculated in advance
+   f_last  : assert always f_started = '1' and state = BUSY_ST -> (last = '1') = (count = 1);
+   f_d1    : assert always f_started = '1' and state = BUSY_ST -> (d1 = '1') = (count = 2);
+   f_ready : assert always f_started = '1' -> (ready = '1') = (state = IDLE_ST or (last = '1' and m_valid_o = '0'));
+   f_s_en  : assert always f_started = '1' ->
+      (s_en = '1') = (ready = '1' or (state = BUSY_ST and d1 = '0' and last = '0'));
+   f_d1_en : assert always f_started = '1' -> (d1_en = '1') = (state = BUSY_ST and d1 = '1');
+
+   -- Without a reset, the calculation is still running
+   f_flow_busy : assert always f_started = '1' and f_flow = '1' and f_since < C_CYCLES -> state = BUSY_ST;
+
+   -- If the consumer is ready, the previous product is taken in the first
+   -- clock cycle of the calculation
+   f_flow_empty : assert always f_started = '1' and f_flow = '1' and f_since >= 1 and f_since < C_CYCLES ->
+      m_valid_o = '0';
+
+
+   -----------------------------
+   -- ASSUMPTIONS ABOUT INPUTS
+   -----------------------------
+
+   -- Require a reset at startup
+   f_reset : assume {rst_i = '1'};
+
+   -- For induction: The signals above are only invalid in the first clock
+   -- cycle, where f_reset requires a reset anyway
+   f_start_first : assume always f_started = '0' -> rst_i = '1';
+
+
+   --------------------------------------------
+   -- COVER STATEMENTS TO VERIFY REACHABILITY
+   --------------------------------------------
+
+   -- A product is taken, so f_out is not vacuous
+   f_done : cover {f_started = '1' and f_pop = '1'};
+
+   -- The product of the most negative numbers
+   f_most_negative : cover {f_started = '1' and f_pop = '1' and
+                            f_a0 = to_signed(-2 ** (G_DATA_SIZE - 1), G_DATA_SIZE) and
+                            f_b0 = to_signed(-2 ** (G_DATA_SIZE - 1), G_DATA_SIZE)};
+
+   -- The last clock cycle waits, because the output register is still
+   -- occupied
+   f_full : cover {state = BUSY_ST and last = '1' and m_valid_o = '1' and m_ready_i = '0'};
+
+   -- A new input is accepted in the last clock cycle of a calculation
+   f_overlap : cover {f_started = '1' and f_push = '1' and state = BUSY_ST};
+
+   -- The product waits to be taken, so f_hold is not vacuous
+   f_wait : cover {f_started = '1' and m_valid_o = '1' and m_ready_i = '0'; m_valid_o = '1' and m_ready_i = '1'};
+
+   -- A reset during a calculation
+   f_reset_busy : cover {f_started = '1' and state = BUSY_ST and rst_i = '1'};
+
+} -- vunit booth_csa_inst (booth_csa(synthesis))

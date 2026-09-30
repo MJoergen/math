@@ -9,6 +9,15 @@ the product is `2*G_DATA_SIZE` bits wide.
 The calculation takes `ceil(G_DATA_SIZE/2)` clock cycles, i.e. one clock cycle
 per two bits.
 
+[`booth_csa.vhd`](booth_csa.vhd) is a faster version with the same interface:
+It keeps the partial product in carry-save form, so that there is no carry
+chain in the iterations, and handles several Booth digits (`G_DIGITS`, default
+4) in each clock cycle. With `G_DIGITS=4` it takes `ceil(G_DATA_SIZE/8) + 2`
+clock cycles, at a clock frequency (about 400 MHz) that hardly depends on
+`G_DATA_SIZE`. So the time for each product is 2 to 4 times shorter, for about
+5 times as many LUTs. See
+[Carry-save version](ALGORITHM.md#carry-save-version).
+
 ## The algorithm
 The product is calculated by adding shifted multiples of the multiplicand M,
 like long multiplication by hand. Booth's algorithm first recodes the
@@ -28,12 +37,13 @@ flip-flops and logic levels, but somewhat more LUTs.
 | ---- | -----------
 | [`booth.vhd`](booth.vhd) | The Booth multiplier (radix 4).
 | [`booth_radix2.vhd`](booth_radix2.vhd) | The same multiplier with radix 2, for comparison, see [Radix 2 versus radix 4](ALGORITHM.md#radix-2-versus-radix-4).
-| [`tb_booth.vhd`](tb_booth.vhd) | Testbench for both designs.
+| [`booth_csa.vhd`](booth_csa.vhd) | The faster multiplier with carry-save addition, see [Carry-save version](ALGORITHM.md#carry-save-version).
+| [`tb_booth.vhd`](tb_booth.vhd) | Testbench for all three designs.
 | [`booth.gtkw`](booth.gtkw) | GTKWave setup for viewing the waveform from `make debug`.
-| [`booth.psl`](booth.psl), [`booth.sby`](booth.sby) | Formal verification of both designs, see [Formal verification](#formal-verification).
+| [`booth.psl`](booth.psl), [`booth_csa.psl`](booth_csa.psl), [`booth.sby`](booth.sby) | Formal verification of all three designs, see [Formal verification](#formal-verification).
 | [`booth.xdc`](booth.xdc), [`vivado.tcl`](vivado.tcl) | Timing constraint (250 MHz) and script for synthesis with Vivado, see `make vivado`.
 | [`Makefile`](Makefile) | Runs the simulation, the formal verification, and the synthesis, see [Running](#running).
-| [`ALGORITHM.md`](ALGORITHM.md) | Detailed explanation of the algorithm, and the comparison of radix 2 and radix 4.
+| [`ALGORITHM.md`](ALGORITHM.md) | Detailed explanation of the algorithm, the comparison of radix 2 and radix 4, and the carry-save version.
 
 ## Interface
 Both the input and the output use an
@@ -60,13 +70,15 @@ cycle of a calculation a new pair of inputs is accepted, provided the output
 register is empty. So when there are no stalls, a new pair of inputs is
 accepted every `ceil(G_DATA_SIZE/2)` clock cycles. (For `G_DATA_SIZE` of 1 or
 2 the calculation takes only one clock cycle, and a new pair of inputs is
-accepted every 1.5 clock cycles on average.)
+accepted every 1.5 clock cycles on average.) For `booth_csa.vhd` this is every
+`ceil(G_DATA_SIZE/(2*G_DIGITS)) + 2` clock cycles.
 
 ## Running
 Type `make` to list the supported targets:
 * `make sim` runs the testbench (see [below](#simulation)). This requires
-  [GHDL](https://github.com/ghdl/ghdl). It takes about 10 seconds.
-  `make sim RADIX=2` tests only `booth_radix2.vhd`.
+  [GHDL](https://github.com/ghdl/ghdl). It takes about 1.5 minutes.
+  `make sim DESIGNS=2` tests only `booth_radix2.vhd`, and e.g.
+  `make sim DESIGNS=csa4` tests only `booth_csa.vhd` with `G_DIGITS=4`.
 * `make debug` runs a short simulation of `booth.vhd` (20 multiplications),
   and writes a waveform to `booth.ghw`. Use `make show_debug` to view it in
   [GTKWave](https://github.com/gtkwave/gtkwave), with the signals selected in
@@ -74,14 +86,15 @@ Type `make` to list the supported targets:
 * `make formal` runs the formal verification (see [below](#formal-verification)).
   This requires [SymbiYosys](https://github.com/YosysHQ/sby), the GHDL plugin
   for Yosys, and the [Boolector](https://github.com/Boolector/boolector) solver.
-  It takes about 1.5 minutes. If it fails, use `make show_prove TASK=prove4`
+  It takes about 5 minutes. If it fails, use `make show_prove TASK=prove4`
   or `make show_induct TASK=prove4` to view the counterexample in GTKWave,
   where the task is one of those in `booth.sby`.
-* `make synth` estimates the resource usage of both designs, and prints the
-  numbers for the table in [Resource usage](ALGORITHM.md#resource-usage). This requires
+* `make synth` estimates the resource usage of all three designs, and prints
+  the numbers for the tables in [Resource usage](ALGORITHM.md#resource-usage)
+  and [Carry-save version](ALGORITHM.md#carry-save-version). This requires
   [Yosys](https://github.com/YosysHQ/yosys) and the
   [GHDL plugin](https://github.com/ghdl/ghdl-yosys-plugin) for Yosys. It takes
-  about 20 seconds.
+  about 30 seconds.
 * `make vivado` synthesizes and implements `booth.vhd` with `G_DATA_SIZE=16`,
   using [Vivado](https://www.amd.com/en/products/software/adaptive-socs-and-fpgas/vivado.html)
   for the Artix-7 part xc7a200tfbg484-2. The design is implemented out of
@@ -95,9 +108,10 @@ Type `make` to list the supported targets:
 * `make clean` removes the generated files.
 
 ## Simulation
-`make sim` runs the testbench `tb_booth.vhd` for both `booth.vhd` and
-`booth_radix2.vhd`. The testbench randomly stalls both the VALID and READY
-signals, and for each design it:
+`make sim` runs the testbench `tb_booth.vhd` for `booth.vhd`,
+`booth_radix2.vhd`, and `booth_csa.vhd` (with `G_DIGITS` from 1 to 4). The
+testbench randomly stalls both the VALID and READY signals, and for each
+design it:
 
 * Tests all pairs of inputs for `G_DATA_SIZE` from 1 to 7.
 * Tests 5000 pairs of inputs for `G_DATA_SIZE` of 16, 17, and 32: first all
@@ -105,22 +119,25 @@ signals, and for each design it:
   random pairs. Random inputs almost never hit the most negative value at these
   sizes, which is the case that P needs its two extra bits for.
 * Verifies the throughput when there are no stalls, for `G_DATA_SIZE` of 8
-  and 9: one product every `ceil(G_DATA_SIZE/2)` clock cycles for radix 4, and
-  every `G_DATA_SIZE` clock cycles for radix 2.
+  and 9: one product every `ceil(G_DATA_SIZE/2)` clock cycles for radix 4,
+  every `G_DATA_SIZE` clock cycles for radix 2, and every
+  `ceil(G_DATA_SIZE/(2*G_DIGITS)) + 2` clock cycles for `booth_csa.vhd`.
 * Tests a slow consumer, which is ready in only 10% of the clock cycles.
 
 It prints "All tests passed" at the end, and stops with an error at the first
 wrong product.
 
 ## Formal verification
-The formal verification (`booth.psl`, `booth.sby`) proves for both designs,
-for every sequence of inputs and stalls, including resets:
+The formal verification (`booth.psl`, `booth_csa.psl`, `booth.sby`) proves
+for all three designs, for every sequence of inputs and stalls, including
+resets:
 * Every product is correct, and they come out in order: none is lost, and none
   is duplicated.
 * The product stays valid and unchanged until it is taken.
 * If the consumer is ready, the product is valid one calculation after the
-  input was accepted: `ceil(G_DATA_SIZE/2)` clock cycles for radix 4, and
-  `G_DATA_SIZE` clock cycles for radix 2.
+  input was accepted: `ceil(G_DATA_SIZE/2)` clock cycles for radix 4,
+  `G_DATA_SIZE` clock cycles for radix 2, and
+  `ceil(G_DATA_SIZE/(2*G_DIGITS)) + 2` clock cycles for `booth_csa.vhd`.
 * If the consumer is always ready, a new input is accepted after every
   calculation, i.e. the throughput (for `G_DATA_SIZE >= 3` in radix 4, and
   `G_DATA_SIZE >= 2` in radix 2).
@@ -130,12 +147,16 @@ whose product has not been taken yet. The properties are proven with
 k-induction, so they hold in every clock cycle, not just for a bounded number
 of them. This relies on the invariant of Booth's algorithm (see
 [Theory of operation](ALGORITHM.md#theory-of-operation)), which relates the
-working register to the pair in the queue. Cover statements show that the
+working register to the pair in the queue. `booth_csa.psl` has the same
+checker at the ports, and the same invariant for the carry-save form, see
+[Carry-save version](ALGORITHM.md#carry-save-version). Cover statements show that the
 interesting cases are reached, e.g. the product of the most negative numbers,
 and a calculation that finishes while the previous product is still waiting.
 
 The solver is given the multiplication `a*b` directly, which is only practical
-for small sizes. So the proofs use `G_DATA_SIZE=8` for both designs, and
-`G_DATA_SIZE=7` for an odd size in radix 4, where Q is sign-extended. With
+for small sizes. So the proofs use `G_DATA_SIZE=8` for all designs, and
+`G_DATA_SIZE=7` for an odd size in radix 4 and in `booth_csa.vhd`, where Q is
+sign-extended. `booth_csa.vhd` is proven with `G_DIGITS` of 1, 2, and 3, and
+with blocks of 3 bits in the final adder, so that there are several blocks. With
 `G_DATA_SIZE=16` they do not finish within 10 minutes. The design is the same
 for every size, and the simulation tests the larger sizes.
