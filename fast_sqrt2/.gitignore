@@ -1,0 +1,16 @@
+# Generated files, see "make clean"
+
+# Simulation (make sim, make debug)
+work-obj08.cf
+*.o
+tb_fast_sqrt2
+*.ghw
+
+# Vivado (fast_sqrt2.xpr project)
+fast_sqrt2.cache/
+fast_sqrt2.gen/
+fast_sqrt2.hw/
+fast_sqrt2.ip_user_files/
+fast_sqrt2.runs/
+fast_sqrt2.sim/
+.Xil/

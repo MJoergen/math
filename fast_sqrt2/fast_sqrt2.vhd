@@ -6,8 +6,10 @@ use ieee.math_real.all;
 -- This module takes a floating point number (exp_i, mant_i) and returns the
 -- square root as a floating point number (exp_o, mant_o).
 --
--- It takes a total of 34 clock cycles to perform the calculation.
--- It calculates one extra bit in order to perform the correct rounding.
+-- The number of clock cycles to perform the calculation depends on how many
+-- iterations are needed. In the testbench ready_o goes high 5 to 9 clock cycles
+-- (7.1 on average) after the clock cycle where start_i is high.
+-- It calculates C_GUARDS extra bits in order to perform the correct rounding.
 --
 -- Input and output are given in C64 floating point format (5-byte).
 -- * exp is the exponent byte.
