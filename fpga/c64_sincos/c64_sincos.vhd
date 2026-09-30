@@ -44,10 +44,10 @@ library work;
 -- (active high). It clears m_valid_o, and abandons a calculation in progress.
 --
 -- Latency and throughput:
--- m_valid_o is asserted 32 clock cycles after the input is accepted. A new
+-- m_valid_o is asserted 33 clock cycles after the input is accepted. A new
 -- input is accepted in the clock cycle after the result is written to the
 -- output register. So if m_ready_i is constantly asserted, a new input is
--- accepted every 33 clock cycles.
+-- accepted every 34 clock cycles.
 
 entity c64_sincos is
    generic (
@@ -100,10 +100,12 @@ architecture synthesis of c64_sincos is
    -- STAGE1_ST    : Wait for stage 1 (the multiplication by 2/pi).
    -- STAGE2_ST    : Reduce the angle to [0, pi/4].
    -- CALC_ST      : The CORDIC iterations, one in each clock cycle.
+   -- SHIFT_ST     : Normalize the final x and y, i.e. load exp_x, exp_y,
+   --                rotate_x, and rotate_y.
    -- NORMALIZE_ST : The result is ready. It is written to the output register
    --                as soon as the output register is free.
    type   state_type is (
-      IDLE_ST, STAGE1_ST, STAGE2_ST, CALC_ST, NORMALIZE_ST
+      IDLE_ST, STAGE1_ST, STAGE2_ST, CALC_ST, SHIFT_ST, NORMALIZE_ST
    );
    signal state : state_type            := IDLE_ST;
 
@@ -248,26 +250,22 @@ begin
             m_valid_o <= '0';
          end if;
 
-         -- The normalization of x and y. These registers are not updated in
-         -- NORMALIZE_ST, so that the result does not depend on how long it
-         -- waits for the output register. They therefore hold x and y from
-         -- before the last CORDIC iteration.
-         if state /= NORMALIZE_ST then
-            exp_x    <= X"81" - count_leading_zeros(x);
-            exp_y    <= X"81" - count_leading_zeros(y);
-            rotate_x <= rotate_left(x, count_leading_zeros(x));
-            rotate_y <= rotate_left(y, count_leading_zeros(y));
+         -- The normalization of x and y. This is registered, so it is one
+         -- clock cycle behind x and y, see SHIFT_ST.
+         exp_x    <= X"81" - count_leading_zeros(x);
+         exp_y    <= X"81" - count_leading_zeros(y);
+         rotate_x <= rotate_left(x, count_leading_zeros(x));
+         rotate_y <= rotate_left(y, count_leading_zeros(y));
 
-            -- x must never be greater than 1
-            if x(x'left) = '1' then
-               rotate_x <= (x'left => '1', others => '0');
-            end if;
+         -- x must never be greater than 1
+         if x(x'left) = '1' then
+            rotate_x <= (x'left => '1', others => '0');
+         end if;
 
-            -- y must never be less than 0
-            if y(y'left) = '1' then
-               rotate_y <= (others => '0');
-               exp_y    <= X"00";
-            end if;
+         -- y must never be less than 0
+         if y(y'left) = '1' then
+            rotate_y <= (others => '0');
+            exp_y    <= X"00";
          end if;
 
          case state is
@@ -311,10 +309,14 @@ begin
                end if;
 
                if count = C_ANGLE_NUM - 1 then
-                  state <= NORMALIZE_ST;
+                  state <= SHIFT_ST;
                else
                   count <= count + 1;
                end if;
+
+            when SHIFT_ST =>
+               -- x and y are final, and are normalized in this clock cycle
+               state <= NORMALIZE_ST;
 
             when NORMALIZE_ST =>
                -- Wait until the output register is free

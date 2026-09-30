@@ -6,8 +6,10 @@ library ieee;
 -- Testbench for the sine and cosine.
 --
 -- It calculates the sine and cosine of 121 angles from 0 to pi/4, and checks
--- that the absolute error is less than 2^(-30). It prints the largest absolute
--- error of each, and the angles where they occur.
+-- that the absolute error is less than 2^(-27.5). It prints the largest
+-- absolute error of each, and the angles where they occur. The limit is just
+-- above the error of 2^(-28) of the 29 CORDIC iterations. (With only 28
+-- iterations the error is 2^(-27).)
 --
 -- In each clock cycle, VALID and READY are asserted randomly with the
 -- probabilities G_VALID_PCT and G_READY_PCT. At the end, the average number of
@@ -26,7 +28,7 @@ architecture simulation of tb_c64_sincos is
    constant C_PI         : real    := 3.141592653589793;
    constant C_DEBUG      : boolean := false;
    constant C_NUM_TESTS  : natural := 121;
-   constant C_MAX_ERROR  : real    := 2.0 ** (-30);
+   constant C_MAX_ERROR  : real    := 2.0 ** (-27.5);
 
    -- The i'th test angle
    pure function get_angle (
@@ -35,6 +37,36 @@ architecture simulation of tb_c64_sincos is
    begin
       return (real(i) / 480.0) * C_PI;
    end function get_angle;
+
+   -- The sine and cosine of ieee.math_real are not accurate enough as a
+   -- reference: GHDL calculates them with CORDIC (with 28 iterations), so
+   -- their error is about 2^(-28). These use the Taylor series instead, which
+   -- is accurate to about 2^(-50) for |arg| <= 2*pi.
+   pure function ref_sin (
+      arg : real
+   ) return real is
+      variable term_v : real := arg;
+      variable sum_v  : real := arg;
+   begin
+      for n in 1 to 30 loop
+         term_v := -term_v * arg * arg / real((2 * n) * (2 * n + 1));
+         sum_v  := sum_v + term_v;
+      end loop;
+      return sum_v;
+   end function ref_sin;
+
+   pure function ref_cos (
+      arg : real
+   ) return real is
+      variable term_v : real := 1.0;
+      variable sum_v  : real := 1.0;
+   begin
+      for n in 1 to 30 loop
+         term_v := -term_v * arg * arg / real((2 * n - 1) * (2 * n));
+         sum_v  := sum_v + term_v;
+      end loop;
+      return sum_v;
+   end function ref_cos;
 
    type c64_float_type is record
       exp  : std_logic_vector( 7 downto 0);
@@ -213,8 +245,8 @@ begin
             exit when m_valid = '1' and m_ready = '1';
          end loop;
 
-         diff_cos_v := abs(c64float2real(m_cos) - cos(real_arg_v));
-         diff_sin_v := abs(c64float2real(m_sin) - sin(real_arg_v));
+         diff_cos_v := abs(c64float2real(m_cos) - ref_cos(real_arg_v));
+         diff_sin_v := abs(c64float2real(m_sin) - ref_sin(real_arg_v));
 
          assert diff_cos_v < C_MAX_ERROR and diff_sin_v < C_MAX_ERROR
             report "Calculating sin and cos of " & to_string(real_arg_v, 11) &

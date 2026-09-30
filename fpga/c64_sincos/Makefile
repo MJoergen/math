@@ -19,7 +19,7 @@ help: ## Show this help message
 SRC = c64_sincos_pkg.vhd c64_sincos.vhd tb_c64_sincos.vhd
 
 # The testbench calculates the sine and cosine of 121 angles from 0 to pi/4,
-# checks that the absolute error is less than 2^(-30), and prints the largest
+# checks that the absolute error is less than 2^(-27.5), and prints the largest
 # absolute error of each. It runs twice: First with random stalls on the input
 # and the output, and then without any stalls. Each run prints the average
 # number of clock cycles per calculation.

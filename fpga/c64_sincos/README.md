@@ -1,25 +1,26 @@
 # Sine and cosine
 This calculates both the sine and the cosine of a C64 floating point number,
 using the [CORDIC](https://en.wikipedia.org/wiki/CORDIC) algorithm, in VHDL
-for an FPGA. It takes 32 clock cycles.
+for an FPGA. It takes 33 clock cycles.
 
 It can safely run at a clock speed of 156 MHz (clock period 6.4 ns). The total
-latency is thus 205 ns.
+latency is thus 211 ns.
 
 The resource usage is:
 
-* LUT   : 1247
+* LUT   : 1239
 * FF    :  384
-* Slice :  327
+* Slice :  302
 * DSP   :    4
 
 These numbers are from Vivado 2025.1, with `make vivado` (see
 [Running](#running)), which implements the design out of context for the part
 xc7a200tfbg484-2, and meets the timing constraint in
-[`c64_sincos.xdc`](c64_sincos.xdc) with a slack of 0.094 ns.
+[`c64_sincos.xdc`](c64_sincos.xdc) with a slack of 0.103 ns.
 
-The absolute deviation for angles in the range [0, pi/4] is 2^(-32).
-The absolute deviation for angles in the range [-2pi, 2pi] is 2^(-26).
+The largest absolute error of the sine and the cosine is 2^(-28), both for
+angles in the range [0, pi/4] and in the range [-2pi, 2pi]. This is the
+accuracy of the 29 CORDIC iterations, see [The algorithm](#the-algorithm).
 
 ## The number format
 The input and the outputs use the 5-byte floating point format of the C64
@@ -42,14 +43,17 @@ The calculation has five steps:
 2. Determine the octant, and reduce the angle to [0, pi/4].
 3. Apply the CORDIC algorithm.
 4. Construct the sine and cosine from the result of step 3, using the octant.
-5. Normalize the results, i.e. calculate the exponents.
+5. Normalize the results, i.e. calculate the exponents. This takes one clock
+   cycle after the last CORDIC iteration.
 
 CORDIC calculates the sine and cosine by rotating the vector (x, y), starting
 at (K, 0), by the angles ±arctan(2^-i) for i = 0, 1, 2, and so on. Each
 rotation only needs shifts and additions, and the direction is chosen so that
 the remaining angle approaches zero. The constant K compensates for the
 lengthening of the vector in each rotation. In the end, x is the cosine and y
-is the sine. The design does 29 iterations, one per clock cycle. See also
+is the sine. The design does 29 iterations, one per clock cycle. The error
+after the last iteration is at most the angle of that iteration, arctan(2^-28),
+so each extra iteration halves the error. See also
 [An Introduction to the CORDIC Algorithm](https://www.allaboutcircuits.com/technical-articles/an-introduction-to-the-cordic-algorithm/).
 
 The fixed point numbers have 7 guard bits below the 32 bits of the mantissa,
@@ -87,9 +91,9 @@ then.
 
 None of the output signals depend combinatorially on any of the input signals.
 
-`m_valid_o` goes high 32 clock cycles after the input is transferred. A new
+`m_valid_o` goes high 33 clock cycles after the input is transferred. A new
 input is accepted in the clock cycle after the result is written to the output
-register, so when there are no stalls, a new input is accepted every 33 clock
+register, so when there are no stalls, a new input is accepted every 34 clock
 cycles. The generic `G_DEBUG` enables reports of the intermediate values in
 the simulation.
 
@@ -113,10 +117,15 @@ Type `make` to list the supported targets:
 
 ## Simulation
 The testbench calculates the sine and cosine of 121 angles from 0 to pi/4, and
-checks that the absolute error is less than 2^(-30). It prints the average
-number of clock cycles per calculation (33), and the largest absolute error of
+checks that the absolute error is less than 2^(-27.5). It prints the average
+number of clock cycles per calculation (34), and the largest absolute error of
 the sine and of the cosine, and the angles where they occur. The errors are
-about 2^(-32).
+2^(-28.0) for the sine and 2^(-28.6) for the cosine.
+
+The expected values are calculated with the Taylor series, and not with `sin`
+and `cos` from `ieee.math_real`: GHDL calculates those with CORDIC too (with
+28 iterations), so their error is about 2^(-28), as large as the error that is
+being measured.
 
 The valid signal of the input and the ready signal of the output are asserted
 randomly, with the probabilities given by the generics `G_VALID_PCT` and
