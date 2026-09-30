@@ -10,7 +10,7 @@
 # Clock definition. For create_clock, see UG903 above, and UG835, "Vivado
 # Design Suite Tcl Command Reference Guide":
 # https://docs.amd.com/r/en-US/ug835-vivado-tcl-commands
-create_clock -name sys_clk -period 5.00 [get_ports {clk_i}]; # 200 MHz
+create_clock -name clk -period 5.00 [get_ports {clk_i}]; # 200 MHz
 
 # Configuration Bank Voltage Select. The properties CFGBVS and CONFIG_VOLTAGE
 # are described in UG912, "Vivado Design Suite Properties Reference Guide":

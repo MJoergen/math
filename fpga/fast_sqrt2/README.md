@@ -11,20 +11,21 @@ we have the following statistics:
 * Cycles = 8.1
 * low\_count = 275
 * high\_count = 189
-* Period = 12.4 ns
+* Period = 13.2 ns
 * DSP = 8
-* LUT = 410
-* FF = 259
-* Slice = 145
+* LUT = 394
+* FF = 213
+* Slice = 129
 
 Cycles, `low_count`, and `high_count` are printed by the testbench, see
 [Simulation](#simulation). Cycles includes the overhead of the testbench.
 
-The other numbers are from Vivado 2025.1, implementing the project
-[`fast_sqrt2.xpr`](fast_sqrt2.xpr) (part xc7a200tfbg484-2, default
-strategies), which meets the timing constraint in
-[`fast_sqrt2.xdc`](fast_sqrt2.xdc), a clock period of 12.4 ns (80.6 MHz), with a
-slack of 0.082 ns.
+The other numbers are from Vivado 2025.1, with `make vivado` (see
+[Running](#running)), which implements the design out of context for the part
+xc7a200tfbg484-2, and meets the timing constraint in
+[`fast_sqrt2.xdc`](fast_sqrt2.xdc), a clock period of 13.2 ns (75.8 MHz), with a
+slack of 0.086 ns. The timing is sensitive to placement: with a clock period
+of 12.5 to 13.0 ns, the timing is missed by up to 0.6 ns.
 
 ## The number format
 The input and the output use the 5-byte floating point format of the C64
@@ -75,9 +76,9 @@ the top half of the bits of r are zero.
 | [`dsp.vhd`](dsp.vhd) | A combinatorial multiply-add, `a*b+c`, intended for the DSP blocks.
 | [`tb_fast_sqrt2.vhd`](tb_fast_sqrt2.vhd) | Testbench.
 | [`fast_sqrt2.gtkw`](fast_sqrt2.gtkw) | GTKWave setup for viewing the waveform from `make debug`.
-| [`fast_sqrt2.xdc`](fast_sqrt2.xdc) | Timing constraint (80.6 MHz).
-| [`fast_sqrt2.xpr`](fast_sqrt2.xpr) | Vivado project for synthesis.
-| [`Makefile`](Makefile) | Runs the simulation, see [Running](#running).
+| [`fast_sqrt2.xdc`](fast_sqrt2.xdc), [`vivado.tcl`](vivado.tcl) | Timing constraint (75.8 MHz) and script for synthesis with Vivado, see `make vivado`.
+| [`fast_sqrt2.xpr`](fast_sqrt2.xpr) | Vivado project, for use in the Vivado GUI. It has the same settings as `make vivado`.
+| [`Makefile`](Makefile) | Runs the simulation and the synthesis, see [Running](#running).
 
 ## Interface
 | Port | Direction | Description
@@ -99,6 +100,15 @@ Type `make` to list the supported targets:
   [GHDL](https://github.com/ghdl/ghdl). It takes about 20 seconds.
 * `make debug` does the same, and also writes a waveform to `fast_sqrt2.ghw`.
   `make show_debug` shows it in [GTKWave](https://github.com/gtkwave/gtkwave).
+* `make vivado` synthesizes and implements `fast_sqrt2.vhd`, using
+  [Vivado](https://www.amd.com/en/products/software/adaptive-socs-and-fpgas/vivado.html)
+  for the Artix-7 part xc7a200tfbg484-2. The design is implemented out of
+  context, i.e. as a module inside a larger design, so only the paths between
+  registers are timed. It fails if the design does not meet the 75.8 MHz clock
+  constraint in `fast_sqrt2.xdc`. At the end it prints the number of cells and the
+  slack of the worst path, and the reports are written to `vivado/`. It takes
+  about 2 minutes, and expects Vivado in `/opt/Xilinx/2025.1/Vivado` (the variable
+  `XILINX_DIR`).
 * `make clean` removes the generated files.
 
 ## Simulation

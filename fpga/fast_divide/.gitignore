@@ -6,6 +6,9 @@ work-obj08.cf
 tb_fast_divide
 *.ghw
 
+# Vivado (make vivado)
+vivado/
+
 # Vivado (fast_divide.xpr project)
 fast_divide.cache/
 fast_divide.gen/

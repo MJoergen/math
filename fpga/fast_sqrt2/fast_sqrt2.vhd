@@ -1,7 +1,7 @@
 library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-use ieee.math_real.all;
+   use ieee.std_logic_1164.all;
+   use ieee.numeric_std.all;
+   use ieee.math_real.all;
 
 -- This module takes a floating point number (exp_i, mant_i) and returns the
 -- square root as a floating point number (exp_o, mant_o).
@@ -64,38 +64,38 @@ architecture synthesis of fast_sqrt2 is
    -- Output is 0.5/sqrt(input) and is interpreted as a real value
    -- between 0.5 and 1.0.
    pure function inv_sqrt(arg : unsigned(C_ROM_SIZE-1 downto 0)) return unsigned is
-      variable arg_real : real;
-      variable res_real : real;
-      variable res      : unsigned(C_ROM_SIZE-1 downto 0);
+      variable arg_real_v : real;
+      variable res_real_v : real;
+      variable res_v      : unsigned(C_ROM_SIZE-1 downto 0);
    begin
       assert arg(C_ROM_SIZE-1 downto C_ROM_SIZE-2) /= "00";
-      arg_real := real(to_integer(arg)+1)/(2.0 ** C_ROM_SIZE);
-      res_real := 0.5/sqrt(arg_real);
-      if res_real = 1.0 then
-         res := (others => '1');
+      arg_real_v := real(to_integer(arg)+1)/(2.0 ** C_ROM_SIZE);
+      res_real_v := 0.5/sqrt(arg_real_v);
+      if res_real_v = 1.0 then
+         res_v := (others => '1');
       else
-         res := to_unsigned(integer(floor(res_real*(2.0 ** C_ROM_SIZE))), C_ROM_SIZE);
+         res_v := to_unsigned(integer(floor(res_real_v*(2.0 ** C_ROM_SIZE))), C_ROM_SIZE);
       end if;
-      return res;
+      return res_v;
    end function inv_sqrt;
 
-   type state_type is (IDLE_ST, INIT_ST, CALC_R_ST, CALC_XH_ST);
+   type   state_type is (IDLE_ST, INIT_ST, CALC_R_ST, CALC_XH_ST);
    signal state : state_type := IDLE_ST;
 
    type rom_type is array (natural range 0 to 2**C_ROM_SIZE-1) of unsigned(C_ROM_SIZE-1 downto 0);
 
    pure function init_inv_sqrt return rom_type is
-      variable res : rom_type := (others => (others => '0'));
+      variable res_v : rom_type := (others => (others => '0'));
    begin
       for i in 2**C_ROM_SIZE/4 to 2**C_ROM_SIZE-1 loop
-         res(i) := inv_sqrt(to_unsigned(i, C_ROM_SIZE));
+         res_v(i) := inv_sqrt(to_unsigned(i, C_ROM_SIZE));
       end loop;
-      return res;
+      return res_v;
    end function init_inv_sqrt;
 
    constant C_INV_SQRT : rom_type := init_inv_sqrt;
-   constant C_ZERO     : unsigned(31+C_GUARDS downto 0) := (others =>'0');
-   constant C_HALF     : unsigned(31+C_GUARDS downto 0) := (31+C_GUARDS => '1', others =>'0');
+   constant C_ZERO     : unsigned(31+C_GUARDS downto 0) := (others => '0');
+   constant C_HALF     : unsigned(31+C_GUARDS downto 0) := (31+C_GUARDS => '1', others => '0');
 
    signal x         : unsigned(31+C_GUARDS downto 0);
    signal h         : unsigned(31+C_GUARDS downto 0);
@@ -150,16 +150,16 @@ begin
                null;
 
             when INIT_ST =>
-               x <= dsp_1_res(30+C_GUARDS downto 0) & "0";
+               x     <= dsp_1_res(30+C_GUARDS downto 0) & "0";
                state <= CALC_R_ST;
 
             when CALC_R_ST =>
-               r <= 0-dsp_0_res;
+               r     <= 0-dsp_0_res;
                state <= CALC_XH_ST;
 
             when CALC_XH_ST =>
-               x <= dsp_0_res;
-               h <= dsp_1_res;
+               x     <= dsp_0_res;
+               h     <= dsp_1_res;
                state <= CALC_R_ST;
                if r(31+C_GUARDS downto (32+C_GUARDS)/2) = 0 then
                   if dsp_0_res(C_GUARDS-1) = '0' then
@@ -172,9 +172,9 @@ begin
                   else
                      exp_o <= ("0" & exp_i(7 downto 1)) + X"41";
                   end if;
-                  ready_o <= '1';
+                  ready_o    <= '1';
                   mant_o(31) <= '0';
-                  state  <= IDLE_ST;
+                  state      <= IDLE_ST;
                end if;
          end case;
 
@@ -185,18 +185,18 @@ begin
             else
                h <= (others => '0');
                if exp_i(0) = '0' then
-                  r <= (others => '0');
-                  r(31+C_GUARDS downto C_GUARDS) <= mant_i or X"80000000";
+                  r                                            <= (others => '0');
+                  r(31+C_GUARDS downto C_GUARDS)               <= mant_i or X"80000000";
                   h(31+C_GUARDS downto 32+C_GUARDS-C_ROM_SIZE) <= C_INV_SQRT(to_integer("1" & mant_i(30 downto 32-C_ROM_SIZE)));
                else
-                  r <= (others => '0');
-                  r(30+C_GUARDS downto C_GUARDS-1) <= mant_i or X"80000000";
+                  r                                            <= (others => '0');
+                  r(30+C_GUARDS downto C_GUARDS-1)             <= mant_i or X"80000000";
                   h(31+C_GUARDS downto 32+C_GUARDS-C_ROM_SIZE) <= C_INV_SQRT(to_integer("01" & mant_i(30 downto 33-C_ROM_SIZE)));
                end if;
                if exp_i = X"00" then
                   exp_o <= X"00";
                else
-                  state <= INIT_ST;
+                  state   <= INIT_ST;
                   ready_o <= '0';
                end if;
             end if;

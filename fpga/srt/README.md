@@ -98,30 +98,9 @@ The formal verification checks the slightly weaker $-4.5 \le n < 4.5$, since
 it only looks at the top 12 bits of `n`, i.e. `n` rounded down to a multiple
 of 1/256.
 
-## Formal verification
-The formal verification (`srt_core.psl`, `srt_core.sby`) checks `srt_core`
-with `G_SIZE=16` and with `G_SIZE=32` (as used in `srt`), for all normalized
-inputs, including a zero dividend:
-* The partial remainder stays within its bounds, and never overflows.
-* The quotient `m_q_o` matches the digits chosen by the PLA.
-* The quotient is correct: it differs from the exact value n/d by less than
-  2/3 of its least significant bit.
-* The result stays valid and unchanged until it is taken.
-
-[SMT solvers](https://en.wikipedia.org/wiki/Satisfiability_modulo_theories)
-are slow at multiplication, so instead of calculating q*d directly,
-`srt_core.psl` tracks q*d alongside the divider using only additions, and
-checks a few invariants in every clock cycle. See the comments in
-`srt_core.psl`.
-
-The properties are proven with k-induction, so they hold in every clock cycle,
-not just for a bounded number of them. This takes about two minutes. The
-invariants that are checked in every clock cycle are what makes this possible:
-each clock cycle is a small local step for the solver.
-
 ## Running
 Type `make` to list the supported targets. The most important ones are:
-* `make sim` runs the testbench (see [below](#the-testbench)). This requires
+* `make sim` runs the testbench (see [below](#simulation)). This requires
   [GHDL](https://github.com/ghdl/ghdl). It takes about a minute.
   `make sim PLA=pentium` runs it with the Pentium's original table instead
   (or `PLA=pentium_fixed`). Then the divider has the Pentium's FDIV bug, and
@@ -143,14 +122,15 @@ Type `make` to list the supported targets. The most important ones are:
 * `make vivado` runs synthesis and implementation in Vivado, and fails if the
   design does not meet the 200 MHz timing constraint. The timing report is
   written to `timing_summary.rpt`. No I/O pins are assigned, so the bitstream
-  is not meant to be loaded into a board.
+  is not meant to be loaded into a board. It takes about 2 minutes, and expects
+  Vivado in `/opt/Xilinx/2025.1/Vivado` (the variable `XILINX_DIR`).
 * `make clean` removes the generated files.
 
 The CI (`.github/workflows/srt.yml`) runs `make model`, `make sim`, and
 `make formal` on every pull request, and every push to master, that changes
 this directory.
 
-## The testbench
+## Simulation
 `tb_srt.vhd` checks:
 * A number of edge cases: inputs out of range, a zero dividend, the largest
   inputs in range, and every normalization shift.
@@ -160,6 +140,27 @@ this directory.
   testbench checks that the output does not change until it is taken.
 
 The expected results are calculated exactly, including the rounding.
+
+## Formal verification
+The formal verification (`srt_core.psl`, `srt_core.sby`) checks `srt_core`
+with `G_SIZE=16` and with `G_SIZE=32` (as used in `srt`), for all normalized
+inputs, including a zero dividend:
+* The partial remainder stays within its bounds, and never overflows.
+* The quotient `m_q_o` matches the digits chosen by the PLA.
+* The quotient is correct: it differs from the exact value n/d by less than
+  2/3 of its least significant bit.
+* The result stays valid and unchanged until it is taken.
+
+[SMT solvers](https://en.wikipedia.org/wiki/Satisfiability_modulo_theories)
+are slow at multiplication, so instead of calculating q*d directly,
+`srt_core.psl` tracks q*d alongside the divider using only additions, and
+checks a few invariants in every clock cycle. See the comments in
+`srt_core.psl`.
+
+The properties are proven with k-induction, so they hold in every clock cycle,
+not just for a bounded number of them. This takes about two minutes. The
+invariants that are checked in every clock cycle are what makes this possible:
+each clock cycle is a small local step for the solver.
 
 ## The model
 `srt.py` is a bit-exact model of `srt`, written in Python using integers. It

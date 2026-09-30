@@ -55,14 +55,14 @@ library ieee;
 
 package pla_pkg is
 
-   type     rom_type is array (natural range <>) of std_logic_vector(1 downto 0);
+   type rom_type is array (natural range <>) of std_logic_vector(1 downto 0);
 
    -- The table, indexed by n(7 bits) & d(4 bits). Each entry stores |q| as an
    -- unsigned number, i.e. "00", "01", or "10".
    constant C_PLA_ROM : rom_type(0 to 2047);
 
    -- The thresholds of one column: t1 & t0, in units of 1/8
-   subtype  col_type is std_logic_vector(11 downto 0);
+   subtype col_type is std_logic_vector(11 downto 0);
 
    -- Return the thresholds of the column for the 4 bits of d just after the
    -- leading "0001"
@@ -71,7 +71,7 @@ package pla_pkg is
    ) return col_type;
 
    -- The magnitude of the quotient digit: "00", "01", or "11", see above
-   subtype  mag_type is std_logic_vector(1 downto 0);
+   subtype mag_type is std_logic_vector(1 downto 0);
 
    -- Select the magnitude of the quotient digit for the top 7 bits of n,
    -- using the thresholds of the column. The sign of the digit is the sign of
@@ -142,7 +142,7 @@ package body pla_pkg is
 
    constant C_PLA_ROM : rom_type(0 to 2047) := init_rom;
 
-   type     col_table_type is array (0 to 15) of col_type;
+   type col_table_type is array (0 to 15) of col_type;
 
    -- Find the thresholds of each column: the smallest n >= 0 where the table
    -- holds |q| >= 1 and |q| >= 2.
@@ -243,9 +243,9 @@ entity pla is
       G_DEBUG : boolean
    );
    port (
-      n_i   : in    std_logic_vector(G_SIZE-1 downto 0); -- partial remainder
-      col_i : in    col_type;                            -- see get_col
-      mag_o : out   mag_type                             -- see get_mag
+      n_i   : in  std_logic_vector(G_SIZE-1 downto 0); -- partial remainder
+      col_i : in  col_type;                            -- see get_col
+      mag_o : out mag_type                             -- see get_mag
    );
 end entity pla;
 

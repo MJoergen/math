@@ -40,26 +40,26 @@ entity booth_radix2 is
       G_DATA_SIZE : positive := 16
    );
    port (
-      clk_i     : in    std_logic;
-      rst_i     : in    std_logic;
+      clk_i     : in  std_logic;
+      rst_i     : in  std_logic;
 
       -- Input
-      s_valid_i : in    std_logic;
-      s_ready_o : out   std_logic;
-      s_a_i     : in    std_logic_vector(G_DATA_SIZE - 1 downto 0);      -- Multiplicand (signed)
-      s_b_i     : in    std_logic_vector(G_DATA_SIZE - 1 downto 0);      -- Multiplier (signed)
+      s_valid_i : in  std_logic;
+      s_ready_o : out std_logic;
+      s_a_i     : in  std_logic_vector(G_DATA_SIZE - 1 downto 0);      -- Multiplicand (signed)
+      s_b_i     : in  std_logic_vector(G_DATA_SIZE - 1 downto 0);      -- Multiplier (signed)
 
       -- Output
-      m_valid_o : out   std_logic;
-      m_ready_i : in    std_logic;
-      m_res_o   : out   std_logic_vector(2 * G_DATA_SIZE - 1 downto 0)   -- Product (signed)
+      m_valid_o : out std_logic;
+      m_ready_i : in  std_logic;
+      m_res_o   : out std_logic_vector(2 * G_DATA_SIZE - 1 downto 0)   -- Product (signed)
    );
 end entity booth_radix2;
 
 architecture synthesis of booth_radix2 is
 
    -- Number of iterations
-   constant C_ITERS  : positive := G_DATA_SIZE;
+   constant C_ITERS : positive := G_DATA_SIZE;
 
    -- Size of the multiplier Q
    constant C_Q_SIZE : positive := G_DATA_SIZE;
@@ -72,28 +72,28 @@ architecture synthesis of booth_radix2 is
    --           occupied in the last iteration, the calculation waits there,
    --           so that the output register is always loaded directly from
    --           the adder.
-   type     state_type is (IDLE_ST, BUSY_ST);
-   signal   state : state_type := IDLE_ST;
+   type   state_type is (IDLE_ST, BUSY_ST);
+   signal state : state_type := IDLE_ST;
 
    -- Number of remaining iterations
-   signal   count : natural range 1 to C_ITERS;
+   signal count : natural range 1 to C_ITERS;
 
    -- Set in the last iteration, i.e. when count = 1. This is a separate
    -- register, so that s_ready_o does not depend on the comparison of count.
-   signal   last : std_logic;
+   signal last : std_logic;
 
    -- Sign-extended multiplicand M
-   signal   mcand : signed(C_P_SIZE - 1 downto 0);
+   signal mcand : signed(C_P_SIZE - 1 downto 0);
 
    -- Working register P & Q & Q(-1)
-   signal   prod : signed(C_P_SIZE + C_Q_SIZE downto 0);
+   signal prod : signed(C_P_SIZE + C_Q_SIZE downto 0);
 
    -- The operand and the carry input for the current iteration, i.e.
    -- booth_opd(prod, mcand). This is calculated one clock cycle in advance,
    -- so that the adder only depends on registers next to it. This is possible
    -- because the bits of Q that select the operand are never changed by the
    -- adder.
-   signal   opd : signed(C_P_SIZE downto 0);
+   signal opd : signed(C_P_SIZE downto 0);
 
    -- The operand of an iteration of Booth's algorithm, as selected by the
    -- least significant bits of the working register. To make sure only a

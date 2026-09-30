@@ -51,10 +51,12 @@ debug: $(SRC) ## Run a short simulation, and write a waveform to tan_cordic.ghw
 	ghdl -e --std=08 tb_tan_cordic
 	ghdl -r --std=08 tb_tan_cordic -gG_NUM_TESTS=20 --assert-level=error --wave=tan_cordic.ghw
 
-# GTKWave, see https://github.com/gtkwave/gtkwave
+# GTKWave, see https://github.com/gtkwave/gtkwave. tan_cordic.gtkw selects the
+# signals of tb_tan_cordic and the most relevant internal signals of
+# tan_cordic.
 .PHONY: show_debug
 show_debug: ## Show the waveform from "make debug" in GTKWave
-	gtkwave tan_cordic.ghw
+	gtkwave tan_cordic.ghw tan_cordic.gtkw
 
 
 #######################

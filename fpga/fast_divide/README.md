@@ -11,14 +11,14 @@ about 60 MHz (clock period 16.5 ns).
 
 The resource usage is:
 
-* LUT   : 568
+* LUT   : 570
 * FF    : 175
-* Slice : 192
+* Slice : 189
 * DSP   :  12
 
-These numbers are from Vivado 2025.1, implementing the project
-[`fast_divide.xpr`](fast_divide.xpr) (part xc7a200tfbg484-2, default
-strategies).
+These numbers are from Vivado 2025.1, with `make vivado` (see
+[Running](#running)), which implements the design out of context for the part
+xc7a200tfbg484-2.
 
 ## The algorithm
 First the divisor D and the numerator N are both shifted left by the number
@@ -51,9 +51,9 @@ Each iteration takes a single clock cycle, and uses two wide multipliers
 | [`fast_divide.vhd`](fast_divide.vhd) | The divider.
 | [`tb_fast_divide.vhd`](tb_fast_divide.vhd) | Testbench.
 | [`fast_divide.gtkw`](fast_divide.gtkw) | GTKWave setup for viewing the waveform from `make debug`.
-| [`fast_divide.xdc`](fast_divide.xdc) | Timing constraint (50 MHz).
-| [`fast_divide.xpr`](fast_divide.xpr) | Vivado project for synthesis.
-| [`Makefile`](Makefile) | Runs the simulation, see [Running](#running).
+| [`fast_divide.xdc`](fast_divide.xdc), [`vivado.tcl`](vivado.tcl) | Timing constraint (50 MHz) and script for synthesis with Vivado, see `make vivado`.
+| [`fast_divide.xpr`](fast_divide.xpr) | Vivado project, for use in the Vivado GUI. It has the same settings as `make vivado`.
+| [`Makefile`](Makefile) | Runs the simulation and the synthesis, see [Running](#running).
 
 ## Interface
 | Port | Direction | Description
@@ -75,6 +75,15 @@ Type `make` to list the supported targets:
   [GHDL](https://github.com/ghdl/ghdl). It takes about 10 seconds.
 * `make debug` does the same, and also writes a waveform to `fast_divide.ghw`.
   `make show_debug` shows it in [GTKWave](https://github.com/gtkwave/gtkwave).
+* `make vivado` synthesizes and implements `fast_divide.vhd`, using
+  [Vivado](https://www.amd.com/en/products/software/adaptive-socs-and-fpgas/vivado.html)
+  for the Artix-7 part xc7a200tfbg484-2. The design is implemented out of
+  context, i.e. as a module inside a larger design, so only the paths between
+  registers are timed. It fails if the design does not meet the 50 MHz clock
+  constraint in `fast_divide.xdc`. At the end it prints the number of cells and the
+  slack of the worst path, and the reports are written to `vivado/`. It takes
+  about 2 minutes, and expects Vivado in `/opt/Xilinx/2025.1/Vivado` (the variable
+  `XILINX_DIR`).
 * `make clean` removes the generated files.
 
 ## Simulation

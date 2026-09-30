@@ -1,6 +1,6 @@
 library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
+   use ieee.std_logic_1164.all;
+   use ieee.numeric_std.all;
 
 -- This module takes a floating point number (exp_i, mant_i) and returns the
 -- square root as a floating point number (exp_o, mant_o).
@@ -38,7 +38,7 @@ end entity fast_sqrt;
 
 architecture synthesis of fast_sqrt is
 
-   type state_type is (IDLE_ST, CALC_ST);
+   type   state_type is (IDLE_ST, CALC_ST);
    signal state : state_type := IDLE_ST;
 
    signal val  : unsigned(33 downto 0);
@@ -49,10 +49,10 @@ begin
 
    mant_o(30 downto 0) <= mant(31 downto 1) when mant(0) = '0' else
                           mant(31 downto 1) + 1;
-   mant_o(31) <= '0';
+   mant_o(31)          <= '0';
 
    fsm_proc : process (clk_i)
-      variable tmp      : unsigned(33 downto 0);
+      variable tmp_v : unsigned(33 downto 0);
    begin
       if rising_edge(clk_i) then
 
@@ -64,8 +64,8 @@ begin
             when CALC_ST =>
                if val >= (mant or ("0" & mask(33 downto 1))) then
                   val(33 downto 1) <= val(32 downto 0) - (mant(32 downto 0) or mask(33 downto 1));
-                  val(0) <= '0';
-                  mant <= mant or mask;
+                  val(0)           <= '0';
+                  mant             <= mant or mask;
                else
                   val <= val(32 downto 0) & "0";
                end if;
@@ -84,15 +84,15 @@ begin
 
          -- start_i can be asserted at any time, even in the middle of a calculation.
          if start_i = '1' then
-            error_o <= '0';   -- Clear any previous errors.
+            error_o <= '0';                                                                        -- Clear any previous errors.
             if mant_i(31) = '1' then
-               error_o <= '1';   -- Error if number is negative.
+               error_o <= '1';                                                                     -- Error if number is negative.
             else
                if exp_i(0) = '0' then
-                  val <= (others => '0');
+                  val               <= (others => '0');
                   val(32 downto  1) <= mant_i or X"80000000";
                else
-                  val <= (others => '0');
+                  val               <= (others => '0');
                   val(31 downto  0) <= mant_i or X"80000000";
                end if;
                mant     <= (others => '0');

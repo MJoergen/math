@@ -6,6 +6,9 @@ work-obj08.cf
 tb_fast_sqrt2
 *.ghw
 
+# Vivado (make vivado)
+vivado/
+
 # Vivado (fast_sqrt2.xpr project)
 fast_sqrt2.cache/
 fast_sqrt2.gen/

@@ -85,44 +85,44 @@ entity booth_csa is
       G_CPA_SIZE  : positive := 7   -- Block size of the final adder
    );
    port (
-      clk_i     : in    std_logic;
-      rst_i     : in    std_logic;
+      clk_i     : in  std_logic;
+      rst_i     : in  std_logic;
 
       -- Input
-      s_valid_i : in    std_logic;
-      s_ready_o : out   std_logic;
-      s_a_i     : in    std_logic_vector(G_DATA_SIZE - 1 downto 0);      -- Multiplicand (signed)
-      s_b_i     : in    std_logic_vector(G_DATA_SIZE - 1 downto 0);      -- Multiplier (signed)
+      s_valid_i : in  std_logic;
+      s_ready_o : out std_logic;
+      s_a_i     : in  std_logic_vector(G_DATA_SIZE - 1 downto 0);      -- Multiplicand (signed)
+      s_b_i     : in  std_logic_vector(G_DATA_SIZE - 1 downto 0);      -- Multiplier (signed)
 
       -- Output
-      m_valid_o : out   std_logic;
-      m_ready_i : in    std_logic;
-      m_res_o   : out   std_logic_vector(2 * G_DATA_SIZE - 1 downto 0)   -- Product (signed)
+      m_valid_o : out std_logic;
+      m_ready_i : in  std_logic;
+      m_res_o   : out std_logic_vector(2 * G_DATA_SIZE - 1 downto 0)   -- Product (signed)
    );
 end entity booth_csa;
 
 architecture synthesis of booth_csa is
 
    -- Number of bits of Q in each iteration
-   constant C_STEP     : positive := 2 * G_DIGITS;
+   constant C_STEP : positive := 2 * G_DIGITS;
 
    -- Number of iterations
-   constant C_ITERS    : positive := (G_DATA_SIZE + C_STEP - 1) / C_STEP;
+   constant C_ITERS : positive := (G_DATA_SIZE + C_STEP - 1) / C_STEP;
 
    -- Size of the (possibly sign-extended) multiplier Q
-   constant C_Q_SIZE   : positive := C_STEP * C_ITERS;
+   constant C_Q_SIZE : positive := C_STEP * C_ITERS;
 
    -- Total number of clock cycles
-   constant C_CYCLES   : positive := C_ITERS + 2;
+   constant C_CYCLES : positive := C_ITERS + 2;
 
    -- Size of the partial product P (as a signed number), and of s and c
-   constant C_P_SIZE   : positive := G_DATA_SIZE + 2;
+   constant C_P_SIZE : positive := G_DATA_SIZE + 2;
 
    -- Size of the vectors in the compressors
    constant C_ROW_SIZE : positive := C_P_SIZE + C_STEP;
 
    -- Number of bits of V in the product, i.e. those not in r
-   constant C_V_SIZE   : positive := 2 * G_DATA_SIZE - C_Q_SIZE + C_STEP;
+   constant C_V_SIZE : positive := 2 * G_DATA_SIZE - C_Q_SIZE + C_STEP;
 
    -- Number of blocks of the final adder
    constant C_BLOCKS   : positive := (C_V_SIZE + G_CPA_SIZE - 1) / G_CPA_SIZE;
@@ -131,24 +131,24 @@ architecture synthesis of booth_csa is
    -- IDLE_ST : Waiting for new inputs.
    -- BUSY_ST : Calculation in progress. If the output register is still
    --           occupied in the last clock cycle, the calculation waits there.
-   type     state_type is (IDLE_ST, BUSY_ST);
-   signal   state : state_type := IDLE_ST;
+   type   state_type is (IDLE_ST, BUSY_ST);
+   signal state : state_type := IDLE_ST;
 
    -- Number of remaining clock cycles
-   signal   count : natural range 1 to C_CYCLES;
+   signal count : natural range 1 to C_CYCLES;
 
    -- Set in the first clock cycle of the final addition (count = 2), and in the
    -- last clock cycle (count = 1), which is the second one
-   signal   d1   : std_logic;
-   signal   last : std_logic;
+   signal d1   : std_logic;
+   signal last : std_logic;
 
    -- The same as s_ready_o. The datapath is loaded when this is set.
-   signal   ready : std_logic := '1';
+   signal ready : std_logic := '1';
 
    -- The clock enables of the iteration registers (load and iteration), and of
    -- the registers of the final addition
-   signal   s_en  : std_logic;
-   signal   d1_en : std_logic;
+   signal s_en  : std_logic;
+   signal d1_en : std_logic;
 
    -- These control the wide registers. Vivado may replicate them, and it
    -- must use the clock enable input of the flip-flops for the enables.
@@ -161,31 +161,31 @@ architecture synthesis of booth_csa is
    attribute direct_enable of d1_en : signal is true;
 
    -- Sign-extended multiplicand M
-   signal   mcand : signed(C_P_SIZE - 1 downto 0);
+   signal mcand : signed(C_P_SIZE - 1 downto 0);
 
    -- The partial product in carry-save form. P + B is the sum of s and c, the
    -- not yet added low bits lo_a and lo_b of the previous iteration below
    -- them, and the carry cy of the previous addition of low bits.
-   signal   s    : unsigned(C_P_SIZE - 1 downto 0);
-   signal   c    : unsigned(C_P_SIZE - 1 downto 0);
-   signal   lo_a : unsigned(C_STEP - 1 downto 0);
-   signal   lo_b : unsigned(C_STEP - 1 downto 0);
-   signal   cy   : std_logic;
+   signal s    : unsigned(C_P_SIZE - 1 downto 0);
+   signal c    : unsigned(C_P_SIZE - 1 downto 0);
+   signal lo_a : unsigned(C_STEP - 1 downto 0);
+   signal lo_b : unsigned(C_STEP - 1 downto 0);
+   signal cy   : std_logic;
 
    -- Q & Q(-1), with the low bits of the product shifted in at the top
-   signal   r : std_logic_vector(C_Q_SIZE downto 0);
+   signal r : std_logic_vector(C_Q_SIZE downto 0);
 
    -- The operands for the current iteration, calculated one clock cycle in
    -- advance, i.e. booth_opd(r, mcand, j) for each j
-   type     opd_type is array (natural range <>) of unsigned(C_P_SIZE + 1 downto 0);
-   signal   opd : opd_type(0 to G_DIGITS - 1);
+   type   opd_type is array (natural range <>) of unsigned(C_P_SIZE + 1 downto 0);
+   signal opd : opd_type(0 to G_DIGITS - 1);
 
    -- The first clock cycle of the final addition: For each block, the sums
    -- with carry input 0 and 1, and their carry outputs
-   signal   sum0 : unsigned(C_SUM_SIZE - 1 downto 0);
-   signal   sum1 : unsigned(C_SUM_SIZE - 1 downto 0);
-   signal   g    : unsigned(C_BLOCKS - 1 downto 0);
-   signal   t    : unsigned(C_BLOCKS - 1 downto 0);
+   signal sum0 : unsigned(C_SUM_SIZE - 1 downto 0);
+   signal sum1 : unsigned(C_SUM_SIZE - 1 downto 0);
+   signal g    : unsigned(C_BLOCKS - 1 downto 0);
+   signal t    : unsigned(C_BLOCKS - 1 downto 0);
 
    -- Operand j of an iteration of Booth's algorithm, as selected by bits
    -- 2*j+2 downto 2*j of r. See booth.vhd. The operand in two's complement
@@ -240,7 +240,7 @@ architecture synthesis of booth_csa is
       return res_v;
    end function booth_opds;
 
-   type     row_type is array (natural range <>) of unsigned(C_ROW_SIZE - 1 downto 0);
+   type row_type is array (natural range <>) of unsigned(C_ROW_SIZE - 1 downto 0);
 
    -- Add s, c, and the operands, using G_DIGITS 3:2 compressors. The vectors
    -- form a queue: Each compressor takes the first three vectors, and appends
@@ -272,11 +272,11 @@ architecture synthesis of booth_csa is
 
       -- Compressor j has sub of operand j in the free LSB of the carry vector
       for j in 0 to G_DIGITS - 1 loop
-         x_v                      := q_v(3 * j);
-         y_v                      := q_v(3 * j + 1);
-         z_v                      := q_v(3 * j + 2);
-         q_v(G_DIGITS + 2 + 2 * j) := x_v xor y_v xor z_v;
-         q_v(G_DIGITS + 3 + 2 * j) := shift_left((x_v and y_v) or (x_v and z_v) or (y_v and z_v), 1);
+         x_v                          := q_v(3 * j);
+         y_v                          := q_v(3 * j + 1);
+         z_v                          := q_v(3 * j + 2);
+         q_v(G_DIGITS + 2 + 2 * j)    := x_v xor y_v xor z_v;
+         q_v(G_DIGITS + 3 + 2 * j)    := shift_left((x_v and y_v) or (x_v and z_v) or (y_v and z_v), 1);
          q_v(G_DIGITS + 3 + 2 * j)(0) := arg_opd(j)(0);
       end loop;
 

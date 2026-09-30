@@ -1,7 +1,7 @@
 library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-use ieee.math_real.all;
+   use ieee.std_logic_1164.all;
+   use ieee.numeric_std.all;
+   use ieee.math_real.all;
 
 entity tb_fast_divide is
 end entity tb_fast_divide;
@@ -46,8 +46,8 @@ begin
       end function real2unsigned;
 
       procedure verify_division(arg_n : natural; arg_d : natural) is
-         variable exp_q_high : unsigned(31 downto 0) := to_unsigned(arg_n / arg_d, 32);
-         variable exp_q_low  : unsigned(31 downto 0) := real2unsigned(real(arg_n rem arg_d) / real(arg_d));
+         variable exp_q_high_v : unsigned(31 downto 0) := to_unsigned(arg_n / arg_d, 32);
+         variable exp_q_low_v  : unsigned(31 downto 0) := real2unsigned(real(arg_n rem arg_d) / real(arg_d));
       begin
 
          n          <= to_unsigned(arg_n, 32);
@@ -58,45 +58,45 @@ begin
          wait until rising_edge(clk);
          assert busy = '1';
          wait until busy = '0';
-         assert q(63 downto 32) = exp_q_high
+         assert q(63 downto 32) = exp_q_high_v
             report "Calculating " & to_string(arg_n) & "/" & to_string(arg_d) &
-               ". Got 0x" & to_hstring(q(63 downto 32)) & ", expected 0x" & to_hstring(exp_q_high);
-         assert q(31 downto 0)  = exp_q_low
+                   ". Got 0x" & to_hstring(q(63 downto 32)) & ", expected 0x" & to_hstring(exp_q_high_v);
+         assert q(31 downto 0) = exp_q_low_v
             report "Calculating " & to_string(arg_n) & "/" & to_string(arg_d) &
-               ". Got 0x" & to_hstring(q(31 downto 0)) & ", expected 0x" & to_hstring(exp_q_low);
+                   ". Got 0x" & to_hstring(q(31 downto 0)) & ", expected 0x" & to_hstring(exp_q_low_v);
 
-         if q(31 downto 0) < exp_q_low then
+         if q(31 downto 0) < exp_q_low_v then
             low_count <= low_count + 1;
          end if;
-         if q(31 downto 0) > exp_q_low then
+         if q(31 downto 0) > exp_q_low_v then
             high_count <= high_count + 1;
          end if;
       end procedure verify_division;
 
-      variable start_time : time;
-      variable end_time   : time;
+      variable start_time_v : time;
+      variable end_time_v   : time;
 
-      constant MAX_D : natural := 100;
-      constant MAX_N : natural := 100;
+      constant C_MAX_D : natural := 100;
+      constant C_MAX_N : natural := 100;
    begin
       wait for 100 ns;
       wait until rising_edge(clk);
-      start_time := now;
+      start_time_v := now;
       report "Test started";
-      for di in 1 to MAX_D loop
-         for ni in 1 to MAX_N loop
+      for di in 1 to C_MAX_D loop
+         for ni in 1 to C_MAX_N loop
             verify_division(ni, di);
          end loop;
       end loop;
-      end_time := now;
+      end_time_v := now;
       report "Test finished, " &
-         to_string(real((end_time-start_time) / 10 ns) / real(MAX_D*MAX_N)) &
-         " clock cycles per division";
+             to_string(real((end_time_v-start_time_v) / 10 ns) / real(C_MAX_D*C_MAX_N)) &
+             " clock cycles per division";
       report "low_count=" & to_string(low_count);
       report "high_count=" & to_string(high_count);
       wait until rising_edge(clk);
-      running <= '0';
-   end process;
+      running    <= '0';
+   end process test_proc;
 
 end architecture simulation;
 

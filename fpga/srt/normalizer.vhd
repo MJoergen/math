@@ -21,11 +21,11 @@ library ieee;
 
 entity normalizer is
    port (
-      n_i   : in    std_logic_vector(31 downto 0); -- dividend
-      d_i   : in    std_logic_vector(31 downto 0); -- divisor
-      n_o   : out   std_logic_vector(31 downto 0); -- normalized dividend
-      d_o   : out   std_logic_vector(31 downto 0); -- normalized divisor
-      exp_o : out   integer range -29 to 29        -- shift of n minus shift of d
+      n_i   : in  std_logic_vector(31 downto 0); -- dividend
+      d_i   : in  std_logic_vector(31 downto 0); -- divisor
+      n_o   : out std_logic_vector(31 downto 0); -- normalized dividend
+      d_o   : out std_logic_vector(31 downto 0); -- normalized divisor
+      exp_o : out integer range -29 to 29        -- shift of n minus shift of d
    );
 end entity normalizer;
 

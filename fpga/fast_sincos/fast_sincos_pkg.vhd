@@ -14,7 +14,7 @@ package fast_sincos_pkg is
    constant C_GUARD_BITS : natural := 7;
    constant C_SIZE       : natural := 32 + C_GUARD_BITS;
 
-   subtype  fraction_type is unsigned(C_SIZE downto 0);
+   subtype fraction_type is unsigned(C_SIZE downto 0);
 
    -- The following two helper functions convert between real numbers and the above
    -- fraction_type.

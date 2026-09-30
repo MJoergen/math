@@ -42,19 +42,19 @@ entity srt is
       G_PLA   : string  := "srt"     -- The quotient digit table, see srt_core.vhd
    );
    port (
-      clk_i       : in    std_logic;
+      clk_i       : in  std_logic;
 
       -- Input
-      s_valid_i   : in    std_logic;
-      s_ready_o   : out   std_logic;
-      s_n_i       : in    std_logic_vector(31 downto 0); -- dividend
-      s_d_i       : in    std_logic_vector(31 downto 0); -- divisor
+      s_valid_i   : in  std_logic;
+      s_ready_o   : out std_logic;
+      s_n_i       : in  std_logic_vector(31 downto 0); -- dividend
+      s_d_i       : in  std_logic_vector(31 downto 0); -- divisor
 
       -- Output
-      m_valid_o   : out   std_logic;
-      m_ready_i   : in    std_logic;
-      m_q_o       : out   std_logic_vector(63 downto 0); -- quotient (32.32 fixed point)
-      m_invalid_o : out   std_logic                      -- inputs were out of range
+      m_valid_o   : out std_logic;
+      m_ready_i   : in  std_logic;
+      m_q_o       : out std_logic_vector(63 downto 0); -- quotient (32.32 fixed point)
+      m_invalid_o : out std_logic                      -- inputs were out of range
    );
 end entity srt;
 
@@ -107,7 +107,7 @@ begin
    inputs_valid <= s_n_i(31 downto 29) = "000" and s_d_i(31 downto 29) = "000" and s_d_i /= 0;
 
    srt_proc : process (clk_i)
-      variable res_v   : std_logic_vector(67 downto 0);
+      variable res_v : std_logic_vector(67 downto 0);
       -- Half of the LSB of m_q_o. Adding this before truncating the 4 extra
       -- fractional bits rounds to nearest.
       constant C_ROUND : std_logic_vector(67 downto 0) := X"00000000000000008";

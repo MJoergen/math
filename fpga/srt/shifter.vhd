@@ -9,9 +9,9 @@ library ieee;
 
 entity shifter is
    port (
-      p_i   : in    std_logic_vector(67 downto 0); -- value to shift
-      exp_i : in    natural range 1 to 59;         -- number of positions
-      q_o   : out   std_logic_vector(67 downto 0)  -- shifted value
+      p_i   : in  std_logic_vector(67 downto 0); -- value to shift
+      exp_i : in  natural range 1 to 59;         -- number of positions
+      q_o   : out std_logic_vector(67 downto 0)  -- shifted value
    );
 end entity shifter;
 

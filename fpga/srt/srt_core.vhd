@@ -94,18 +94,18 @@ entity srt_core is
       G_PLA   : string := "srt"
    );
    port (
-      clk_i     : in    std_logic;
+      clk_i     : in  std_logic;
 
       -- Input
-      s_valid_i : in    std_logic;
-      s_ready_o : out   std_logic;
-      s_n_i     : in    std_logic_vector(G_SIZE - 1 downto 0);     -- dividend (normalized)
-      s_d_i     : in    std_logic_vector(G_SIZE - 1 downto 0);     -- divisor (normalized)
+      s_valid_i : in  std_logic;
+      s_ready_o : out std_logic;
+      s_n_i     : in  std_logic_vector(G_SIZE - 1 downto 0);     -- dividend (normalized)
+      s_d_i     : in  std_logic_vector(G_SIZE - 1 downto 0);     -- divisor (normalized)
 
       -- Output
-      m_valid_o : out   std_logic;
-      m_ready_i : in    std_logic;
-      m_q_o     : out   std_logic_vector(2 * G_SIZE + 3 downto 0)  -- quotient
+      m_valid_o : out std_logic;
+      m_ready_i : in  std_logic;
+      m_q_o     : out std_logic_vector(2 * G_SIZE + 3 downto 0)  -- quotient
    );
 end entity srt_core;
 
@@ -114,12 +114,12 @@ architecture synthesis of srt_core is
    -- Number of quotient digits. Each digit is two bits, so this fills m_q_o.
    constant C_NUM_ITERS : natural                         := G_SIZE + 2;
 
-   signal   iter : natural range 0 to C_NUM_ITERS - 1;
+   signal iter : natural range 0 to C_NUM_ITERS - 1;
 
    -- The quotient digit selected by the PLA: its magnitude, and the digit
    -- itself (with the sign of the estimate of n)
-   signal   pla_mag : mag_type;
-   signal   pla_q   : integer range -2 to 2;
+   signal pla_mag : mag_type;
+   signal pla_q   : integer range -2 to 2;
 
    -- The initial value of d, before the first division. Any normalized value
    -- will do. The initial value of col must match it, see f_col.
@@ -142,31 +142,31 @@ architecture synthesis of srt_core is
    end function get_d4;
 
    -- The partial remainder in carry-save form, n = n_s + n_c
-   signal   n_s   : std_logic_vector(G_SIZE - 1 downto 0) := (others => '0'); -- Sums
-   signal   n_c   : std_logic_vector(G_SIZE - 1 downto 0) := (others => '0'); -- Carries
+   signal n_s : std_logic_vector(G_SIZE - 1 downto 0) := (others => '0'); -- Sums
+   signal n_c : std_logic_vector(G_SIZE - 1 downto 0) := (others => '0'); -- Carries
 
    -- The partial remainder as a single number. This is only used for
    -- verification (the assertions below, and srt_core.psl) and debugging. It
    -- is not used by the divider, so synthesis removes it.
-   signal   n     : std_logic_vector(G_SIZE - 1 downto 0);
+   signal n : std_logic_vector(G_SIZE - 1 downto 0);
 
    -- The estimate of n that is used for the table lookup: The sum of the top
    -- 7 bits of n_s and n_c. The lower bits are zero.
-   signal   n_est : std_logic_vector(G_SIZE - 1 downto 0);
+   signal n_est : std_logic_vector(G_SIZE - 1 downto 0);
 
-   signal   d     : std_logic_vector(G_SIZE - 1 downto 0) := C_INIT_D;        -- Divisor
-   signal   col   : col_type := get_col(get_d4(C_INIT_D));                     -- Column of d
-   signal   quot    : std_logic_vector(2 * G_SIZE + 3 downto 0);              -- Quotient so far
-   signal   quot_m1 : std_logic_vector(2 * G_SIZE + 3 downto 0);              -- quot - 1
-   signal   digit   : integer range -2 to 2;                                  -- Not yet appended to quot
+   signal d       : std_logic_vector(G_SIZE - 1 downto 0) := C_INIT_D;         -- Divisor
+   signal col     : col_type := get_col(get_d4(C_INIT_D));                     -- Column of d
+   signal quot    : std_logic_vector(2 * G_SIZE + 3 downto 0);                 -- Quotient so far
+   signal quot_m1 : std_logic_vector(2 * G_SIZE + 3 downto 0);                 -- quot - 1
+   signal digit   : integer range -2 to 2;                                     -- Not yet appended to quot
 
    -- quot and quot_m1 with digit appended
-   signal   new_quot    : std_logic_vector(2 * G_SIZE + 3 downto 0);
-   signal   new_quot_m1 : std_logic_vector(2 * G_SIZE + 3 downto 0);
+   signal new_quot    : std_logic_vector(2 * G_SIZE + 3 downto 0);
+   signal new_quot_m1 : std_logic_vector(2 * G_SIZE + 3 downto 0);
 
    -- DONE_ST: The result is valid on m_q_o, and waits to be taken
-   type     state_type is (IDLE_ST, BUSY_ST, DONE_ST);
-   signal   state : state_type                            := IDLE_ST;
+   type   state_type is (IDLE_ST, BUSY_ST, DONE_ST);
+   signal state : state_type                            := IDLE_ST;
 
    -- The severity of the assertions in get_n. With the original Pentium table,
    -- the divider has the FDIV bug, so these invariants fail in rare divisions.
@@ -330,7 +330,6 @@ begin
             new_quot_m1 <= quot_m1_v & "11";
 
       end case;
-
    end process append_proc;
 
    -- After the last iteration, digit holds the last digit, and quot holds
@@ -392,8 +391,8 @@ begin
             d       <= s_d_i;
             col     <= get_col(get_d4(s_d_i));
             iter    <= 0;
-            quot    <= (others => '0');                -- 0
-            quot_m1 <= (others => '1');                -- -1
+            quot    <= (others => '0');                                                    -- 0
+            quot_m1 <= (others => '1');                                                    -- -1
             digit   <= 0;
             state   <= BUSY_ST;
          end if;

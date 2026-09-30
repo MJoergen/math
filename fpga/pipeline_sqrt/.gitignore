@@ -6,6 +6,9 @@ work-obj08.cf
 tb_pipeline_sqrt
 *.ghw
 
+# Vivado (make vivado)
+vivado/
+
 # Vivado (pipeline_sqrt.xpr project)
 pipeline_sqrt.cache/
 pipeline_sqrt.gen/

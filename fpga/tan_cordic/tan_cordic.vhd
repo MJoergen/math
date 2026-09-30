@@ -30,20 +30,20 @@ entity tan_cordic is
       G_FRAC_BITS  : positive := 24
    );
    port (
-      clk_i     : in    std_logic;
-      rst_i     : in    std_logic;
+      clk_i     : in  std_logic;
+      rst_i     : in  std_logic;
 
       -- Input angle in radians, must satisfy 0.0 <= angle < pi/4.
       -- Unsigned fixed-point format U0.G_FRAC_BITS, i.e. angle = s_angle_i / 2**G_FRAC_BITS.
-      s_valid_i : in    std_logic;
-      s_ready_o : out   std_logic;
-      s_angle_i : in    std_logic_vector(G_FRAC_BITS - 1 downto 0);
+      s_valid_i : in  std_logic;
+      s_ready_o : out std_logic;
+      s_angle_i : in  std_logic_vector(G_FRAC_BITS - 1 downto 0);
 
       -- Output tan(angle), in the range [0.0, 1.0[.
       -- Unsigned fixed-point format U0.G_FRAC_BITS, i.e. tan = m_tan_o / 2**G_FRAC_BITS.
-      m_valid_o : out   std_logic;
-      m_ready_i : in    std_logic;
-      m_tan_o   : out   std_logic_vector(G_FRAC_BITS - 1 downto 0)
+      m_valid_o : out std_logic;
+      m_ready_i : in  std_logic;
+      m_tan_o   : out std_logic_vector(G_FRAC_BITS - 1 downto 0)
    );
 end entity tan_cordic;
 
@@ -56,7 +56,7 @@ architecture synthesis of tan_cordic is
 
    -- Holds the (residual) angle. All angles here lie in [0.0, pi/4], so one
    -- integer bit (the sign) is enough.
-   subtype  angle_t is sfixed(0 downto -C_FRAC);
+   subtype angle_type is sfixed(0 downto -C_FRAC);
 
    -- Holds the tiny residual angle left after REDUCE_ST, i.e. the "z" used by the
    -- Padé approximation. After the last pseudo-division iteration (index
@@ -66,65 +66,65 @@ architecture synthesis of tan_cordic is
    -- squaring it -- this keeps the multiplier (and hence the number of DSP48E1
    -- tiles it needs) as small as possible. The "maximum" guards against
    -- G_ITERATIONS being so large (relative to C_FRAC) that no bits would be left;
-   -- in that corner case this is simply the same range as angle_t, i.e. no
+   -- in that corner case this is simply the same range as angle_type, i.e. no
    -- narrowing takes place.
-   subtype  small_angle_t is sfixed(maximum(1 - G_ITERATIONS, -C_FRAC) downto -C_FRAC);
+   subtype small_angle_type is sfixed(maximum(1 - G_ITERATIONS, -C_FRAC) downto -C_FRAC);
 
    -- Holds the (x, y) vector during pseudo-multiplication. The vector grows from
    -- its initial length of about 3.0 by at most the CORDIC gain of about 1.647,
    -- i.e. to at most about 5.0, so three integer bits (plus sign) are used.
-   subtype  vec_t   is sfixed(3 downto -C_FRAC);
+   subtype vec_type is sfixed(3 downto -C_FRAC);
 
    -- Holds the remainder during the final restoring division. One extra integer
    -- bit is needed, since the remainder is doubled every iteration.
-   subtype  rem_t   is sfixed(4 downto -C_FRAC);
+   subtype rem_type is sfixed(4 downto -C_FRAC);
 
-   type     state_t is (
+   type   state_type is (
       IDLE_ST, REDUCE_ST, PADE_MUL_ST, PADE_ST, ROTATE_ST, LOAD_DIV_ST, DIVIDE_ST, WAIT_ST
    );
-   signal   state : state_t := IDLE_ST;
+   signal state : state_type := IDLE_ST;
 
    -- Number of remaining iterations in the current phase.
-   signal   count : natural range 0 to G_ITERATIONS - 1;
+   signal count : natural range 0 to G_ITERATIONS - 1;
 
    -- Phase 1: pseudo-division.
-   signal   angle : angle_t;
-   signal   bits  : std_logic_vector(0 to G_ITERATIONS - 1);
+   signal angle : angle_type;
+   signal bits  : std_logic_vector(0 to G_ITERATIONS - 1);
 
    -- Phase 2: Padé approximation (registered halfway through, see PADE_MUL_ST).
-   signal   zz_reg : vec_t;
-   signal   z_reg  : vec_t;
+   signal zz_reg : vec_type;
+   signal z_reg  : vec_type;
 
    -- Phase 3: pseudo-multiplication.
-   signal   x     : vec_t;
-   signal   y     : vec_t;
+   signal x : vec_type;
+   signal y : vec_type;
 
    -- Phase 4: restoring division.
-   signal   rem_reg   : rem_t;
-   signal   div       : rem_t;
-   signal   div_count : natural range 0 to G_FRAC_BITS - 1;
-   signal   quotient  : std_logic_vector(G_FRAC_BITS - 1 downto 0);
+   signal rem_reg   : rem_type;
+   signal div       : rem_type;
+   signal div_count : natural range 0 to G_FRAC_BITS - 1;
+   signal quotient  : std_logic_vector(G_FRAC_BITS - 1 downto 0);
 
-   type     rom_t is array (0 to G_ITERATIONS - 1) of angle_t;
+   type rom_type is array (0 to G_ITERATIONS - 1) of angle_type;
 
-   pure function calc_angles return rom_t is
-      variable res_v : rom_t;
+   pure function calc_angles return rom_type is
+      variable res_v : rom_type;
    begin
       for i in 0 to G_ITERATIONS - 1 loop
-         res_v(i) := to_sfixed(arctan(2.0 ** (-i)), angle_t'high, angle_t'low);
+         res_v(i) := to_sfixed(arctan(2.0 ** (-i)), angle_type'high, angle_type'low);
       end loop;
       return res_v;
    end function calc_angles;
 
-   constant C_ANGLES : rom_t := calc_angles;
+   constant C_ANGLES : rom_type := calc_angles;
 
 begin
 
    fsm_proc : process (clk_i)
-      variable z_v         : small_angle_t;
-      variable zz_v        : sfixed(2 * small_angle_t'high + 1 downto 2 * small_angle_t'low);
-      variable r_doubled_v : rem_t;
-      variable trial_v     : rem_t;
+      variable z_v         : small_angle_type;
+      variable zz_v        : sfixed(2 * small_angle_type'high + 1 downto 2 * small_angle_type'low);
+      variable r_doubled_v : rem_type;
+      variable trial_v     : rem_type;
       variable qbit_v      : std_logic;
    begin
       if rising_edge(clk_i) then
@@ -139,7 +139,7 @@ begin
                   -- s_angle_i is unsigned U0.G_FRAC_BITS; widen it with one (zero) sign bit,
                   -- then extend it with additional (zero) guard fraction bits.
                   angle <= resize(to_sfixed(to_ufixed(s_angle_i, -1, -G_FRAC_BITS)),
-                                   angle_t'high, angle_t'low);
+                                   angle_type'high, angle_type'low);
                   count <= 0;
                   state <= REDUCE_ST;
                end if;
@@ -151,7 +151,7 @@ begin
                -- "angle" holds a tiny residual, and "bits" records exactly which
                -- special angles were used.
                if angle >= C_ANGLES(count) then
-                  angle       <= resize(angle - C_ANGLES(count), angle_t'high, angle_t'low);
+                  angle       <= resize(angle - C_ANGLES(count), angle_type'high, angle_type'low);
                   bits(count) <= '1';
                else
                   bits(count) <= '0';
@@ -170,20 +170,20 @@ begin
                -- The multiply z*z is registered here, separately from the
                -- subsequent subtraction in PADE_ST, so that each of the two
                -- following clock cycles has a shorter combinational path. "angle"
-               -- is also narrowed to small_angle_t here (see its declaration):
+               -- is also narrowed to small_angle_type here (see its declaration):
                -- this is lossless, and keeps the multiplier itself as small as
                -- possible.
-               z_v  := resize(angle, small_angle_t'high, small_angle_t'low);
+               z_v  := resize(angle, small_angle_type'high, small_angle_type'low);
                zz_v := z_v * z_v;
 
-               zz_reg <= resize(zz_v, vec_t'high, vec_t'low);
-               z_reg  <= resize(z_v, vec_t'high, vec_t'low);
+               zz_reg <= resize(zz_v, vec_type'high, vec_type'low);
+               z_reg  <= resize(z_v, vec_type'high, vec_type'low);
 
                state <= PADE_ST;
 
             when PADE_ST =>
-               x <= resize(to_sfixed(3.0, vec_t'high, vec_t'low) - zz_reg, vec_t'high, vec_t'low);
-               y <= resize(z_reg + z_reg + z_reg, vec_t'high, vec_t'low);
+               x <= resize(to_sfixed(3.0, vec_type'high, vec_type'low) - zz_reg, vec_type'high, vec_type'low);
+               y <= resize(z_reg + z_reg + z_reg, vec_type'high, vec_type'low);
 
                count <= G_ITERATIONS - 1;
                state <= ROTATE_ST;
@@ -194,8 +194,8 @@ begin
                -- +arctan(2**-count) whenever bits(count) = '1', and leave it unchanged
                -- otherwise.
                if bits(count) = '1' then
-                  x <= resize(x - (y sra count), vec_t'high, vec_t'low);
-                  y <= resize(y + (x sra count), vec_t'high, vec_t'low);
+                  x <= resize(x - (y sra count), vec_type'high, vec_type'low);
+                  y <= resize(y + (x sra count), vec_type'high, vec_type'low);
                end if;
 
                if count = 0 then
@@ -207,16 +207,16 @@ begin
             when LOAD_DIV_ST =>
                -- One clock cycle after the last rotation, x and y hold their final
                -- values, ready to be loaded into the divider.
-               rem_reg   <= resize(y, rem_t'high, rem_t'low);
-               div       <= resize(x, rem_t'high, rem_t'low);
+               rem_reg   <= resize(y, rem_type'high, rem_type'low);
+               div       <= resize(x, rem_type'high, rem_type'low);
                div_count <= 0;
                state     <= DIVIDE_ST;
 
             when DIVIDE_ST =>
                -- Restoring division: y / x, where 0 <= y <= x, so the quotient lies
                -- in [0.0, 1.0]. One quotient bit is produced per iteration, MSB first.
-               r_doubled_v := resize(rem_reg + rem_reg, rem_t'high, rem_t'low);
-               trial_v     := resize(r_doubled_v - div, rem_t'high, rem_t'low);
+               r_doubled_v := resize(rem_reg + rem_reg, rem_type'high, rem_type'low);
+               trial_v     := resize(r_doubled_v - div, rem_type'high, rem_type'low);
 
                if trial_v(trial_v'high) = '0' then
                   rem_reg <= trial_v;

@@ -4,38 +4,6 @@ This calculates `tan(angle)` for `angle` in the range `[0.0, pi/4[`, using a har
 adaptation of the algorithm used by the Intel 8087 math co-processor, as described in
 [this article](https://www.righto.com/2026/09/8087-tangent-cordic.html).
 
-## Files
-| File | Description
-| ---- | -----------
-| [`tan_cordic.vhd`](tan_cordic.vhd) | The tangent CORDIC.
-| [`tb_tan_cordic.vhd`](tb_tan_cordic.vhd) | Testbench.
-| [`tan_cordic.xdc`](tan_cordic.xdc), [`vivado.tcl`](vivado.tcl) | Timing constraint (125 MHz) and script for synthesis with Vivado, see `make vivado`.
-| [`Makefile`](Makefile) | Runs the simulation and the synthesis, see [Running](#running).
-
-## Interface
-| Name | Kind | Description
-| ---- | ---- | -----------
-| `G_ITERATIONS` | generic | The number of CORDIC iterations, default 16 (as the 8087).
-| `G_FRAC_BITS` | generic | The number of fractional bits of the angle and the result, default 24.
-| `clk_i` | in | Clock.
-| `rst_i` | in | Synchronous reset, active high.
-| `s_valid_i`, `s_ready_o`, `s_angle_i` | in, out, in | The input angle, in radians.
-| `m_valid_o`, `m_ready_i`, `m_tan_o` | out, in, out | The result, `tan(angle)`.
-
-Both input and output use an AXI-style VALID/READY handshake:
-
-* The input angle `s_angle_i` uses the handshake signals `s_valid_i` and `s_ready_o`.
-* The result `m_tan_o` uses the handshake signals `m_valid_o` and `m_ready_i`.
-
-The angle and the result are both unsigned fixed-point numbers with `G_FRAC_BITS`
-fractional bits and no integer bits, i.e. `value = bits / 2**G_FRAC_BITS`. The input
-must satisfy `0.0 <= angle < pi/4`; the output then satisfies `0.0 <= tan(angle) < 1.0`.
-
-Only one calculation is in flight at a time: a new angle is accepted only once the
-module has returned to idle, which happens only after the previous result has been
-consumed (i.e. this module does not overlap consecutive calculations, unlike e.g.
-`booth`).
-
 ## Theory of operation
 The classical CORDIC algorithm calculates `sin` and `cos` by rotating the vector
 `(1, 0)` by the target angle, one step at a time, using only additions, subtractions,
@@ -80,7 +48,7 @@ multiplication `z*z` is registered on its own, before it is subtracted from `3` 
 the next cycle. This does not change the result; it exists purely to shorten the
 longest combinational path (see "Timing" below).
 
-`z` is also narrowed to `small_angle_t` before squaring it. After the last
+`z` is also narrowed to `small_angle_type` before squaring it. After the last
 pseudo-division iteration, `z` is always strictly less than
 `arctan(2**-(G_ITERATIONS-1)) < 2**-(G_ITERATIONS-1)`, so its bits above that
 weight are provably always zero and can be dropped -- for the default
@@ -119,6 +87,43 @@ for all internal arithmetic:
 * The eight extra ("guard") fractional bits limit the build-up of rounding error
   across the three phases; they are discarded before the final result is produced.
 
+## Files
+| File | Description
+| ---- | -----------
+| [`tan_cordic.vhd`](tan_cordic.vhd) | The tangent CORDIC.
+| [`tb_tan_cordic.vhd`](tb_tan_cordic.vhd) | Testbench.
+| [`tan_cordic.gtkw`](tan_cordic.gtkw) | GTKWave setup for viewing the waveform from `make debug`.
+| [`tan_cordic.xdc`](tan_cordic.xdc), [`vivado.tcl`](vivado.tcl) | Timing constraint (125 MHz) and script for synthesis with Vivado, see `make vivado`.
+| [`Makefile`](Makefile) | Runs the simulation and the synthesis, see [Running](#running).
+
+## Interface
+The generic `G_ITERATIONS` is the number of CORDIC iterations (default 16, as in the
+8087), and `G_FRAC_BITS` is the number of fractional bits of the angle and the result
+(default 24).
+
+| Port | Direction | Description
+| ---- | --------- | -----------
+| `clk_i` | in | Clock.
+| `rst_i` | in | Synchronous reset, active high.
+| `s_valid_i`, `s_ready_o` | in, out | Handshake of the input.
+| `s_angle_i` | in | The angle, in radians.
+| `m_valid_o`, `m_ready_i` | out, in | Handshake of the output.
+| `m_tan_o` | out | The result, `tan(angle)`.
+
+Both input and output use an AXI-style VALID/READY handshake:
+
+* The input angle `s_angle_i` uses the handshake signals `s_valid_i` and `s_ready_o`.
+* The result `m_tan_o` uses the handshake signals `m_valid_o` and `m_ready_i`.
+
+The angle and the result are both unsigned fixed-point numbers with `G_FRAC_BITS`
+fractional bits and no integer bits, i.e. `value = bits / 2**G_FRAC_BITS`. The input
+must satisfy `0.0 <= angle < pi/4`; the output then satisfies `0.0 <= tan(angle) < 1.0`.
+
+Only one calculation is in flight at a time: a new angle is accepted only once the
+module has returned to idle, which happens only after the previous result has been
+consumed (i.e. this module does not overlap consecutive calculations, unlike e.g.
+[`booth`](../booth)).
+
 ## Running
 Type `make` to list the supported targets:
 * `make sim` runs the testbench (see [below](#simulation)). This requires
@@ -127,7 +132,8 @@ Type `make` to list the supported targets:
   (the fixed runs listed below are always included).
 * `make debug` runs a short simulation (20 tangents) with the default
   configuration, and writes a waveform to `tan_cordic.ghw`. Use `make show_debug`
-  to view it in [GTKWave](https://github.com/gtkwave/gtkwave).
+  to view it in [GTKWave](https://github.com/gtkwave/gtkwave), with the signals
+  selected in `tan_cordic.gtkw`.
 * `make vivado` synthesizes and implements `tan_cordic.vhd` with the default
   configuration, using
   [Vivado](https://www.amd.com/en/products/software/adaptive-socs-and-fpgas/vivado.html)

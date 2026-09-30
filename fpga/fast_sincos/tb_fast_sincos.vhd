@@ -11,7 +11,7 @@ architecture simulation of tb_fast_sincos is
    constant C_PI    : real                  := 3.141592653589793;
    constant C_DEBUG : boolean               := false;
 
-   type     c64_float_type is record
+   type c64_float_type is record
       exp  : unsigned( 7 downto 0);
       mant : unsigned(31 downto 0);
    end record c64_float_type;
@@ -86,18 +86,18 @@ architecture simulation of tb_fast_sincos is
    end function c64float2real;
 
 
-   signal   running             : std_logic := '1';
-   signal   clk                 : std_logic := '1';
-   signal   start               : std_logic;
-   signal   ready               : std_logic;
-   signal   c64float_in         : c64_float_type;
-   signal   c64float_out_cos    : c64_float_type;
-   signal   c64float_out_sin    : c64_float_type;
-   signal   count               : natural;
-   signal   max_error_cos       : real      := 0.0;
-   signal   max_error_sin       : real      := 0.0;
-   signal   max_error_cos_angle : real;
-   signal   max_error_sin_angle : real;
+   signal running             : std_logic := '1';
+   signal clk                 : std_logic := '1';
+   signal start               : std_logic;
+   signal ready               : std_logic;
+   signal c64float_in         : c64_float_type;
+   signal c64float_out_cos    : c64_float_type;
+   signal c64float_out_sin    : c64_float_type;
+   signal count               : natural;
+   signal max_error_cos       : real      := 0.0;
+   signal max_error_sin       : real      := 0.0;
+   signal max_error_cos_angle : real;
+   signal max_error_sin_angle : real;
 
 begin
 
@@ -133,12 +133,12 @@ begin
          variable diff_cos_v         : real;
          variable diff_sin_v         : real;
       begin
-         count              <= count + 1;
+         count <= count + 1;
 
          -- Convert from real to C64 float and back to real, in order to get a real
          -- value that exactly matches the C64 floating point bit pattern.
-         c64float_arg_v     := real2c64float(real_val);
-         real_arg_v         := c64float2real(c64float_arg_v);
+         c64float_arg_v := real2c64float(real_val);
+         real_arg_v     := c64float2real(c64float_arg_v);
 
          -- Now calculate the expected output values.
          c64float_exp_cos_v := real2c64float(cos(real_arg_v));
@@ -147,10 +147,10 @@ begin
                 to_string(real_arg_v / (2.0 * C_PI), 11) & " * 2pi";
 
          -- Initiate the calculation and wait for the result
-         c64float_in        <= c64float_arg_v;
-         start              <= '1';
+         c64float_in <= c64float_arg_v;
+         start       <= '1';
          wait until rising_edge(clk);
-         start              <= '0';
+         start       <= '0';
          wait until rising_edge(clk);
          while ready = '0' loop
             wait until rising_edge(clk);

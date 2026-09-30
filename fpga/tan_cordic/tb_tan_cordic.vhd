@@ -39,16 +39,16 @@ architecture simulation of tb_tan_cordic is
    -- approximation error without masking a genuine regression.
    constant C_TOLERANCE : real := 2.0 ** (3 - minimum(G_ITERATIONS, G_FRAC_BITS));
 
-   signal   clk     : std_logic := '1';
-   signal   rst     : std_logic := '1';
-   signal   running : std_logic := '1';
+   signal clk     : std_logic := '1';
+   signal rst     : std_logic := '1';
+   signal running : std_logic := '1';
 
-   signal   s_valid : std_logic := '0';
-   signal   s_ready : std_logic;
-   signal   s_angle : std_logic_vector(G_FRAC_BITS - 1 downto 0);
-   signal   m_valid : std_logic;
-   signal   m_ready : std_logic := '0';
-   signal   m_tan   : std_logic_vector(G_FRAC_BITS - 1 downto 0);
+   signal s_valid : std_logic := '0';
+   signal s_ready : std_logic;
+   signal s_angle : std_logic_vector(G_FRAC_BITS - 1 downto 0);
+   signal m_valid : std_logic;
+   signal m_ready : std_logic := '0';
+   signal m_tan   : std_logic_vector(G_FRAC_BITS - 1 downto 0);
 
    -- Generate the i'th test angle, in radians, in the range [0.0, pi/4[.
    -- The random generator state is passed in, so that the stimulus and verification

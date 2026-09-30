@@ -1,0 +1,339 @@
+# Configuration for VHDL Style Guide (VSG, https://vhdl-style-guide.readthedocs.io/),
+# for all the VHDL files in the fpga folders.
+#
+# Usage, in one of the folders:  vsg -c ../vsg.yml -ap -f *.vhd
+# (add --fix to let VSG fix what it can).
+#
+# The formatting rules are the same as in github.com/MJoergen/qnice_cpu (its
+# vsg.yml and CODING_STYLE.md): 3 spaces indent, aligned colons and comments,
+# "in " and "out" port modes, no parenthesis around an if condition, and so on.
+#
+# The naming rules are the ones already used throughout these folders, which
+# use suffixes, not prefixes:
+#   | Kind            | Convention                               | Example        |
+#   | --------------- | ---------------------------------------- | -------------- |
+#   | Port            | lower_snake_case, suffix _i or _o        | s_valid_i      |
+#   | Generic         | UPPER_SNAKE_CASE, prefix G_              | G_DATA_SIZE    |
+#   | Constant        | UPPER_SNAKE_CASE, prefix C_              | C_GUARD_BITS   |
+#   | Type, subtype   | lower_snake_case, suffix _type           | state_type     |
+#   | Enum literal    | UPPER_SNAKE_CASE, a state has suffix _ST | IDLE_ST        |
+#   | Variable        | lower_snake_case, suffix _v              | trial_v        |
+#   | Process label   | suffix _proc                             | fsm_proc       |
+#   | Instance label  | suffix _inst                             | booth_inst     |
+#   | Generate label  | suffix _gen                              | dut_gen        |
+#   | Architecture    | synthesis, or simulation for a testbench |                |
+#
+# Known gaps (VSG has no rule for these):
+#   - The architecture name is not checked (architecture_025 only checks
+#     against a fixed list, and this is not a per-file list).
+#   - The _ST suffix on states cannot be told apart from other enumerations.
+
+rule:
+
+  # --- Global ----------------------------------------------------------------
+
+  global:
+    indent_size: 3
+
+  # --- File layout ------------------------------------------------------------
+
+  # A blank line separates the use clauses of different libraries
+  library_007:
+    style: no_blank_line_unless_different_library
+
+  # --- Naming -----------------------------------------------------------------
+
+  generic_020:
+    disable: false
+    prefixes: ['G_']
+
+  generic_007:
+    case: upper
+
+  generic_map_002:
+    case: upper
+
+  constant_015:
+    disable: false
+    prefixes: ['C_']
+
+  constant_004:
+    case: upper
+
+  type_600:
+    disable: false
+    suffixes: ['_type']
+
+  subtype_600:
+    disable: false
+    suffixes: ['_type']
+
+  type_500:
+    case: upper
+
+  variable_600:
+    disable: false
+    suffixes: ['_v']
+
+  port_025:
+    disable: false
+
+  process_600:
+    disable: false
+
+  instantiation_600:
+    disable: false
+
+  generate_600:
+    disable: false
+
+  # --- Formatting -------------------------------------------------------------
+
+  # Aim for lines under 100 columns. A target, not a hard limit.
+  length_001:
+    length: 100
+    severity: Warning
+
+  # Port modes are written "in " and "out", with one space after "in" for
+  # alignment
+  port_007:
+    spaces_after: 2
+
+  port_008:
+    spaces_after: 1
+
+  # No spaces around "-" in a width expression, e.g. G_DATA_SIZE-1, which VSG
+  # cannot tell apart from other arithmetic
+  whitespace_011:
+    disable: true
+
+  bit_string_literal_500:
+    case: upper
+
+  # when ... else chains may be written on one line
+  conditional_waveforms_001:
+    allow_single_line: 'yes'
+
+  conditional_waveforms_100:
+    disable: true
+
+  conditional_waveforms_102:
+    disable: true
+
+  # Colons are aligned within each group of lines separated by a blank line
+  entity_017:
+    blank_line_ends_group: 'no'
+    comment_line_ends_group: 'no'
+
+  instantiation_010:
+    blank_line_ends_group: 'no'
+    comment_line_ends_group: 'no'
+
+  entity_020:
+    compact_alignment: 'no'
+
+  architecture_027:
+    compact_alignment: 'no'
+
+  package_401:
+    compact_alignment: 'no'
+
+  concurrent_008:
+    compact_alignment: 'no'
+
+  process_035:
+    blank_line_ends_group: 'yes'
+    comment_line_ends_group: 'yes'
+
+  # The := of an initializer is not aligned
+  declarative_part_400:
+    disable: true
+
+  # Continuation lines are aligned by the author
+  entity_018:
+    disable: true
+
+  sequential_004:
+    disable: true
+
+  concurrent_009:
+    disable: true
+
+  function_008:
+    disable: true
+
+  sequential_008:
+    disable: true
+
+  variable_assignment_004:
+    disable: true
+
+  variable_assignment_007:
+    disable: true
+
+  # The parameters of a subprogram header continue under the opening
+  # parenthesis, which these rules (indent based) cannot express
+  procedure_004:
+    disable: true
+
+  procedure_410:
+    disable: true
+
+  # Blank lines are placed by the author, so none of these boundaries require
+  # or forbid one
+  subtype_201:
+    disable: true
+
+  subtype_202:
+    disable: true
+
+  subprogram_body_201:
+    disable: true
+
+  subprogram_body_202:
+    disable: true
+
+  subprogram_body_203:
+    disable: true
+
+  subprogram_body_204:
+    disable: true
+
+  case_007:
+    disable: true
+
+  case_009:
+    disable: true
+
+  case_010:
+    disable: true
+
+  case_200:
+    disable: true
+
+  process_011:
+    disable: true
+
+  process_026:
+    disable: true
+
+  process_027:
+    disable: true
+
+  loop_statement_200:
+    disable: true
+
+  loop_statement_201:
+    disable: true
+
+  loop_statement_202:
+    disable: true
+
+  loop_statement_203:
+    disable: true
+
+  function_006:
+    disable: true
+
+  procedure_200:
+    disable: true
+
+  instantiation_019:
+    disable: true
+
+  if_006:
+    disable: true
+
+  if_008:
+    disable: true
+
+  if_030:
+    disable: true
+
+  type_010:
+    disable: true
+
+  type_011:
+    disable: true
+
+  case_201:
+    disable: true
+
+  generate_004:
+    disable: true
+
+  if_007:
+    disable: true
+
+  if_010:
+    disable: true
+
+  subprogram_body_205:
+    disable: true
+
+  if_031:
+    disable: true
+
+  whitespace_200:
+    blank_lines_allowed: 2
+
+  # --- Coding idioms ----------------------------------------------------------
+
+  # Direct entity instantiation, without an architecture identifier
+  instantiation_034:
+    method: entity
+
+  instantiation_036:
+    action: remove
+
+  # process (clk_i), without the optional "is"
+  process_012:
+    action: remove
+
+  # No parenthesis around an if condition
+  if_002:
+    parenthesis: remove
+
+  # Compact subprogram headers
+  function_019:
+    disable: true
+
+  procedure_013:
+    disable: true
+
+  constant_016:
+    disable: true
+
+  function_100:
+    disable: true
+
+  procedure_100:
+    disable: true
+
+  process_022:
+    style: no_blank_line
+
+  process_023:
+    style: no_blank_line
+
+  # Initial values on signals, ports, and variables are used where the
+  # power-up state matters, e.g. for simulation. VSG wants every one removed.
+  signal_007:
+    disable: true
+
+  port_012:
+    disable: true
+
+  variable_007:
+    disable: true
+
+  # "-- pragma synthesis_off" and "-- pragma synthesis_on" are written at
+  # column 0, so they are impossible to miss
+  pragma_300:
+    disable: true
+
+  # A comment is indented like the code it describes. VSG's comment_010
+  # indents it like the line below it, which is wrong for a comment at the end
+  # of a block, e.g. just before "end loop".
+  comment_010:
+    disable: true

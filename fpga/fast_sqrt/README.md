@@ -7,14 +7,14 @@ latency is thus 135 ns.
 
 The resource usage is:
 
-* LUT   : 167
+* LUT   : 166
 * FF    : 111
-* Slice :  76
+* Slice :  60
 
-These numbers are from Vivado 2025.1, implementing the project
-[`fast_sqrt.xpr`](fast_sqrt.xpr) (part xc7a200tfbg484-2, default strategies),
-which meets the timing constraint in [`fast_sqrt.xdc`](fast_sqrt.xdc) with a
-slack of 0.200 ns.
+These numbers are from Vivado 2025.1, with `make vivado` (see
+[Running](#running)), which implements the design out of context for the part
+xc7a200tfbg484-2, and meets the timing constraint in
+[`fast_sqrt.xdc`](fast_sqrt.xdc) with a slack of 0.100 ns.
 
 [`fast_sqrt2`](../fast_sqrt2) is a faster version, which uses multipliers.
 
@@ -49,9 +49,9 @@ bit, which is used for rounding the result to nearest.
 | [`fast_sqrt.vhd`](fast_sqrt.vhd) | The square root.
 | [`tb_fast_sqrt.vhd`](tb_fast_sqrt.vhd) | Testbench.
 | [`fast_sqrt.gtkw`](fast_sqrt.gtkw) | GTKWave setup for viewing the waveform from `make debug`.
-| [`fast_sqrt.xdc`](fast_sqrt.xdc) | Timing constraint (244 MHz).
-| [`fast_sqrt.xpr`](fast_sqrt.xpr) | Vivado project for synthesis.
-| [`Makefile`](Makefile) | Runs the simulation, see [Running](#running).
+| [`fast_sqrt.xdc`](fast_sqrt.xdc), [`vivado.tcl`](vivado.tcl) | Timing constraint (244 MHz) and script for synthesis with Vivado, see `make vivado`.
+| [`fast_sqrt.xpr`](fast_sqrt.xpr) | Vivado project, for use in the Vivado GUI. It has the same settings as `make vivado`.
+| [`Makefile`](Makefile) | Runs the simulation and the synthesis, see [Running](#running).
 
 ## Interface
 | Port | Direction | Description
@@ -73,6 +73,15 @@ Type `make` to list the supported targets:
   [GHDL](https://github.com/ghdl/ghdl). It takes about 5 seconds.
 * `make debug` does the same, and also writes a waveform to `fast_sqrt.ghw`.
   `make show_debug` shows it in [GTKWave](https://github.com/gtkwave/gtkwave).
+* `make vivado` synthesizes and implements `fast_sqrt.vhd`, using
+  [Vivado](https://www.amd.com/en/products/software/adaptive-socs-and-fpgas/vivado.html)
+  for the Artix-7 part xc7a200tfbg484-2. The design is implemented out of
+  context, i.e. as a module inside a larger design, so only the paths between
+  registers are timed. It fails if the design does not meet the 244 MHz clock
+  constraint in `fast_sqrt.xdc`. At the end it prints the number of cells and the
+  slack of the worst path, and the reports are written to `vivado/`. It takes
+  about 2 minutes, and expects Vivado in `/opt/Xilinx/2025.1/Vivado` (the variable
+  `XILINX_DIR`).
 * `make clean` removes the generated files.
 
 ## Simulation

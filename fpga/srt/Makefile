@@ -94,7 +94,7 @@ VIVADO_SRC  = pla.vhd pla_pentium.vhd normalizer.vhd srt_core.vhd shifter.vhd sr
 # modes are described in UG894, "Vivado Design Suite User Guide: Using Tcl
 # Scripting": https://docs.amd.com/r/en-US/ug894-vivado-tcl-scripting
 .PHONY: vivado
-vivado: $(VIVADO_TOP).bit ## Run synthesis and implementation using Vivado (batch mode)
+vivado: $(VIVADO_TOP).bit ## Run synthesis and implementation using Vivado (about 2 minutes)
 
 $(VIVADO_TOP).bit: vivado_build.tcl $(VIVADO_SRC) srt.xdc
 	bash -c "source $(XILINX_DIR)/settings64.sh ; vivado -mode batch -source $<"

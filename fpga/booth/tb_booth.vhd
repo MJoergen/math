@@ -76,20 +76,20 @@ architecture simulation of tb_booth is
       end if;
    end function get_min_size;
 
-   constant C_ITERS     : natural := get_iters;
-   constant C_MIN_SIZE  : natural := get_min_size;
+   constant C_ITERS    : natural := get_iters;
+   constant C_MIN_SIZE : natural := get_min_size;
 
-   signal   clk     : std_logic := '1';
-   signal   rst     : std_logic := '1';
-   signal   running : std_logic := '1';
+   signal clk     : std_logic := '1';
+   signal rst     : std_logic := '1';
+   signal running : std_logic := '1';
 
-   signal   s_valid : std_logic := '0';
-   signal   s_ready : std_logic;
-   signal   s_a     : std_logic_vector(G_DATA_SIZE - 1 downto 0);
-   signal   s_b     : std_logic_vector(G_DATA_SIZE - 1 downto 0);
-   signal   m_valid : std_logic;
-   signal   m_ready : std_logic := '0';
-   signal   m_res   : std_logic_vector(2 * G_DATA_SIZE - 1 downto 0);
+   signal s_valid : std_logic := '0';
+   signal s_ready : std_logic;
+   signal s_a     : std_logic_vector(G_DATA_SIZE - 1 downto 0);
+   signal s_b     : std_logic_vector(G_DATA_SIZE - 1 downto 0);
+   signal m_valid : std_logic;
+   signal m_ready : std_logic := '0';
+   signal m_res   : std_logic_vector(2 * G_DATA_SIZE - 1 downto 0);
 
    -- The values tested before the random values, when G_EXHAUSTIVE is false:
    -- most negative, -1, 0, 1, and largest positive. They are built bit by bit,
@@ -102,11 +102,16 @@ architecture simulation of tb_booth is
       variable res_v : signed(G_DATA_SIZE - 1 downto 0);
    begin
       case idx is
-         when 0      => res_v := (others => '0'); res_v(G_DATA_SIZE - 1) := '1';
-         when 1      => res_v := (others => '1');
-         when 2      => res_v := (others => '0');
-         when 3      => res_v := (others => '0'); res_v(0) := '1';
-         when others => res_v := (others => '1'); res_v(G_DATA_SIZE - 1) := '0';
+         when 0 =>
+            res_v := (others => '0'); res_v(G_DATA_SIZE - 1) := '1';
+         when 1 =>
+            res_v := (others => '1');
+         when 2 =>
+            res_v := (others => '0');
+         when 3 =>
+            res_v := (others => '0'); res_v(0) := '1';
+         when others =>
+            res_v := (others => '1'); res_v(G_DATA_SIZE - 1) := '0';
       end case;
       return res_v;
    end function corner_value;
@@ -216,13 +221,13 @@ begin
    end generate dut_gen;
 
    stim_proc : process
-      variable seed1_v    : positive := 42;
-      variable seed2_v    : positive := 43;
+      variable seed1_v     : positive := 42;
+      variable seed2_v     : positive := 43;
       variable rnd_seed1_v : positive := 1;
       variable rnd_seed2_v : positive := 2;
-      variable r_v        : real;
-      variable a_v        : signed(G_DATA_SIZE - 1 downto 0);
-      variable b_v        : signed(G_DATA_SIZE - 1 downto 0);
+      variable r_v         : real;
+      variable a_v         : signed(G_DATA_SIZE - 1 downto 0);
+      variable b_v         : signed(G_DATA_SIZE - 1 downto 0);
    begin
       s_valid <= '0';
       wait until rst = '0';

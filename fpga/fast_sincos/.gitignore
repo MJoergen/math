@@ -6,6 +6,9 @@ work-obj08.cf
 tb_fast_sincos
 *.ghw
 
+# Vivado (make vivado)
+vivado/
+
 # Vivado (fast_sincos.xpr project)
 fast_sincos.cache/
 fast_sincos.gen/

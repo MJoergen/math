@@ -41,6 +41,36 @@ show_debug: ## Show the waveform from "make debug" in GTKWave
 	gtkwave fast_sincos.ghw fast_sincos.gtkw
 
 
+#######################
+# Synthesis using Vivado
+#######################
+
+XILINX_DIR = /opt/Xilinx/2025.1/Vivado
+
+VIVADO_SRC  = fast_sincos_pkg.vhd fast_sincos.vhd
+VIVADO_PART = xc7a200tfbg484-2
+VIVADO_DIR  = vivado
+
+# Synthesize and implement the design out of context (see vivado.tcl), and
+# write the reports timing_summary.rpt and utilization.rpt to $(VIVADO_DIR).
+# This fails if the design does not meet the clock constraint in
+# fast_sincos.xdc. The project fast_sincos.xpr uses the same settings.
+#
+# -mode batch, NOT -mode tcl. In tcl mode Vivado exits 0 even when the sourced
+# script raises an error, so an aborted build would be reported as success to
+# make. Batch mode propagates the error as a non-zero exit status. The modes
+# are described in UG894, "Vivado Design Suite User Guide: Using Tcl
+# Scripting": https://docs.amd.com/r/en-US/ug894-vivado-tcl-scripting
+.PHONY: vivado
+vivado: $(VIVADO_DIR)/post_route.dcp ## Run synthesis and implementation using Vivado (about 2.5 minutes)
+
+$(VIVADO_DIR)/post_route.dcp: vivado.tcl $(VIVADO_SRC) fast_sincos.xdc
+	mkdir -p $(VIVADO_DIR)
+	cd $(VIVADO_DIR) && bash -c "source $(XILINX_DIR)/settings64.sh ; \
+	   vivado -mode batch -nojournal -log vivado.log -source $(CURDIR)/vivado.tcl \
+	   -tclargs $(VIVADO_PART) $(CURDIR)"
+
+
 .PHONY: clean
 clean: ## Remove the generated files
-	rm -rf work-obj08.cf *.o tb_fast_sincos fast_sincos.ghw
+	rm -rf work-obj08.cf *.o tb_fast_sincos fast_sincos.ghw vivado .Xil

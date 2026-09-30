@@ -8,15 +8,15 @@ latency is thus 205 ns.
 
 The resource usage is:
 
-* LUT   : 1086
+* LUT   : 1083
 * FF    :  384
-* Slice :  315
+* Slice :  310
 * DSP   :    4
 
-These numbers are from Vivado 2025.1, implementing the project
-[`fast_sincos.xpr`](fast_sincos.xpr) (part xc7a200tfbg484-2, default
-strategies), which meets the timing constraint in
-[`fast_sincos.xdc`](fast_sincos.xdc) with a slack of 0.218 ns.
+These numbers are from Vivado 2025.1, with `make vivado` (see
+[Running](#running)), which implements the design out of context for the part
+xc7a200tfbg484-2, and meets the timing constraint in
+[`fast_sincos.xdc`](fast_sincos.xdc) with a slack of 0.113 ns.
 
 The absolute deviation for angles in the range [0, pi/4] is 2^(-32).
 The absolute deviation for angles in the range [-2pi, 2pi] is 2^(-26).
@@ -63,10 +63,10 @@ to reduce the accumulation of rounding errors, see
 | [`fast_sincos_pkg.vhd`](fast_sincos_pkg.vhd) | The fixed point type used in the calculation, and conversion functions for it.
 | [`tb_fast_sincos.vhd`](tb_fast_sincos.vhd) | Testbench.
 | [`fast_sincos.gtkw`](fast_sincos.gtkw) | GTKWave setup for viewing the waveform from `make debug`.
-| [`fast_sincos.xdc`](fast_sincos.xdc) | Timing constraint (156 MHz).
-| [`fast_sincos.xpr`](fast_sincos.xpr) | Vivado project for synthesis.
+| [`fast_sincos.xdc`](fast_sincos.xdc), [`vivado.tcl`](vivado.tcl) | Timing constraint (156 MHz) and script for synthesis with Vivado, see `make vivado`.
+| [`fast_sincos.xpr`](fast_sincos.xpr) | Vivado project, for use in the Vivado GUI. It has the same settings as `make vivado`.
 | [`cordic.xlsx`](cordic.xlsx) | Spreadsheet that goes through the CORDIC iterations step by step.
-| [`Makefile`](Makefile) | Runs the simulation, see [Running](#running).
+| [`Makefile`](Makefile) | Runs the simulation and the synthesis, see [Running](#running).
 
 ## Interface
 | Port | Direction | Description
@@ -88,6 +88,15 @@ Type `make` to list the supported targets:
   [GHDL](https://github.com/ghdl/ghdl). It takes about a second.
 * `make debug` does the same, and also writes a waveform to `fast_sincos.ghw`.
   `make show_debug` shows it in [GTKWave](https://github.com/gtkwave/gtkwave).
+* `make vivado` synthesizes and implements `fast_sincos.vhd`, using
+  [Vivado](https://www.amd.com/en/products/software/adaptive-socs-and-fpgas/vivado.html)
+  for the Artix-7 part xc7a200tfbg484-2. The design is implemented out of
+  context, i.e. as a module inside a larger design, so only the paths between
+  registers are timed. It fails if the design does not meet the 156 MHz clock
+  constraint in `fast_sincos.xdc`. At the end it prints the number of cells and the
+  slack of the worst path, and the reports are written to `vivado/`. It takes
+  about 2.5 minutes, and expects Vivado in `/opt/Xilinx/2025.1/Vivado` (the variable
+  `XILINX_DIR`).
 * `make clean` removes the generated files.
 
 ## Simulation

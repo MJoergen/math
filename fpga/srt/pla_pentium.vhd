@@ -51,9 +51,9 @@ entity pla_pentium is
       G_FIXED : boolean   -- false: With the FDIV bug. true: Fixed.
    );
    port (
-      n_i : in    std_logic_vector(G_SIZE-1 downto 0); -- partial remainder
-      d_i : in    std_logic_vector(G_SIZE-1 downto 0); -- divisor
-      q_o : out   integer range -2 to 2
+      n_i : in  std_logic_vector(G_SIZE-1 downto 0); -- partial remainder
+      d_i : in  std_logic_vector(G_SIZE-1 downto 0); -- divisor
+      q_o : out integer range -2 to 2
    );
 end entity pla_pentium;
 
@@ -61,13 +61,16 @@ architecture synthesis of pla_pentium is
 
    -- One row of the table, i.e. the values of |q| for one value of n and all
    -- 16 values of d. Both the original and the fixed version.
-   type   row_type is record
+   type row_type is record
       original : string(1 to 16);
       fixed    : string(1 to 16);
    end record row_type;
 
-   type   rows_type is array (0 to 127) of row_type;
+   type rows_type is array (0 to 127) of row_type;
 
+   -- The table is aligned by hand, with one row per line, so VSG must not
+   -- change it.
+-- vsg_off
    constant C_ROWS : rows_type := (
       -- Original version    Fixed version          n
       -- d = 1.0000..1.1111  d = 1.0000..1.1111
@@ -200,8 +203,9 @@ architecture synthesis of pla_pentium is
       ("0000000000000000", "2222222222222222"), -- 1000.001 -7.875
       ("0000000000000000", "2222222222222222")  -- 1000.000 -8.000
    );
+-- vsg_on
 
-   type   rom_type is array (natural range <>) of std_logic_vector(1 downto 0);
+   type rom_type is array (natural range <>) of std_logic_vector(1 downto 0);
 
    -- Build the table from C_ROWS. The index is n(7 bits) & d(4 bits), as in
    -- pla.vhd. Row 0 of C_ROWS is n = 0111.111, and row 127 is n = 1000.000.
@@ -226,7 +230,7 @@ architecture synthesis of pla_pentium is
       return rom_v;
    end function init_rom;
 
-   constant pla_rom : rom_type(0 to 2047)        := init_rom;
+   constant C_PLA_ROM : rom_type(0 to 2047)        := init_rom;
 
    signal pla_addr : std_logic_vector(10 downto 0);
    signal pla_data : std_logic_vector(1 downto 0) := (others => '0');  -- Defined at time 0
@@ -252,7 +256,7 @@ begin
       if is_x(pla_addr) then
          pla_data <= (others => '0');
       else
-         pla_data <= pla_rom(to_integer(pla_addr));
+         pla_data <= C_PLA_ROM(to_integer(pla_addr));
       end if;
    end process rom_proc;
 

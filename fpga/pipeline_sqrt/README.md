@@ -1,4 +1,4 @@
-# Pipelined Square Root calculation
+# Pipelined square root
 
 This calculates the square root of a number with 21 bits of accuracy, i.e. more than six
 decimal digits.
@@ -12,14 +12,14 @@ Output: The range of values is [1, 2[, and the fractional part is encoded as fix
 It is a 2-stage pipeline: It accepts a new input in every clock cycle, and the result
 is available 2 clock cycles after the input.
 
-## FPGA Resources
+## FPGA resources
 This implementation uses two BRAMs and one DSP, and a small amount of extra logic.
 The exact numbers for each value of G_EXTRA_BITS are listed under
 [Test results](#test-results).
 
 It can run at a clock speed of 125 MHz (clock period 8 ns). The numbers are from
-Vivado 2025.1, implementing the project [`pipeline_sqrt.xpr`](pipeline_sqrt.xpr) out of
-context (part xc7a200tfbg484-2, default strategies), which meets the timing constraint in
+Vivado 2025.1, with `make vivado` (see [Running](#running)), which implements the design
+out of context for the part xc7a200tfbg484-2, and meets the timing constraint in
 [`pipeline_sqrt.xdc`](pipeline_sqrt.xdc) with a slack of at least 1.7 ns.
 
 The clock period cannot be reduced much: With a clock period of 7.5 ns or less, Vivado
@@ -63,14 +63,16 @@ G_EXTRA_BITS.
 | [`pipeline_sqrt.vhd`](pipeline_sqrt.vhd) | The square root.
 | [`tb_pipeline_sqrt.vhd`](tb_pipeline_sqrt.vhd) | Testbench.
 | [`pipeline_sqrt.gtkw`](pipeline_sqrt.gtkw) | GTKWave setup for viewing the waveform from `make debug`.
-| [`pipeline_sqrt.xdc`](pipeline_sqrt.xdc) | Timing constraint (125 MHz).
-| [`pipeline_sqrt.xpr`](pipeline_sqrt.xpr) | Vivado project for synthesis, out of context with G_EXTRA_BITS = 2.
-| [`Makefile`](Makefile) | Runs the simulation, see [Running](#running).
+| [`pipeline_sqrt.xdc`](pipeline_sqrt.xdc), [`vivado.tcl`](vivado.tcl) | Timing constraint (125 MHz) and script for synthesis with Vivado, see `make vivado`.
+| [`pipeline_sqrt.xpr`](pipeline_sqrt.xpr) | Vivado project, for use in the Vivado GUI. It has the same settings as `make vivado`, with G_EXTRA_BITS = 2.
+| [`Makefile`](Makefile) | Runs the simulation and the synthesis, see [Running](#running).
 
 ## Interface
-| Name | Kind | Description
-| ---- | ---- | -----------
-| `G_EXTRA_BITS` | generic | The number of upper bits of f(a) that are calculated combinatorially, from 0 to 4, see [Theory of operation](#theory-of-operation).
+The generic `G_EXTRA_BITS` is the number of upper bits of f(a) that are calculated
+combinatorially, from 0 to 4, see [Theory of operation](#theory-of-operation).
+
+| Port | Direction | Description
+| ---- | --------- | -----------
 | `clk_i` | in | Clock.
 | `data_i` | in | The input y, fixed point 2.20 in the range [1, 4[.
 | `data_o` | out | The fractional part of x = sqrt(y), fixed point 0.22. The integer part is constant 1.
@@ -86,6 +88,16 @@ Type `make` to list the supported targets:
 * `make debug` runs the testbench for 25 us with G_EXTRA_BITS = 2, and writes a waveform
   to `pipeline_sqrt.ghw`. `make show_debug` shows it in
   [GTKWave](https://github.com/gtkwave/gtkwave).
+* `make vivado` synthesizes and implements `pipeline_sqrt.vhd` with G_EXTRA_BITS = 2,
+  using
+  [Vivado](https://www.amd.com/en/products/software/adaptive-socs-and-fpgas/vivado.html)
+  for the Artix-7 part xc7a200tfbg484-2. The design is implemented out of context, i.e.
+  as a module inside a larger design, so only the paths between registers are timed. It
+  fails if the design does not meet the 125 MHz clock constraint in `pipeline_sqrt.xdc`.
+  At the end it prints the number of cells and the slack of the worst path, and the
+  reports are written to `vivado/pipeline_sqrt_2/`. E.g. `make vivado VIVADO_EXTRA_BITS=4`
+  selects another value of G_EXTRA_BITS. It takes about 2 minutes, and expects Vivado in
+  `/opt/Xilinx/2025.1/Vivado` (the variable `XILINX_DIR`).
 * `make clean` removes the generated files.
 
 ## Simulation
@@ -98,10 +110,10 @@ not stop the simulation.
 GHDL also prints a few "metavalue detected" warnings at 5 ns and 15 ns, before the
 pipeline is filled. They can be ignored.
 
-# Test results
+## Test results
 
 To verify the implementation in simulation, there is a testbench that cycles through all
-2^22 values of the input, and compares with the expected output. It prints out whenever
+3*2^20 valid values of the input, and compares with the expected output. It prints out whenever
 the error is larger than any previous error.
 
 It takes approx 3 minutes to run the entire simulation for each value of G_EXTRA_BITS.
@@ -110,9 +122,9 @@ It takes approx 3 minutes to run the entire simulation for each value of G_EXTRA
 [Running](#running).
 
 The main results are below. The synthesis reports are from Vivado 2025.1 with a clock
-period of 8 ns, see [FPGA Resources](#fpga-resources).
+period of 8 ns, from `make vivado VIVADO_EXTRA_BITS=n`, see [FPGA resources](#fpga-resources).
 
-## G_EXTRA_BITS = 0:
+### G_EXTRA_BITS = 0
 
 | data_in | data_out | exp_out |
 | ------- | -------- | ------- |
@@ -143,7 +155,7 @@ Synthesis report
 * REG  = 0
 
 
-## G_EXTRA_BITS = 1:
+### G_EXTRA_BITS = 1
 
 | data_in | data_out | exp_out |
 | ------- | -------- | ------- |
@@ -175,7 +187,7 @@ Synthesis report
 * DSP  = 1
 
 
-## G_EXTRA_BITS = 2:
+### G_EXTRA_BITS = 2
 
 | data_in | data_out | exp_out |
 | ------- | -------- | ------- |
@@ -207,7 +219,7 @@ Synthesis report
 * DSP  = 1
 
 
-## G_EXTRA_BITS = 3:
+### G_EXTRA_BITS = 3
 
 | data_in | data_out | exp_out |
 | ------- | -------- | ------- |
@@ -237,7 +249,7 @@ Synthesis report
 * DSP  = 1
 
 
-## G_EXTRA_BITS = 4:
+### G_EXTRA_BITS = 4
 
 | data_in | data_out | exp_out |
 | ------- | -------- | ------- |

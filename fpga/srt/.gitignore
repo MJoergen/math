@@ -1,21 +1,21 @@
 # Generated files, see "make clean"
 
-# Model
+# Model (make model)
 __pycache__/
 
-# Simulation
+# Simulation (make sim, make debug)
 tb_srt
 srt.ghw
 work-obj08.cf
 *.o
 
-# Formal verification
+# Formal verification (make formal)
 srt_core_cover/
 srt_core_prove/
 srt_core_prove32/
 srt_core/
 
-# Diagram (pla.svg and pla_steps.tex are kept in the repository)
+# Diagram (make pla.svg; pla.svg and pla_steps.tex are kept in the repository)
 pla.pdf
 pla.aux
 pla.log

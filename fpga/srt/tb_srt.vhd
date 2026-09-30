@@ -51,17 +51,17 @@ end entity tb_srt;
 
 architecture simulation of tb_srt is
 
-   signal running      : std_logic := '1';
-   signal clk          : std_logic := '1';
+   signal running : std_logic := '1';
+   signal clk     : std_logic := '1';
 
-   signal s_valid      : std_logic := '0';
-   signal s_ready      : std_logic;
-   signal s_n          : std_logic_vector(31 downto 0) := (others => '0');
-   signal s_d          : std_logic_vector(31 downto 0) := (others => '0');
-   signal m_valid      : std_logic;
-   signal m_ready      : std_logic := '1';
-   signal m_q          : std_logic_vector(63 downto 0);
-   signal m_invalid    : std_logic;
+   signal s_valid   : std_logic := '0';
+   signal s_ready   : std_logic;
+   signal s_n       : std_logic_vector(31 downto 0) := (others => '0');
+   signal s_d       : std_logic_vector(31 downto 0) := (others => '0');
+   signal m_valid   : std_logic;
+   signal m_ready   : std_logic := '1';
+   signal m_q       : std_logic_vector(63 downto 0);
+   signal m_invalid : std_logic;
 
    -- Whether ready_proc drives m_ready randomly, instead of always high
    signal backpressure : boolean   := false;
@@ -69,46 +69,46 @@ architecture simulation of tb_srt is
    -- Number of results verified by check_proc
    signal num_verified : natural   := 0;
 
-   signal low_count    : natural   := 0;
-   signal high_count   : natural   := 0;
+   signal low_count  : natural   := 0;
+   signal high_count : natural   := 0;
 
    -- A queue of the inputs (n & d) of the divisions that have been started,
    -- but whose results have not been verified yet
-   type   queue_type is protected
+   type queue_type is protected
       procedure push (arg : std_logic_vector(63 downto 0));
       impure function pop return std_logic_vector;
    end protected queue_type;
 
-   type   queue_type is protected body
+   type queue_type is protected body
       type     array_type is array (0 to 15) of std_logic_vector(63 downto 0);
-      variable data  : array_type;
-      variable first : natural range 0 to 15 := 0;
-      variable count : natural range 0 to 16 := 0;
+      variable data_v  : array_type;
+      variable first_v : natural range 0 to 15 := 0;
+      variable count_v : natural range 0 to 16 := 0;
 
       procedure push (arg : std_logic_vector(63 downto 0)) is
       begin
-         assert count < 16
+         assert count_v < 16
             report "queue is full"
             severity failure;
-         data((first + count) mod 16) := arg;
-         count                        := count + 1;
+         data_v((first_v + count_v) mod 16) := arg;
+         count_v                            := count_v + 1;
       end procedure push;
 
       impure function pop return std_logic_vector is
          variable res_v : std_logic_vector(63 downto 0);
       begin
-         assert count > 0
+         assert count_v > 0
             report "Got a result, but no division was started"
             severity failure;
-         res_v := data(first);
-         first := (first + 1) mod 16;
-         count := count - 1;
+         res_v   := data_v(first_v);
+         first_v := (first_v + 1) mod 16;
+         count_v := count_v - 1;
          return res_v;
       end function pop;
 
    end protected body queue_type;
 
-   shared variable queue : queue_type;
+   shared variable queue_v : queue_type;
 
 begin
 
@@ -134,8 +134,8 @@ begin
 
       -- Number of divisions started, and how many of them were started while
       -- the previous result was waiting on the output
-      variable num_started : natural := 0;
-      variable num_overlap : natural := 0;
+      variable num_started_v : natural := 0;
+      variable num_overlap_v : natural := 0;
 
       -- Start a division. The inputs are given as vectors, since a natural
       -- can not hold values of 2^31 or more. s_valid is cleared again at the
@@ -143,16 +143,16 @@ begin
       procedure start_division(arg_n : std_logic_vector(31 downto 0);
                                arg_d : std_logic_vector(31 downto 0)) is
       begin
-         s_n     <= arg_n;
-         s_d     <= arg_d;
-         s_valid <= '1';
+         s_n           <= arg_n;
+         s_d           <= arg_d;
+         s_valid       <= '1';
          wait until rising_edge(clk) and s_ready = '1';
-         queue.push(arg_n & arg_d);
-         num_started := num_started + 1;
+         queue_v.push(arg_n & arg_d);
+         num_started_v := num_started_v + 1;
          if m_valid = '1' and m_ready = '0' then
-            num_overlap := num_overlap + 1;
+            num_overlap_v := num_overlap_v + 1;
          end if;
-         s_valid     <= '0';
+         s_valid <= '0';
       end procedure start_division;
 
       procedure start_division(arg_n : natural; arg_d : natural) is
@@ -160,11 +160,11 @@ begin
          start_division(to_stdlogicvector(arg_n, 32), to_stdlogicvector(arg_d, 32));
       end procedure start_division;
 
-      variable start_time : time;
-      variable end_time   : time;
+      variable start_time_v : time;
+      variable end_time_v   : time;
 
-      constant MAX_D : natural := 100;
-      constant MAX_N : natural := 100;
+      constant C_MAX_D : natural := 100;
+      constant C_MAX_N : natural := 100;
 
       -- The largest input value supported by srt
       constant C_MAX : natural := 2 ** 29 - 1;
@@ -234,16 +234,16 @@ begin
          end loop;
       end loop;
 
-      report "Testing all divisions n/d with 1 <= n, d <= " & to_string(MAX_N);
-      start_time := now;
-      for di in 1 to MAX_D loop
-         for ni in 1 to MAX_N loop
+      report "Testing all divisions n/d with 1 <= n, d <= " & to_string(C_MAX_N);
+      start_time_v := now;
+      for di in 1 to C_MAX_D loop
+         for ni in 1 to C_MAX_N loop
             start_division(ni, di);
          end loop;
       end loop;
-      end_time := now;
-      report to_string(real((end_time-start_time) / 10 ns) / real(MAX_D*MAX_N)) &
-         " clock cycles per division";
+      end_time_v := now;
+      report to_string(real((end_time_v-start_time_v) / 10 ns) / real(C_MAX_D*C_MAX_N)) &
+             " clock cycles per division";
 
       report "Testing " & to_string(C_NUM_RANDOM) & " random divisions";
       backpressure <= true;
@@ -266,13 +266,13 @@ begin
       end loop;
 
       -- Wait for the remaining results
-      while num_verified < num_started loop
+      while num_verified < num_started_v loop
          wait until rising_edge(clk);
       end loop;
 
-      report to_string(num_overlap) &
-         " divisions were started while the previous result was waiting";
-      assert num_overlap > 0
+      report to_string(num_overlap_v) &
+             " divisions were started while the previous result was waiting";
+      assert num_overlap_v > 0
          report "No division was started while the previous result was waiting";
 
       report "Test finished";
@@ -346,14 +346,14 @@ begin
       constant C_FDIV_D     : natural := 3145727;
       constant C_FDIV_WRONG : std_logic_vector(63 downto 0) := X"00000001556FEC72";
 
-      variable nd_v       : std_logic_vector(63 downto 0);
-      variable n_v        : std_logic_vector(31 downto 0);
-      variable d_v        : std_logic_vector(31 downto 0);
-      variable exp_q_high : std_logic_vector(31 downto 0);
-      variable exp_q_low  : std_logic_vector(31 downto 0);
+      variable nd_v         : std_logic_vector(63 downto 0);
+      variable n_v          : std_logic_vector(31 downto 0);
+      variable d_v          : std_logic_vector(31 downto 0);
+      variable exp_q_high_v : std_logic_vector(31 downto 0);
+      variable exp_q_low_v  : std_logic_vector(31 downto 0);
    begin
       wait until rising_edge(clk) and m_valid = '1' and m_ready = '1';
-      nd_v := queue.pop;
+      nd_v := queue_v.pop;
       n_v  := nd_v(63 downto 32);
       d_v  := nd_v(31 downto 0);
       report "verify: n=0x" & to_hstring(n_v) & ", d=0x" & to_hstring(d_v);
@@ -362,34 +362,34 @@ begin
          -- Invalid inputs: The result must be all ones, and m_invalid set
          assert m_q = X"FFFFFFFFFFFFFFFF"
             report "Calculating 0x" & to_hstring(n_v) & "/0x" & to_hstring(d_v) &
-               ". Got 0x" & to_hstring(m_q) & ", expected 0xFFFFFFFFFFFFFFFF";
+                   ". Got 0x" & to_hstring(m_q) & ", expected 0xFFFFFFFFFFFFFFFF";
          assert m_invalid = '1'
             report "Calculating 0x" & to_hstring(n_v) & "/0x" & to_hstring(d_v) &
-               ". m_invalid_o is not set";
+                   ". m_invalid_o is not set";
 
       elsif G_PLA = "pentium" and to_integer(n_v) = C_FDIV_N and to_integer(d_v) = C_FDIV_D then
          assert m_q = C_FDIV_WRONG
             report "FDIV: Calculating 4195835/3145727. Got 0x" & to_hstring(m_q) &
-               ", expected the Pentium's wrong result 0x" & to_hstring(C_FDIV_WRONG);
+                   ", expected the Pentium's wrong result 0x" & to_hstring(C_FDIV_WRONG);
 
       else
-         exp_q_high := to_stdlogicvector(to_integer(n_v) / to_integer(d_v), 32);
-         exp_q_low  := get_frac(to_integer(n_v), to_integer(d_v));
-         assert m_q(63 downto 32) = exp_q_high
+         exp_q_high_v := to_stdlogicvector(to_integer(n_v) / to_integer(d_v), 32);
+         exp_q_low_v  := get_frac(to_integer(n_v), to_integer(d_v));
+         assert m_q(63 downto 32) = exp_q_high_v
             report "HIGH: Calculating " & division_string(n_v, d_v) &
-               ". Got 0x" & to_hstring(m_q(63 downto 32)) & ", expected 0x" & to_hstring(exp_q_high);
-         assert m_q(31 downto 0)  = exp_q_low
+                   ". Got 0x" & to_hstring(m_q(63 downto 32)) & ", expected 0x" & to_hstring(exp_q_high_v);
+         assert m_q(31 downto 0) = exp_q_low_v
             report "LOW: Calculating " & division_string(n_v, d_v) &
-               ". Got 0x" & to_hstring(m_q(31 downto 0)) & ", expected 0x" & to_hstring(exp_q_low);
+                   ". Got 0x" & to_hstring(m_q(31 downto 0)) & ", expected 0x" & to_hstring(exp_q_low_v);
          assert m_invalid = '0'
             report "Calculating " & division_string(n_v, d_v) & ". m_invalid_o is set";
 
          -- Count the rounding errors (only relevant if the asserts above are
          -- not fatal)
-         if m_q(31 downto 0) < exp_q_low then
+         if m_q(31 downto 0) < exp_q_low_v then
             low_count <= low_count + 1;
          end if;
-         if m_q(31 downto 0) > exp_q_low then
+         if m_q(31 downto 0) > exp_q_low_v then
             high_count <= high_count + 1;
          end if;
       end if;

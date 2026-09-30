@@ -42,15 +42,15 @@ entity fast_sincos is
       G_DEBUG : boolean := false
    );
    port (
-      clk_i      : in    std_logic;
-      ready_o    : out   std_logic := '1'; -- Asserted when output is ready.
-      start_i    : in    std_logic;        -- Assert to restart calculation.
-      arg_exp_i  : in    unsigned( 7 downto 0);
-      arg_mant_i : in    unsigned(31 downto 0);
-      sin_exp_o  : out   unsigned( 7 downto 0);
-      sin_mant_o : out   unsigned(31 downto 0);
-      cos_exp_o  : out   unsigned( 7 downto 0);
-      cos_mant_o : out   unsigned(31 downto 0)
+      clk_i      : in  std_logic;
+      ready_o    : out std_logic := '1'; -- Asserted when output is ready.
+      start_i    : in  std_logic;        -- Assert to restart calculation.
+      arg_exp_i  : in  unsigned( 7 downto 0);
+      arg_mant_i : in  unsigned(31 downto 0);
+      sin_exp_o  : out unsigned( 7 downto 0);
+      sin_mant_o : out unsigned(31 downto 0);
+      cos_exp_o  : out unsigned( 7 downto 0);
+      cos_mant_o : out unsigned(31 downto 0)
    );
 end entity fast_sincos;
 
@@ -77,38 +77,38 @@ architecture synthesis of fast_sincos is
    constant C_SCALE       : fraction_type := calc_scaling;
    constant C_TWO_OVER_PI : fraction_type := real2fraction(0.6366197723675814);
 
-   type     state_type is (
+   type   state_type is (
       STAGE1_ST, STAGE2_ST, CALC_ST, NORMALIZE_ST, DONE_ST
    );
-   signal   state : state_type            := DONE_ST;
+   signal state : state_type            := DONE_ST;
 
-   signal   arg_exp  : unsigned( 7 downto 0);                -- Exponent
-   signal   arg_mant : unsigned(31 downto 0);                -- Mantissa
+   signal arg_exp  : unsigned( 7 downto 0);                -- Exponent
+   signal arg_mant : unsigned(31 downto 0);                -- Mantissa
 
-   signal   stage1_arg_mant_prod : unsigned(C_SIZE + 32 downto 0);
-   signal   stage1_sign          : std_logic;
-   signal   stage1_shift         : integer range -C_SIZE to C_SIZE;
-   signal   stage1_angle         : fraction_type;
-   signal   stage1_octant        : unsigned(2 downto 0);
+   signal stage1_arg_mant_prod : unsigned(C_SIZE + 32 downto 0);
+   signal stage1_sign          : std_logic;
+   signal stage1_shift         : integer range -C_SIZE to C_SIZE;
+   signal stage1_angle         : fraction_type;
+   signal stage1_octant        : unsigned(2 downto 0);
 
    -- The angle starts out as a value in [0.0, 0.5], representing an angle
    -- in [0, pi/4].
    -- During calculation, the value may stray slightly outside the initial interval,
    -- but it will always represent a signed value in [-1.0, 1.0[, i.e. an angle in
    -- [-pi/2, pi/2[.
-   signal   angle : fraction_type;
+   signal angle : fraction_type;
 
    -- x and y will eventually become the result of sine and cosine.
    -- The value of x represents an unsigned value in [0.0, 2.0[.
    -- The value of y represents a signed value in [-1.0, 1.0[.
-   signal   x     : fraction_type;
-   signal   y     : fraction_type;
-   signal   count : natural range 0 to C_ANGLE_NUM;
+   signal x     : fraction_type;
+   signal y     : fraction_type;
+   signal count : natural range 0 to C_ANGLE_NUM;
 
-   signal   rotate_x : fraction_type;
-   signal   rotate_y : fraction_type;
-   signal   exp_x    : unsigned(7 downto 0);
-   signal   exp_y    : unsigned(7 downto 0);
+   signal rotate_x : fraction_type;
+   signal rotate_y : fraction_type;
+   signal exp_x    : unsigned(7 downto 0);
+   signal exp_y    : unsigned(7 downto 0);
 
    pure function count_leading_zeros (arg : fraction_type) return natural is
    begin
@@ -164,7 +164,7 @@ architecture synthesis of fast_sincos is
       return res_v;
    end function rotate_left;
 
-   type     rom_type is array (0 to C_ANGLE_NUM - 1) of fraction_type;
+   type rom_type is array (0 to C_ANGLE_NUM - 1) of fraction_type;
 
    pure function calc_angles return rom_type is
       variable res_v   : rom_type := (others => (others => '0'));
@@ -188,12 +188,12 @@ begin
    begin
       if rising_edge(clk_i) then
          -- This adds a register to the DSP output
-         stage1_arg_mant_prod <= (arg_mant or x"80000000") * C_TWO_OVER_PI;
+         stage1_arg_mant_prod <= (arg_mant or X"80000000") * C_TWO_OVER_PI;
 
          -- Store the sign and amount to shift
-         stage1_sign          <= arg_mant(31);
-         stage1_shift         <= C_SIZE;
-         if arg_exp > x"62" and arg_exp <= x"A3" then
+         stage1_sign  <= arg_mant(31);
+         stage1_shift <= C_SIZE;
+         if arg_exp > X"62" and arg_exp <= X"A3" then
             stage1_shift <= 130 - to_integer(arg_exp);
          end if;
       end if;
@@ -205,8 +205,8 @@ begin
    fsm_proc : process (clk_i)
    begin
       if rising_edge(clk_i) then
-         exp_x    <= x"81" - count_leading_zeros(x);
-         exp_y    <= x"81" - count_leading_zeros(y);
+         exp_x    <= X"81" - count_leading_zeros(x);
+         exp_y    <= X"81" - count_leading_zeros(y);
          rotate_x <= rotate_left(x, count_leading_zeros(x));
          rotate_y <= rotate_left(y, count_leading_zeros(y));
 
@@ -218,7 +218,7 @@ begin
          -- y must never be less than 0
          if y(y'left) = '1' then
             rotate_y <= (others => '0');
-            exp_y    <= x"00";
+            exp_y    <= X"00";
          end if;
 
          case state is
@@ -354,7 +354,7 @@ begin
             if G_DEBUG then
                report "arg_exp_i     = 0x" & to_hstring(arg_exp_i);
                report "arg_mant_i    = " &
-                      to_string(fraction2real("0" & (arg_mant_i or x"80000000") & "0000000"), 11);
+                      to_string(fraction2real("0" & (arg_mant_i or X"80000000") & "0000000"), 11);
                report "C_SCALE       = " & to_string(fraction2real(C_SCALE), 11);
                report "C_TWO_OVER_PI = " & to_string(fraction2real(C_TWO_OVER_PI), 11);
             end if;
