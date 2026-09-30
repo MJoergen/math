@@ -1,6 +1,6 @@
 name: srt
 
-# Test the SRT divider in the directory srt. This only runs when something in
+# Test the SRT divider in the directory fpga/srt. This only runs when something in
 # that directory (or this file) changes: on pull requests, and on pushes to
 # master. (Running on all pushes would test each pull request twice.)
 on:
@@ -8,11 +8,11 @@ on:
     branches:
       - master
     paths:
-      - 'srt/**'
+      - 'fpga/srt/**'
       - '.github/workflows/srt.yml'
   pull_request:
     paths:
-      - 'srt/**'
+      - 'fpga/srt/**'
       - '.github/workflows/srt.yml'
 
 # When a pull request is updated, cancel the run for the previous commit
@@ -22,7 +22,7 @@ concurrency:
 
 defaults:
   run:
-    working-directory: srt
+    working-directory: fpga/srt
 
 jobs:
   # Check the quotient digit table, and test the bit-exact model (seconds)
