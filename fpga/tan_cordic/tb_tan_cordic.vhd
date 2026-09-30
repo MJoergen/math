@@ -53,6 +53,39 @@ architecture simulation of tb_tan_cordic is
       return sin_v / cos_v;
    end function ref_tan;
 
+   -- Conversions between a real in [0.0, 1.0[ and the fixed-point format with
+   -- G_FRAC_BITS fractional bits. These go one bit at a time, since an integer
+   -- only holds 31 bits, too few for G_FRAC_BITS = 32. A real holds 52 bits.
+   pure function to_fixed (
+      arg : real
+   ) return std_logic_vector is
+      variable val_v : real := round(arg * 2.0 ** G_FRAC_BITS);
+      variable res_v : std_logic_vector(G_FRAC_BITS - 1 downto 0);
+   begin
+      for i in G_FRAC_BITS - 1 downto 0 loop
+         if val_v >= 2.0 ** i then
+            res_v(i) := '1';
+            val_v    := val_v - 2.0 ** i;
+         else
+            res_v(i) := '0';
+         end if;
+      end loop;
+      return res_v;
+   end function to_fixed;
+
+   pure function from_fixed (
+      arg : std_logic_vector
+   ) return real is
+      variable res_v : real := 0.0;
+   begin
+      for i in arg'range loop
+         if arg(i) = '1' then
+            res_v := res_v + 2.0 ** (i - G_FRAC_BITS);
+         end if;
+      end loop;
+      return res_v;
+   end function from_fixed;
+
    signal clk     : std_logic := '1';
    signal rst     : std_logic := '1';
    signal running : std_logic := '1';
@@ -139,7 +172,7 @@ begin
          end loop;
 
          s_valid <= '1';
-         s_angle <= std_logic_vector(to_unsigned(integer(angle_v * 2.0 ** G_FRAC_BITS), G_FRAC_BITS));
+         s_angle <= to_fixed(angle_v);
          wait until rising_edge(clk) and s_ready = '1';
       end loop;
 
@@ -174,7 +207,7 @@ begin
             exit when m_valid = '1' and m_ready = '1';
          end loop;
 
-         got_v := real(to_integer(unsigned(m_tan))) / 2.0 ** G_FRAC_BITS;
+         got_v := from_fixed(m_tan);
          err_v := abs(got_v - exp_v);
 
          assert err_v < C_TOLERANCE

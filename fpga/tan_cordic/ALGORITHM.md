@@ -145,13 +145,18 @@ tangent of the unrounded angle, but with the Taylor series as the reference
 | 28            | 5            | $2^{-24.5}$   |
 | 28            | 6            | $2^{-27.0}$   |
 | 28            | 7, 8, 16     | $2^{-27.1}$   |
+| 32            | 5            | $2^{-24.5}$   |
+| 32            | 6            | $2^{-29.2}$   |
+| 32            | 7            | $2^{-31.1}$   |
+| 32            | 8, 16        | $2^{-31.2}$   |
 
 With enough iterations, the error is about two units of the last bit: one from
 rounding the angle to `G_FRAC_BITS` bits (the slope of the tangent is up to 2
 in $[0, \frac{\pi}{4}]$), and one from truncating the quotient. Against the
 tangent of the rounded angle, i.e. the angle that the design actually gets,
-the error with 6 iterations (24 bits) or 7 iterations (28 bits) is at most
-$2^{-24.0}$ and $2^{-28.0}$, i.e. one unit, the same as with 16 iterations.
+the error with 6 iterations (24 bits), 7 iterations (28 bits), or 8 iterations
+(32 bits) is at most $2^{-24.0}$, $2^{-28.0}$, and $2^{-32.0}$, i.e. one unit,
+the same as with 16 iterations.
 
 So 16 iterations (as in the 8087, which aims at 64 bits) are far more than
 needed for `G_FRAC_BITS = 24`, and the design uses 6 by default. This gives

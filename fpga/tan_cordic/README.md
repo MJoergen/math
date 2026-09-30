@@ -5,7 +5,8 @@ adaptation of the algorithm used by the Intel 8087 math co-processor, as describ
 [this article](https://www.righto.com/2026/09/8087-tangent-cordic.html).
 
 The latency is 320 ns with the default configuration, at the 125 MHz clock
-constraint in [`tan_cordic.xdc`](tan_cordic.xdc), see [Timing](#timing).
+constraint in [`tan_cordic.xdc`](tan_cordic.xdc). With 32 bits it is 478 ns, at
+108.7 MHz, see [Timing](#timing).
 
 ## The algorithm
 The classical CORDIC algorithm calculates `sin` and `cos` by rotating a vector by the
@@ -103,7 +104,7 @@ randomly stalls both the VALID and READY signals. It stops at the first result t
 outside the tolerance. It:
 
 * Sweeps `G_ITERATIONS` over 2, 4, 6, 8, 16, and 20, and `G_FRAC_BITS` over 8, 16,
-  20, 24, and 28, with 150 angles for each of the 30 combinations.
+  20, 24, 28, and 32, with 150 angles for each of the 36 combinations.
 * Verifies accuracy against the tangent calculated with the Taylor series (the `tan`
   of `ieee.math_real` is only accurate to about `2**-28` in GHDL), with a tolerance
   from the error analysis in
@@ -126,6 +127,20 @@ accepted. The design meets the 8 ns clock constraint in `tan_cordic.xdc` with a 
 of 0.782 ns, using 556 Slice LUTs, 310 registers, and one DSP48E1.
 [Timing](ALGORITHM.md#timing) describes how the critical path was shortened, and how
 the number of iterations was reduced from 16 to 6.
+
+With `G_FRAC_BITS => 32`, full precision needs 8 iterations: the largest error is
+about `2**-31.2`, and against the tangent of the rounded angle it is one unit of the
+last bit, `2**-32.0`, the same as with 16 iterations. A calculation then takes 53
+clock cycles, and the result is valid 52 clock cycles after the input is accepted.
+The design does not meet the 8 ns clock constraint (the slack is -0.921 ns), since the
+multiplier for `z*z` is wider, see [Phase 2](ALGORITHM.md#phase-2-padé-approximation).
+It meets a clock period of 9.2 ns (108.7 MHz) with a slack of 0.044 ns, using 766
+Slice LUTs, 379 registers, and one DSP48E1, so the latency is 478 ns. With 7
+iterations the largest error is slightly larger, `2**-31.1` (`2**-31.8` against the
+rounded angle), but the design meets a clock period of 8.5 ns (117.6 MHz) with a slack
+of 0.113 ns, using 685 Slice LUTs, 384 registers, and two DSP48E1. Then the latency is
+50 clock cycles, i.e. 425 ns. To check this, change the clock period in
+`tan_cordic.xdc`, and run e.g. `make vivado VIVADO_ITERATIONS=8 VIVADO_FRAC_BITS=32`.
 
 ## Links
 * [https://www.righto.com/2026/09/8087-tangent-cordic.html](https://www.righto.com/2026/09/8087-tangent-cordic.html)

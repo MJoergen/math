@@ -21,7 +21,7 @@ SRC = tan_cordic.vhd tb_tan_cordic.vhd
 # The values of G_ITERATIONS and G_FRAC_BITS to sweep, e.g.
 # "make sim ITERATIONS=6 FRAC_BITS=24"
 ITERATIONS ?= 2 4 6 8 16 20
-FRAC_BITS  ?= 8 16 20 24 28
+FRAC_BITS  ?= 8 16 20 24 28 32
 
 # Run the testbench with:
 # * 150 random angles for each combination of G_ITERATIONS and G_FRAC_BITS,
