@@ -4,21 +4,25 @@ a README.md that describes the design and lists the resource usage and timing,
 and an ALGORITHM.md that explains the algorithm in detail: why it works, how
 precise it is, and the trade-offs.
 
-| Folder | Description | Latency
+| Folder | Description | Latency (32 bits)
 | ------ | ----------- | -------
-| [`booth`](booth) | Multiplies two signed numbers using Booth's algorithm with radix 4, and a faster carry-save version. | 32 ns (16 ns for the carry-save version), for 16-bit numbers
+| [`booth`](booth) | Multiplies two signed numbers using Booth's algorithm with radix 4, and a faster carry-save version. | 64 ns (24 ns for the carry-save version)
 | [`fast_divide`](fast_divide) | Divides two 32-bit unsigned integers using Goldschmidt division, with about 34 significant bits. | At most 140 ns
-| [`srt`](srt) | Divides two unsigned integers using SRT division with radix 4, as in the Pentium, including the FDIV bug. | 185 ns
+| [`srt`](srt) | Divides two 29-bit unsigned integers using SRT division with radix 4, as in the Pentium, including the FDIV bug. | 185 ns
 | [`c64_sqrt`](c64_sqrt) | Square root of a C64 floating point number, using the digit-by-digit method. | 139 ns
 | [`c64_sqrt2`](c64_sqrt2) | Square root of a C64 floating point number, using Goldschmidt's algorithm with multipliers. | 40 to 119 ns
-| [`pipeline_sqrt`](pipeline_sqrt) | Pipelined square root of a fixed-point number, using lookup tables and one multiplier, with one result per clock cycle. | 16 ns
+| [`pipeline_sqrt`](pipeline_sqrt) | Pipelined square root of a 22-bit fixed-point number (format 2.20, with a 22-bit result), using lookup tables and one multiplier, with one result per clock cycle. | 16 ns
 | [`c64_sincos`](c64_sincos) | Sine and cosine of a C64 floating point number, using CORDIC. | 237 ns
-| [`tan_cordic`](tan_cordic) | Tangent of a fixed-point angle, using the CORDIC variant of the Intel 8087. | 320 ns
+| [`tan_cordic`](tan_cordic) | Tangent of a fixed-point angle, using the CORDIC variant of the Intel 8087. | 478 ns, with 8 iterations, at 108.7 MHz
 
 The latency is the time from when the input is accepted until the result is
-valid, at the clock frequency of the timing constraint in the `.xdc` file of
-each folder, which `make vivado` verifies. Some designs can run at a higher
-clock frequency, see their READMEs.
+valid, for 32-bit operands, or a 32-bit mantissa for the C64 floating point
+numbers. `srt` and `pipeline_sqrt` do not support 32 bits, so their latency is
+for the width given in the description. The latency is at the clock frequency
+of the timing constraint in the `.xdc` file of each folder, which `make vivado`
+verifies. The exception is `tan_cordic`, whose constraint (125 MHz) is for the
+default of 24 bits, where the latency is 320 ns. With 32 bits it only meets
+108.7 MHz. Some designs can run at a higher clock frequency, see their READMEs.
 
 ## Interface
 All the designs have the same top-level interface, with the same naming
