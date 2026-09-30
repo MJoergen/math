@@ -133,8 +133,9 @@ begin
             when OUTPUT_ST =>
                -- Wait until the output register is free
                if m_valid_o = '0' or m_ready_i = '1' then
-                  -- No idea why we need to add one, but we do to stop things like 4/2
-                  -- giving a result of 1.999999999
+                  -- Remove the 4 guard bits. Adding 7 (just below half of the last
+                  -- bit) rounds to nearest, so that e.g. 4/2 does not give
+                  -- 1.999999999, see "Rounding" in ALGORITHM.md.
                   temp64_v(67 downto  0) := nn;
                   temp64_v(73 downto 68) := (others => '0');
                   temp64_v               := temp64_v + 7;

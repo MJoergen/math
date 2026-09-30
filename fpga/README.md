@@ -1,15 +1,16 @@
 # FPGA
 Arithmetic in VHDL for an FPGA. Each folder contains a design, a testbench,
-and a README.md that explains the algorithm and lists the resource usage and
-timing.
+a README.md that describes the design and lists the resource usage and timing,
+and an ALGORITHM.md that explains the algorithm in detail: why it works, how
+precise it is, and the trade-offs.
 
 | Folder | Description | Latency
 | ------ | ----------- | -------
 | [`booth`](booth) | Multiplies two signed numbers using Booth's algorithm with radix 4, and a faster carry-save version. | 32 ns (16 ns for the carry-save version), for 16-bit numbers
-| [`fast_divide`](fast_divide) | Divides two 32-bit unsigned integers using Goldschmidt division. | At most 140 ns
+| [`fast_divide`](fast_divide) | Divides two 32-bit unsigned integers using Goldschmidt division, with about 34 significant bits. | At most 140 ns
 | [`srt`](srt) | Divides two unsigned integers using SRT division with radix 4, as in the Pentium, including the FDIV bug. | 185 ns
 | [`c64_sqrt`](c64_sqrt) | Square root of a C64 floating point number, using the digit-by-digit method. | 139 ns
-| [`c64_sqrt2`](c64_sqrt2) | Square root of a C64 floating point number, using Goldschmidt's algorithm with multipliers. | 66 to 119 ns
+| [`c64_sqrt2`](c64_sqrt2) | Square root of a C64 floating point number, using Goldschmidt's algorithm with multipliers. | 40 to 119 ns
 | [`pipeline_sqrt`](pipeline_sqrt) | Pipelined square root of a fixed-point number, using lookup tables and one multiplier, with one result per clock cycle. | 16 ns
 | [`c64_sincos`](c64_sincos) | Sine and cosine of a C64 floating point number, using CORDIC. | 237 ns
 | [`tan_cordic`](tan_cordic) | Tangent of a fixed-point angle, using the CORDIC variant of the Intel 8087. | 480 ns

@@ -20,7 +20,8 @@ xc7a200tfbg484-2, and meets the timing constraint in
 
 The largest absolute error of the sine and the cosine is 2^(-31.4) for angles
 in the range [0, pi/4], and 2^(-31.2) in the range [-2pi, 2pi]. This is the
-accuracy of the 33 CORDIC iterations, see [The algorithm](#the-algorithm).
+accuracy of the 33 CORDIC iterations, see [The algorithm](#the-algorithm). For
+larger angles the error grows, see [Accuracy](ALGORITHM.md#accuracy).
 
 ## The number format
 The input and the outputs use the 5-byte floating point format of the C64
@@ -62,12 +63,18 @@ The fixed point numbers have 7 guard bits below the 32 bits of the mantissa,
 to reduce the accumulation of rounding errors, see
 [`c64_sincos_pkg.vhd`](c64_sincos_pkg.vhd).
 
+[ALGORITHM.md](ALGORITHM.md) explains the algorithm in detail: the range
+reduction, the CORDIC iterations, how the sine and cosine are reconstructed
+from the octant, what limits the accuracy (also for tiny and for large
+angles), and the number of iterations versus the accuracy.
+
 ## Files
 | File | Description
 | ---- | -----------
 | [`c64_sincos.vhd`](c64_sincos.vhd) | The sine and cosine.
 | [`c64_sincos_pkg.vhd`](c64_sincos_pkg.vhd) | The fixed point type used in the calculation, and conversion functions for it.
 | [`tb_c64_sincos.vhd`](tb_c64_sincos.vhd) | Testbench.
+| [`ALGORITHM.md`](ALGORITHM.md) | Detailed explanation of the algorithm.
 | [`c64_sincos.gtkw`](c64_sincos.gtkw) | GTKWave setup for viewing the waveform from `make debug`.
 | [`c64_sincos.xdc`](c64_sincos.xdc), [`vivado.tcl`](vivado.tcl) | Timing constraint (156 MHz) and script for synthesis with Vivado, see `make vivado`.
 | [`c64_sincos.xpr`](c64_sincos.xpr) | Vivado project, for use in the Vivado GUI. It has the same settings as `make vivado`.

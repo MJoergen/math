@@ -1,7 +1,7 @@
 # Square root, version 2
 This calculates the square root of a C64 floating point number, using an
 iterative method with multipliers, in VHDL for an FPGA. It has the same
-interface as [`c64_sqrt`](../c64_sqrt), but has a latency of 66 to 119 ns
+interface as [`c64_sqrt`](../c64_sqrt), but has a latency of 40 to 119 ns
 (94 ns on average in the testbench) instead of 139 ns, at a lower clock
 frequency (75.8 MHz). The latency depends on how many iterations are needed.
 
@@ -72,12 +72,18 @@ Each iteration takes two clock cycles, one for r and one for x and h, using
 the two multiply-add units in [`dsp.vhd`](dsp.vhd). The iterations stop when
 the top half of the bits of r are zero.
 
+[ALGORITHM.md](ALGORITHM.md) explains the algorithm in detail: why it
+converges, how the initial approximation is chosen, where the rounding errors
+come from, and how the table size and the number of guard bits trade latency
+and accuracy against size.
+
 ## Files
 | File | Description
 | ---- | -----------
 | [`c64_sqrt2.vhd`](c64_sqrt2.vhd) | The square root.
 | [`dsp.vhd`](dsp.vhd) | A combinatorial multiply-add, `a*b+c`, intended for the DSP blocks.
 | [`tb_c64_sqrt2.vhd`](tb_c64_sqrt2.vhd) | Testbench.
+| [`ALGORITHM.md`](ALGORITHM.md) | Detailed explanation of the algorithm.
 | [`c64_sqrt2.gtkw`](c64_sqrt2.gtkw) | GTKWave setup for viewing the waveform from `make debug`.
 | [`c64_sqrt2.xdc`](c64_sqrt2.xdc), [`vivado.tcl`](vivado.tcl) | Timing constraint (75.8 MHz) and script for synthesis with Vivado, see `make vivado`.
 | [`c64_sqrt2.xpr`](c64_sqrt2.xpr) | Vivado project, for use in the Vivado GUI. It has the same settings as `make vivado`.
@@ -102,7 +108,7 @@ then.
 
 None of the output signals depend combinatorially on any of the input signals.
 
-`m_valid_o` goes high 5 to 9 clock cycles after the input is transferred (1
+`m_valid_o` goes high 3 to 9 clock cycles after the input is transferred (1
 clock cycle when the input is zero or negative, since the result is then zero).
 A new input is accepted in the clock cycle after the result is written to the
 output register.

@@ -59,11 +59,17 @@ function f(a) is calculated to 22 bits accuracy, and only the lower 18 bits are 
 BRAM. The upper 4 bits are calculated combinatorially. This is controlled by the generic
 G_EXTRA_BITS.
 
+[ALGORITHM.md](ALGORITHM.md) explains the algorithm in detail: the fixed-point formats,
+the pipeline and its handshake, why G_EXTRA_BITS must be at most 4, where the errors
+come from (which explains the largest errors in [Test results](#test-results) exactly),
+and the timing.
+
 ## Files
 | File | Description
 | ---- | -----------
 | [`pipeline_sqrt.vhd`](pipeline_sqrt.vhd) | The square root.
 | [`tb_pipeline_sqrt.vhd`](tb_pipeline_sqrt.vhd) | Testbench.
+| [`ALGORITHM.md`](ALGORITHM.md) | Detailed explanation of the algorithm.
 | [`pipeline_sqrt.gtkw`](pipeline_sqrt.gtkw) | GTKWave setup for viewing the waveform from `make debug`.
 | [`pipeline_sqrt.xdc`](pipeline_sqrt.xdc), [`vivado.tcl`](vivado.tcl) | Timing constraint (125 MHz) and script for synthesis with Vivado, see `make vivado`.
 | [`pipeline_sqrt.xpr`](pipeline_sqrt.xpr) | Vivado project, for use in the Vivado GUI. It has the same settings as `make vivado`, with G_EXTRA_BITS = 2.
@@ -71,7 +77,8 @@ G_EXTRA_BITS.
 
 ## Interface
 The generic `G_EXTRA_BITS` is the number of upper bits of f(a) that are calculated
-combinatorially, from 0 to 4, see [Theory of operation](#theory-of-operation).
+combinatorially, from 0 to 4, see [Theory of operation](#theory-of-operation). It cannot
+be more than 4, see [G_EXTRA_BITS](ALGORITHM.md#g_extra_bits).
 
 Both the input and the output use an
 [AXI](https://en.wikipedia.org/wiki/Advanced_eXtensible_Interface)-style

@@ -43,11 +43,17 @@ which finds one bit of the result in each clock cycle, like long division by
 hand, using only shifts, subtractions, and comparisons. It calculates one extra
 bit, which is used for rounding the result to nearest.
 
+[ALGORITHM.md](ALGORITHM.md) explains the algorithm in detail: how the
+registers hold the root and the remainder as integers, so that each bit only
+needs one comparison and one subtraction, why the result is always correctly
+rounded, and the timing and resource usage.
+
 ## Files
 | File | Description
 | ---- | -----------
 | [`c64_sqrt.vhd`](c64_sqrt.vhd) | The square root.
 | [`tb_c64_sqrt.vhd`](tb_c64_sqrt.vhd) | Testbench.
+| [`ALGORITHM.md`](ALGORITHM.md) | Detailed explanation of the algorithm.
 | [`c64_sqrt.gtkw`](c64_sqrt.gtkw) | GTKWave setup for viewing the waveform from `make debug`.
 | [`c64_sqrt.xdc`](c64_sqrt.xdc), [`vivado.tcl`](vivado.tcl) | Timing constraint (244 MHz) and script for synthesis with Vivado, see `make vivado`.
 | [`c64_sqrt.xpr`](c64_sqrt.xpr) | Vivado project, for use in the Vivado GUI. It has the same settings as `make vivado`.
@@ -99,7 +105,9 @@ Type `make` to list the supported targets:
 ## Simulation
 The testbench calculates the square root of 0, 1, 2, 3, 4, 0.5, and -1 (which
 gives an error), of 1 - 2^(-32) and 1 + 2^(-31) (the two inputs where the last
-iteration decides the rounding), and of 15938 values from 0.031 to 8. It checks that each result is the exact square root, rounded
+iteration decides the rounding, see
+[The last iteration](ALGORITHM.md#the-last-iteration)), and of 15938 values
+from 0.031 to 8. It checks that each result is the exact square root, rounded
 to nearest, and stops at the first mismatch. There are no mismatches. The
 check is done exactly with integers, since the square root in double
 precision is not always precise enough to decide the rounding.

@@ -2,7 +2,8 @@
 This divides two 32-bit unsigned integers using
 [Goldschmidt division](https://en.wikipedia.org/wiki/Division_algorithm#Goldschmidt_division),
 in VHDL for an FPGA. The quotient is a 64-bit fixed-point number, with 32
-integer bits and 32 fraction bits.
+integer bits and 32 fraction bits, but it is only precise to about 34
+significant bits, see [Precision](ALGORITHM.md#precision).
 
 The timing constraint in [`fast_divide.xdc`](fast_divide.xdc) is 50 MHz (clock
 period 20 ns), which is met with a slack of 3.8 ns. At this clock frequency
@@ -46,11 +47,19 @@ guard bits are removed.
 Each iteration takes a single clock cycle, and uses two wide multipliers
 (68x38 and 36x38 bits).
 
+The result is only precise to about 34 significant bits, so for large
+quotients the last bits of the fraction are wrong, and for exact integer
+quotients of at least about 2^30.9 (i.e. with a divisor of 1 or 2) even the
+integer part is one too low. [ALGORITHM.md](ALGORITHM.md) explains the
+algorithm in detail: why it converges so quickly, the rounding, where the
+precision limit comes from, and the timing.
+
 ## Files
 | File | Description
 | ---- | -----------
 | [`fast_divide.vhd`](fast_divide.vhd) | The divider.
 | [`tb_fast_divide.vhd`](tb_fast_divide.vhd) | Testbench.
+| [`ALGORITHM.md`](ALGORITHM.md) | Detailed explanation of the algorithm.
 | [`fast_divide.gtkw`](fast_divide.gtkw) | GTKWave setup for viewing the waveform from `make debug`.
 | [`fast_divide.xdc`](fast_divide.xdc), [`vivado.tcl`](vivado.tcl) | Timing constraint (50 MHz) and script for synthesis with Vivado, see `make vivado`.
 | [`fast_divide.xpr`](fast_divide.xpr) | Vivado project, for use in the Vivado GUI. It has the same settings as `make vivado`.
@@ -104,12 +113,13 @@ numerator and divisor from 1 to 100, and compares the result with the exact
 quotient, with the fraction rounded to nearest. It prints the average number
 of clock cycles per division, which is 7.74 when there are no stalls.
 
-The integer part of the quotient is always correct, but the last bit of the
-fraction is not always exact: 1056 of the 10000 divisions report a mismatch
+In the testbench, the integer part of the quotient is always correct, but the
+last bit of the fraction is not always exact: 1056 of the 10000 divisions report a mismatch
 (446 are one too low, 570 are one too high, and 40 are two too high, in units
 of 2^-32). These mismatches are reported by the testbench as warnings, but do
 not stop the simulation. The summary at the end prints the number of results
-that are too low (`low_count`) and too high (`high_count`).
+that are too low (`low_count`) and too high (`high_count`). For larger
+quotients the errors are larger, see [Precision](ALGORITHM.md#precision).
 
 The valid signal of the input and the ready signal of the output are asserted
 randomly, with the probabilities given by the generics `G_VALID_PCT` and
