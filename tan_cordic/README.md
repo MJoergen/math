@@ -4,7 +4,24 @@ This calculates `tan(angle)` for `angle` in the range `[0.0, pi/4[`, using a har
 adaptation of the algorithm used by the Intel 8087 math co-processor, as described in
 [this article](https://www.righto.com/2026/09/8087-tangent-cordic.html).
 
+## Files
+| File | Description
+| ---- | -----------
+| [`tan_cordic.vhd`](tan_cordic.vhd) | The tangent CORDIC.
+| [`tb_tan_cordic.vhd`](tb_tan_cordic.vhd) | Testbench.
+| [`tan_cordic.xdc`](tan_cordic.xdc), [`vivado.tcl`](vivado.tcl) | Timing constraint (125 MHz) and script for synthesis with Vivado, see `make vivado`.
+| [`Makefile`](Makefile) | Runs the simulation and the synthesis, see [Running](#running).
+
 ## Interface
+| Name | Kind | Description
+| ---- | ---- | -----------
+| `G_ITERATIONS` | generic | The number of CORDIC iterations, default 16 (as the 8087).
+| `G_FRAC_BITS` | generic | The number of fractional bits of the angle and the result, default 24.
+| `clk_i` | in | Clock.
+| `rst_i` | in | Synchronous reset, active high.
+| `s_valid_i`, `s_ready_o`, `s_angle_i` | in, out, in | The input angle, in radians.
+| `m_valid_o`, `m_ready_i`, `m_tan_o` | out, in, out | The result, `tan(angle)`.
+
 Both input and output use an AXI-style VALID/READY handshake:
 
 * The input angle `s_angle_i` uses the handshake signals `s_valid_i` and `s_ready_o`.
@@ -102,18 +119,44 @@ for all internal arithmetic:
 * The eight extra ("guard") fractional bits limit the build-up of rounding error
   across the three phases; they are discarded before the final result is produced.
 
-## Simulation
-The script `sim.sh` runs the testbench `tb_tan_cordic.vhd` using GHDL (`--std=08`).
-The testbench generates angles uniformly distributed in `[0.0, pi/4[`, plus a few
-fixed corner cases (zero, and angles just below `pi/4`), and randomly stalls both the
-VALID and READY signals. It:
+## Running
+Type `make` to list the supported targets:
+* `make sim` runs the testbench (see [below](#simulation)). This requires
+  [GHDL](https://github.com/ghdl/ghdl). It takes about 10 seconds.
+  E.g. `make sim ITERATIONS=16 FRAC_BITS=24` sweeps only that configuration
+  (the fixed runs listed below are always included).
+* `make debug` runs a short simulation (20 tangents) with the default
+  configuration, and writes a waveform to `tan_cordic.ghw`. Use `make show_debug`
+  to view it in [GTKWave](https://github.com/gtkwave/gtkwave).
+* `make vivado` synthesizes and implements `tan_cordic.vhd` with the default
+  configuration, using
+  [Vivado](https://www.amd.com/en/products/software/adaptive-socs-and-fpgas/vivado.html)
+  for the Artix-7 part xc7a200tfbg484-2. The design is implemented out of
+  context, i.e. as a module inside a larger design, so only the paths between
+  registers are timed. It fails if the design does not meet the 125 MHz clock
+  constraint in `tan_cordic.xdc`. At the end it prints the number of cells and the
+  slack, logic levels, start point and end point of the worst path, and the reports
+  are written to `vivado/tan_cordic_16_24/`. E.g.
+  `make vivado VIVADO_ITERATIONS=8 VIVADO_FRAC_BITS=16` selects other generics. It
+  takes about 2 minutes, and expects Vivado in `/opt/Xilinx/2025.1/Vivado` (the
+  variable `XILINX_DIR`).
+* `make clean` removes the generated files.
 
-* Sweeps `G_ITERATIONS` from 4 to 20 and `G_FRAC_BITS` from 8 to 28.
+## Simulation
+`make sim` runs the testbench `tb_tan_cordic.vhd` using GHDL (`--std=08`).
+The testbench generates angles uniformly distributed in `[0.0, pi/4[`, plus a few
+fixed corner cases (zero, an angle just below `pi/4`, and a very small angle), and
+randomly stalls both the VALID and READY signals. It stops at the first result that is
+outside the tolerance. It:
+
+* Sweeps `G_ITERATIONS` over 4, 8, 12, 16, and 20, and `G_FRAC_BITS` over 8, 16, 20,
+  24, and 28, with 150 angles for each of the 25 combinations.
 * Verifies accuracy against `ieee.math_real.tan`, with a tolerance that scales with
   `min(G_ITERATIONS, G_FRAC_BITS)`.
 * Runs a larger (5000-sample) test at the default configuration
   (`G_ITERATIONS => 16`, `G_FRAC_BITS => 24`).
-* Checks operation without stalls, and with a slow consumer or a slow producer.
+* Checks operation without stalls, and with a slow consumer or a slow producer (ready
+  or valid in only 10% of the clock cycles), with 500 angles each.
 
 With the default configuration, the maximum observed error across 5000 random angles
 is below `2**-22`, i.e. close to the full `G_FRAC_BITS` (24) of accuracy -- somewhat
@@ -126,16 +169,26 @@ A full calculation takes `2*G_ITERATIONS + G_FRAC_BITS + 5` clock cycles (61 for
 default configuration): one cycle to accept the input, `G_ITERATIONS` for
 pseudo-division, two for the Padé approximation, `G_ITERATIONS` for
 pseudo-multiplication, one to load the divider, `G_FRAC_BITS` for the final division,
-and one to hold the result until it is consumed.
+and one to hold the result until it is consumed. The result is valid (`m_valid_o`
+high) 60 clock cycles after the clock cycle where the input is accepted.
 
 Synthesized, placed and routed with Vivado 2025.1 for `xc7a200tfbg484-2` (the part
-used elsewhere in this repo), out-of-context, at the default configuration:
+used elsewhere in this repo), out-of-context, at the default configuration, with
+`make vivado`. The current version meets the 8 ns clock constraint in
+`tan_cordic.xdc` with a slack of 0.320 ns. The two earlier versions are from the git
+history (commits 677aa4e and 59e9417), implemented the same way, but with a clock
+period of 14 ns and 11 ns, which they meet with a slack of 0.535 ns and 0.291 ns. The
+critical path is the clock period minus the slack, and the wall time is the critical
+path times the number of clock cycles per calculation (60 for the original version,
+61 for the others). The Slice LUTs are from `utilization.rpt`. The summary printed by
+`make vivado` counts LUT cells instead, which is higher (662 for the current version),
+since two LUT cells can share one slice LUT:
 
 | | Slice LUTs | Registers | DSP48E1 | Critical path | Fmax | Wall time/calc |
 | --- | --- | --- | --- | --- | --- | --- |
-| Original (single-cycle Padé) | 893 | 257 | 4 | 13.33 ns | ~75 MHz | ~800 ns |
-| Split Padé (`PADE_MUL_ST` + `PADE_ST`) | 914 | 333 | 4 | 10.82 ns | ~92 MHz | ~660 ns |
-| ...and narrowed `z*z` multiplier | 859 | 289 | 1 | 7.67 ns | ~130 MHz | ~468 ns |
+| Original (single-cycle Padé) | 624 | 254 | 4 | 13.47 ns | ~74 MHz | ~808 ns |
+| Split Padé (`PADE_MUL_ST` + `PADE_ST`) | 826 | 333 | 4 | 10.71 ns | ~93 MHz | ~653 ns |
+| ...and narrowed `z*z` multiplier (current) | 561 | 282 | 1 | 7.68 ns | ~130 MHz | ~468 ns |
 
 Splitting the Padé phase across two cycles removes the multiplier from the same
 combinational path as the following 36-bit-wide subtraction, at the cost of one
@@ -143,16 +196,19 @@ extra clock cycle (60 -> 61). Narrowing `z` before squaring it then removes the
 two-tile `DSP48E1` cascade entirely (down to a single tile), at no extra cost in
 cycles, LUTs, or registers -- if anything it uses fewer of each, since the
 multiplier and its registers are themselves smaller. The two changes together
-bring wall time down by about 41%, while using less silicon, not more.
+bring wall time down by about 42%, using fewer LUTs and DSPs than the original
+version, at the cost of 28 more registers.
 
-The remaining critical path still runs into `zz_reg`, but only just: the next
-cluster of near-critical paths (into `x_reg`/`y_reg`, i.e. the pseudo-multiplication
-add/subtract in `ROTATE_ST`) is now close behind, within about 1.3 ns. Closing that
-gap further would mean pipelining `ROTATE_ST` itself (e.g. splitting the shift and
-the add/subtract across two cycles), which -- unlike the changes above -- would add
-one extra cycle *per iteration* (`G_ITERATIONS` more cycles total), a much larger
-latency cost for a smaller, less clear-cut potential gain. That trade-off has not
-been attempted here.
+The remaining critical path still runs into `zz_reg`, but only just: the next paths
+are about 1.3 to 1.4 ns behind, and there are several of them: into `angle` (the
+compare-and-subtract of the pseudo-division in `REDUCE_ST`), into `x` (the
+pseudo-multiplication add/subtract in `ROTATE_ST`), and into `rem_reg` (the
+restoring division in `DIVIDE_ST`). Closing that gap further would mean pipelining
+all three iterative phases (e.g. splitting the shift and the add/subtract of
+`ROTATE_ST` across two cycles), which -- unlike the changes above -- would add one
+extra cycle *per iteration* (about `2*G_ITERATIONS + G_FRAC_BITS` more cycles in
+total), a much larger latency cost for a smaller, less clear-cut potential gain.
+That trade-off has not been attempted here.
 
 Utilization remains well under 1% of the device throughout.
 

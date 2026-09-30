@@ -1,0 +1,11 @@
+# Generated files, see "make clean"
+
+# Simulation (make sim, make debug)
+work-obj08.cf
+*.o
+tb_tan_cordic
+*.ghw
+
+# Vivado (make vivado)
+vivado/
+.Xil/
