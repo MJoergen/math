@@ -42,9 +42,9 @@ top.tb_c64_sincos.c64_sincos_inst.m_cos_mant_o[31:0]
 @28
 top.tb_c64_sincos.c64_sincos_inst.state
 @22
-top.tb_c64_sincos.c64_sincos_inst.stage1_angle[39:0]
+top.tb_c64_sincos.c64_sincos_inst.reduce_angle[39:0]
 @28
-top.tb_c64_sincos.c64_sincos_inst.stage1_octant[2:0]
+top.tb_c64_sincos.c64_sincos_inst.octant[2:0]
 @24
 top.tb_c64_sincos.c64_sincos_inst.count
 @22

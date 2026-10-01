@@ -32,9 +32,11 @@ library work;
 --
 -- Step 1 is to reduce modulo 2*pi and de-normalize (i.e. apply the exponent).
 -- Step 2 is to determine octant and reduce modulo pi/4.
--- Step 3 is to apply the Cordic algorithm.
+-- Step 3 is to apply the Cordic algorithm, G_STEPS iterations in each clock
+-- cycle.
 -- Step 4 is to construct the output result using the octant.
 -- Step 5 is to normalize (i.e. to calculate the exponent).
+-- Steps 1 and 2 are done in one clock cycle, and so are steps 4 and 5.
 --
 -- Interface:
 -- The input is accepted when s_valid_i and s_ready_o are both asserted on the
@@ -44,14 +46,18 @@ library work;
 -- (active high). It clears m_valid_o, and abandons a calculation in progress.
 --
 -- Latency and throughput:
--- m_valid_o is asserted 37 clock cycles after the input is accepted. A new
--- input is accepted in the clock cycle after the result is written to the
--- output register. So if m_ready_i is constantly asserted, a new input is
--- accepted every 38 clock cycles.
+-- m_valid_o is asserted 32/G_STEPS + 2 clock cycles after the input is
+-- accepted, i.e. 10 clock cycles for G_STEPS = 4. A new input is accepted in
+-- the clock cycle after the result is written to the output register. So if
+-- m_ready_i is constantly asserted, a new input is accepted every
+-- 32/G_STEPS + 3 clock cycles.
 
 entity c64_sincos is
    generic (
-      G_DEBUG : boolean := false
+      -- The number of CORDIC iterations in each clock cycle. 32 must be
+      -- divisible by it, i.e. 1, 2, 4, 8, 16, or 32.
+      G_STEPS : positive := 4;
+      G_DEBUG : boolean  := false
    );
    port (
       clk_i        : in  std_logic;
@@ -97,30 +103,31 @@ architecture synthesis of c64_sincos is
    constant C_TWO_OVER_PI : fraction_type := real2fraction(0.6366197723675814);
 
    -- IDLE_ST      : Waiting for a new input.
-   -- STAGE1_ST    : Wait for stage 1 (the multiplication by 2/pi).
-   -- STAGE2_ST    : Reduce the angle to [0, pi/4].
-   -- CALC_ST      : The CORDIC iterations, one in each clock cycle.
-   -- SHIFT_ST     : Normalize the final x and y, i.e. load exp_x, exp_y,
-   --                rotate_x, and rotate_y.
-   -- NORMALIZE_ST : The result is ready. It is written to the output register
-   --                as soon as the output register is free.
+   -- REDUCE_ST    : Reduce the angle to [0, pi/4], and do the first CORDIC
+   --                iteration.
+   -- CALC_ST      : The other CORDIC iterations, G_STEPS in each clock cycle.
+   -- NORMALIZE_ST : Normalize the final x and y, and write the result to the
+   --                output register as soon as the output register is free.
    type   state_type is (
-      IDLE_ST, STAGE1_ST, STAGE2_ST, CALC_ST, SHIFT_ST, NORMALIZE_ST
+      IDLE_ST, REDUCE_ST, CALC_ST, NORMALIZE_ST
    );
    signal state : state_type            := IDLE_ST;
 
    signal arg_exp  : unsigned( 7 downto 0);                -- Exponent
    signal arg_mant : unsigned(31 downto 0);                -- Mantissa
 
-   signal stage1_arg_mant_prod : unsigned(C_SIZE + 32 downto 0);
-   signal stage1_sign          : std_logic;
-   signal stage1_shift         : integer range -C_SIZE to C_SIZE;
-   signal stage1_angle         : fraction_type;
-   signal stage1_octant        : unsigned(2 downto 0);
+   -- The range reduction, see REDUCE_ST
+   signal reduce_prod   : unsigned(C_SIZE + 32 downto 0);
+   signal reduce_sign   : std_logic;
+   signal reduce_shift  : integer range -C_SIZE to C_SIZE;
+   signal reduce_angle  : fraction_type;
+   signal reduce_octant : unsigned(2 downto 0);
+   signal octant        : unsigned(2 downto 0);   -- reduce_octant, stored in REDUCE_ST
 
-   -- The angle starts out as a value in [0.0, 0.5], representing an angle
-   -- in [0, pi/4].
-   -- During calculation, the value may stray slightly outside the initial interval,
+   -- The remaining angle, in units of pi/2. After the range reduction it is a
+   -- value in [0.0, 0.5], representing an angle in [0, pi/4], and the first
+   -- iteration subtracts 0.5 from it.
+   -- During calculation, the value may stray slightly outside this interval,
    -- but it will always represent a signed value in [-1.0, 1.0[, i.e. an angle in
    -- [-pi/2, pi/2[.
    signal angle : fraction_type;
@@ -128,9 +135,13 @@ architecture synthesis of c64_sincos is
    -- x and y will eventually become the result of sine and cosine.
    -- The value of x represents an unsigned value in [0.0, 2.0[.
    -- The value of y represents a signed value in [-1.0, 1.0[.
-   signal x     : fraction_type;
-   signal y     : fraction_type;
-   signal count : natural range 0 to C_ANGLE_NUM;
+   signal x : fraction_type;
+   signal y : fraction_type;
+
+   -- The CORDIC iterations after the first are done in C_CYCLES clock cycles,
+   -- and count is the clock cycle in CALC_ST.
+   constant C_CYCLES : natural := (C_ANGLE_NUM - 1) / G_STEPS;
+   signal   count    : natural range 0 to C_CYCLES - 1;
 
    signal rotate_x : fraction_type;
    signal rotate_y : fraction_type;
@@ -217,23 +228,19 @@ architecture synthesis of c64_sincos is
 
 begin
 
-   stage1_proc : process (clk_i)
-   begin
-      if rising_edge(clk_i) then
-         -- This adds a register to the DSP output
-         stage1_arg_mant_prod <= (arg_mant or X"80000000") * C_TWO_OVER_PI;
+   assert (C_ANGLE_NUM - 1) mod G_STEPS = 0
+      report "G_STEPS must divide 32"
+      severity failure;
 
-         -- Store the sign and amount to shift
-         stage1_sign  <= arg_mant(31);
-         stage1_shift <= C_SIZE;
-         if arg_exp > X"62" and arg_exp <= X"A3" then
-            stage1_shift <= 130 - to_integer(arg_exp);
-         end if;
-      end if;
-   end process stage1_proc;
+   -- The range reduction: The multiplication by 2/pi, and the shift by the
+   -- exponent. These are combinational, and are stored in REDUCE_ST.
+   reduce_prod  <= (arg_mant or X"80000000") * C_TWO_OVER_PI;
+   reduce_sign  <= arg_mant(31);
+   reduce_shift <= 130 - to_integer(arg_exp) when arg_exp > X"62" and arg_exp <= X"A3" else
+                   C_SIZE;
 
-   stage1_angle  <= rotate(stage1_arg_mant_prod(C_SIZE + 32 downto 32), stage1_shift);
-   stage1_octant <= stage1_angle(C_SIZE - 1 downto C_SIZE - 3);
+   reduce_angle  <= rotate(reduce_prod(C_SIZE + 32 downto 32), reduce_shift);
+   reduce_octant <= reduce_angle(C_SIZE - 1 downto C_SIZE - 3);
 
    s_ready_o <= '1' when state = IDLE_ST else
                 '0';
@@ -243,29 +250,37 @@ begin
    m_cos_exp_o  <= std_logic_vector(cos_exp);
    m_cos_mant_o <= std_logic_vector(cos_mant);
 
+   -- The normalization of x and y, i.e. their exponents, and the mantissas
+   -- shifted to the left. This is combinational, and used in NORMALIZE_ST.
+   normalize_proc : process (all)
+   begin
+      exp_x    <= X"81" - count_leading_zeros(x);
+      exp_y    <= X"81" - count_leading_zeros(y);
+      rotate_x <= rotate_left(x, count_leading_zeros(x));
+      rotate_y <= rotate_left(y, count_leading_zeros(y));
+
+      -- x must never be greater than 1
+      if x(x'left) = '1' then
+         rotate_x <= (x'left => '1', others => '0');
+      end if;
+
+      -- y must never be less than 0
+      if y(y'left) = '1' then
+         rotate_y <= (others => '0');
+         exp_y    <= X"00";
+      end if;
+   end process normalize_proc;
+
    fsm_proc : process (clk_i)
+      variable x_v     : fraction_type;
+      variable y_v     : fraction_type;
+      variable tmp_v   : fraction_type;
+      variable angle_v : fraction_type;
+      variable i_v     : natural range 0 to C_ANGLE_NUM - 1;
    begin
       if rising_edge(clk_i) then
          if m_ready_i = '1' then
             m_valid_o <= '0';
-         end if;
-
-         -- The normalization of x and y. This is registered, so it is one
-         -- clock cycle behind x and y, see SHIFT_ST.
-         exp_x    <= X"81" - count_leading_zeros(x);
-         exp_y    <= X"81" - count_leading_zeros(y);
-         rotate_x <= rotate_left(x, count_leading_zeros(x));
-         rotate_y <= rotate_left(y, count_leading_zeros(y));
-
-         -- x must never be greater than 1
-         if x(x'left) = '1' then
-            rotate_x <= (x'left => '1', others => '0');
-         end if;
-
-         -- y must never be less than 0
-         if y(y'left) = '1' then
-            rotate_y <= (others => '0');
-            exp_y    <= X"00";
          end if;
 
          case state is
@@ -273,20 +288,21 @@ begin
             when IDLE_ST =>
                null;
 
-            when STAGE1_ST =>
-               -- Wait for stage 1 to complete
-               state <= STAGE2_ST;
-
-            when STAGE2_ST =>
-               if stage1_octant(0) = '1' then
-                  angle <= "0" & (not stage1_angle(C_SIZE - 3 downto 0)) & "11";
+            when REDUCE_ST =>
+               octant <= reduce_octant;
+               if reduce_octant(0) = '1' then
+                  angle_v := "0" & (not reduce_angle(C_SIZE - 3 downto 0)) & "11";
                else
-                  angle <= "0" & stage1_angle(C_SIZE - 3 downto 0) & "00";
+                  angle_v := "0" & reduce_angle(C_SIZE - 3 downto 0) & "00";
                end if;
+               -- angle_v - 0.5, where 0.5 = C_ANGLES(0) is the top fractional bit
+               angle <= (not angle_v(C_SIZE - 1)) & (not angle_v(C_SIZE - 1)) &
+                        angle_v(C_SIZE - 2 downto 0);
 
-               -- Prepare first iteration
+               -- The first iteration (count = 0) always rotates forwards,
+               -- since the angle is not negative. So it gives x = y = C_SCALE.
                x     <= C_SCALE;
-               y     <= (others => '0');
+               y     <= C_SCALE;
                count <= 0;
                state <= CALC_ST;
 
@@ -298,36 +314,45 @@ begin
                   report "y     = 0x" & to_hstring(y) & " = " & to_string(fraction2real(y), 11);
                end if;
 
-               if angle(angle'left) = '0' then
-                  x     <= x - rotate(y, count);
-                  y     <= y + rotate_unsigned(x, count);
-                  angle <= angle - C_ANGLES(count);
-               else
-                  x     <= x + rotate(y, count);
-                  y     <= y - rotate_unsigned(x, count);
-                  angle <= angle + C_ANGLES(count);
-               end if;
+               -- G_STEPS iterations. Iteration i_v shifts by i_v bits. Since
+               -- count only has C_CYCLES values, each of these shifts is a
+               -- multiplexer with only C_CYCLES inputs.
+               x_v     := x;
+               y_v     := y;
+               angle_v := angle;
+               for j in 0 to G_STEPS - 1 loop
+                  i_v := 1 + count * G_STEPS + j;
+                  if angle_v(angle_v'left) = '0' then
+                     tmp_v   := x_v - rotate(y_v, i_v);
+                     y_v     := y_v + rotate_unsigned(x_v, i_v);
+                     angle_v := angle_v - C_ANGLES(i_v);
+                  else
+                     tmp_v   := x_v + rotate(y_v, i_v);
+                     y_v     := y_v - rotate_unsigned(x_v, i_v);
+                     angle_v := angle_v + C_ANGLES(i_v);
+                  end if;
+                  x_v := tmp_v;
+               end loop;
+               x     <= x_v;
+               y     <= y_v;
+               angle <= angle_v;
 
-               if count = C_ANGLE_NUM - 1 then
-                  state <= SHIFT_ST;
+               if count = C_CYCLES - 1 then
+                  state <= NORMALIZE_ST;
                else
                   count <= count + 1;
                end if;
-
-            when SHIFT_ST =>
-               -- x and y are final, and are normalized in this clock cycle
-               state <= NORMALIZE_ST;
 
             when NORMALIZE_ST =>
                -- Wait until the output register is free
                if m_valid_o = '0' or m_ready_i = '1' then
                   if G_DEBUG then
-                     report "octant = " & to_string(stage1_octant);
+                     report "octant = " & to_string(octant);
                      report "exp_x  = " & to_string(exp_x);
                      report "exp_y  = " & to_string(exp_y);
                   end if;
 
-                  case stage1_octant is
+                  case octant is
 
                      when "000" =>
                         cos_mant     <= rotate_x(C_SIZE downto C_SIZE - 31);
@@ -335,7 +360,7 @@ begin
                         cos_exp      <= exp_x;
                         sin_exp      <= exp_y;
                         cos_mant(31) <= '0';
-                        sin_mant(31) <= stage1_sign;
+                        sin_mant(31) <= reduce_sign;
 
                      when "001" =>
                         cos_mant     <= rotate_y(C_SIZE downto C_SIZE - 31);
@@ -343,7 +368,7 @@ begin
                         cos_exp      <= exp_y;
                         sin_exp      <= exp_x;
                         cos_mant(31) <= '0';
-                        sin_mant(31) <= stage1_sign;
+                        sin_mant(31) <= reduce_sign;
 
                      when "010" =>
                         cos_mant     <= rotate_y(C_SIZE downto C_SIZE - 31);
@@ -351,7 +376,7 @@ begin
                         cos_exp      <= exp_y;
                         sin_exp      <= exp_x;
                         cos_mant(31) <= '1';
-                        sin_mant(31) <= stage1_sign;
+                        sin_mant(31) <= reduce_sign;
 
                      when "011" =>
                         cos_mant     <= rotate_x(C_SIZE downto C_SIZE - 31);
@@ -359,7 +384,7 @@ begin
                         cos_exp      <= exp_x;
                         sin_exp      <= exp_y;
                         cos_mant(31) <= '1';
-                        sin_mant(31) <= stage1_sign;
+                        sin_mant(31) <= reduce_sign;
 
                      when "100" =>
                         cos_mant     <= rotate_x(C_SIZE downto C_SIZE - 31);
@@ -367,7 +392,7 @@ begin
                         cos_exp      <= exp_x;
                         sin_exp      <= exp_y;
                         cos_mant(31) <= '1';
-                        sin_mant(31) <= not stage1_sign;
+                        sin_mant(31) <= not reduce_sign;
 
                      when "101" =>
                         cos_mant     <= rotate_y(C_SIZE downto C_SIZE - 31);
@@ -375,7 +400,7 @@ begin
                         cos_exp      <= exp_y;
                         sin_exp      <= exp_x;
                         cos_mant(31) <= '1';
-                        sin_mant(31) <= not stage1_sign;
+                        sin_mant(31) <= not reduce_sign;
 
                      when "110" =>
                         cos_mant     <= rotate_y(C_SIZE downto C_SIZE - 31);
@@ -383,7 +408,7 @@ begin
                         cos_exp      <= exp_y;
                         sin_exp      <= exp_x;
                         cos_mant(31) <= '0';
-                        sin_mant(31) <= not stage1_sign;
+                        sin_mant(31) <= not reduce_sign;
 
                      when "111" =>
                         cos_mant     <= rotate_x(C_SIZE downto C_SIZE - 31);
@@ -391,7 +416,7 @@ begin
                         cos_exp      <= exp_x;
                         sin_exp      <= exp_y;
                         cos_mant(31) <= '0';
-                        sin_mant(31) <= not stage1_sign;
+                        sin_mant(31) <= not reduce_sign;
 
                      when others =>
                         null;
@@ -416,7 +441,7 @@ begin
 
             arg_exp  <= unsigned(s_exp_i);
             arg_mant <= unsigned(s_mant_i);
-            state    <= STAGE1_ST;
+            state    <= REDUCE_ST;
          end if;
 
          if rst_i = '1' then

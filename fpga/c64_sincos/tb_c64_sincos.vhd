@@ -17,6 +17,7 @@ library ieee;
 
 entity tb_c64_sincos is
    generic (
+      G_STEPS     : positive := 4;  -- Iterations in each clock cycle, see c64_sincos.vhd
       G_VALID_PCT : natural := 70;  -- Probability (in percent) of asserting VALID
       G_READY_PCT : natural := 70   -- Probability (in percent) of asserting READY
    );
@@ -162,6 +163,7 @@ begin
 
    c64_sincos_inst : entity work.c64_sincos
       generic map (
+         G_STEPS => G_STEPS,
          G_DEBUG => C_DEBUG
       )
       port map (

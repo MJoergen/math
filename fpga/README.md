@@ -12,7 +12,7 @@ precise it is, and the trade-offs.
 | [`c64_sqrt`](c64_sqrt) | Square root of a C64 floating point number, using the non-restoring digit-by-digit method, with 4 bits in each clock cycle. | 95 ns at 94.3 MHz
 | [`c64_sqrt2`](c64_sqrt2) | Square root of a C64 floating point number, using Goldschmidt's algorithm with multipliers. | 38 to 113 ns at 79.4 MHz
 | [`pipeline_sqrt`](pipeline_sqrt) | Pipelined square root of a 22-bit fixed-point number (format 2.20, with a 22-bit result), using lookup tables and one multiplier, with one result per clock cycle. | 9 ns at 222 MHz
-| [`c64_sincos`](c64_sincos) | Sine and cosine of a C64 floating point number, using CORDIC. | 226 ns at 164 MHz
+| [`c64_sincos`](c64_sincos) | Sine and cosine of a C64 floating point number, using CORDIC, with 4 iterations in each clock cycle. | 129 ns at 77.5 MHz
 | [`tan_cordic`](tan_cordic) | Tangent of a fixed-point angle, using the CORDIC variant of the Intel 8087. | 478 ns at 109 MHz
 
 The latency is the time from when the input is accepted until the result is
@@ -27,8 +27,10 @@ timing, with the RTL unchanged. This was found by reducing the clock period in
 the `.xdc` file of each folder in steps of 0.05 to 0.5 ns, until the timing was
 no longer met. So each latency is within about 4 ns of the latency at the
 highest possible clock frequency. The `.xdc` files of `c64_sqrt`,
-`fast_divide`, and `pipeline_sqrt` have these clock frequencies. The other `.xdc` files have lower
-clock frequencies, with more slack, and the READMEs give the latency at those.
+`fast_divide`, and `pipeline_sqrt` have these clock frequencies, and that of
+`c64_sincos` a slightly lower one (75.5 MHz), with more slack. The other
+`.xdc` files have lower clock frequencies, with more slack, and the READMEs
+give the latency at those.
 At 222 MHz, Vivado implements the ROMs of `pipeline_sqrt` in LUTs instead of
 Block RAM.
 

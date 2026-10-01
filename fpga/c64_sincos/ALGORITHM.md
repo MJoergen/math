@@ -6,17 +6,19 @@ iterations, the reconstruction of the result from the octant, and what limits
 the accuracy.
 
 ## Overview
-The calculation has five steps, each with its own state:
-1. `STAGE1_ST`: Reduce the angle modulo 2pi, as a fixed-point fraction of a
+The calculation has five steps, in three states:
+1. `REDUCE_ST`: Reduce the angle modulo 2pi, as a fixed-point fraction of a
    full turn.
-2. `STAGE2_ST`: Determine the octant, and reduce the angle to [0, pi/4].
-3. `CALC_ST`: The 33 CORDIC iterations, one per clock cycle.
-4. `SHIFT_ST`: Normalize x and y, i.e. find their exponents.
+2. `REDUCE_ST`: Determine the octant, and reduce the angle to [0, pi/4]. The
+   first CORDIC iteration is done here too.
+3. `CALC_ST`: The other 32 CORDIC iterations, `G_STEPS` in each clock cycle.
+4. `NORMALIZE_ST`: Normalize x and y, i.e. find their exponents.
 5. `NORMALIZE_ST`: Construct the sine and cosine from x, y, and the octant,
    and write them to the output register.
 
 Together with the clock cycle where the input is accepted, this is a latency
-of 37 clock cycles, i.e. 237 ns at 156 MHz.
+of 32/`G_STEPS` + 2 clock cycles, i.e. 10 clock cycles (133 ns at 75.5 MHz)
+for the default `G_STEPS=4`.
 
 The fixed-point numbers (`fraction_type` in
 [`c64_sincos_pkg.vhd`](c64_sincos_pkg.vhd)) have 40 bits: one integer bit (or
@@ -30,8 +32,7 @@ the position of $x$ within a full turn, i.e. on the fractional part of
 $\frac{x}{2\pi}$. This is calculated in two steps:
 * The mantissa $m$ (with the leading one, and without the sign) is multiplied
   by the constant $\frac{2}{\pi}$ (40 bits). This is the only multiplication
-  in the design, and uses 4 DSP blocks. The product $m \cdot \frac{2}{\pi}$
-  is registered.
+  in the design, and uses 4 DSP blocks.
 * The product is shifted by the exponent. With the scaling of the registers,
   shifting by $130 - e$ bits to the right (or to the left, if this is
   negative) gives $\frac{x}{2\pi}$, and the bits shifted out at the top are
@@ -42,7 +43,10 @@ The top three fractional bits of $\frac{x}{2\pi}$ are the octant (in units of
 $\frac{\pi}{4}$), and the remaining bits are the position within the octant.
 For an odd octant the position is mirrored (all bits are inverted), so the
 angle given to CORDIC is always in $[0, \frac{\pi}{4}]$. It is then scaled so
-that 1.0 means $\frac{\pi}{2}$, i.e. it is in $[0, 0.5]$.
+that 1.0 means $\frac{\pi}{2}$, i.e. it is in $[0, 0.5]$. The
+multiplication, the shift, and the mirroring are all done in the same clock
+cycle (`REDUCE_ST`), and the octant is stored for the reconstruction of the
+result.
 
 The shift only covers exponents from `0x63` to `0xA3`, i.e.
 $2^{-30} \le |x| < 2^{35}$. Smaller angles are treated as zero, which gives
@@ -72,8 +76,24 @@ up to the remaining angle, which is at most the angle of the last rotation,
 $\arctan(2^{-32}) \approx 2^{-32}$. So each iteration adds about one bit of
 accuracy, see [Trade-offs](#trade-offs).
 
-The shifts by $i$ bits, where $i$ is the iteration count, are variable
-shifters (barrel shifters), which are the largest part of the design.
+The first iteration ($i = 0$) always rotates forwards, since the angle is
+in $[0, \frac{\pi}{4}]$, i.e. not negative. It gives $(x, y) = (K, K)$, and
+subtracts $\arctan(1) = \frac{\pi}{4}$, i.e. 0.5 in units of
+$\frac{\pi}{2}$, from the angle. Since 0.5 is a single bit, this only
+changes the top two bits of the angle, so it is done in `REDUCE_ST`, together
+with the range reduction.
+
+The other 32 iterations are done `G_STEPS` at a time, in 32/`G_STEPS` clock
+cycles of `CALC_ST`, so 32 must be divisible by `G_STEPS`. Iteration $j$ in
+the clock cycle `count` is iteration $i = 1 + \mathtt{count} \cdot
+\mathtt{G\_STEPS} + j$. The shifts by $i$ bits are variable shifters
+(barrel shifters), which are the largest part of the design. But since
+`count` only takes 32/`G_STEPS` values, each shifter only selects between
+32/`G_STEPS` shift amounts, e.g. 8 for `G_STEPS=4`. (An earlier version
+shifted by `count + j`, where `count` stepped by `G_STEPS`, and Vivado then
+built full 40-bit barrel shifters, which made each iteration about 1 ns
+slower.) The iterations are the same as with one iteration in each clock
+cycle, so the result is bit-identical for all values of `G_STEPS`.
 
 ## Reconstructing the result
 Let $u$ be the position within the octant, so that the angle is
@@ -104,9 +124,10 @@ the result is truncated, not rounded. Two corner cases are clamped: x is at
 most 1.0, and a slightly negative y (from the remaining angle, when the angle
 is close to zero) becomes zero.
 
-The normalization is registered, so it is one clock cycle behind x and y.
-This is why `SHIFT_ST` waits one clock cycle after the last iteration. (An
-earlier version of the design did not, and so lost the last iteration.)
+The normalization is combinational, and is done in `NORMALIZE_ST`, in the
+same clock cycle where the result is written to the output register. (In an
+earlier version, the normalization was registered, and so one clock cycle
+behind x and y, and an extra state waited for it.)
 
 ## Accuracy
 The largest absolute error over 121 angles in $[0, \frac{\pi}{4}]$ is
@@ -142,16 +163,51 @@ The testbench compares with the Taylor series, since the `sin` and `cos` of
 to about $2^{-28}$.
 
 ## Timing and resources
-The design meets the 156 MHz constraint (6.4 ns) with a slack of 0.228 ns.
-The worst path is the normalization of y: counting the leading zeros of the
-40-bit y, and shifting it by that amount, with 7 logic levels.
+Each CORDIC iteration is a variable shift and an addition or subtraction of
+40 bits, for each of x and y, and the direction depends on the sign of the
+remaining angle after the previous iteration. So the `G_STEPS` iterations in
+a clock cycle are in series, and each takes about 3 ns. The range reduction
+(the multiplication, the shift by the exponent, and the mirroring) takes
+about 10.5 ns, and the normalization about 7 ns, which limits the clock period
+for small `G_STEPS`.
 
-It uses 1305 LUTs, 385 flip-flops, and 4 DSP blocks. A large part of the LUTs
-are the five variable shifters of 40 bits: two in the CORDIC iteration, two in
-the normalization, and one in the range reduction.
+The latency for each value of `G_STEPS`, from `make vivado VIVADO_STEPS=n`
+with the clock period in `c64_sincos.xdc` reduced until the timing was no
+longer met. The clock period is the shortest one where the timing is met, and
+the next shorter one that was tried (in parentheses) does not meet the timing.
+The LUTs and flip-flops are the numbers that `make vivado` prints:
+
+| `G_STEPS` | Clock cycles | Clock period        | Latency | LUT  | FF  |
+| --------- | ------------ | ------------------- | ------- | ---- | --- |
+| 1         | 34           | 10.5 ns (10.25 ns)  | 357 ns  | 1252 | 236 |
+| 2         | 18           | 10.7 ns (10.4 ns)   | 193 ns  | 1479 | 238 |
+| 4         | 10           | 12.9 ns (12.6 ns)   | 129 ns  | 1741 | 246 |
+| 8         | 6            | 24.5 ns (24.0 ns)   | 147 ns  | 2268 | 237 |
+| 16        | 4            | 46 ns (44 ns)       | 184 ns  | 3175 | 244 |
+
+So the latency is lowest for `G_STEPS=4`, which is the default. With
+`G_STEPS=1`, it uses 2 Block RAMs for the table of the angles. The timing is
+sensitive to placement: For `G_STEPS=4`, a clock period of 12.9 ns is met,
+but 13.0 ns is not, and for `G_STEPS=16`, 46 ns is met, but 48 ns is not. So
+the constraint in `c64_sincos.xdc` is 13.25 ns (75.5 MHz), which is met with
+a slack of 0.456 ns, for a latency of 133 ns. The critical path then is the
+four iterations of y, with 39 logic levels.
+
+The earlier version, with one iteration in each clock cycle, and separate
+clock cycles for the multiplication, the first iteration, and the
+normalization, needed 37 clock cycles. It met a clock period of 6.1 ns, i.e. a
+latency of 226 ns, with 1305 LUTs and 385 flip-flops. Its critical path was
+the normalization. For `G_STEPS` of 1 or 2, such separate clock cycles would
+give a lower latency than in the table above.
+
+With `G_STEPS=4`, the design uses 1741 LUTs, 246 flip-flops (451 slices), and
+4 DSP blocks. A large part of the LUTs are the variable shifters of 40 bits:
+two in each CORDIC iteration, two in the normalization, and one in the range
+reduction.
 
 ## Trade-offs
-Each CORDIC iteration adds about one bit of accuracy, and 6.4 ns of latency.
+Each CORDIC iteration adds about one bit of accuracy, and about 3 ns of
+latency.
 Measured with the testbench (the largest error over the 121 angles in
 $[0, \frac{\pi}{4}]$):
 
@@ -170,6 +226,9 @@ Some alternatives, which are not implemented:
 * **Rounding:** Rounding the result instead of truncating it would reduce the
   largest error, at the cost of an adder in the normalization, which is
   already the critical path.
-* **Two bits per clock cycle:** Doing two iterations per clock cycle would
-  halve the number of clock cycles, but put two variable shifts and additions
-  in series, so the clock frequency would drop.
+* **Fewer iterations with a multiplication:** After 20 iterations, the
+  remaining angle $z$ is below $2^{-19}$, so $1 - \cos z < 2^{-39}$, and the
+  remaining rotations are, to the precision of the calculation, a single
+  rotation by $z$, i.e. $x' = x - z y$ and $y' = y + z x$ (with $K$ for the
+  first 20 iterations only). Two multiplications could then replace the last
+  13 iterations.

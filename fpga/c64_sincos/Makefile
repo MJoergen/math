@@ -18,16 +18,22 @@ help: ## Show this help message
 
 SRC = c64_sincos_pkg.vhd c64_sincos.vhd tb_c64_sincos.vhd
 
+# The values of G_STEPS to test, e.g. "make sim STEPS=4"
+STEPS ?= 1 2 4 8 16 32
+
 # The testbench calculates the sine and cosine of 121 angles from 0 to pi/4,
 # checks that the absolute error is less than 2^(-31), and prints the largest
-# absolute error of each. It runs twice: First with random stalls on the input
-# and the output, and then without any stalls. Each run prints the average
-# number of clock cycles per calculation.
+# absolute error of each. It runs once with random stalls on the input and the
+# output for each value of G_STEPS, and then without any stalls with the
+# default G_STEPS. Each run prints the average number of clock cycles per
+# calculation.
 .PHONY: sim
 sim: $(SRC) ## Run the testbench, with and without stalls (about 1 second)
 	ghdl -a --std=08 $(SRC)
 	ghdl -e --std=08 tb_c64_sincos
-	ghdl -r --std=08 tb_c64_sincos --assert-level=error
+	set -e; for steps in $(STEPS); do \
+	   ghdl -r --std=08 tb_c64_sincos -gG_STEPS=$$steps --assert-level=error; \
+	done
 	ghdl -r --std=08 tb_c64_sincos -gG_VALID_PCT=100 -gG_READY_PCT=100 --assert-level=error
 
 # The same, with random stalls, but also write a waveform (about 1 MB)
@@ -49,9 +55,11 @@ show_debug: ## Show the waveform from "make debug" in GTKWave
 
 XILINX_DIR = /opt/Xilinx/2025.1/Vivado
 
-VIVADO_SRC  = c64_sincos_pkg.vhd c64_sincos.vhd
-VIVADO_PART = xc7a200tfbg484-2
-VIVADO_DIR  = vivado
+# The generic, e.g. "make vivado VIVADO_STEPS=2"
+VIVADO_STEPS ?= 4
+VIVADO_SRC    = c64_sincos_pkg.vhd c64_sincos.vhd
+VIVADO_PART   = xc7a200tfbg484-2
+VIVADO_DIR    = vivado/c64_sincos_$(VIVADO_STEPS)
 
 # Synthesize and implement the design out of context (see vivado.tcl), and
 # write the reports timing_summary.rpt and utilization.rpt to $(VIVADO_DIR).
@@ -70,7 +78,7 @@ $(VIVADO_DIR)/post_route.dcp: vivado.tcl $(VIVADO_SRC) c64_sincos.xdc
 	mkdir -p $(VIVADO_DIR)
 	cd $(VIVADO_DIR) && bash -c "source $(XILINX_DIR)/settings64.sh ; \
 	   vivado -mode batch -nojournal -log vivado.log -source $(CURDIR)/vivado.tcl \
-	   -tclargs $(VIVADO_PART) $(CURDIR)"
+	   -tclargs $(VIVADO_STEPS) $(VIVADO_PART) $(CURDIR)"
 
 
 .PHONY: clean
