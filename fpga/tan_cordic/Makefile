@@ -93,6 +93,36 @@ $(VIVADO_DIR)/post_route.dcp: vivado.tcl tan_cordic.vhd tan_cordic.xdc
 	   -tclargs $(VIVADO_ITERATIONS) $(VIVADO_FRAC_BITS) $(VIVADO_STEPS) $(VIVADO_PART) $(CURDIR)"
 
 
+#######################
+# Formal verification
+#######################
+
+# The tasks in tan_cordic.sby. SymbiYosys writes the results of each task to a
+# directory tan_cordic_<task>.
+FORMAL_TASKS = prove prove_steps prove_default prove_default_steps bmc bmc_steps bmc_default cover cover_bmc
+
+# This runs all the tasks defined in tan_cordic.sby, using SymbiYosys (see
+# https://github.com/YosysHQ/sby). "yosys -m ghdl" loads the GHDL plugin for
+# Yosys (see https://github.com/ghdl/ghdl-yosys-plugin), which reads the VHDL
+# and PSL files.
+.PHONY: formal
+formal: tan_cordic.sby tan_cordic.psl tan_cordic_bmc.psl tan_cordic.vhd ## Run the formal verification (about 6 minutes)
+	sby --yosys "yosys -m ghdl" -f tan_cordic.sby
+
+# The traces are VCD files, which GTKWave can show. $(TASK) is one of the
+# tasks in tan_cordic.sby.
+TASK ?= prove
+
+.PHONY: show_prove
+show_prove: ## Show the counterexample from a failing "make formal" in GTKWave (TASK=prove)
+	gtkwave tan_cordic_$(TASK)/engine_0/trace.vcd
+
+.PHONY: show_induct
+show_induct: ## Show the trace from a failing induction step in GTKWave (TASK=prove)
+	gtkwave tan_cordic_$(TASK)/engine_0/trace_induct.vcd
+
+
 .PHONY: clean
 clean: ## Remove the generated files
 	rm -rf work-obj08.cf *.o tb_tan_cordic tan_cordic.ghw vivado .Xil
+	rm -rf $(addprefix tan_cordic_,$(FORMAL_TASKS)) tan_cordic

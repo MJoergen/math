@@ -85,6 +85,36 @@ $(VIVADO_DIR)/post_route.dcp: vivado.tcl $(VIVADO_SRC) pipeline_sqrt.xdc
 	   -tclargs $(VIVADO_EXTRA_BITS) $(VIVADO_PART) $(CURDIR)"
 
 
+#######################
+# Formal verification
+#######################
+
+# The tasks in pipeline_sqrt.sby. SymbiYosys writes the results of each task to a
+# directory pipeline_sqrt_<task>.
+FORMAL_TASKS = prove0 prove2 prove4 cover2
+
+# This runs all the tasks defined in pipeline_sqrt.sby, using SymbiYosys (see
+# https://github.com/YosysHQ/sby). "yosys -m ghdl" loads the GHDL plugin for
+# Yosys (see https://github.com/ghdl/ghdl-yosys-plugin), which reads the VHDL
+# and PSL files.
+.PHONY: formal
+formal: pipeline_sqrt.sby pipeline_sqrt.psl pipeline_sqrt.vhd ## Run the formal verification (about 20 seconds)
+	sby --yosys "yosys -m ghdl" -f pipeline_sqrt.sby
+
+# The traces are VCD files, which GTKWave can show. $(TASK) is one of the
+# tasks in pipeline_sqrt.sby.
+TASK ?= prove2
+
+.PHONY: show_prove
+show_prove: ## Show the counterexample from a failing "make formal" in GTKWave (TASK=prove2)
+	gtkwave pipeline_sqrt_$(TASK)/engine_0/trace.vcd
+
+.PHONY: show_induct
+show_induct: ## Show the trace from a failing induction step in GTKWave (TASK=prove2)
+	gtkwave pipeline_sqrt_$(TASK)/engine_0/trace_induct.vcd
+
+
 .PHONY: clean
 clean: ## Remove the generated files
 	rm -rf work-obj08.cf *.o tb_pipeline_sqrt pipeline_sqrt.ghw vivado .Xil
+	rm -rf $(addprefix pipeline_sqrt_,$(FORMAL_TASKS))

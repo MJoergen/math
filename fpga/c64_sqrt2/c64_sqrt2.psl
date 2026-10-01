@@ -1,0 +1,200 @@
+-- Formal verification of c64_sqrt2.vhd, written in PSL (see
+-- https://en.wikipedia.org/wiki/Property_Specification_Language). Run with
+-- "make formal", which uses SymbiYosys (see https://github.com/YosysHQ/sby).
+--
+-- The checker below models the square root at its ports, and verifies:
+-- * No result is lost or duplicated.
+-- * The result stays valid and unchanged until it is taken.
+-- * The exponent and the sign of every result are correct, and m_error_o is
+--   set exactly for a negative input.
+-- * A zero or negative input gives zero, and if the consumer is ready, the
+--   result is valid in the next clock cycle.
+--
+-- The mantissa of the root, and the number of iterations, depend on the
+-- products of the two multipliers, which SMT solvers are very slow at. So
+-- they are not verified here, but by the simulation.
+--
+-- The properties are proven with k-induction (see c64_sqrt2.sby): If they
+-- hold in a few consecutive clock cycles, then they also hold in the next
+-- one. This needs the assertions marked "for induction", which relate the
+-- internal state of the design to the checker.
+
+vunit c64_sqrt2_inst (c64_sqrt2(synthesis))
+{
+   -- set all declarations to run on clk_i
+   default clock is rising_edge(clk_i);
+
+   -----------------------------
+   -- AUXILIARY SIGNALS
+   -----------------------------
+
+   -- The exponent of the root: Half the exponent of the input, rounded up,
+   -- with the offset 128, see ALGORITHM.md of c64_sqrt
+   pure function root_exp (exp_v : std_logic_vector(7 downto 0)) return natural is
+   begin
+      return (to_integer(unsigned(exp_v)) + 1) / 2 + 64;
+   end function root_exp;
+
+   -- Set after the first clock cycle, when the signals below are valid
+   signal f_started : std_logic := '0';
+
+   -- The conditions of f_count, see below. (Writing them directly in the
+   -- assertions makes GHDL 4.1 fail.)
+   signal f_count_ok : boolean;
+
+   -- The handshakes on the input and the output
+   signal f_push : std_logic;
+   signal f_pop  : std_logic;
+
+   -- The result is written to the output register
+   signal f_write : std_logic;
+
+   -- The number of inputs accepted, whose result has not been taken yet
+   signal f_cnt : natural range 0 to 2;
+
+   -- The input of the calculation, and whether the result is zero (a zero
+   -- or negative input)
+   signal f_exp  : std_logic_vector(7 downto 0);
+   signal f_mant : std_logic_vector(31 downto 0);
+   signal f_zero : std_logic;
+
+   -- The input of the result in the output register
+   signal f_out_exp  : std_logic_vector(7 downto 0);
+   signal f_out_mant : std_logic_vector(31 downto 0);
+
+   f_push <= s_valid_i and s_ready_o;
+   f_pop  <= m_valid_o and m_ready_i;
+
+   f_zero <= '1' when f_mant(31) = '1' or f_exp = X"00" else
+             '0';
+
+   -- See CALC_XH_ST and DONE_ST in c64_sqrt2.vhd. f_count below verifies
+   -- that this happens once for each input, and only when the output
+   -- register is free.
+   f_write <= '1' when (m_valid_o = '0' or m_ready_i = '1') and
+                       ((state = CALC_XH_ST and r(31 + C_GUARDS downto (32 + C_GUARDS) / 2) = 0) or
+                        state = DONE_ST) else
+              '0';
+
+   f_track_proc : process (clk_i)
+      variable cnt_v : natural range 0 to 2;
+   begin
+      if rising_edge(clk_i) then
+         if f_write = '1' then
+            f_out_exp  <= f_exp;
+            f_out_mant <= f_mant;
+         end if;
+
+         -- f_no_overflow below verifies that no input is accepted while the
+         -- design already holds two
+         cnt_v := f_cnt;
+         if f_pop = '1' and cnt_v > 0 then
+            cnt_v := cnt_v - 1;
+         end if;
+         if f_push = '1' and cnt_v < 2 then
+            cnt_v := cnt_v + 1;
+         end if;
+         f_cnt <= cnt_v;
+
+         if f_push = '1' then
+            f_exp  <= s_exp_i;
+            f_mant <= s_mant_i;
+         end if;
+
+         if rst_i = '1' then
+            f_cnt <= 0;
+         end if;
+
+         f_started <= '1';
+      end if;
+   end process f_track_proc;
+
+
+   -----------------------------
+   -- ASSERTIONS ABOUT OUTPUTS
+   -----------------------------
+
+   -- No result is output without an input. A negative or zero input gives
+   -- zero. Otherwise the exponent is correct, and the root is positive.
+   f_out : assert always f_started = '1' and m_valid_o = '1' ->
+      f_cnt >= 1 and m_error_o = f_out_mant(31) and
+      (((f_out_mant(31) = '1' or f_out_exp = X"00") and m_exp_o = X"00" and m_mant_o = X"00000000") or
+       (f_out_mant(31) = '0' and f_out_exp /= X"00" and unsigned(m_exp_o) = root_exp(f_out_exp) and
+        m_mant_o(31) = '0'));
+
+   -- The result stays valid and unchanged until it is taken
+   f_hold : assert always {f_started = '1' and m_valid_o = '1' and m_ready_i = '0' and rst_i = '0'} |=>
+      {m_valid_o = '1' and m_exp_o = prev(m_exp_o) and m_mant_o = prev(m_mant_o) and
+       m_error_o = prev(m_error_o)};
+
+   -- No input is accepted while the design already holds two
+   f_no_overflow : assert always f_started = '1' -> not (f_push = '1' and f_pop = '0' and f_cnt = 2);
+
+   -- A reset clears m_valid_o
+   f_rst : assert always {rst_i = '1'} |=> {m_valid_o = '0'};
+
+   -- Latency of a zero result: If the consumer is ready, the result is
+   -- valid in the clock cycle after the input was accepted
+   f_latency : assert always {f_started = '1' and f_push = '1' and rst_i = '0' and
+                              (s_mant_i(31) = '1' or s_exp_i = X"00"); m_ready_i = '1' and rst_i = '0'} |=>
+      {m_valid_o = '1'};
+
+
+   -----------------------------
+   -- ASSERTIONS FOR INDUCTION
+   -----------------------------
+
+   -- None of the inputs is lost or duplicated: The output register holds the
+   -- result of one input (if valid), and the calculation works on one (if
+   -- not idle)
+   f_count_ok <= (f_cnt = 0 and state = IDLE_ST and m_valid_o = '0') or
+                 (f_cnt = 1 and state = IDLE_ST and m_valid_o = '1') or
+                 (f_cnt = 1 and state /= IDLE_ST and m_valid_o = '0') or
+                 (f_cnt = 2 and state /= IDLE_ST and m_valid_o = '1');
+   f_count : assert always f_started = '1' -> f_count_ok;
+
+   -- The calculation: The exponent and the sign are calculated when the
+   -- input is accepted, and only a zero result goes to DONE_ST
+   f_calc : assert always f_started = '1' and state /= IDLE_ST ->
+      neg = f_mant(31) and (state = DONE_ST) = (f_zero = '1') and
+      (f_zero = '1' or exp = root_exp(f_exp));
+
+   -- state holds one of its five values. It is stored in three bits, so
+   -- induction could otherwise start from the other values.
+   f_state : assert always state = IDLE_ST or state = INIT_ST or state = CALC_R_ST or
+                           state = CALC_XH_ST or state = DONE_ST;
+
+
+   -----------------------------
+   -- ASSUMPTIONS ABOUT INPUTS
+   -----------------------------
+
+   -- Require a reset at startup
+   f_reset : assume {rst_i = '1'};
+
+   -- For induction: The signals above are only invalid in the first clock
+   -- cycle, where f_reset requires a reset anyway
+   f_start_first : assume always f_started = '0' -> rst_i = '1';
+
+
+   --------------------------------------------
+   -- COVER STATEMENTS TO VERIFY REACHABILITY
+   --------------------------------------------
+
+   -- A root is taken, so f_out is not vacuous
+   f_cover_done : cover {f_started = '1' and f_pop = '1' and f_out_mant(31) = '0' and f_out_exp /= X"00"};
+
+   -- A negative input
+   f_cover_error : cover {f_started = '1' and f_pop = '1' and m_error_o = '1'};
+
+   -- The result waits to be taken, so f_hold is not vacuous
+   f_cover_wait : cover {f_started = '1' and m_valid_o = '1' and m_ready_i = '0'; m_valid_o = '1' and m_ready_i = '1'};
+
+   -- The calculation waits, because the output register is still occupied
+   f_cover_full : cover {f_started = '1' and state = CALC_XH_ST and r(31 + C_GUARDS downto (32 + C_GUARDS) / 2) = 0 and
+                         m_valid_o = '1' and m_ready_i = '0'};
+
+   -- A reset during a calculation
+   f_cover_reset : cover {f_started = '1' and state = CALC_R_ST and rst_i = '1'};
+
+} -- vunit c64_sqrt2_inst (c64_sqrt2(synthesis))

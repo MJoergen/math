@@ -63,7 +63,8 @@ precision limit comes from, and the timing.
 | [`fast_divide.gtkw`](fast_divide.gtkw) | GTKWave setup for viewing the waveform from `make debug`.
 | [`fast_divide.xdc`](fast_divide.xdc), [`vivado.tcl`](vivado.tcl) | Timing constraint (74.1 MHz) and script for synthesis with Vivado, see `make vivado`.
 | [`fast_divide.xpr`](fast_divide.xpr) | Vivado project, for use in the Vivado GUI. It has the same settings as `make vivado`.
-| [`Makefile`](Makefile) | Runs the simulation and the synthesis, see [Running](#running).
+| [`fast_divide.psl`](fast_divide.psl), [`fast_divide.sby`](fast_divide.sby) | Formal verification, see [Formal verification](#formal-verification).
+| [`Makefile`](Makefile) | Runs the simulation, the formal verification, and the synthesis, see [Running](#running).
 
 ## Interface
 Both the input and the output use an
@@ -105,7 +106,28 @@ Type `make` to list the supported targets:
   slack of the worst path, and the reports are written to `vivado/`. It takes
   about 2 minutes, and expects Vivado in `/opt/Xilinx/2025.1/Vivado` (the variable
   `XILINX_DIR`).
+* `make formal` runs the formal verification (see [below](#formal-verification)).
+  This requires [SymbiYosys](https://github.com/YosysHQ/sby), the
+  [GHDL plugin](https://github.com/ghdl/ghdl-yosys-plugin) for Yosys, and the
+  [Boolector](https://github.com/Boolector/boolector) solver. It takes a few
+  seconds. If it fails, use `make show_prove` or `make show_induct` to view the
+  counterexample in GTKWave.
 * `make clean` removes the generated files.
+
+## Formal verification
+The formal verification (`fast_divide.psl`, `fast_divide.sby`) proves with
+k-induction, for every sequence of inputs and stalls, including resets:
+* No quotient is lost or duplicated, and the quotient stays valid and unchanged
+  until it is taken.
+* A division by zero gives a quotient of all ones.
+* If the consumer is ready, the quotient is valid at most 7 clock cycles after the
+  inputs were accepted (1 clock cycle for a division by zero).
+* The iterations start from normalized operands: the numerator and the divisor are
+  shifted left by the same number of bits, so that the most significant bit of the
+  divisor is set.
+
+The quotient itself depends on the products of the multipliers, which SMT solvers
+are very slow at, so it is verified only by the simulation.
 
 ## Simulation
 The testbench first divides by zero twice, and then divides all pairs of

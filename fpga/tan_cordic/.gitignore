@@ -9,3 +9,16 @@ tb_tan_cordic
 # Vivado (make vivado)
 vivado/
 .Xil/
+
+# Formal verification (make formal)
+tan_cordic_prove/
+tan_cordic_prove_steps/
+tan_cordic_prove_default/
+tan_cordic_prove_default_steps/
+tan_cordic_bmc/
+tan_cordic_bmc_steps/
+tan_cordic_bmc_default/
+tan_cordic_cover/
+tan_cordic_cover_bmc/
+# The status database of SymbiYosys, when it runs several tasks
+/tan_cordic/

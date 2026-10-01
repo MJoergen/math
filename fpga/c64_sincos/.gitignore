@@ -17,3 +17,10 @@ c64_sincos.ip_user_files/
 c64_sincos.runs/
 c64_sincos.sim/
 .Xil/
+
+# Formal verification (make formal)
+c64_sincos_prove1/
+c64_sincos_prove4/
+c64_sincos_cover4/
+# The status database of SymbiYosys, when it runs several tasks
+/c64_sincos/

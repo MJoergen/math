@@ -53,7 +53,8 @@ always correctly rounded, and the timing and resource usage for each value of
 | [`c64_sqrt.gtkw`](c64_sqrt.gtkw) | GTKWave setup for viewing the waveform from `make debug`.
 | [`c64_sqrt.xdc`](c64_sqrt.xdc), [`vivado.tcl`](vivado.tcl) | Timing constraint (94.3 MHz) and script for synthesis with Vivado, see `make vivado`.
 | [`c64_sqrt.xpr`](c64_sqrt.xpr) | Vivado project, for use in the Vivado GUI. It has the same settings as `make vivado`.
-| [`Makefile`](Makefile) | Runs the simulation and the synthesis, see [Running](#running).
+| [`c64_sqrt.psl`](c64_sqrt.psl), [`c64_sqrt.sby`](c64_sqrt.sby) | Formal verification, see [Formal verification](#formal-verification).
+| [`Makefile`](Makefile) | Runs the simulation, the formal verification, and the synthesis, see [Running](#running).
 
 ## Interface
 The generic `G_STEPS` is the number of iterations in each clock cycle (default
@@ -106,7 +107,44 @@ Type `make` to list the supported targets:
   needs another clock constraint, see [Timing](ALGORITHM.md#timing)). It takes
   about 2 minutes, and expects Vivado in `/opt/Xilinx/2025.1/Vivado` (the
   variable `XILINX_DIR`).
+* `make formal` runs the formal verification (see [below](#formal-verification)).
+  This requires [SymbiYosys](https://github.com/YosysHQ/sby), the
+  [GHDL plugin](https://github.com/ghdl/ghdl-yosys-plugin) for Yosys, and the
+  [Boolector](https://github.com/Boolector/boolector) solver. It takes about
+  10 minutes, for `G_STEPS=1`. `make formal TASKS=prove2` and
+  `make formal TASKS=prove4` run the proofs for `G_STEPS=2` (about 30 minutes)
+  and `G_STEPS=4` (almost 2 hours). If it fails, use `make show_prove TASK=prove1` or
+  `make show_induct TASK=prove1` to view the counterexample in GTKWave, where the
+  task is one of those in `c64_sqrt.sby`.
 * `make clean` removes the generated files.
+
+## Formal verification
+The formal verification (`c64_sqrt.psl`, `c64_sqrt.sby`) proves with
+k-induction, for every input, and every sequence of inputs and stalls, including
+resets, for `G_STEPS` = 1, 2, and 4 (each iteration has the same logic, but with
+more iterations in each clock cycle the proof takes longer):
+* Every result is correct: the root is correctly rounded to nearest, the exponent
+  is right, and a zero or negative input gives zero (and sets `m_error_o` if it is
+  negative).
+* No result is lost or duplicated, and the result stays valid and unchanged until
+  it is taken.
+* If the consumer is ready, the result is valid 32/`G_STEPS` + 1 clock cycles after
+  the input was accepted (1 clock cycle for a zero or negative input), and if the
+  consumer is always ready, a new input is accepted every 32/`G_STEPS` + 1 clock
+  cycles.
+
+The checker in `c64_sqrt.psl` compares the calculation with a reference model:
+the restoring digit-by-digit method (see
+[The digit-by-digit method](ALGORITHM.md#the-digit-by-digit-method)), which keeps
+the root $r$ and its square. The square is updated as
+$(r + b)^2 = r^2 + 2rb + b^2$, where $b$ is a power of two, so the solver never
+multiplies (which SMT solvers are very slow at). In every clock cycle, the checker
+verifies that `mant` is the root of the reference model, and that `val` is the
+non-restoring remainder of
+[The non-restoring form](ALGORITHM.md#the-non-restoring-form). The root of the
+reference model is the root of $x$ truncated to the bits found so far, since each
+bit is set if and only if the square stays at most $x$. See the comments in
+`c64_sqrt.psl`.
 
 ## Simulation
 The testbench calculates the square root of 0, 1, 2, 3, 4, 0.5, and -1 (which

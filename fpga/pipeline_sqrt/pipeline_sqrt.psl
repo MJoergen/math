@@ -1,0 +1,205 @@
+-- Formal verification of pipeline_sqrt.vhd, written in PSL (see
+-- https://en.wikipedia.org/wiki/Property_Specification_Language). Run with
+-- "make formal", which uses SymbiYosys (see https://github.com/YosysHQ/sby).
+--
+-- The checker below models the pipeline at its ports: a queue of the inputs
+-- that have been accepted, but whose result has not been taken yet. The
+-- pipeline holds at most three: one in the skid buffer, one in stage 1, and
+-- one in the output register. The properties are:
+-- * The results come out in order: none is lost, and none is duplicated,
+--   and each result is the one calculated from its input.
+-- * The result stays valid and unchanged until it is taken.
+-- * If the pipeline is not stalled, the result is valid two clock cycles
+--   after the input was accepted.
+-- * If the consumer is ready, an input is accepted in the next clock cycle,
+--   i.e. one input in every clock cycle.
+--
+-- The checker does not calculate the expected result from the input
+-- itself, since this would make the solver prove that two multipliers with
+-- the same inputs give the same product, which SMT solvers are very slow at.
+-- Instead, it verifies that stage 1 holds the table lookups and the low bits
+-- of the right input (f_stage1), and that the output register is loaded
+-- with the result that stage 1 calculates from them (f_load). So this
+-- verifies how the data moves through the pipeline, not the accuracy of the
+-- square root. The testbench verifies the accuracy for all the inputs.
+--
+-- The properties are proven with k-induction (see pipeline_sqrt.sby): If
+-- they hold in a few consecutive clock cycles, then they also hold in the
+-- next one. This needs the assertions marked "for induction", which relate
+-- the registers of the pipeline to the queue.
+
+vunit pipeline_sqrt_inst (pipeline_sqrt(synthesis))
+{
+   -- set all declarations to run on clk_i
+   default clock is rising_edge(clk_i);
+
+   -----------------------------
+   -- AUXILIARY SIGNALS
+   -----------------------------
+
+   subtype data_type is std_logic_vector(21 downto 0);
+   type    queue_type is array (0 to 2) of data_type;
+
+   -- The address of the lookup tables
+   pure function addr (data : data_type) return natural is
+   begin
+      return to_integer(unsigned(data(21 downto 11)));
+   end function addr;
+
+   -- Set after the first clock cycle, when the signals below are valid
+   signal f_started : std_logic := '0';
+
+   -- The handshakes on the input and the output
+   signal f_push : std_logic;
+   signal f_pop  : std_logic;
+
+   -- The queue of the inputs whose result has not been taken yet. f_q(0) is
+   -- the oldest. The number of inputs is f_cnt.
+   signal f_cnt : natural range 0 to 3;
+   signal f_q   : queue_type;
+
+   -- The positions in the queue of the inputs in stage 1 and in the skid
+   -- buffer: The output register holds the oldest (if valid), stage 1 the
+   -- next (if valid), and the skid buffer the newest (if valid).
+   signal f_pos1    : natural range 0 to 2;
+   signal f_pos_skd : natural range 0 to 2;
+
+   f_push <= s_valid_i and s_ready_o;
+   f_pop  <= m_valid_o and m_ready_i;
+
+   f_pos1    <= 1 when m_valid_o = '1' else
+                0;
+   f_pos_skd <= f_pos1 + 1 when stage1_valid = '1' else
+                f_pos1;
+
+   f_track_proc : process (clk_i)
+      variable cnt_v : natural range 0 to 3;
+      variable q_v   : queue_type;
+   begin
+      if rising_edge(clk_i) then
+         cnt_v := f_cnt;
+         q_v   := f_q;
+
+         if f_pop = '1' and cnt_v > 0 then
+            q_v(0 to 1) := q_v(1 to 2);
+            cnt_v       := cnt_v - 1;
+         end if;
+
+         -- f_no_overflow below verifies that the queue is not full here
+         if f_push = '1' and cnt_v < 3 then
+            q_v(cnt_v) := s_data_i;
+            cnt_v      := cnt_v + 1;
+         end if;
+
+         f_cnt <= cnt_v;
+         f_q   <= q_v;
+
+         if rst_i = '1' then
+            f_cnt <= 0;
+         end if;
+
+         f_started <= '1';
+      end if;
+   end process f_track_proc;
+
+
+   -----------------------------
+   -- ASSERTIONS ABOUT OUTPUTS
+   -----------------------------
+
+   -- No result is output without an input
+   f_out : assert always f_started = '1' and m_valid_o = '1' -> f_cnt >= 1;
+
+   -- When stage 1 advances, the output register is loaded with its result.
+   -- Since stage 1 holds the next input in the queue (see f_stage1), each
+   -- result is the result of the oldest input in the queue.
+   f_load : assert always {f_started = '1' and ce = '1' and stage1_valid = '1' and rst_i = '0'} |=>
+      {m_valid_o = '1' and m_data_o = prev(stage1_sqrt_high & std_logic_vector(stage1_abc(39 - G_EXTRA_BITS downto 18)))};
+
+   -- No input is accepted while the pipeline is full
+   f_no_overflow : assert always f_started = '1' -> not (f_push = '1' and f_pop = '0' and f_cnt = 3);
+
+   -- The result stays valid and unchanged until it is taken
+   f_hold : assert always {f_started = '1' and m_valid_o = '1' and m_ready_i = '0' and rst_i = '0'} |=>
+      {m_valid_o = '1' and m_data_o = prev(m_data_o)};
+
+   -- A reset clears m_valid_o, and empties the pipeline
+   f_rst : assert always {rst_i = '1'} |=> {m_valid_o = '0' and stage1_valid = '0' and s_ready_o = '1'};
+
+   -- Latency: If the pipeline is not stalled, the result is valid two clock
+   -- cycles after the input was accepted
+   f_latency : assert always {f_started = '1' and f_push = '1' and skid_valid = '0' and ce = '1' and rst_i = '0';
+                              ce = '1' and rst_i = '0'} |=> {m_valid_o = '1'};
+
+   -- Throughput: If the consumer is ready, an input is accepted in the next
+   -- clock cycle
+   f_throughput : assert always {m_ready_i = '1'} |=> {s_ready_o = '1'};
+
+
+   -----------------------------
+   -- ASSERTIONS FOR INDUCTION
+   -----------------------------
+
+   -- None of the inputs is lost or duplicated: The queue holds one input for
+   -- each valid register of the pipeline
+   f_count : assert always f_started = '1' ->
+      f_cnt = to_integer(unsigned'(0 => m_valid_o)) + to_integer(unsigned'(0 => stage1_valid)) +
+              to_integer(unsigned'(0 => skid_valid));
+
+   -- Stage 1 holds the table lookups and the low bits of its input
+   f_stage1 : assert always f_started = '1' and stage1_valid = '1' ->
+      stage1_data_lsb = f_q(f_pos1)(10 downto 0) and
+      stage1_sqrt_low = C_SQRT_ROM_LOW(addr(f_q(f_pos1))) and
+      stage1_inv_sqrt = C_INV_SQRT_ROM(addr(f_q(f_pos1))) and
+      stage1_sqrt_high = C_SQRT_ROM_HIGH(addr(f_q(f_pos1)))(C_BRAM_DATA_BITS - 1 downto C_BRAM_DATA_BITS - G_EXTRA_BITS);
+
+   -- The skid buffer holds its input, which is in range, see f_input
+   f_skid : assert always f_started = '1' and skid_valid = '1' ->
+      skid_data = f_q(f_pos_skd) and skid_data(21 downto 20) /= "00";
+
+   -- The skid buffer is only used while the pipeline is stalled, i.e. while
+   -- the output register is full
+   f_skid_full : assert always f_started = '1' and skid_valid = '1' -> m_valid_o = '1';
+
+
+   -----------------------------
+   -- ASSUMPTIONS ABOUT INPUTS
+   -----------------------------
+
+   -- Require a reset at startup
+   f_reset : assume {rst_i = '1'};
+
+   -- The skid buffer is empty at startup. Otherwise it may hold anything
+   -- before the first reset, and the assertion in stage1_proc (that the
+   -- integer part of the input is nonzero) could fail in the clock cycle of
+   -- the reset. This is not a problem in practice, since the reset empties
+   -- the pipeline.
+   f_reset_skid : assume {skid_valid = '0'};
+
+   -- For induction: The signals above are only invalid in the first clock
+   -- cycle, where f_reset requires a reset anyway
+   f_start_first : assume always f_started = '0' -> rst_i = '1';
+
+   -- The input must be in the range [1, 4[, i.e. the integer part must be
+   -- nonzero. This is also asserted in pipeline_sqrt.vhd.
+   f_input : assume always s_valid_i = '1' -> s_data_i(21 downto 20) /= "00";
+
+
+   --------------------------------------------
+   -- COVER STATEMENTS TO VERIFY REACHABILITY
+   --------------------------------------------
+
+   -- The pipeline is full, so the skid buffer is used
+   f_cover_full : cover {f_started = '1' and f_cnt = 3};
+
+   -- The skid buffer is emptied, and a result is taken at the same time
+   f_cover_skid : cover {f_started = '1' and skid_valid = '1' and m_ready_i = '1'; f_pop = '1'};
+
+   -- One result in every clock cycle
+   f_cover_stream : cover {f_started = '1' and f_pop = '1' and f_push = '1'; f_pop = '1' and f_push = '1';
+                           f_pop = '1' and f_push = '1'};
+
+   -- A reset while the pipeline is full
+   f_cover_reset : cover {f_started = '1' and f_cnt = 3 and rst_i = '1'};
+
+} -- vunit pipeline_sqrt_inst (pipeline_sqrt(synthesis))

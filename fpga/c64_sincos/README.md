@@ -72,7 +72,8 @@ angles), and the number of iterations versus the accuracy.
 | [`c64_sincos.xdc`](c64_sincos.xdc), [`vivado.tcl`](vivado.tcl) | Timing constraint (75.5 MHz) and script for synthesis with Vivado, see `make vivado`.
 | [`c64_sincos.xpr`](c64_sincos.xpr) | Vivado project, for use in the Vivado GUI. It has the same settings as `make vivado`.
 | [`cordic.xlsx`](cordic.xlsx) | Spreadsheet that goes through the CORDIC iterations step by step.
-| [`Makefile`](Makefile) | Runs the simulation and the synthesis, see [Running](#running).
+| [`c64_sincos.psl`](c64_sincos.psl), [`c64_sincos.sby`](c64_sincos.sby) | Formal verification, see [Formal verification](#formal-verification).
+| [`Makefile`](Makefile) | Runs the simulation, the formal verification, and the synthesis, see [Running](#running).
 
 ## Interface
 The generic `G_STEPS` is the number of CORDIC iterations in each clock cycle
@@ -127,7 +128,36 @@ Type `make` to list the supported targets:
   [Timing and resources](ALGORITHM.md#timing-and-resources)). It takes about
   2.5 minutes, and expects Vivado in `/opt/Xilinx/2025.1/Vivado` (the variable
   `XILINX_DIR`).
+* `make formal` runs the formal verification (see [below](#formal-verification)).
+  This requires [SymbiYosys](https://github.com/YosysHQ/sby), the
+  [GHDL plugin](https://github.com/ghdl/ghdl-yosys-plugin) for Yosys, and the
+  [Boolector](https://github.com/Boolector/boolector) solver. It takes about 40
+  seconds. If it fails, use `make show_prove TASK=prove4` or
+  `make show_induct TASK=prove4` to view the counterexample in GTKWave, where the
+  task is one of those in `c64_sincos.sby`.
 * `make clean` removes the generated files.
+
+## Formal verification
+The formal verification (`c64_sincos.psl`, `c64_sincos.sby`) proves with
+k-induction, for every sequence of inputs and stalls, including resets, for
+`G_STEPS=1` and `G_STEPS=4`:
+* No result is lost or duplicated, and the result stays valid and unchanged until
+  it is taken.
+* If the consumer is ready, the result is valid 32/`G_STEPS` + 2 clock cycles after
+  the input was accepted, and if the consumer is always ready, a new input is
+  accepted every 32/`G_STEPS` + 3 clock cycles.
+* The sine and the cosine are at most 1 in absolute value.
+* The residual angle of the CORDIC iterations stays within a bound that is about
+  halved in every iteration, so it never overflows, and after the last iteration it
+  is at most $2.3 \cdot 10^{-10}$ (about $2^{-32}$) radians. The bound is
+  calculated from the rounded special angles: since these are rounded, the special
+  angle $\arctan(2^{1-i})$ is sometimes slightly more than twice
+  $\arctan(2^{-i})$ (for $i$ = 15, 18, 25, and 32), so the bound is then slightly
+  larger than the previous special angle.
+
+The values of the sine and the cosine depend on the rotations of the vector
+$(x, y)$, which induction cannot easily capture, so they are verified by the
+simulation.
 
 ## Simulation
 The testbench calculates the sine and cosine of 121 angles from 0 to pi/4, and

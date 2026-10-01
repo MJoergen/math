@@ -1,0 +1,123 @@
+-- Formal verification of tan_cordic.vhd with bounded model checking (BMC),
+-- written in PSL (see
+-- https://en.wikipedia.org/wiki/Property_Specification_Language). Run with
+-- "make formal", which uses SymbiYosys (see https://github.com/YosysHQ/sby).
+--
+-- tan_cordic.psl proves that the non-restoring division is exact, provided
+-- that 0 <= y <= x < 8 when the divider is loaded. This file verifies that
+-- this holds for every angle in [0, pi/4), that the Padé approximation
+-- never saturates (the resize functions of fixed_pkg saturate by default,
+-- which would silently give a wrong result), and that the CORDIC rotations
+-- never overflow (they wrap). These depend on the values of sin and cos, which induction
+-- cannot easily capture. Instead, BMC checks every clock cycle from the
+-- reset up to the depth in tan_cordic.sby, which covers one complete
+-- calculation (C_LATENCY clock cycles) for any input angle. The
+-- calculation does not depend on any previous calculation, since every
+-- register it uses is loaded before it is used.
+
+vunit tan_cordic_bmc (tan_cordic(synthesis))
+{
+   -- set all declarations to run on clk_i
+   default clock is rising_edge(clk_i);
+
+   -----------------------------
+   -- AUXILIARY SIGNALS
+   -----------------------------
+
+   -- The largest input angle, pi/4 rounded down to G_FRAC_BITS fractional
+   -- bits. Since pi/4 is irrational, an angle is less than pi/4 if and only
+   -- if it is at most this.
+   constant C_MAX_ANGLE : std_logic_vector(G_FRAC_BITS - 1 downto 0) :=
+      to_slv(to_ufixed(MATH_PI / 4.0, -1, -G_FRAC_BITS, fixed_saturate, fixed_truncate));
+
+   -- x and y, as integers scaled by 2^C_FRAC
+   signal f_x : signed(C_FRAC + 3 downto 0);
+   signal f_y : signed(C_FRAC + 3 downto 0);
+
+   -- Whether the new values of x and y in PADE_ST, and in each of the
+   -- iterations in ROTATE_ST, fit in vec_type, i.e. are in [-8, 8). They are
+   -- calculated with two extra integer bits, so they cannot overflow.
+   signal f_fit : boolean;
+
+   -- The dividend and the divisor in the first clock cycle of the division,
+   -- as integers scaled by 2^C_FRAC
+   signal f_dy : signed(C_FRAC + 4 downto 0);
+   signal f_dx : signed(C_FRAC + 4 downto 0);
+
+   f_x <= signed(to_slv(x));
+   f_y <= signed(to_slv(y));
+
+   f_dy <= signed(to_slv(rem_reg));
+   f_dx <= signed(to_slv(div));
+
+   f_fit_proc : process (all)
+      constant C_MIN : signed(C_FRAC + 5 downto 0) := -shift_left(to_signed(1, C_FRAC + 6), C_FRAC + 3);
+      constant C_MAX : signed(C_FRAC + 5 downto 0) := shift_left(to_signed(1, C_FRAC + 6), C_FRAC + 3);
+      variable x_v   : signed(C_FRAC + 5 downto 0);
+      variable y_v   : signed(C_FRAC + 5 downto 0);
+      variable tmp_v : signed(C_FRAC + 5 downto 0);
+      variable i_v   : natural range 0 to C_ITER_CYCLES * G_STEPS - 1;
+      variable fit_v : boolean;
+   begin
+      fit_v := true;
+      if state = ROTATE_ST then
+         -- The same iterations as ROTATE_ST, without wrapping. As long as the
+         -- values fit, they are the same as those of ROTATE_ST.
+         x_v := resize(f_x, C_FRAC + 6);
+         y_v := resize(f_y, C_FRAC + 6);
+         for j in 0 to G_STEPS - 1 loop
+            if count * G_STEPS + j < G_ITERATIONS then
+               i_v := G_ITERATIONS - 1 - (count * G_STEPS + j);
+               if bits(i_v) = '1' then
+                  tmp_v := x_v - shift_right(y_v, i_v);
+                  y_v   := y_v + shift_right(x_v, i_v);
+                  x_v   := tmp_v;
+                  fit_v := fit_v and x_v >= C_MIN and x_v < C_MAX and y_v >= C_MIN and y_v < C_MAX;
+               end if;
+            end if;
+         end loop;
+      elsif state = PADE_ST then
+         -- x = 3 - z*z and y = 3*z
+         x_v   := shift_left(to_signed(3, C_FRAC + 6), C_FRAC) - resize(signed(to_slv(zz_reg)), C_FRAC + 6);
+         y_v   := shift_left(resize(signed(to_slv(z_reg)), C_FRAC + 6), 1) + resize(signed(to_slv(z_reg)), C_FRAC + 6);
+         fit_v := x_v >= C_MIN and x_v < C_MAX and y_v >= C_MIN and y_v < C_MAX;
+      end if;
+      f_fit <= fit_v;
+   end process f_fit_proc;
+
+
+   -----------------------------
+   -- ASSERTIONS
+   -----------------------------
+
+   -- The Padé approximation never saturates, and the rotations never
+   -- overflow
+   f_no_overflow : assert always f_fit;
+
+   -- The divider is loaded with 0 <= y <= x < 8, and x > 0, so the division
+   -- is exact, see tan_cordic.psl
+   f_divide : assert always state = DIVIDE_ST and div_count = 0 -> f_dy >= 0 and f_dy <= f_dx and f_dx > 0;
+
+
+   -----------------------------
+   -- ASSUMPTIONS ABOUT INPUTS
+   -----------------------------
+
+   -- Require a reset at startup
+   f_reset : assume {rst_i = '1'};
+
+   -- The input angle is in [0, pi/4)
+   f_angle : assume always s_valid_i = '1' -> unsigned(s_angle_i) <= unsigned(C_MAX_ANGLE);
+
+
+   --------------------------------------------
+   -- COVER STATEMENTS TO VERIFY REACHABILITY
+   --------------------------------------------
+
+   -- The divider is loaded, so f_divide is not vacuous
+   f_cover_load : cover {state = DIVIDE_ST and div_count = 0};
+
+   -- The largest angle, where y is closest to x
+   f_cover_max : cover {rst_i = '0' and s_valid_i = '1' and s_ready_o = '1' and s_angle_i = C_MAX_ANGLE};
+
+} -- vunit tan_cordic_bmc (tan_cordic(synthesis))

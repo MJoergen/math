@@ -1,0 +1,64 @@
+# Formal verification of c64_sqrt.vhd, see c64_sqrt.psl. This file is run by
+# SymbiYosys (see https://github.com/YosysHQ/sby), and its format is
+# described in
+# https://yosyshq.readthedocs.io/projects/sby/en/latest/reference.html
+#
+# The prove tasks use k-induction (see
+# https://doi.org/10.1007/3-540-40922-X_8), so the properties are proven for
+# every clock cycle, not just for a bounded number of them. The depth option
+# is k. The tasks use G_STEPS of 1, 2, and 4. Each iteration has the same
+# logic, but with more iterations in each clock cycle, the solver has more
+# to do in each step: with the Boolector solver, on a machine with 4 cores,
+# prove1 takes about 9 minutes, prove2 about 30 minutes, and prove4 almost 2
+# hours. So "make formal" only runs prove1 and the cover task by default, see
+# the Makefile.
+#
+# The cover task shows that the cover statements in c64_sqrt.psl can be
+# reached. With G_STEPS=4 a calculation takes 9 clock cycles, and some of
+# the cover statements need a result to be taken, so the depth must be larger
+# than that.
+#
+# The engine smtbmc uses the Boolector SMT solver (see
+# https://github.com/Boolector/boolector), which is much faster here than
+# the default solver Yices.
+#
+# "memory_map -rom-only" (see
+# https://yosyshq.readthedocs.io/projects/yosys/en/latest/cmd/index_passes_memory.html#cmd-memory_map)
+# turns the tables C_ALL_R and C_ALL_SQ of c64_sqrt.psl into logic. The
+# initial contents of a memory only hold in the first clock cycle, but
+# induction starts from an arbitrary clock cycle, and could otherwise use any
+# contents.
+#
+# The script reads the VHDL and PSL files with the GHDL plugin for Yosys (see
+# https://github.com/ghdl/ghdl-yosys-plugin).
+
+[tasks]
+prove1
+prove2
+prove4
+cover4
+
+[options]
+prove1: mode prove
+prove1: depth 3
+prove2: mode prove
+prove2: depth 3
+prove4: mode prove
+prove4: depth 3
+cover4: mode cover
+cover4: depth 24
+
+[engines]
+smtbmc boolector
+
+[script]
+prove1: ghdl --std=08 -gG_STEPS=1 c64_sqrt.vhd c64_sqrt.psl -e c64_sqrt
+prove2: ghdl --std=08 -gG_STEPS=2 c64_sqrt.vhd c64_sqrt.psl -e c64_sqrt
+prove4: ghdl --std=08 -gG_STEPS=4 c64_sqrt.vhd c64_sqrt.psl -e c64_sqrt
+cover4: ghdl --std=08 -gG_STEPS=4 c64_sqrt.vhd c64_sqrt.psl -e c64_sqrt
+prep -top c64_sqrt
+memory_map -rom-only
+
+[files]
+c64_sqrt.vhd
+c64_sqrt.psl

@@ -75,7 +75,8 @@ and accuracy against size.
 | [`c64_sqrt2.gtkw`](c64_sqrt2.gtkw) | GTKWave setup for viewing the waveform from `make debug`.
 | [`c64_sqrt2.xdc`](c64_sqrt2.xdc), [`vivado.tcl`](vivado.tcl) | Timing constraint (75.8 MHz) and script for synthesis with Vivado, see `make vivado`.
 | [`c64_sqrt2.xpr`](c64_sqrt2.xpr) | Vivado project, for use in the Vivado GUI. It has the same settings as `make vivado`.
-| [`Makefile`](Makefile) | Runs the simulation and the synthesis, see [Running](#running).
+| [`c64_sqrt2.psl`](c64_sqrt2.psl), [`c64_sqrt2.sby`](c64_sqrt2.sby) | Formal verification, see [Formal verification](#formal-verification).
+| [`Makefile`](Makefile) | Runs the simulation, the formal verification, and the synthesis, see [Running](#running).
 
 ## Interface
 Both the input and the output use an
@@ -117,7 +118,28 @@ Type `make` to list the supported targets:
   slack of the worst path, and the reports are written to `vivado/`. It takes
   about 2 minutes, and expects Vivado in `/opt/Xilinx/2025.1/Vivado` (the variable
   `XILINX_DIR`).
+* `make formal` runs the formal verification (see [below](#formal-verification)).
+  This requires [SymbiYosys](https://github.com/YosysHQ/sby), the
+  [GHDL plugin](https://github.com/ghdl/ghdl-yosys-plugin) for Yosys, and the
+  [Boolector](https://github.com/Boolector/boolector) solver. It takes a few
+  seconds. If it fails, use `make show_prove` or `make show_induct` to view the
+  counterexample in GTKWave.
 * `make clean` removes the generated files.
+
+## Formal verification
+The formal verification (`c64_sqrt2.psl`, `c64_sqrt2.sby`) proves with
+k-induction, for every sequence of inputs and stalls, including resets:
+* No result is lost or duplicated, and the result stays valid and unchanged until
+  it is taken.
+* `m_error_o` is set exactly for a negative input, and a negative or zero input
+  gives zero. If the consumer is ready, this result is valid in the clock cycle
+  after the input was accepted.
+* For any other input, the exponent of the result is correct, and the result is
+  positive.
+
+The mantissa of the root, and the number of iterations, depend on the products of
+the two multipliers, which SMT solvers are very slow at, so they are verified only
+by the simulation.
 
 ## Simulation
 The testbench calculates the square root of 0, 1, 2, 3, 4, 0.5, and -1 (which

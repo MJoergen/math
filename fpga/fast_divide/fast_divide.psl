@@ -1,0 +1,226 @@
+-- Formal verification of fast_divide.vhd, written in PSL (see
+-- https://en.wikipedia.org/wiki/Property_Specification_Language). Run with
+-- "make formal", which uses SymbiYosys (see https://github.com/YosysHQ/sby).
+--
+-- The checker below models the divider at its ports, and verifies:
+-- * No quotient is lost or duplicated.
+-- * The quotient stays valid and unchanged until it is taken.
+-- * A division by zero gives a quotient of all ones.
+-- * If the consumer is ready, the quotient is valid at most 7 clock cycles
+--   after the inputs were accepted (1 clock cycle for a division by zero).
+-- * The normalization: Both operands are shifted left by the same number of
+--   bits, so that the most significant bit of the divisor is set.
+--
+-- The quotient itself depends on the products of the multipliers, which SMT
+-- solvers are very slow at. So it is not verified here, but by the
+-- simulation.
+--
+-- The properties are proven with k-induction (see fast_divide.sby): If they
+-- hold in a few consecutive clock cycles, then they also hold in the next
+-- one. This needs the assertions marked "for induction", which relate the
+-- internal state of the design to the checker.
+
+vunit fast_divide_inst (fast_divide(synthesis))
+{
+   -- set all declarations to run on clk_i
+   default clock is rising_edge(clk_i);
+
+   -----------------------------
+   -- AUXILIARY SIGNALS
+   -----------------------------
+
+   -- Set after the first clock cycle, when the signals below are valid
+   signal f_started : std_logic := '0';
+
+   -- The conditions of f_count, see below. (Writing them directly in the
+   -- assertions makes GHDL 4.1 fail.)
+   signal f_count_ok : boolean;
+
+   -- The handshakes on the input and the output
+   signal f_push : std_logic;
+   signal f_pop  : std_logic;
+
+   -- The quotient is written to the output register
+   signal f_write : std_logic;
+
+   -- The number of inputs accepted, whose quotient has not been taken yet
+   signal f_cnt : natural range 0 to 2;
+
+   -- The inputs of the calculation, and of the quotient in the output
+   -- register
+   signal f_n     : std_logic_vector(31 downto 0);
+   signal f_d     : std_logic_vector(31 downto 0);
+   signal f_out_d : std_logic_vector(31 downto 0);
+
+   -- The number of clock cycles since the last input was accepted (up to
+   -- 7), and whether m_ready_i has been high and rst_i low in all of them
+   signal f_since : natural range 0 to 7;
+   signal f_flow  : std_logic;
+
+   -- Whether dd and nn are the divisor and the numerator, shifted left by
+   -- the same number of bits, so that the most significant bit of dd is set
+   signal f_norm_ok : boolean;
+
+   f_push <= s_valid_i and s_ready_o;
+   f_pop  <= m_valid_o and m_ready_i;
+
+   -- See OUTPUT_ST in fast_divide.vhd. f_count below verifies that this
+   -- happens once for each input, and only when the output register is free.
+   f_write <= '1' when state = OUTPUT_ST and (m_valid_o = '0' or m_ready_i = '1') else
+              '0';
+
+   f_track_proc : process (clk_i)
+      variable cnt_v : natural range 0 to 2;
+   begin
+      if rising_edge(clk_i) then
+         if f_write = '1' then
+            f_out_d <= f_d;
+         end if;
+
+         -- f_no_overflow below verifies that no input is accepted while the
+         -- design already holds two
+         cnt_v := f_cnt;
+         if f_pop = '1' and cnt_v > 0 then
+            cnt_v := cnt_v - 1;
+         end if;
+         if f_push = '1' and cnt_v < 2 then
+            cnt_v := cnt_v + 1;
+         end if;
+         f_cnt <= cnt_v;
+
+         if f_push = '1' then
+            f_n <= s_n_i;
+            f_d <= s_d_i;
+         end if;
+
+         if f_push = '1' then
+            f_since <= 0;
+            f_flow  <= not rst_i;
+         else
+            if f_since < 7 then
+               f_since <= f_since + 1;
+            end if;
+            f_flow <= f_flow and m_ready_i and not rst_i;
+         end if;
+
+         if rst_i = '1' then
+            f_cnt <= 0;
+         end if;
+
+         f_started <= '1';
+      end if;
+   end process f_track_proc;
+
+   f_norm_proc : process (all)
+      variable ok_v : boolean;
+   begin
+      ok_v := false;
+      for k in 4 to 35 loop
+         if dd = shift_left(resize(unsigned(f_d), 36), k) and nn = shift_left(resize(unsigned(f_n), 68), k) then
+            ok_v := true;
+         end if;
+      end loop;
+      f_norm_ok <= ok_v and dd(35) = '1';
+   end process f_norm_proc;
+
+
+   -----------------------------
+   -- ASSERTIONS ABOUT OUTPUTS
+   -----------------------------
+
+   -- No quotient is output without an input, and a division by zero gives
+   -- all ones
+   f_out : assert always f_started = '1' and m_valid_o = '1' ->
+      f_cnt >= 1 and (f_out_d /= X"00000000" or m_q_o = (m_q_o'range => '1'));
+
+   -- The quotient stays valid and unchanged until it is taken
+   f_hold : assert always {f_started = '1' and m_valid_o = '1' and m_ready_i = '0' and rst_i = '0'} |=>
+      {m_valid_o = '1' and m_q_o = prev(m_q_o)};
+
+   -- No input is accepted while the design already holds two
+   f_no_overflow : assert always f_started = '1' -> not (f_push = '1' and f_pop = '0' and f_cnt = 2);
+
+   -- A reset clears m_valid_o
+   f_rst : assert always {rst_i = '1'} |=> {m_valid_o = '0'};
+
+   -- Latency: If the consumer has been ready since the inputs were
+   -- accepted, the quotient is written to the output register within 7
+   -- clock cycles (1 clock cycle for a division by zero), so it is valid
+   -- in the next clock cycle
+   f_latency : assert always f_started = '1' and f_flow = '1' and state /= IDLE_ST ->
+      f_since <= 6 and (f_d /= X"00000000" or f_since = 0);
+
+
+   -----------------------------
+   -- ASSERTIONS FOR INDUCTION
+   -----------------------------
+
+   -- None of the inputs is lost or duplicated: The output register holds the
+   -- quotient of one input (if valid), and the calculation works on one (if
+   -- not idle)
+   f_count_ok <= (f_cnt = 0 and state = IDLE_ST and m_valid_o = '0') or
+                 (f_cnt = 1 and state = IDLE_ST and m_valid_o = '1') or
+                 (f_cnt = 1 and state /= IDLE_ST and m_valid_o = '0') or
+                 (f_cnt = 2 and state /= IDLE_ST and m_valid_o = '1');
+   f_count : assert always f_started = '1' -> f_count_ok;
+
+   -- The iterations: One in each clock cycle, and at most six. A division by
+   -- zero goes directly to OUTPUT_ST.
+   f_step : assert always f_started = '1' and state = STEP_ST ->
+      f_d /= X"00000000" and div_zero = '0' and f_since = 5 - steps_remaining;
+   f_zero : assert always f_started = '1' and state = OUTPUT_ST ->
+      (div_zero = '1') = (f_d = X"00000000");
+
+   -- If the consumer is ready, the previous quotient is taken in the first
+   -- clock cycle of the calculation
+   f_flow_empty : assert always f_started = '1' and f_flow = '1' and f_since >= 1 and state /= IDLE_ST ->
+      m_valid_o = '0';
+
+   -- state holds one of its three values. It is stored in two bits, so
+   -- induction could otherwise start from the fourth value.
+   f_state : assert always state = IDLE_ST or state = STEP_ST or state = OUTPUT_ST;
+
+
+   -----------------------------
+   -- ASSERTIONS ABOUT INTERNAL STATE
+   -----------------------------
+
+   -- The first iteration starts from the normalized operands
+   f_norm : assert always f_started = '1' and state = STEP_ST and steps_remaining = 5 -> f_norm_ok;
+
+
+   -----------------------------
+   -- ASSUMPTIONS ABOUT INPUTS
+   -----------------------------
+
+   -- Require a reset at startup
+   f_reset : assume {rst_i = '1'};
+
+   -- For induction: The signals above are only invalid in the first clock
+   -- cycle, where f_reset requires a reset anyway
+   f_start_first : assume always f_started = '0' -> rst_i = '1';
+
+
+   --------------------------------------------
+   -- COVER STATEMENTS TO VERIFY REACHABILITY
+   --------------------------------------------
+
+   -- A quotient is taken
+   f_cover_done : cover {f_started = '1' and f_pop = '1' and f_out_d /= X"00000000"};
+
+   -- A division by zero
+   f_cover_zero : cover {f_started = '1' and f_pop = '1' and f_out_d = X"00000000"};
+
+   -- The iterations end early
+   f_cover_early : cover {f_started = '1' and state = STEP_ST and steps_remaining = 3; state = OUTPUT_ST};
+
+   -- The quotient waits to be taken, so f_hold is not vacuous
+   f_cover_wait : cover {f_started = '1' and m_valid_o = '1' and m_ready_i = '0'; m_valid_o = '1' and m_ready_i = '1'};
+
+   -- The calculation waits, because the output register is still occupied
+   f_cover_full : cover {f_started = '1' and state = OUTPUT_ST and m_valid_o = '1' and m_ready_i = '0'};
+
+   -- A reset during a calculation
+   f_cover_reset : cover {f_started = '1' and state = STEP_ST and rst_i = '1'};
+
+} -- vunit fast_divide_inst (fast_divide(synthesis))

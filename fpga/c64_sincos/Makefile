@@ -81,6 +81,36 @@ $(VIVADO_DIR)/post_route.dcp: vivado.tcl $(VIVADO_SRC) c64_sincos.xdc
 	   -tclargs $(VIVADO_STEPS) $(VIVADO_PART) $(CURDIR)"
 
 
+#######################
+# Formal verification
+#######################
+
+# The tasks in c64_sincos.sby. SymbiYosys writes the results of each task to a
+# directory c64_sincos_<task>.
+FORMAL_TASKS = prove1 prove4 cover4
+
+# This runs all the tasks defined in c64_sincos.sby, using SymbiYosys (see
+# https://github.com/YosysHQ/sby). "yosys -m ghdl" loads the GHDL plugin for
+# Yosys (see https://github.com/ghdl/ghdl-yosys-plugin), which reads the VHDL
+# and PSL files.
+.PHONY: formal
+formal: c64_sincos.sby c64_sincos.psl c64_sincos_pkg.vhd c64_sincos.vhd ## Run the formal verification (about 40 seconds)
+	sby --yosys "yosys -m ghdl" -f c64_sincos.sby
+
+# The traces are VCD files, which GTKWave can show. $(TASK) is one of the
+# tasks in c64_sincos.sby.
+TASK ?= prove4
+
+.PHONY: show_prove
+show_prove: ## Show the counterexample from a failing "make formal" in GTKWave (TASK=prove4)
+	gtkwave c64_sincos_$(TASK)/engine_0/trace.vcd
+
+.PHONY: show_induct
+show_induct: ## Show the trace from a failing induction step in GTKWave (TASK=prove4)
+	gtkwave c64_sincos_$(TASK)/engine_0/trace_induct.vcd
+
+
 .PHONY: clean
 clean: ## Remove the generated files
 	rm -rf work-obj08.cf *.o tb_c64_sincos c64_sincos.ghw vivado .Xil
+	rm -rf $(addprefix c64_sincos_,$(FORMAL_TASKS)) c64_sincos

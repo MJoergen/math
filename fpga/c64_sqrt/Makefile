@@ -81,6 +81,40 @@ $(VIVADO_DIR)/post_route.dcp: vivado.tcl $(VIVADO_SRC) c64_sqrt.xdc
 	   -tclargs $(VIVADO_STEPS) $(VIVADO_PART) $(CURDIR)"
 
 
+#######################
+# Formal verification
+#######################
+
+# The tasks in c64_sqrt.sby. SymbiYosys writes the results of each task to a
+# directory c64_sqrt_<task>.
+FORMAL_TASKS = prove1 prove2 prove4 cover4
+
+# The tasks that "make formal" runs, e.g. "make formal TASKS=prove4". The proofs
+# for G_STEPS=2 and 4 take much longer, see c64_sqrt.sby.
+TASKS ?= prove1 cover4
+
+# This runs the tasks $(TASKS) defined in c64_sqrt.sby, using SymbiYosys (see
+# https://github.com/YosysHQ/sby). "yosys -m ghdl" loads the GHDL plugin for
+# Yosys (see https://github.com/ghdl/ghdl-yosys-plugin), which reads the VHDL
+# and PSL files.
+.PHONY: formal
+formal: c64_sqrt.sby c64_sqrt.psl c64_sqrt.vhd ## Run the formal verification for G_STEPS=1 (about 10 minutes)
+	sby --yosys "yosys -m ghdl" -f c64_sqrt.sby $(TASKS)
+
+# The traces are VCD files, which GTKWave can show. $(TASK) is one of the
+# tasks in c64_sqrt.sby.
+TASK ?= prove1
+
+.PHONY: show_prove
+show_prove: ## Show the counterexample from a failing "make formal" in GTKWave (TASK=prove1)
+	gtkwave c64_sqrt_$(TASK)/engine_0/trace.vcd
+
+.PHONY: show_induct
+show_induct: ## Show the trace from a failing induction step in GTKWave (TASK=prove1)
+	gtkwave c64_sqrt_$(TASK)/engine_0/trace_induct.vcd
+
+
 .PHONY: clean
 clean: ## Remove the generated files
 	rm -rf work-obj08.cf *.o tb_c64_sqrt c64_sqrt.ghw vivado .Xil
+	rm -rf $(addprefix c64_sqrt_,$(FORMAL_TASKS))

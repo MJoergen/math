@@ -1,0 +1,91 @@
+# Formal verification of tan_cordic.vhd, see tan_cordic.psl and
+# tan_cordic_bmc.psl. This file is run by SymbiYosys (see
+# https://github.com/YosysHQ/sby), and its format is described in
+# https://yosyshq.readthedocs.io/projects/sby/en/latest/reference.html
+#
+# The prove tasks use k-induction (see
+# https://doi.org/10.1007/3-540-40922-X_8), so the properties in
+# tan_cordic.psl are proven for every clock cycle, not just for a bounded
+# number of them. The depth option is k. "prove" uses G_ITERATIONS=3,
+# G_FRAC_BITS=8, and G_STEPS=1, which makes a trace short enough to read, and
+# "prove_steps" uses G_STEPS=2 instead (which does not divide G_ITERATIONS).
+# "prove_default" and "prove_default_steps" use the default G_ITERATIONS=6
+# and G_FRAC_BITS=24, with G_STEPS=1 and 2. The default G_STEPS=4 is not
+# proven: with 4 iterations of the division in each clock cycle, the
+# induction takes too long (about 18 minutes even with G_ITERATIONS=3 and
+# G_FRAC_BITS=8, and more than 15 minutes, unfinished, with the default
+# generics). The bmc tasks and the simulation use G_STEPS=4.
+#
+# The bmc tasks check the properties in tan_cordic_bmc.psl in every clock
+# cycle from the reset up to the depth, which covers one complete
+# calculation up to the first clock cycle of the division: with the reset in
+# step 0 and the input accepted in step 1 at the earliest, this is step
+# 2*ceil(G_ITERATIONS/G_STEPS)+4. A complete calculation does not depend on
+# the previous ones, see tan_cordic_bmc.psl.
+#
+# The cover tasks show that the cover statements can be reached. GHDL only
+# uses one vunit for each entity, so the two PSL files have separate tasks.
+#
+# The engine smtbmc uses the Boolector SMT solver (see
+# https://github.com/Boolector/boolector).
+#
+# "memory_map -rom-only" (see
+# https://yosyshq.readthedocs.io/projects/yosys/en/latest/cmd/index_passes_memory.html#cmd-memory_map)
+# turns the ROM of the special angles (C_ANGLES) into logic. The initial
+# contents of a memory only hold in the first clock cycle, but induction
+# starts from an arbitrary clock cycle, and could otherwise use any contents.
+#
+# The script reads the VHDL and PSL files with the GHDL plugin for Yosys (see
+# https://github.com/ghdl/ghdl-yosys-plugin).
+
+[tasks]
+prove
+prove_steps
+prove_default
+prove_default_steps
+bmc
+bmc_steps
+bmc_default
+cover
+cover_bmc
+
+[options]
+prove: mode prove
+prove: depth 3
+prove_steps: mode prove
+prove_steps: depth 3
+prove_default: mode prove
+prove_default: depth 3
+prove_default_steps: mode prove
+prove_default_steps: depth 3
+bmc: mode bmc
+bmc: depth 12
+bmc_steps: mode bmc
+bmc_steps: depth 10
+bmc_default: mode bmc
+bmc_default: depth 10
+cover: mode cover
+cover: depth 24
+cover_bmc: mode cover
+cover_bmc: depth 12
+
+[engines]
+smtbmc boolector
+
+[script]
+prove: ghdl --std=08 -gG_ITERATIONS=3 -gG_FRAC_BITS=8 -gG_STEPS=1 tan_cordic.vhd tan_cordic.psl -e tan_cordic
+prove_steps: ghdl --std=08 -gG_ITERATIONS=3 -gG_FRAC_BITS=8 -gG_STEPS=2 tan_cordic.vhd tan_cordic.psl -e tan_cordic
+cover: ghdl --std=08 -gG_ITERATIONS=3 -gG_FRAC_BITS=8 -gG_STEPS=1 tan_cordic.vhd tan_cordic.psl -e tan_cordic
+cover_bmc: ghdl --std=08 -gG_ITERATIONS=3 -gG_FRAC_BITS=8 -gG_STEPS=1 tan_cordic.vhd tan_cordic_bmc.psl -e tan_cordic
+prove_default: ghdl --std=08 -gG_STEPS=1 tan_cordic.vhd tan_cordic.psl -e tan_cordic
+prove_default_steps: ghdl --std=08 -gG_STEPS=2 tan_cordic.vhd tan_cordic.psl -e tan_cordic
+bmc: ghdl --std=08 -gG_ITERATIONS=3 -gG_FRAC_BITS=8 -gG_STEPS=1 tan_cordic.vhd tan_cordic_bmc.psl -e tan_cordic
+bmc_steps: ghdl --std=08 -gG_ITERATIONS=3 -gG_FRAC_BITS=8 -gG_STEPS=2 tan_cordic.vhd tan_cordic_bmc.psl -e tan_cordic
+bmc_default: ghdl --std=08 tan_cordic.vhd tan_cordic_bmc.psl -e tan_cordic
+prep -top tan_cordic
+memory_map -rom-only
+
+[files]
+tan_cordic.vhd
+tan_cordic.psl
+tan_cordic_bmc.psl

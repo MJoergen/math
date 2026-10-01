@@ -74,6 +74,36 @@ $(VIVADO_DIR)/post_route.dcp: vivado.tcl $(VIVADO_SRC) fast_divide.xdc
 	   -tclargs $(VIVADO_PART) $(CURDIR)"
 
 
+#######################
+# Formal verification
+#######################
+
+# The tasks in fast_divide.sby. SymbiYosys writes the results of each task to a
+# directory fast_divide_<task>.
+FORMAL_TASKS = prove cover
+
+# This runs all the tasks defined in fast_divide.sby, using SymbiYosys (see
+# https://github.com/YosysHQ/sby). "yosys -m ghdl" loads the GHDL plugin for
+# Yosys (see https://github.com/ghdl/ghdl-yosys-plugin), which reads the VHDL
+# and PSL files.
+.PHONY: formal
+formal: fast_divide.sby fast_divide.psl fast_divide.vhd ## Run the formal verification (a few seconds)
+	sby --yosys "yosys -m ghdl" -f fast_divide.sby
+
+# The traces are VCD files, which GTKWave can show. $(TASK) is one of the
+# tasks in fast_divide.sby.
+TASK ?= prove
+
+.PHONY: show_prove
+show_prove: ## Show the counterexample from a failing "make formal" in GTKWave (TASK=prove)
+	gtkwave fast_divide_$(TASK)/engine_0/trace.vcd
+
+.PHONY: show_induct
+show_induct: ## Show the trace from a failing induction step in GTKWave (TASK=prove)
+	gtkwave fast_divide_$(TASK)/engine_0/trace_induct.vcd
+
+
 .PHONY: clean
 clean: ## Remove the generated files
 	rm -rf work-obj08.cf *.o tb_fast_divide fast_divide.ghw vivado .Xil
+	rm -rf $(addprefix fast_divide_,$(FORMAL_TASKS))
