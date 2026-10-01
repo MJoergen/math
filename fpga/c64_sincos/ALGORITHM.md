@@ -25,7 +25,7 @@ guard bits.
 
 ## Range reduction
 The input is $x = m \cdot 2^{e-128}$ (see
-[README.md](README.md#the-number-format)). The sine and cosine only depend on
+[README.md](../README.md#c64-floating-point-format)). The sine and cosine only depend on
 the position of $x$ within a full turn, i.e. on the fractional part of
 $\frac{x}{2\pi}$. This is calculated in two steps:
 * The mantissa $m$ (with the leading one, and without the sign) is multiplied
