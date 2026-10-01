@@ -78,14 +78,47 @@ targets. All folders support:
   [Vivado](https://www.amd.com/en/products/software/adaptive-socs-and-fpgas/vivado.html),
   and fails if it does not meet the timing constraint in the `.xdc` file. This
   expects Vivado 2025.1 in `/opt/Xilinx/2025.1/Vivado`.
+* `make formal` runs the formal verification, see
+  [Formal verification](#formal-verification).
 * `make clean` removes the generated files.
 
-Some folders have more targets, e.g. `make formal` for formal verification with
-[SymbiYosys](https://github.com/YosysHQ/sby) (`booth` and `srt`). Most folders
-also have a Vivado project (`.xpr`), for use in the Vivado GUI.
+Some folders have more targets, e.g. `make model` in `srt`. Most folders also
+have a Vivado project (`.xpr`), for use in the Vivado GUI.
 
 Unless stated otherwise, the resource usage and timing in the READMEs are from
 Vivado, for the Artix-7 part xc7a200tfbg484-2.
+
+## Formal verification
+Each folder has a formal verification of its design, written in
+[PSL](https://en.wikipedia.org/wiki/Property_Specification_Language) (the
+`.psl` files), which `make formal` runs with
+[SymbiYosys](https://github.com/YosysHQ/sby) (the `.sby` file). This requires the
+[GHDL plugin](https://github.com/ghdl/ghdl-yosys-plugin) for
+[Yosys](https://github.com/YosysHQ/yosys), and the
+[Boolector](https://github.com/Boolector/boolector) solver (or
+[Yices 2](https://github.com/SRI-CSL/yices2) for `srt`). The properties are
+proven with k-induction, i.e. for every clock cycle, and for every sequence of
+inputs, stalls, and resets. Each README describes what is verified. For all
+the designs, this includes that no result is lost or duplicated, and that the
+result stays valid and unchanged until it is taken, and for most of them also the
+latency (the latency of `c64_sqrt2` depends on its multipliers). The
+correctness of the result is verified where SMT solvers can do it without
+multiplying (which they are very slow at):
+
+| Folder | Result verified formally
+| ------ | ------------------------
+| [`booth`](booth) | The product (for 7 and 8 bits).
+| [`fast_divide`](fast_divide) | Division by zero, and the normalization of the operands. The quotient depends on multipliers.
+| [`srt`](srt) | The quotient of `srt_core`, to within 2/3 of its least significant bit (for 16 and 32 bits).
+| [`c64_sqrt`](c64_sqrt) | The root is correctly rounded, the exponent, and zero and negative inputs (for `G_STEPS` = 1, 2, and 4).
+| [`c64_sqrt2`](c64_sqrt2) | The exponent, the sign, and zero and negative inputs. The mantissa depends on multipliers.
+| [`pipeline_sqrt`](pipeline_sqrt) | That each result comes from the table lookups of its own input, in order. The accuracy is verified by the simulation, for every input.
+| [`c64_sincos`](c64_sincos) | The sine and the cosine are at most 1, and the residual angle of the CORDIC iterations stays within its bounds.
+| [`tan_cordic`](tan_cordic) | The residual angle after pseudo-division, and the final division. Bounded model checking verifies that the CORDIC rotations do not overflow.
+
+The PSL files work with GHDL 4.1 (the version in Ubuntu 24.04) and later, except
+those of `booth`, which need a later version. Boolector must be version 3: the
+version in Ubuntu 24.04 (1.5) does not work with SymbiYosys.
 
 ## Coding style
 All the VHDL files follow the same coding style, which [`vsg.yml`](vsg.yml)

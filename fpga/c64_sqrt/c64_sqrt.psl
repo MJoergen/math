@@ -1,0 +1,424 @@
+-- Formal verification of c64_sqrt.vhd, written in PSL (see
+-- https://en.wikipedia.org/wiki/Property_Specification_Language). Run with
+-- "make formal", which uses SymbiYosys (see https://github.com/YosysHQ/sby).
+--
+-- The checker below models the square root at its ports, and verifies:
+-- * Every result is correct: The root is correctly rounded to nearest, the
+--   exponent is right, and a zero or negative input gives zero (and sets
+--   m_error_o if negative).
+-- * No result is lost or duplicated.
+-- * The result stays valid and unchanged until it is taken.
+-- * If the consumer is ready, the result is valid C_CYCLES = 32/G_STEPS + 1
+--   clock cycles after the input was accepted (1 clock cycle for a zero or
+--   negative input), and if the consumer is always ready, a new input is
+--   accepted every C_CYCLES clock cycles.
+--
+-- The root is compared with a reference model, which runs alongside the
+-- calculation: The restoring digit-by-digit method (see ALGORITHM.md). It
+-- keeps the root f_r and its square f_sq, and sets a bit b of the root if
+-- the new square is not larger than the radicand x. The square is updated
+-- as
+--    (r + b)^2 = r^2 + 2*r*b + b^2
+-- where b is a power of two, so 2*r*b and b^2 are just shifts. So by
+-- construction f_sq = f_r^2, and the solver never multiplies, which SMT
+-- solvers are very slow at. In every clock cycle of the calculation, the
+-- checker verifies that mant = f_r, and that val holds the (non-restoring)
+-- remainder of ALGORITHM.md. It also verifies that
+--    0 <= x - f_sq < (f_r + 2*b)^2 - f_sq
+-- where 2*b is the last bit that was calculated, which is what makes f_r
+-- the root of x, truncated to the bits calculated so far.
+--
+-- The properties are proven with k-induction (see c64_sqrt.sby): If they
+-- hold in k consecutive clock cycles, then they also hold in the next one.
+-- This needs the assertions marked "for induction", which relate the
+-- internal state of the design to the checker.
+--
+-- Induction may start in a state that cannot be reached, where f_sq is not
+-- f_r^2. The solver could then not rule out that the root ends up with all
+-- its bits set, which is too large (the root of x < 1 is less than
+-- 1 - 2^-33), so that its rounding overflows. On that path, all the bits of
+-- the root are set in every iteration, so the root and its square are known
+-- constants (C_ALL_R and C_ALL_SQ below). The checker verifies that f_sq is
+-- that constant whenever f_r is, which rules out this path, since the
+-- square of the root with all bits set is larger than any radicand.
+
+vunit c64_sqrt_inst (c64_sqrt(synthesis))
+{
+   -- set all declarations to run on clk_i
+   default clock is rising_edge(clk_i);
+
+   -----------------------------
+   -- AUXILIARY SIGNALS
+   -----------------------------
+
+   -- The number of clock cycles of a calculation, see c64_sqrt.vhd
+   constant C_CYCLES : positive := 32 / G_STEPS + 1;
+
+   -- The width of x*2^34 and f_sq, where x and the root are scaled by 2^34,
+   -- with some margin
+   constant C_W : positive := 72;
+
+   -- The radicand x in [0.25, 1) scaled by 2^34 (see ALGORITHM.md): 1.mant
+   -- (with the leading one in place of the sign bit) scaled to [0.5, 1) if
+   -- the exponent is even, and to [0.25, 0.5) if it is odd
+   pure function radicand (exp_v  : std_logic_vector(7 downto 0);
+                           mant_v : std_logic_vector(31 downto 0)) return unsigned is
+   begin
+      if exp_v(0) = '0' then
+         return shift_left(resize(unsigned(mant_v or X"80000000"), 34), 2);
+      else
+         return shift_left(resize(unsigned(mant_v or X"80000000"), 34), 1);
+      end if;
+   end function radicand;
+
+   -- The exponent of the root: Half the exponent of the input, rounded up,
+   -- with the offset 128, see ALGORITHM.md
+   pure function root_exp (exp_v : std_logic_vector(7 downto 0)) return natural is
+   begin
+      return (to_integer(unsigned(exp_v)) + 1) / 2 + 64;
+   end function root_exp;
+
+   -- If all the bits of the root are set after n iterations, the root is
+   -- 2^34 - 2^(33-n), and its square is known. This is used to show that
+   -- the rounding never overflows, see f_done_ok.
+   type all_type is array (0 to 32) of unsigned(C_W - 1 downto 0);
+
+   pure function calc_all_r return all_type is
+      variable res_v : all_type;
+   begin
+      for n in 0 to 32 loop
+         res_v(n) := shift_left(to_unsigned(1, C_W), 34) - shift_left(to_unsigned(1, C_W), 33 - n);
+      end loop;
+      return res_v;
+   end function calc_all_r;
+
+   -- (2^34 - 2^k)^2 = 2^68 - 2^(35+k) + 2^(2*k), where k = 33-n
+   pure function calc_all_sq return all_type is
+      variable res_v : all_type;
+   begin
+      for n in 0 to 32 loop
+         res_v(n) := shift_left(to_unsigned(1, C_W), 68) - shift_left(to_unsigned(1, C_W), 35 + 33 - n) +
+                     shift_left(to_unsigned(1, C_W), 2 * (33 - n));
+      end loop;
+      return res_v;
+   end function calc_all_sq;
+
+   constant C_ALL_R  : all_type := calc_all_r;
+   constant C_ALL_SQ : all_type := calc_all_sq;
+
+   -- Set after the first clock cycle, when the signals below are valid
+   signal f_started : std_logic := '0';
+
+   -- The conditions of f_count, see below. (Writing them directly in the
+   -- assertion makes GHDL 4.1 fail.)
+   signal f_count_ok : boolean;
+
+   -- The handshakes on the input and the output
+   signal f_push : std_logic;
+   signal f_pop  : std_logic;
+
+   -- The number of inputs accepted, whose result has not been taken yet
+   signal f_cnt : natural range 0 to 2;
+
+   -- The input of the calculation, and whether the result is zero (a zero
+   -- or negative input)
+   signal f_exp  : std_logic_vector(7 downto 0);
+   signal f_mant : std_logic_vector(31 downto 0);
+   signal f_zero : std_logic;
+
+   -- The radicand of the calculation, multiplied by 2^34, i.e. scaled like
+   -- f_sq
+   signal f_x : unsigned(C_W - 1 downto 0);
+
+   -- The reference model: The number of iterations done (after the first
+   -- one, which sets bit 33, i.e. 1/2), the root scaled by 2^34, and its
+   -- square
+   signal f_n  : natural range 0 to 32 := 0;
+   signal f_r  : unsigned(33 downto 0);
+   signal f_sq : unsigned(C_W - 1 downto 0);
+
+   -- The input of the result in the output register, and its root,
+   -- truncated to 33 bits, i.e. floor(sqrt(x) * 2^33). This is taken from
+   -- the reference model when the result is written to the output register.
+   signal f_out_exp  : std_logic_vector(7 downto 0);
+   signal f_out_mant : std_logic_vector(31 downto 0);
+   signal f_out_t    : unsigned(32 downto 0);
+
+   -- The number of clock cycles since the last input was accepted (up to
+   -- C_CYCLES), the latency of that input, and whether m_ready_i has been
+   -- high and rst_i low in all of them
+   signal f_since : natural range 0 to C_CYCLES := 0;
+   signal f_lat   : natural range 1 to C_CYCLES;
+   signal f_flow  : std_logic;
+
+   -- The results of the checks, see f_check_proc
+   signal f_out_ok  : boolean;
+   signal f_calc_ok : boolean;
+   signal f_done_ok : boolean;
+
+   f_push <= s_valid_i and s_ready_o;
+   f_pop  <= m_valid_o and m_ready_i;
+
+   f_zero <= '1' when f_mant(31) = '1' or f_exp = X"00" else
+             '0';
+   f_lat  <= 1 when f_zero = '1' else
+             C_CYCLES;
+
+   f_x <= shift_left(resize(radicand(f_exp, f_mant), C_W), 34);
+
+   f_track_proc : process (clk_i)
+      variable cnt_v : natural range 0 to 2;
+      variable n_v   : natural range 0 to 32;
+      variable r_v   : unsigned(33 downto 0);
+      variable sq_v  : unsigned(C_W - 1 downto 0);
+      variable t_v   : unsigned(C_W - 1 downto 0);
+   begin
+      if rising_edge(clk_i) then
+         -- The reference model: G_STEPS iterations in each clock cycle of
+         -- the calculation
+         if state = CALC_ST then
+            n_v  := f_n;
+            r_v  := f_r;
+            sq_v := f_sq;
+
+            for i in 1 to G_STEPS loop
+               if n_v < 32 then
+                  -- The next bit b = 2^(32-n_v), and t_v = (r + b)^2. The bit
+                  -- is set if the square is not larger than the radicand.
+                  t_v := sq_v + shift_left(resize(r_v, C_W), 33 - n_v) +
+                         shift_left(to_unsigned(1, C_W), 2 * (32 - n_v));
+                  if t_v <= f_x then
+                     r_v(32 - n_v) := '1';
+                     sq_v          := t_v;
+                  end if;
+                  n_v := n_v + 1;
+               end if;
+            end loop;
+
+            f_n  <= n_v;
+            f_r  <= r_v;
+            f_sq <= sq_v;
+         end if;
+
+         -- The result is written to the output register (see DONE_ST in
+         -- c64_sqrt.vhd). f_count below verifies that this happens once for
+         -- each input, and only when the output register is free.
+         if state = DONE_ST and (m_valid_o = '0' or m_ready_i = '1') then
+            f_out_exp  <= f_exp;
+            f_out_mant <= f_mant;
+            f_out_t    <= f_r(33 downto 1);
+         end if;
+
+         -- f_no_overflow below verifies that no input is accepted while the
+         -- design already holds two
+         cnt_v := f_cnt;
+         if f_pop = '1' and cnt_v > 0 then
+            cnt_v := cnt_v - 1;
+         end if;
+         if f_push = '1' and cnt_v < 2 then
+            cnt_v := cnt_v + 1;
+         end if;
+         f_cnt <= cnt_v;
+
+         if f_push = '1' then
+            f_exp  <= s_exp_i;
+            f_mant <= s_mant_i;
+
+            -- The first bit of the root, 1/2, is always set, since x >= 1/4
+            f_n  <= 0;
+            f_r  <= shift_left(to_unsigned(1, 34), 33);
+            f_sq <= shift_left(to_unsigned(1, C_W), 66);
+         end if;
+
+         if f_push = '1' then
+            f_since <= 0;
+            f_flow  <= not rst_i;
+         else
+            if f_since < C_CYCLES then
+               f_since <= f_since + 1;
+            end if;
+            f_flow <= f_flow and m_ready_i and not rst_i;
+         end if;
+
+         if rst_i = '1' then
+            f_cnt <= 0;
+         end if;
+
+         f_started <= '1';
+      end if;
+   end process f_track_proc;
+
+   f_check_proc : process (all)
+      variable ok_v   : boolean;
+      variable rem_v  : unsigned(C_W - 1 downto 0);
+      variable up_v   : unsigned(C_W - 1 downto 0);
+      variable val_v  : unsigned(C_W - 1 downto 0);
+      variable mask_v : unsigned(34 downto 0);
+   begin
+      -- The output register. The root, with the leading one, is f_out_t/2
+      -- rounded to nearest, i.e. (f_out_t + 1)/2 rounded down. This must
+      -- fit in 32 bits.
+      ok_v := f_cnt >= 1 and m_error_o = f_out_mant(31);
+      if f_out_mant(31) = '1' or f_out_exp = X"00" then
+         ok_v := ok_v and m_exp_o = X"00" and m_mant_o = X"00000000";
+      else
+         ok_v := ok_v and unsigned(m_exp_o) = root_exp(f_out_exp) and m_mant_o(31) = '0' and
+                 unsigned("01" & m_mant_o(30 downto 0)) = shift_right(resize(f_out_t, 34) + 1, 1);
+      end if;
+      f_out_ok <= ok_v;
+
+      -- The calculation. The remainder of the reference model is
+      -- rem = x*2^34 - r^2, and the next bit is mask = 2^(32-f_n). If the
+      -- last bit was set, val holds rem, scaled down by 2*mask. If not, val
+      -- holds the remainder of the root with the last bit set, i.e. of
+      -- r + 2*mask, which is negative: The remainder was not restored. The
+      -- root is the root of x truncated to the bits above mask:
+      --    0 <= rem < (r + 2*mask)^2 - r^2 = 4*r*mask + 4*mask^2 = up
+      -- The root has the first bit set, and no bits at or below mask.
+      mask_v := shift_left(to_unsigned(1, 35), 32 - f_n);
+      rem_v  := f_x - f_sq;
+      up_v   := shift_left(resize(f_r, C_W), 34 - f_n) + shift_left(to_unsigned(1, C_W), 66 - 2 * f_n);
+      val_v  := shift_left(unsigned(resize(val, C_W)), 33 - f_n);
+
+      ok_v := mant = f_r and mask = mask_v and f_r(33) = '1' and (f_r and resize(shift_left(mask_v, 1) - 1, 34)) = 0 and
+              f_sq <= f_x and rem_v < up_v and (resize(f_r, C_W) /= C_ALL_R(f_n) or f_sq = C_ALL_SQ(f_n));
+      if val >= 0 then
+         ok_v := ok_v and val_v = rem_v;
+      else
+         ok_v := ok_v and val_v = rem_v - up_v;
+      end if;
+      f_calc_ok <= ok_v;
+
+      -- The calculation is done: f_r is the root of x truncated to 33 bits,
+      -- i.e. 0 <= rem < (r + 2)^2 - r^2 = 4*r + 4. Since x < 1, the root
+      -- is less than 1 - 2^-33, so the rounding does not overflow.
+      f_done_ok <= f_n = 32 and mant = f_r and f_r(33) = '1' and f_r(0) = '0' and
+                   f_sq <= f_x and rem_v < shift_left(resize(f_r, C_W), 2) + 4 and
+                   (resize(f_r, C_W) /= C_ALL_R(32) or f_sq = C_ALL_SQ(32)) and
+                   f_r(32 downto 1) /= X"FFFFFFFF";
+   end process f_check_proc;
+
+
+   -----------------------------
+   -- ASSERTIONS ABOUT OUTPUTS
+   -----------------------------
+
+   -- Every result is correct, and no result is output without an input
+   f_out : assert always f_started = '1' and m_valid_o = '1' -> f_out_ok;
+
+   -- The result stays valid and unchanged until it is taken
+   f_hold : assert always {f_started = '1' and m_valid_o = '1' and m_ready_i = '0' and rst_i = '0'} |=>
+      {m_valid_o = '1' and m_exp_o = prev(m_exp_o) and m_mant_o = prev(m_mant_o) and
+       m_error_o = prev(m_error_o)};
+
+   -- No input is accepted while the design already holds two
+   f_no_overflow : assert always f_started = '1' -> not (f_push = '1' and f_pop = '0' and f_cnt = 2);
+
+   -- A reset clears m_valid_o
+   f_rst : assert always {rst_i = '1'} |=> {m_valid_o = '0'};
+
+   -- Latency: In the last clock cycle of the calculation, if the consumer is
+   -- ready, the result is valid in the next clock cycle
+   f_latency : assert always {f_started = '1' and f_flow = '1' and f_since = f_lat - 1 and
+                              m_ready_i = '1' and rst_i = '0'} |=> {m_valid_o = '1'};
+
+   -- Throughput: If the consumer has been ready since the last input was
+   -- accepted, the next input is accepted in the last clock cycle of the
+   -- calculation, i.e. every C_CYCLES clock cycles. This is not true for a
+   -- zero result: If the input was accepted while the previous result was
+   -- written to the output register, the output register is still full in
+   -- the next clock cycle, so the next input is accepted one clock cycle
+   -- later.
+   f_throughput : assert always f_started = '1' and f_flow = '1' and f_lat = C_CYCLES and
+      f_since = C_CYCLES - 1 -> s_ready_o = '1';
+
+
+   -----------------------------
+   -- ASSERTIONS FOR INDUCTION
+   -----------------------------
+
+   -- None of the inputs is lost or duplicated: The output register holds the
+   -- result of one input (if valid), and the calculation works on one (if
+   -- not idle)
+   f_count_ok <= (f_cnt = 0 and state = IDLE_ST and m_valid_o = '0') or
+                 (f_cnt = 1 and state = IDLE_ST and m_valid_o = '1') or
+                 (f_cnt = 1 and state /= IDLE_ST and m_valid_o = '0') or
+                 (f_cnt = 2 and state /= IDLE_ST and m_valid_o = '1');
+   f_count : assert always f_started = '1' -> f_count_ok;
+
+   -- The calculation matches the reference model, and takes G_STEPS
+   -- iterations in each clock cycle
+   f_calc : assert always f_started = '1' and state = CALC_ST ->
+      f_zero = '0' and neg = '0' and exp = root_exp(f_exp) and f_n = G_STEPS * f_since and f_calc_ok;
+
+   -- When the calculation is done, the root is the root of x, truncated to
+   -- 33 bits. A zero result is ready right away.
+   f_done : assert always f_started = '1' and state = DONE_ST and f_zero = '0' ->
+      neg = '0' and exp = root_exp(f_exp) and f_since >= C_CYCLES - 1 and f_done_ok;
+   f_done_zero : assert always f_started = '1' and state = DONE_ST and f_zero = '1' ->
+      neg = f_mant(31) and exp = X"00" and mant = shift_left(to_unsigned(1, 35), 33);
+
+   -- state holds one of its three values. It is stored in two bits, so
+   -- induction could otherwise start from the fourth value.
+   f_state : assert always state = IDLE_ST or state = CALC_ST or state = DONE_ST;
+
+   -- The signals of the checker are in range. They are stored in more bits
+   -- than needed, so induction could otherwise start from other values.
+   f_range : assert always f_started = '1' -> f_since <= C_CYCLES and f_n <= 32;
+
+   -- Without a reset, the calculation is still running
+   f_flow_busy : assert always f_started = '1' and f_flow = '1' and f_since < f_lat -> state /= IDLE_ST;
+
+   -- If the consumer is ready, the previous result is taken in the first
+   -- clock cycle of the calculation
+   f_flow_empty : assert always f_started = '1' and f_flow = '1' and f_since >= 1 and f_since < f_lat ->
+      m_valid_o = '0';
+
+
+   -----------------------------
+   -- ASSUMPTIONS ABOUT INPUTS
+   -----------------------------
+
+   -- Require a reset at startup
+   f_reset : assume {rst_i = '1'};
+
+   -- For induction: The signals above are only invalid in the first clock
+   -- cycle, where f_reset requires a reset anyway
+   f_start_first : assume always f_started = '0' -> rst_i = '1';
+
+
+   --------------------------------------------
+   -- COVER STATEMENTS TO VERIFY REACHABILITY
+   --------------------------------------------
+
+   -- A result is taken, so f_out is not vacuous
+   f_cover_done : cover {f_started = '1' and f_pop = '1' and f_out_mant(31) = '0' and f_out_exp /= X"00"};
+
+   -- The root is rounded up
+   f_cover_round : cover {f_started = '1' and f_pop = '1' and f_out_mant(31) = '0' and f_out_exp /= X"00" and
+                          f_out_t(0) = '1'};
+
+   -- The largest input mantissa, with an odd and an even exponent
+   f_cover_max_odd  : cover {f_started = '1' and f_pop = '1' and f_out_mant = X"7FFFFFFF" and f_out_exp = X"81"};
+   f_cover_max_even : cover {f_started = '1' and f_pop = '1' and f_out_mant = X"7FFFFFFF" and f_out_exp = X"80"};
+
+   -- A negative input
+   f_cover_error : cover {f_started = '1' and f_pop = '1' and m_error_o = '1'};
+
+   -- A zero input
+   f_cover_zero : cover {f_started = '1' and f_pop = '1' and f_out_exp = X"00"};
+
+   -- The result waits to be taken, so f_hold is not vacuous
+   f_cover_wait : cover {f_started = '1' and m_valid_o = '1' and m_ready_i = '0'; m_valid_o = '1' and m_ready_i = '1'};
+
+   -- The calculation waits, because the output register is still occupied
+   f_cover_full : cover {f_started = '1' and state = DONE_ST and m_valid_o = '1' and m_ready_i = '0'};
+
+   -- A new input is accepted while the result is written to the output
+   -- register
+   f_cover_overlap : cover {f_started = '1' and f_push = '1' and state = DONE_ST};
+
+   -- A reset during a calculation
+   f_cover_reset : cover {f_started = '1' and state = CALC_ST and rst_i = '1'};
+
+} -- vunit c64_sqrt_inst (c64_sqrt(synthesis))

@@ -17,3 +17,9 @@ c64_sqrt.ip_user_files/
 c64_sqrt.runs/
 c64_sqrt.sim/
 .Xil/
+
+# Formal verification (make formal)
+c64_sqrt_prove1/
+c64_sqrt_prove2/
+c64_sqrt_prove4/
+c64_sqrt_cover4/
