@@ -1,14 +1,14 @@
-names += cassette.tex
-names += elliptic.tex
-names += fjerde.tex
-names += pell.tex
-names += pendulum.tex
-names += tredje.tex
-names += euler.tex
-names += modular.tex
-names += quintic.tex
+dirs  = cassette
+dirs += elliptic
+dirs += fjerde
+dirs += pell
+dirs += pendulum
+dirs += tredje
+dirs += euler
+dirs += modular
+dirs += quintic
 
-tex_pdfs   = $(names:.tex=.pdf)
+tex_pdfs   = $(foreach d,$(dirs),$(d)/$(d).pdf)
 
 %pics   = fig1.asy
 %asy_pdfs  += $(pics:.asy=.pdf)
@@ -19,8 +19,8 @@ all: $(asy_pdfs) $(tex_pdfs)
 	asy $< 
 
 %.pdf : %.tex
-	latexmk -pdf $<
+	latexmk -pdf -cd $<
 
 clean:
-	rm -f *.log *.aux *.pdf *.pre *.toc *.fdb_latexmk *.fls
+	for d in $(dirs); do (cd $$d && rm -f *.log *.aux *.pdf *.pre *.toc *.fdb_latexmk *.fls); done
 

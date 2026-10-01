@@ -14,7 +14,7 @@ jobs:
         run: |
           make -C latex
           mkdir artifact
-          cp latex/*.pdf artifact/.
+          cp latex/*/*.pdf artifact/.
       - name: Archive
         uses: actions/upload-artifact@v7
         with:
