@@ -126,6 +126,9 @@ Type `make` to list the supported targets:
   counterexample in GTKWave.
 * `make clean` removes the generated files.
 
+The CI (`.github/workflows/c64_sqrt2.yml`) runs `make sim` and `make formal` on
+every pull request, and every push to master, that changes this directory.
+
 ## Formal verification
 The formal verification (`c64_sqrt2.psl`, `c64_sqrt2.sby`) proves with
 k-induction, for every sequence of inputs and stalls, including resets:

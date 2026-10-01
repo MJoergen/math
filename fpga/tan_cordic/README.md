@@ -112,6 +112,9 @@ Type `make` to list the supported targets:
   counterexample in GTKWave, where the task is one of those in `tan_cordic.sby`.
 * `make clean` removes the generated files.
 
+The CI (`.github/workflows/tan_cordic.yml`) runs `make sim` and `make formal`
+on every pull request, and every push to master, that changes this directory.
+
 ## Formal verification
 The formal verification (`tan_cordic.psl`, `tan_cordic.sby`) proves with
 k-induction, i.e. for every sequence of inputs and stalls, including resets:

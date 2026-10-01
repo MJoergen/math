@@ -114,6 +114,9 @@ Type `make` to list the supported targets:
   counterexample in GTKWave.
 * `make clean` removes the generated files.
 
+The CI (`.github/workflows/fast_divide.yml`) runs `make sim` and `make formal`
+on every pull request, and every push to master, that changes this directory.
+
 ## Formal verification
 The formal verification (`fast_divide.psl`, `fast_divide.sby`) proves with
 k-induction, for every sequence of inputs and stalls, including resets:

@@ -110,6 +110,10 @@ Type `make` to list the supported targets:
   Vivado in `/opt/Xilinx/2025.1/Vivado` (the variable `XILINX_DIR`).
 * `make clean` removes the generated files.
 
+The CI (`.github/workflows/booth.yml`) runs `make sim`, `make formal`, and
+`make synth` on every pull request, and every push to master, that changes this
+directory.
+
 ## Simulation
 `make sim` runs the testbench `tb_booth.vhd` for `booth.vhd`,
 `booth_radix2.vhd`, and `booth_csa.vhd` (with `G_DIGITS` from 1 to 4). The
