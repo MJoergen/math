@@ -44,7 +44,7 @@ The calculation has two pipeline stages:
 2. The multiply-add $f + b \cdot (1 + g)$ in the DSP block, whose result is the
    output register.
 
-So the latency is 2 clock cycles (16 ns at 125 MHz), and a new input is
+So the latency is 2 clock cycles (9 ns at 222 MHz), and a new input is
 accepted in every clock cycle.
 
 ### The handshake
@@ -116,19 +116,22 @@ The first two add up to the largest errors in the table. See the tables under
 [Test results](README.md#test-results) for the inputs where they occur.
 
 ## Timing and resources
-Both stages are just registers around a Block RAM and a DSP block, so the
-critical path, from the output of the Block RAM into the DSP block, has no
-logic at all. The design meets the constraint of 8 ns (125 MHz) with a slack
-of at least 1.7 ns for all values of `G_EXTRA_BITS`. With a shorter clock
-period of 7.5 ns or less, Vivado implements some or all of the tables in LUTs
-instead of Block RAM (e.g. 807 LUTs and no Block RAM at 6 ns), so the clock
-period cannot be reduced much without extra pipeline registers in the Block
-RAMs.
+Both stages are just registers around the tables and a DSP block. With the
+tables in Block RAM, the critical path, from the output of the Block RAM into
+the DSP block, has no logic at all. Then the design meets a clock period of
+8 ns (125 MHz) with a slack of at least 1.7 ns for all values of
+`G_EXTRA_BITS`, and uses 2 Block RAMs, 1 DSP block, and 29 to 47 LUTs and 25
+to 33 flip-flops, depending on `G_EXTRA_BITS`. About 29 LUTs and 25
+flip-flops are for the handshake (the skid buffer, the valid bits, and the
+clock enable), and the rest is the table of the upper bits of $f$.
 
-The design uses 2 Block RAMs, 1 DSP block, and 29 to 47 LUTs and 25 to 33
-flip-flops, depending on `G_EXTRA_BITS`. About 29 LUTs and 25 flip-flops are
-for the handshake (the skid buffer, the valid bits, and the clock enable), and
-the rest is the table of the upper bits of $f$.
+With a shorter clock period of 7.5 ns or less, Vivado implements some or all
+of the tables in LUTs instead of Block RAM. The constraint in
+`pipeline_sqrt.xdc` is 4.5 ns (222 MHz), the shortest clock period found where
+the timing is met (it is not met at 4.0 ns). There all the tables are in LUTs,
+and the design uses 803 to 932 LUTs, 61 to 69 flip-flops, 1 DSP block, and no
+Block RAM, depending on `G_EXTRA_BITS`. It meets the timing with a slack of
+0.005 to 0.209 ns.
 
 ## Trade-offs
 * **Table size versus precision:** Each extra bit of the table index halves

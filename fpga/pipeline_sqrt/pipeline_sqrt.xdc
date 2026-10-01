@@ -10,9 +10,11 @@
 # Clock definition. For create_clock, see UG903 above, and UG835, "Vivado
 # Design Suite Tcl Command Reference Guide":
 # https://docs.amd.com/r/en-US/ug835-vivado-tcl-commands
-# With a clock period of 7.5 ns or less, Vivado 2025.1 synthesis implements
-# some or all of the ROMs in LUTs instead of Block RAM, see README.md.
-create_clock -name clk -period 8.00 [get_ports {clk_i}]; # 125 MHz
+# 4.5 ns is the shortest clock period found where the timing is met. With a
+# clock period of 7.5 ns or less, Vivado 2025.1 synthesis implements some or
+# all of the ROMs in LUTs instead of Block RAM, and at 4.5 ns all of them, see
+# README.md.
+create_clock -name clk -period 4.50 [get_ports {clk_i}]; # 222 MHz
 
 # In a real design, the clock comes from a global clock buffer. Without this
 # property, the timing out of context only estimates the clock delay and skew.

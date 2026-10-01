@@ -10,7 +10,7 @@
 # Clock definition. For create_clock, see UG903 above, and UG835, "Vivado
 # Design Suite Tcl Command Reference Guide":
 # https://docs.amd.com/r/en-US/ug835-vivado-tcl-commands
-create_clock -name clk -period 20.00 [get_ports {clk_i}]; # 50 MHz
+create_clock -name clk -period 13.50 [get_ports {clk_i}]; # 74.1 MHz
 
 # In a real design, the clock comes from a global clock buffer. Without this
 # property, the timing out of context only estimates the clock delay and skew.

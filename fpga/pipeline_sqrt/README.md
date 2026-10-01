@@ -10,24 +10,27 @@ Output: The range of values is [1, 2[, and the fractional part is encoded as fix
         0.22 (the integer part is constant 1).
 
 It is a 2-stage pipeline: It accepts a new input in every clock cycle, and the latency
-is 16 ns, at the 125 MHz clock constraint in [`pipeline_sqrt.xdc`](pipeline_sqrt.xdc).
+is 9 ns, at the 222 MHz clock constraint in [`pipeline_sqrt.xdc`](pipeline_sqrt.xdc).
 The input and the output use an AXI-style VALID/READY handshake, see
 [Interface](#interface).
 
 ## FPGA resources
-This implementation uses two BRAMs and one DSP, and a small amount of extra logic.
-The exact numbers for each value of G_EXTRA_BITS are listed under
-[Test results](#test-results).
+It can run at a clock speed of 222 MHz (clock period 4.5 ns). At this clock frequency,
+Vivado implements the two ROMs in LUTs (and F7 and F8 muxes) instead of Block RAM, so
+this implementation uses one DSP, about 800 to 930 LUTs, and no BRAM. The exact numbers
+for each value of G_EXTRA_BITS are listed under [Test results](#test-results).
 
-It can run at a clock speed of 125 MHz (clock period 8 ns). The numbers are from
-Vivado 2025.1, with `make vivado` (see [Running](#running)), which implements the design
-out of context for the part xc7a200tfbg484-2, and meets the timing constraint in
-[`pipeline_sqrt.xdc`](pipeline_sqrt.xdc) with a slack of at least 1.7 ns.
+The numbers are from Vivado 2025.1, with `make vivado` (see [Running](#running)), which
+implements the design out of context for the part xc7a200tfbg484-2, and meets the timing
+constraint in [`pipeline_sqrt.xdc`](pipeline_sqrt.xdc) with a slack of 0.005 to
+0.209 ns, depending on G_EXTRA_BITS. This is the highest clock frequency found: with a
+clock period of 4.0 ns, the timing is not met (with G_EXTRA_BITS = 2).
 
-The clock period cannot be reduced much: With a clock period of 7.5 ns or less, Vivado
-synthesis implements some or all of the ROMs in LUTs (and F7 and F8 muxes) instead of
-Block RAM, e.g. 383 LUTs and 1 BRAM at 7.5 ns, and 807 LUTs and 0 BRAM at 6 ns (both
-with G_EXTRA_BITS = 2).
+At a lower clock frequency, the ROMs fit in Block RAM: With a clock period of 8 ns
+(125 MHz), the design uses two BRAMs, one DSP, and only 29 to 47 LUTs, and meets the
+timing with a slack of at least 1.7 ns. The latency is then 16 ns. With a clock period of
+7.5 ns or less, Vivado synthesis implements some or all of the ROMs in LUTs, e.g. 383
+LUTs and 1 BRAM at 7.5 ns (with G_EXTRA_BITS = 2).
 
 ## Theory of operation
 The calculation performed is x = sqrt(y), where y is the real input number and x is the
@@ -71,7 +74,7 @@ and the timing.
 | [`tb_pipeline_sqrt.vhd`](tb_pipeline_sqrt.vhd) | Testbench.
 | [`ALGORITHM.md`](ALGORITHM.md) | Detailed explanation of the algorithm.
 | [`pipeline_sqrt.gtkw`](pipeline_sqrt.gtkw) | GTKWave setup for viewing the waveform from `make debug`.
-| [`pipeline_sqrt.xdc`](pipeline_sqrt.xdc), [`vivado.tcl`](vivado.tcl) | Timing constraint (125 MHz) and script for synthesis with Vivado, see `make vivado`.
+| [`pipeline_sqrt.xdc`](pipeline_sqrt.xdc), [`vivado.tcl`](vivado.tcl) | Timing constraint (222 MHz) and script for synthesis with Vivado, see `make vivado`.
 | [`pipeline_sqrt.xpr`](pipeline_sqrt.xpr) | Vivado project, for use in the Vivado GUI. It has the same settings as `make vivado`, with G_EXTRA_BITS = 2.
 | [`Makefile`](Makefile) | Runs the simulation and the synthesis, see [Running](#running).
 
@@ -118,7 +121,7 @@ Type `make` to list the supported targets:
   [Vivado](https://www.amd.com/en/products/software/adaptive-socs-and-fpgas/vivado.html)
   for the Artix-7 part xc7a200tfbg484-2. The design is implemented out of context, i.e.
   as a module inside a larger design, so only the paths between registers are timed. It
-  fails if the design does not meet the 125 MHz clock constraint in `pipeline_sqrt.xdc`.
+  fails if the design does not meet the 222 MHz clock constraint in `pipeline_sqrt.xdc`.
   At the end it prints the number of cells and the slack of the worst path, and the
   reports are written to `vivado/pipeline_sqrt_2/`. E.g. `make vivado VIVADO_EXTRA_BITS=4`
   selects another value of G_EXTRA_BITS. It takes about 2 minutes, and expects Vivado in
@@ -151,9 +154,10 @@ It takes approx 3 minutes to run the entire simulation for each value of G_EXTRA
 [Running](#running).
 
 The main results are below. The synthesis reports are from Vivado 2025.1 with a clock
-period of 8 ns, from `make vivado VIVADO_EXTRA_BITS=n`, see [FPGA resources](#fpga-resources).
-About 29 LUTs and 25 registers are for the handshake (the skid buffer, the valid bits,
-and the clock enable of the pipeline); the rest grows with G_EXTRA_BITS.
+period of 4.5 ns, from `make vivado VIVADO_EXTRA_BITS=n`, see [FPGA resources](#fpga-resources).
+The LUTs are mostly the two ROMs. With a clock period of 8 ns, where the ROMs are in two
+BRAMs, the design uses 29, 31, 34, 40, and 47 LUTs and 25, 27, 29, 31, and 33 registers
+for G_EXTRA_BITS from 0 to 4.
 
 ### G_EXTRA_BITS = 0
 
@@ -180,9 +184,11 @@ Analysis of the final row:
 * data_out = 0x0150E2
 
 Synthesis report
-* LUT   = 29
-* REG   = 25
-* BRAM  = 2
+* LUT   = 803
+* REG   = 61
+* F7MUX = 343
+* F8MUX = 127
+* BRAM  = 0
 * DSP   = 1
 
 
@@ -212,9 +218,11 @@ Analysis of the final row:
 * data_out  = 0x00FFB6
 
 Synthesis report
-* LUT   = 31
-* REG   = 27
-* BRAM  = 2
+* LUT   = 823
+* REG   = 63
+* F7MUX = 351
+* F8MUX = 118
+* BRAM  = 0
 * DSP   = 1
 
 
@@ -244,9 +252,11 @@ Analysis of the final row:
 * data_out  = 0x00FFBA
 
 Synthesis report
-* LUT   = 34
-* REG   = 29
-* BRAM  = 2
+* LUT   = 882
+* REG   = 65
+* F7MUX = 355
+* F8MUX = 133
+* BRAM  = 0
 * DSP   = 1
 
 
@@ -274,9 +284,11 @@ Analysis of the final row:
 * data_out  = 0x009FFD
 
 Synthesis report
-* LUT   = 40
-* REG   = 31
-* BRAM  = 2
+* LUT   = 901
+* REG   = 67
+* F7MUX = 367
+* F8MUX = 124
+* BRAM  = 0
 * DSP   = 1
 
 
@@ -303,10 +315,11 @@ Analysis of the final row:
 * data_out  = 0x00735E
 
 Synthesis report
-* LUT   = 47
-* REG   = 33
-* F7MUX = 1
-* BRAM  = 2
+* LUT   = 932
+* REG   = 69
+* F7MUX = 380
+* F8MUX = 136
+* BRAM  = 0
 * DSP   = 1
 
 

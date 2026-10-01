@@ -38,7 +38,7 @@ one more iteration is done after $D$ has reached all ones. This multiplies $N$
 by $1 + 2^{-36}$, which is the right correction for $D = 1 - 2^{-36}$.
 
 The latency is the number of iterations plus one clock cycle for the output
-register, i.e. 4 to 7 clock cycles (80 to 140 ns at 50 MHz). Over random
+register, i.e. 4 to 7 clock cycles (54 to 95 ns at 74.1 MHz). Over random
 inputs (of random sizes), 62% need 7 clock cycles, 31% need 6, 7% need 5, and
 0.3% need 4. In the testbench the average is 6.74.
 
@@ -101,10 +101,12 @@ implemented.
 ## Timing and resources
 Both multiplications are combinational, and each iteration is a single clock
 cycle. So the critical path is from `dd`, through the subtraction $F = 2 - D$,
-through the 68-by-38-bit multiplier, into `nn`: 25 logic levels. The design
-meets the 50 MHz constraint (20 ns) with a slack of 3.8 ns, so it could run at
-about 60 MHz. It uses 12 DSP blocks for the two multipliers, 595 LUTs, and 175
-flip-flops.
+through the 68-by-38-bit multiplier, into `nn`: 24 to 25 logic levels. The
+design meets the 74.1 MHz constraint (13.5 ns) with a slack of 0.156 ns, and
+this is the highest clock frequency found: with 13.25 ns the timing is not met.
+It uses 12 DSP blocks for the two multipliers, 595 LUTs, and 277 flip-flops.
+With the earlier constraint of 50 MHz (20 ns), the slack was 3.8 ns, and the
+design used 175 flip-flops.
 
 The normalization (counting the leading zeros of $d$, and shifting $n$ and $d$)
 is done combinationally from the inputs, in the clock cycle where they are
@@ -123,5 +125,5 @@ starts at the registers that drive the inputs.
 * **Compared with SRT division:** [`srt`](../srt/ALGORITHM.md) calculates two
   bits of the quotient per clock cycle without any multipliers, so it needs 37
   clock cycles, but runs at 200 MHz, for a latency of 185 ns, and its result
-  is always correctly rounded. Goldschmidt division has a lower latency (80 to
-  140 ns), but needs 12 DSP blocks, and is less precise.
+  is always correctly rounded. Goldschmidt division has a lower latency (54 to
+  95 ns), but needs 12 DSP blocks, and is less precise.

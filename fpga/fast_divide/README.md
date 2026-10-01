@@ -5,17 +5,17 @@ in VHDL for an FPGA. The quotient is a 64-bit fixed-point number, with 32
 integer bits and 32 fraction bits, but it is only precise to about 34
 significant bits, see [Precision](ALGORITHM.md#precision).
 
-The timing constraint in [`fast_divide.xdc`](fast_divide.xdc) is 50 MHz (clock
-period 20 ns), which is met with a slack of 3.8 ns. At this clock frequency
-the latency is at most 140 ns (135 ns on average in the testbench). The design
-can run at about 60 MHz (clock period 16.2 ns), and then the latency is at most
-113 ns.
+The timing constraint in [`fast_divide.xdc`](fast_divide.xdc) is 74.1 MHz
+(clock period 13.5 ns), which is met with a slack of 0.156 ns. At this clock
+frequency the latency is at most 95 ns (91 ns on average in the testbench).
+This is the highest clock frequency found: with a clock period of 13.25 ns, the
+timing is not met.
 
 The resource usage is:
 
 * LUT   : 595
-* FF    : 175
-* Slice : 157
+* FF    : 277
+* Slice : 176
 * DSP   :  12
 
 These numbers are from Vivado 2025.1, with `make vivado` (see
@@ -61,7 +61,7 @@ precision limit comes from, and the timing.
 | [`tb_fast_divide.vhd`](tb_fast_divide.vhd) | Testbench.
 | [`ALGORITHM.md`](ALGORITHM.md) | Detailed explanation of the algorithm.
 | [`fast_divide.gtkw`](fast_divide.gtkw) | GTKWave setup for viewing the waveform from `make debug`.
-| [`fast_divide.xdc`](fast_divide.xdc), [`vivado.tcl`](vivado.tcl) | Timing constraint (50 MHz) and script for synthesis with Vivado, see `make vivado`.
+| [`fast_divide.xdc`](fast_divide.xdc), [`vivado.tcl`](vivado.tcl) | Timing constraint (74.1 MHz) and script for synthesis with Vivado, see `make vivado`.
 | [`fast_divide.xpr`](fast_divide.xpr) | Vivado project, for use in the Vivado GUI. It has the same settings as `make vivado`.
 | [`Makefile`](Makefile) | Runs the simulation and the synthesis, see [Running](#running).
 
@@ -100,7 +100,7 @@ Type `make` to list the supported targets:
   [Vivado](https://www.amd.com/en/products/software/adaptive-socs-and-fpgas/vivado.html)
   for the Artix-7 part xc7a200tfbg484-2. The design is implemented out of
   context, i.e. as a module inside a larger design, so only the paths between
-  registers are timed. It fails if the design does not meet the 50 MHz clock
+  registers are timed. It fails if the design does not meet the 74.1 MHz clock
   constraint in `fast_divide.xdc`. At the end it prints the number of cells and the
   slack of the worst path, and the reports are written to `vivado/`. It takes
   about 2 minutes, and expects Vivado in `/opt/Xilinx/2025.1/Vivado` (the variable
