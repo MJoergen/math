@@ -1,5 +1,6 @@
 # Square root, version 2
-This calculates the square root of a C64 floating point number, using an
+This calculates the square root of a
+[C64 floating point number](../README.md#c64-floating-point-format), using an
 iterative method with multipliers, in VHDL for an FPGA. It has the same
 interface as [`c64_sqrt`](../c64_sqrt), but has a latency of 40 to 119 ns
 (94 ns on average in the testbench) instead of 139 ns, at a lower clock
@@ -29,20 +30,6 @@ xc7a200tfbg484-2, and meets the timing constraint in
 [`c64_sqrt2.xdc`](c64_sqrt2.xdc), a clock period of 13.2 ns (75.8 MHz), with a
 slack of 0.338 ns. The timing is sensitive to placement: with a clock period
 of 12.5 to 13.0 ns, the timing was missed by up to 0.6 ns.
-
-## The number format
-The input and the output use the 5-byte floating point format of the C64
-BASIC, see [Floating point arithmetic](https://www.c64-wiki.com/wiki/Floating_point_arithmetic):
-An exponent byte and a 32-bit mantissa. The value is 0.1mmm... (binary) times
-2^(exp-128), where bit 31 of the mantissa holds the sign instead of the
-leading one. An exponent of zero means the value 0.0.
-
-| Value | Exp  | Mantissa
-| ----- | ---- | --------
-|   0.0 | 0x00 | any
-|   0.5 | 0x80 | 0x00000000
-|   1.0 | 0x81 | 0x00000000
-|  -1.0 | 0x81 | 0x80000000
 
 ## The algorithm
 The exponent is handled as in `c64_sqrt`: It is halved, and the mantissa is

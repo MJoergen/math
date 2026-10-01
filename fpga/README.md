@@ -16,10 +16,11 @@ precise it is, and the trade-offs.
 | [`tan_cordic`](tan_cordic) | Tangent of a fixed-point angle, using the CORDIC variant of the Intel 8087. | 478 ns at 109 MHz
 
 The latency is the time from when the input is accepted until the result is
-valid, for 32-bit operands, or a 32-bit mantissa for the C64 floating point
-numbers. `srt` and `pipeline_sqrt` do not support 32 bits, so their latency is
-for the width given in the description, and `tan_cordic` uses 8 iterations,
-which give full precision for 32 bits.
+valid, for 32-bit operands, or a 32-bit mantissa for the
+[C64 floating point numbers](#c64-floating-point-format). `srt` and
+`pipeline_sqrt` do not support 32 bits, so their latency is for the width given
+in the description, and `tan_cordic` uses 8 iterations, which give full
+precision for 32 bits.
 
 The latency is at the highest clock frequency where `make vivado` meets the
 timing, with the RTL unchanged. This was found by reducing the clock period in
@@ -30,6 +31,21 @@ highest possible clock frequency. The `.xdc` files of `fast_divide` and
 clock frequencies, with more slack, and the READMEs give the latency at those.
 At 222 MHz, Vivado implements the ROMs of `pipeline_sqrt` in LUTs instead of
 Block RAM.
+
+## C64 floating point format
+The inputs and the outputs of [`c64_sqrt`](c64_sqrt), [`c64_sqrt2`](c64_sqrt2),
+and [`c64_sincos`](c64_sincos) use the 5-byte floating point format of the C64
+BASIC, see [Floating point arithmetic](https://www.c64-wiki.com/wiki/Floating_point_arithmetic):
+An exponent byte and a 32-bit mantissa. The value is 0.1mmm... (binary) times
+2^(exp-128), where bit 31 of the mantissa holds the sign instead of the
+leading one. An exponent of zero means the value 0.0.
+
+| Value | Exp  | Mantissa
+| ----- | ---- | --------
+|   0.0 | 0x00 | any
+|   0.5 | 0x80 | 0x00000000
+|   1.0 | 0x81 | 0x00000000
+|  -1.0 | 0x81 | 0x80000000
 
 ## Interface
 All the designs have the same top-level interface, with the same naming

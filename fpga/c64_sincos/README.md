@@ -1,7 +1,7 @@
 # Sine and cosine
-This calculates both the sine and the cosine of a C64 floating point number,
-using the [CORDIC](https://en.wikipedia.org/wiki/CORDIC) algorithm, in VHDL
-for an FPGA.
+This calculates both the sine and the cosine of a
+[C64 floating point number](../README.md#c64-floating-point-format), using the
+[CORDIC](https://en.wikipedia.org/wiki/CORDIC) algorithm, in VHDL for an FPGA.
 
 It can safely run at a clock speed of 156 MHz (clock period 6.4 ns), and the
 latency is 237 ns.
@@ -22,20 +22,6 @@ The largest absolute error of the sine and the cosine is 2^(-31.4) for angles
 in the range [0, pi/4], and 2^(-31.2) in the range [-2pi, 2pi]. This is the
 accuracy of the 33 CORDIC iterations, see [The algorithm](#the-algorithm). For
 larger angles the error grows, see [Accuracy](ALGORITHM.md#accuracy).
-
-## The number format
-The input and the outputs use the 5-byte floating point format of the C64
-BASIC, see [Floating point arithmetic](https://www.c64-wiki.com/wiki/Floating_point_arithmetic):
-An exponent byte and a 32-bit mantissa. The value is 0.1mmm... (binary) times
-2^(exp-128), where bit 31 of the mantissa holds the sign instead of the
-leading one. An exponent of zero means the value 0.0.
-
-| Value | Exp  | Mantissa
-| ----- | ---- | --------
-|   0.0 | 0x00 | any
-|   0.5 | 0x80 | 0x00000000
-|   1.0 | 0x81 | 0x00000000
-|  -1.0 | 0x81 | 0x80000000
 
 ## The algorithm
 The calculation has five steps:
