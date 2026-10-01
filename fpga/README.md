@@ -89,6 +89,27 @@ also have a Vivado project (`.xpr`), for use in the Vivado GUI.
 Unless stated otherwise, the resource usage and timing in the READMEs are from
 Vivado, for the Artix-7 part xc7a200tfbg484-2.
 
+### Tools
+The results in the READMEs were made with these versions of the tools. Other
+versions probably work too, except that the resource usage and timing depend
+on the version of Vivado.
+
+| Tool | Version | Used by
+| ---- | ------- | -------
+| [GHDL](https://github.com/ghdl/ghdl) | 7.0.0-dev (6.0.0.r515.g6ea214092), mcode | `make sim`, `make debug`
+| [GTKWave](https://github.com/gtkwave/gtkwave) | 3.3.116 | `make show_debug`, and the other `make show_*` targets
+| [Vivado](https://www.amd.com/en/products/software/adaptive-socs-and-fpgas/vivado.html) | 2025.1 | `make vivado`, and the `.xpr` projects
+| [Yosys](https://github.com/YosysHQ/yosys) | 0.69+158 | `make formal`, and `make synth` in `booth`
+| [GHDL plugin for Yosys](https://github.com/ghdl/ghdl-yosys-plugin) | ghdl-v6.0.0-30-g5ec8c19 | `make formal`, and `make synth` in `booth`
+| [SymbiYosys](https://github.com/YosysHQ/sby) | 0.69 | `make formal`
+| [Yices 2](https://github.com/SRI-CSL/yices2) | 2.7.0 | `make formal` in `srt`
+| [Boolector](https://github.com/Boolector/boolector) | 3.2.4 | `make formal` in `booth`
+| [Python](https://www.python.org/) | 3.12.3 | `make model` in `srt`
+| [latexmk](https://ctan.org/pkg/latexmk), [TeX Live](https://tug.org/texlive/) | 4.83, 2023 | `make pla.svg` in `srt`
+| [Poppler](https://poppler.freedesktop.org/) (`pdftocairo`) | 24.02.0 | `make pla.svg` in `srt`
+| [VSG](https://vhdl-style-guide.readthedocs.io/) | 3.35.0 | Checking the coding style, see [below](#coding-style)
+| [GNU Make](https://www.gnu.org/software/make/) | 4.3 | All the targets
+
 ## Coding style
 All the VHDL files follow the same coding style, which [`vsg.yml`](vsg.yml)
 describes, and which [VSG](https://vhdl-style-guide.readthedocs.io/) (VHDL
