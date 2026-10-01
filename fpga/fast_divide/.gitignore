@@ -17,3 +17,7 @@ fast_divide.ip_user_files/
 fast_divide.runs/
 fast_divide.sim/
 .Xil/
+
+# Formal verification (make formal)
+fast_divide_prove/
+fast_divide_cover/

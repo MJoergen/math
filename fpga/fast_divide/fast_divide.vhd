@@ -159,11 +159,12 @@ begin
                report "Calculating $" & to_hstring(s_n_i) & " / $" & to_hstring(s_d_i);
             end if;
 
-            leading_zeros_v                                       := count_leading_zeros(unsigned(s_d_i));
-            new_dd_v                                              := (others => '0');
-            new_dd_v(35 downto 4+leading_zeros_v)                 := unsigned(s_d_i(31-leading_zeros_v downto 0));
-            new_nn_v                                              := (others => '0');
-            new_nn_v(35+leading_zeros_v downto 4+leading_zeros_v) := unsigned(s_n_i);
+            -- Shift both operands left by the number of leading zeros of
+            -- the divisor (and by the 4 guard bits). The bits shifted out of
+            -- the divisor are the leading zeros.
+            leading_zeros_v := count_leading_zeros(unsigned(s_d_i));
+            new_dd_v        := shift_left(resize(unsigned(s_d_i), 36), 4 + leading_zeros_v);
+            new_nn_v        := shift_left(resize(unsigned(s_n_i), 68), 4 + leading_zeros_v);
             if G_DEBUG then
                report "Normalised to $" & to_hstring(new_nn_v(67 downto 36)) & "." &
                       to_hstring(new_nn_v(35 downto 4)) & "." & to_hstring(new_nn_v(3 downto 0))
