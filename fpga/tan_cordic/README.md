@@ -4,9 +4,9 @@ This calculates `tan(angle)` for `angle` in the range `[0.0, pi/4[`, using a har
 adaptation of the algorithm used by the Intel 8087 math co-processor, as described in
 [this article](https://www.righto.com/2026/09/8087-tangent-cordic.html).
 
-The latency is 320 ns with the default configuration, at the 125 MHz clock
-constraint in [`tan_cordic.xdc`](tan_cordic.xdc). With 32 bits it is 478 ns, at
-108.7 MHz, see [Timing](#timing).
+The latency is 150 ns (13 clock cycles) with the default configuration, at the
+87.0 MHz clock constraint in [`tan_cordic.xdc`](tan_cordic.xdc). With 32 bits it
+is 188 ns (15 clock cycles), at 80.0 MHz, see [Timing](#timing).
 
 ## The algorithm
 The classical CORDIC algorithm calculates `sin` and `cos` by rotating a vector by the
@@ -22,12 +22,16 @@ the 8087, this module splits the calculation into three phases:
 3. **Pseudo-multiplication:** The vector is rotated by the special angles used in
    phase 1. Then `y/x = tan(angle)`.
 
-Finally, a restoring division calculates `y/x`, one bit per clock cycle.
+Finally, a non-restoring division calculates `y/x`, one bit per iteration.
+
+Phases 1 and 3, and the division, each do `G_STEPS` iterations (default 4) in
+each clock cycle.
 
 [ALGORITHM.md](ALGORITHM.md) explains the algorithm in detail: why each phase
 works, the fixed-point representation, how the accuracy depends on the number of
 iterations (about `G_FRAC_BITS/4` iterations are enough for full precision, since
-the Padé approximation gains about 5 bits per iteration), and the timing.
+the Padé approximation gains about 5 bits per iteration), and the timing for each
+value of `G_STEPS`.
 
 ## Files
 | File | Description
@@ -36,7 +40,7 @@ the Padé approximation gains about 5 bits per iteration), and the timing.
 | [`tb_tan_cordic.vhd`](tb_tan_cordic.vhd) | Testbench.
 | [`ALGORITHM.md`](ALGORITHM.md) | Detailed explanation of the algorithm, the accuracy, and the timing.
 | [`tan_cordic.gtkw`](tan_cordic.gtkw) | GTKWave setup for viewing the waveform from `make debug`.
-| [`tan_cordic.xdc`](tan_cordic.xdc), [`vivado.tcl`](vivado.tcl) | Timing constraint (125 MHz) and script for synthesis with Vivado, see `make vivado`.
+| [`tan_cordic.xdc`](tan_cordic.xdc), [`vivado.tcl`](vivado.tcl) | Timing constraint (87.0 MHz) and script for synthesis with Vivado, see `make vivado`.
 | [`Makefile`](Makefile) | Runs the simulation and the synthesis, see [Running](#running).
 
 ## Interface
@@ -45,6 +49,9 @@ uses up to 16, for 64 bits), and `G_FRAC_BITS` is the number of fractional bits 
 angle and the result (default 24). About `G_FRAC_BITS/4` iterations give full
 precision, see
 [Accuracy and the number of iterations](ALGORITHM.md#accuracy-and-the-number-of-iterations).
+`G_STEPS` is the number of iterations of phases 1 and 3, and of quotient bits of the
+division, in each clock cycle (default 4), see [Timing](#timing). It does not change
+the result.
 
 Both the input and the output use an
 [AXI](https://en.wikipedia.org/wiki/Advanced_eXtensible_Interface)-style
@@ -75,8 +82,8 @@ consumed (i.e. this module does not overlap consecutive calculations, unlike e.g
 ## Running
 Type `make` to list the supported targets:
 * `make sim` runs the testbench (see [below](#simulation)). This requires
-  [GHDL](https://github.com/ghdl/ghdl). It takes about 10 seconds.
-  E.g. `make sim ITERATIONS=6 FRAC_BITS=24` sweeps only that configuration
+  [GHDL](https://github.com/ghdl/ghdl). It takes about 30 seconds.
+  E.g. `make sim ITERATIONS=6 FRAC_BITS=24 STEPS=4` sweeps only that configuration
   (the fixed runs listed below are always included).
 * `make debug` runs a short simulation (20 tangents) with the default
   configuration, and writes a waveform to `tan_cordic.ghw`. Use `make show_debug`
@@ -87,11 +94,12 @@ Type `make` to list the supported targets:
   [Vivado](https://www.amd.com/en/products/software/adaptive-socs-and-fpgas/vivado.html)
   for the Artix-7 part xc7a200tfbg484-2. The design is implemented out of
   context, i.e. as a module inside a larger design, so only the paths between
-  registers are timed. It fails if the design does not meet the 125 MHz clock
+  registers are timed. It fails if the design does not meet the 87.0 MHz clock
   constraint in `tan_cordic.xdc`. At the end it prints the number of cells and the
   slack, logic levels, start point and end point of the worst path, and the reports
-  are written to `vivado/tan_cordic_6_24/`. E.g.
-  `make vivado VIVADO_ITERATIONS=8 VIVADO_FRAC_BITS=16` selects other generics. It
+  are written to `vivado/tan_cordic_6_24_4/`. E.g.
+  `make vivado VIVADO_ITERATIONS=8 VIVADO_FRAC_BITS=16 VIVADO_STEPS=2` selects other
+  generics (which may need another clock constraint, see [Timing](#timing)). It
   takes about 2 minutes, and expects Vivado in `/opt/Xilinx/2025.1/Vivado` (the
   variable `XILINX_DIR`).
 * `make clean` removes the generated files.
@@ -103,8 +111,9 @@ fixed corner cases (zero, an angle just below `pi/4`, and a very small angle), a
 randomly stalls both the VALID and READY signals. It stops at the first result that is
 outside the tolerance. It:
 
-* Sweeps `G_ITERATIONS` over 2, 4, 6, 8, 16, and 20, and `G_FRAC_BITS` over 8, 16,
-  20, 24, 28, and 32, with 150 angles for each of the 36 combinations.
+* Sweeps `G_ITERATIONS` over 2, 4, 6, 8, 16, and 20, `G_FRAC_BITS` over 8, 16,
+  20, 24, 28, and 32, and `G_STEPS` over 1, 2, 3, 4, and 8, with 150 angles for each
+  of the 180 combinations.
 * Verifies accuracy against the tangent calculated with the Taylor series (the `tan`
   of `ieee.math_real` is only accurate to about `2**-28` in GHDL), with a tolerance
   from the error analysis in
@@ -112,7 +121,7 @@ outside the tolerance. It:
   twice the sum of two units of the last bit and the error of the Padé
   approximation.
 * Runs a larger (5000-sample) test at the default configuration
-  (`G_ITERATIONS => 6`, `G_FRAC_BITS => 24`).
+  (`G_ITERATIONS => 6`, `G_FRAC_BITS => 24`, `G_STEPS => 4`).
 * Checks operation without stalls, and with a slow consumer or a slow producer (ready
   or valid in only 10% of the clock cycles), with 500 angles each.
 
@@ -121,26 +130,25 @@ of the last bit: one from rounding the angle to 24 bits, and one from truncating
 quotient. More iterations do not reduce it.
 
 ## Timing
-A full calculation takes `2*G_ITERATIONS + G_FRAC_BITS + 5` clock cycles (41 for the
-default configuration), and the result is valid 40 clock cycles after the input is
-accepted. The design meets the 8 ns clock constraint in `tan_cordic.xdc` with a slack
-of 0.782 ns, using 556 Slice LUTs, 310 registers, and one DSP48E1.
-[Timing](ALGORITHM.md#timing) describes how the critical path was shortened, and how
-the number of iterations was reduced from 16 to 6.
+The result is valid `2*ceil(G_ITERATIONS/G_STEPS) + ceil(G_FRAC_BITS/G_STEPS) + 3`
+clock cycles after the input is accepted, i.e. 13 clock cycles for the default
+configuration. The design meets the 11.5 ns (87.0 MHz) clock constraint in
+`tan_cordic.xdc` with a slack of 0.211 ns, for a latency of 150 ns, using 1212 Slice
+LUTs, 335 registers, and one DSP48E1.
 
 With `G_FRAC_BITS => 32`, full precision needs 8 iterations: the largest error is
 about `2**-31.2`, and against the tangent of the rounded angle it is one unit of the
-last bit, `2**-32.0`, the same as with 16 iterations. A calculation then takes 53
-clock cycles, and the result is valid 52 clock cycles after the input is accepted.
-The design does not meet the 8 ns clock constraint (the slack is -0.921 ns), since the
-multiplier for `z*z` is wider, see [Phase 2](ALGORITHM.md#phase-2-padé-approximation).
-It meets a clock period of 9.2 ns (108.7 MHz) with a slack of 0.044 ns, using 766
-Slice LUTs, 379 registers, and one DSP48E1, so the latency is 478 ns. With 7
-iterations the largest error is slightly larger, `2**-31.1` (`2**-31.8` against the
-rounded angle), but the design meets a clock period of 8.5 ns (117.6 MHz) with a slack
-of 0.113 ns, using 685 Slice LUTs, 384 registers, and two DSP48E1. Then the latency is
-50 clock cycles, i.e. 425 ns. To check this, change the clock period in
-`tan_cordic.xdc`, and run e.g. `make vivado VIVADO_ITERATIONS=8 VIVADO_FRAC_BITS=32`.
+last bit, `2**-32.0`, the same as with 16 iterations. The result is then valid 15
+clock cycles after the input is accepted, and the design meets a clock period of
+12.5 ns (80.0 MHz), so the latency is 188 ns. (With 7 iterations the error is slightly
+larger, and phases 1 and 3 take as many clock cycles as with 8.) To check this,
+change the clock period in `tan_cordic.xdc`, and run
+`make vivado VIVADO_ITERATIONS=8 VIVADO_FRAC_BITS=32`.
+
+[Timing](ALGORITHM.md#timing) lists the latency for each value of `G_STEPS`
+(`G_STEPS=3` gives the lowest latency for 24 bits, 135 ns, and `G_STEPS=4` for 32
+bits), and describes how the critical path was shortened, and how the number of
+iterations was reduced from 16 to 6.
 
 ## Links
 * [https://www.righto.com/2026/09/8087-tangent-cordic.html](https://www.righto.com/2026/09/8087-tangent-cordic.html)

@@ -15,6 +15,7 @@ entity tb_tan_cordic is
    generic (
       G_ITERATIONS : positive := 6;
       G_FRAC_BITS  : positive := 24;
+      G_STEPS      : positive := 4;
       G_NUM_TESTS  : positive := 1000;
       G_VALID_PCT  : natural  := 70;  -- Probability (in percent) of asserting VALID
       G_READY_PCT  : natural  := 70   -- Probability (in percent) of asserting READY
@@ -134,7 +135,8 @@ begin
    tan_cordic_inst : entity work.tan_cordic
       generic map (
          G_ITERATIONS => G_ITERATIONS,
-         G_FRAC_BITS  => G_FRAC_BITS
+         G_FRAC_BITS  => G_FRAC_BITS,
+         G_STEPS      => G_STEPS
       )
       port map (
          clk_i     => clk,

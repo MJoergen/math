@@ -17,7 +17,10 @@ library ieee;
 --    used during phase 1 (applied smallest-first), so that y/x becomes tan of the full
 --    input angle.
 --
--- A final restoring division y/x produces the actual tangent value.
+-- A final non-restoring division y/x produces the actual tangent value.
+--
+-- Phases 1 and 3, and the division, each do G_STEPS iterations in each clock
+-- cycle.
 --
 -- Interface:
 -- The input is accepted when s_valid_i and s_ready_o are both asserted on the
@@ -28,6 +31,11 @@ library ieee;
 --
 -- Only one calculation is in progress at a time: a new angle is accepted only
 -- when the previous result has been consumed.
+--
+-- Latency:
+-- m_valid_o is asserted 2*ceil(G_ITERATIONS/G_STEPS) + ceil(G_FRAC_BITS/G_STEPS) + 3
+-- clock cycles after the input is accepted, i.e. 13 clock cycles for the
+-- default generics.
 
 entity tan_cordic is
    generic (
@@ -37,7 +45,11 @@ entity tan_cordic is
       G_ITERATIONS : positive := 6;
 
       -- Number of fractional bits in the input angle and output tangent.
-      G_FRAC_BITS  : positive := 24
+      G_FRAC_BITS  : positive := 24;
+
+      -- Number of iterations of phases 1 and 3, and of quotient bits of the
+      -- division, in each clock cycle.
+      G_STEPS      : positive := 4
    );
    port (
       clk_i     : in  std_logic;
@@ -97,17 +109,23 @@ architecture synthesis of tan_cordic is
    -- i.e. to at most about 5.0, so three integer bits (plus sign) are used.
    subtype vec_type is sfixed(3 downto -C_FRAC);
 
-   -- Holds the remainder during the final restoring division. One extra integer
-   -- bit is needed, since the remainder is doubled every iteration.
+   -- Holds the signed remainder during the final non-restoring division. One
+   -- extra integer bit is needed, since the remainder is doubled every iteration.
    subtype rem_type is sfixed(4 downto -C_FRAC);
 
    type   state_type is (
-      IDLE_ST, REDUCE_ST, PADE_MUL_ST, PADE_ST, ROTATE_ST, LOAD_DIV_ST, DIVIDE_ST, WAIT_ST
+      IDLE_ST, REDUCE_ST, PADE_MUL_ST, PADE_ST, ROTATE_ST, DIVIDE_ST, WAIT_ST
    );
    signal state : state_type := IDLE_ST;
 
-   -- Number of remaining iterations in the current phase.
-   signal count : natural range 0 to G_ITERATIONS - 1;
+   -- The number of clock cycles of each of phases 1 and 3, and of the division.
+   -- If G_STEPS does not divide G_ITERATIONS or G_FRAC_BITS, the last clock
+   -- cycle does fewer iterations.
+   constant C_ITER_CYCLES : positive := (G_ITERATIONS + G_STEPS - 1) / G_STEPS;
+   constant C_DIV_CYCLES  : positive := (G_FRAC_BITS + G_STEPS - 1) / G_STEPS;
+
+   -- The clock cycle in phase 1 or 3
+   signal count : natural range 0 to C_ITER_CYCLES - 1;
 
    -- Phase 1: pseudo-division.
    signal angle : angle_type;
@@ -121,10 +139,10 @@ architecture synthesis of tan_cordic is
    signal x : vec_type;
    signal y : vec_type;
 
-   -- Phase 4: restoring division.
+   -- Phase 4: non-restoring division. div_count is the clock cycle.
    signal rem_reg   : rem_type;
    signal div       : rem_type;
-   signal div_count : natural range 0 to G_FRAC_BITS - 1;
+   signal div_count : natural range 0 to C_DIV_CYCLES - 1;
    signal quotient  : std_logic_vector(G_FRAC_BITS - 1 downto 0);
 
    type rom_type is array (0 to G_ITERATIONS - 1) of angle_type;
@@ -146,8 +164,15 @@ begin
       variable z_v         : small_angle_type;
       variable zz_v        : sfixed(2 * small_angle_type'high + 1 downto 2 * small_angle_type'low);
       variable r_doubled_v : rem_type;
-      variable trial_v     : rem_type;
-      variable qbit_v      : std_logic;
+      variable rem_v       : rem_type;
+      variable quotient_v  : std_logic_vector(G_FRAC_BITS - 1 downto 0);
+      variable angle_v     : angle_type;
+      variable bits_v      : std_logic_vector(0 to G_ITERATIONS - 1);
+      variable x_v         : vec_type;
+      variable y_v         : vec_type;
+      variable tmp_v       : vec_type;
+      variable i_v         : natural range 0 to C_ITER_CYCLES * G_STEPS - 1;
+      variable n_v         : natural range 0 to C_DIV_CYCLES * G_STEPS - 1;
    begin
       if rising_edge(clk_i) then
          if m_ready_i = '1' then
@@ -171,15 +196,29 @@ begin
                -- remaining angle, subtract it and record a '1'; otherwise record a
                -- '0' and leave the remaining angle unchanged. After all iterations,
                -- "angle" holds a tiny residual, and "bits" records exactly which
-               -- special angles were used.
-               if angle >= C_ANGLES(count) then
-                  angle       <= resize(angle - C_ANGLES(count), angle_type'high, angle_type'low);
-                  bits(count) <= '1';
-               else
-                  bits(count) <= '0';
-               end if;
+               -- special angles were used. G_STEPS iterations in each clock cycle.
+               -- The values cannot overflow, so the results are wrapped and
+               -- truncated, which needs no extra logic (the default of resize is
+               -- to saturate and round).
+               angle_v := angle;
+               bits_v  := bits;
+               for j in 0 to G_STEPS - 1 loop
+                  i_v := count * G_STEPS + j;
+                  if i_v < G_ITERATIONS then
+                     if angle_v >= C_ANGLES(i_v) then
+                        angle_v     := resize(angle_v - C_ANGLES(i_v),
+                                              angle_type'high, angle_type'low,
+                                              fixed_wrap, fixed_truncate);
+                        bits_v(i_v) := '1';
+                     else
+                        bits_v(i_v) := '0';
+                     end if;
+                  end if;
+               end loop;
+               angle <= angle_v;
+               bits  <= bits_v;
 
-               if count = G_ITERATIONS - 1 then
+               if count = C_ITER_CYCLES - 1 then
                   state <= PADE_MUL_ST;
                else
                   count <= count + 1;
@@ -210,50 +249,72 @@ begin
                x <= resize(to_sfixed(3.0, vec_type'high, vec_type'low) - zz_reg, vec_type'high, vec_type'low);
                y <= resize(z_reg + z_reg + z_reg, vec_type'high, vec_type'low);
 
-               count <= G_ITERATIONS - 1;
+               count <= 0;
                state <= ROTATE_ST;
 
             when ROTATE_ST =>
                -- Pseudo-multiplication: replay (smallest-first) exactly the special
                -- angles that were used during pseudo-division, i.e. rotate (x, y) by
-               -- +arctan(2**-count) whenever bits(count) = '1', and leave it unchanged
-               -- otherwise.
-               if bits(count) = '1' then
-                  x <= resize(x - (y sra count), vec_type'high, vec_type'low);
-                  y <= resize(y + (x sra count), vec_type'high, vec_type'low);
-               end if;
+               -- +arctan(2**-i) whenever bits(i) = '1', and leave it unchanged
+               -- otherwise. G_STEPS iterations in each clock cycle. Since count only
+               -- has C_ITER_CYCLES values, each shift by i is a multiplexer with
+               -- only C_ITER_CYCLES inputs.
+               x_v := x;
+               y_v := y;
+               for j in 0 to G_STEPS - 1 loop
+                  if count * G_STEPS + j < G_ITERATIONS then
+                     i_v := G_ITERATIONS - 1 - (count * G_STEPS + j);
+                     if bits(i_v) = '1' then
+                        tmp_v := resize(x_v - (y_v sra i_v), vec_type'high, vec_type'low,
+                                         fixed_wrap, fixed_truncate);
+                        y_v   := resize(y_v + (x_v sra i_v), vec_type'high, vec_type'low,
+                                         fixed_wrap, fixed_truncate);
+                        x_v   := tmp_v;
+                     end if;
+                  end if;
+               end loop;
+               x <= x_v;
+               y <= y_v;
 
-               if count = 0 then
-                  state <= LOAD_DIV_ST;
+               if count = C_ITER_CYCLES - 1 then
+                  -- The final x and y are loaded directly into the divider
+                  rem_reg   <= resize(y_v, rem_type'high, rem_type'low);
+                  div       <= resize(x_v, rem_type'high, rem_type'low);
+                  div_count <= 0;
+                  state     <= DIVIDE_ST;
                else
-                  count <= count - 1;
+                  count <= count + 1;
                end if;
-
-            when LOAD_DIV_ST =>
-               -- One clock cycle after the last rotation, x and y hold their final
-               -- values, ready to be loaded into the divider.
-               rem_reg   <= resize(y, rem_type'high, rem_type'low);
-               div       <= resize(x, rem_type'high, rem_type'low);
-               div_count <= 0;
-               state     <= DIVIDE_ST;
 
             when DIVIDE_ST =>
-               -- Restoring division: y / x, where 0 <= y <= x, so the quotient lies
-               -- in [0.0, 1.0]. One quotient bit is produced per iteration, MSB first.
-               r_doubled_v := resize(rem_reg + rem_reg, rem_type'high, rem_type'low);
-               trial_v     := resize(r_doubled_v - div, rem_type'high, rem_type'low);
+               -- Division y / x, where 0 <= y <= x, so the quotient lies in
+               -- [0.0, 1.0]. One quotient bit is produced per iteration, MSB first,
+               -- G_STEPS in each clock cycle. Non-restoring: if the quotient bit is
+               -- 0, the remainder is negative and is not restored, and the next
+               -- iteration adds the divisor instead of subtracting it. The quotient
+               -- bits are the same as with a restoring division, see ALGORITHM.md.
+               rem_v      := rem_reg;
+               quotient_v := quotient;
+               for j in 0 to G_STEPS - 1 loop
+                  n_v := div_count * G_STEPS + j;
+                  if n_v < G_FRAC_BITS then
+                     r_doubled_v := resize(rem_v + rem_v, rem_type'high, rem_type'low,
+                                       fixed_wrap, fixed_truncate);
+                     if rem_v(rem_v'high) = '0' then
+                        rem_v := resize(r_doubled_v - div, rem_type'high, rem_type'low,
+                                       fixed_wrap, fixed_truncate);
+                     else
+                        rem_v := resize(r_doubled_v + div, rem_type'high, rem_type'low,
+                                       fixed_wrap, fixed_truncate);
+                     end if;
+                     quotient_v := quotient_v(G_FRAC_BITS - 2 downto 0) & (not rem_v(rem_v'high));
+                  end if;
+               end loop;
+               rem_reg  <= rem_v;
+               quotient <= quotient_v;
 
-               if trial_v(trial_v'high) = '0' then
-                  rem_reg <= trial_v;
-                  qbit_v  := '1';
-               else
-                  rem_reg <= r_doubled_v;
-                  qbit_v  := '0';
-               end if;
-               quotient <= quotient(G_FRAC_BITS - 2 downto 0) & qbit_v;
-
-               if div_count = G_FRAC_BITS - 1 then
-                  m_tan_o   <= quotient(G_FRAC_BITS - 2 downto 0) & qbit_v;
+               if div_count = C_DIV_CYCLES - 1 then
+                  m_tan_o   <= quotient_v;
                   m_valid_o <= '1';
                   state     <= WAIT_ST;
                else

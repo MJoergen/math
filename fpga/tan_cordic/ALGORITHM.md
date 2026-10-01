@@ -106,11 +106,20 @@ The vector starts with a length of about 3, and the stretches multiply it by at
 most $\prod_i \sqrt{1 + 4^{-i}} \approx 1.647$, so it stays below about 5.
 
 ## Final division
-A single restoring division of `y` by `x` produces the final result. Since
-`0 <= y <= x` throughout the valid input range, the quotient always lies in
-`[0.0, 1.0]`, and one quotient bit is produced per clock cycle, MSB first -- the
-same technique as the pseudo-division of phase 1, just against a single (non-tabulated)
-divisor. The quotient is truncated to `G_FRAC_BITS` bits.
+A single division of `y` by `x` produces the final result. Since `0 <= y <= x`
+throughout the valid input range, the quotient always lies in `[0.0, 1.0]`, and one
+quotient bit is produced per iteration, MSB first. The quotient is truncated to
+`G_FRAC_BITS` bits.
+
+The division is non-restoring: Each iteration doubles the remainder $r$, and
+subtracts $x$ if $r \ge 0$, or adds $x$ if $r < 0$. The quotient bit is 1 if the new
+remainder is not negative. A restoring division would instead add $x$ back to a
+negative remainder before the next iteration (or, equivalently, keep the remainder
+from before the subtraction), and then subtract $x$ again. Since
+$2(r + x) - x = 2r + x$, both give the same remainder whenever the restoring division
+keeps it, and so the same quotient bits. But each iteration is a single addition or
+subtraction, instead of a subtraction followed by a multiplexer. The remainder stays
+in $[-x, x]$.
 
 ## Fixed-point representation
 This module uses the IEEE `fixed_pkg` package (`ieee.fixed_pkg`), part of VHDL-2008,
@@ -168,32 +177,89 @@ units of the last bit, $2^{1-F}$, and the error of the Padé approximation,
 $2 \cdot 2^{-5(n-1)} / 45$ (including the slope of up to 2).
 
 ## Timing
-A full calculation takes `2*G_ITERATIONS + G_FRAC_BITS + 5` clock cycles (41 for the
-default configuration): one cycle to accept the input, `G_ITERATIONS` for
-pseudo-division, two for the Padé approximation, `G_ITERATIONS` for
-pseudo-multiplication, one to load the divider, `G_FRAC_BITS` for the final division,
-and one to hold the result until it is consumed. The result is valid (`m_valid_o`
-high) 40 clock cycles after the clock cycle where the input is accepted.
+With $k$ = `G_STEPS`, the result is valid (`m_valid_o` high)
+$2\lceil n/k \rceil + \lceil F/k \rceil + 3$ clock cycles after the clock cycle
+where the input is accepted: $\lceil n/k \rceil$ for pseudo-division, two for the
+Padé approximation, $\lceil n/k \rceil$ for pseudo-multiplication, and
+$\lceil F/k \rceil$ for the final division. The final `x` and `y` are loaded into
+the divider directly in the last clock cycle of pseudo-multiplication. A full
+calculation takes one more clock cycle, to hold the result until it is consumed. For
+the default configuration ($n = 6$, $F = 24$, $k = 4$), the latency is 13 clock
+cycles.
 
-Synthesized, placed and routed with Vivado 2025.1 for `xc7a200tfbg484-2` (the part
-used elsewhere in this repo), out-of-context, at the default configuration, with
-`make vivado`. The current version meets the 8 ns clock constraint in
-`tan_cordic.xdc` with a slack of 0.782 ns. The three earlier versions are from the git
-history, with 16 iterations. The first two (commits 677aa4e and 59e9417) are
-implemented the same way, but with a clock period of 14 ns and 11 ns, which they meet
-with a slack of 0.535 ns and 0.291 ns. The critical path is the clock period minus the
-slack, and the wall time is the critical path times the number of clock cycles per
-calculation (60 for the original version, 61 for the next two, and 41 for the current
-version). The Slice LUTs are from `utilization.rpt`. The summary printed by
-`make vivado` counts LUT cells instead, which is higher (691 for the current version),
-since two LUT cells can share one slice LUT:
+### Several iterations in each clock cycle
+Pseudo-division, pseudo-multiplication, and the division each do `G_STEPS`
+iterations in each clock cycle. If `G_STEPS` does not divide $n$ or $F$, the last
+clock cycle of a phase does fewer iterations. In all three, each iteration depends on
+the previous one, so the iterations of a clock cycle are in series. Three details keep
+each iteration short:
+* The division is non-restoring, see [Final division](#final-division), so each
+  iteration is a single carry chain.
+* The additions and subtractions in the iterations use `resize` with `fixed_wrap`
+  and `fixed_truncate`. The default of `resize` is to saturate and to round, which
+  adds logic after each carry chain. The values never overflow, and no bits are
+  rounded away, so the result is the same. With the defaults, each iteration of the
+  division took about 4.1 ns instead of about 2.6 ns.
+* In pseudo-multiplication, iteration $j$ of the clock cycle `count` shifts by
+  $n - 1 - (\mathtt{count} \cdot k + j)$ bits. Since `count` only has
+  $\lceil n/k \rceil$ values, each shift is a multiplexer with only that many
+  inputs.
+
+The result is the same, bit for bit, for all values of `G_STEPS`, and the same as in
+the earlier version with one iteration in each clock cycle and a restoring division
+(checked with random angles for many values of $n$, $F$, and $k$).
+
+The latency for each value of `G_STEPS`, from `make vivado`, with the clock period
+in `tan_cordic.xdc` reduced until the timing was no longer met. The clock period is
+the shortest one where the timing is met, and the next shorter one that was tried (in
+parentheses) does not meet the timing. The LUTs and flip-flops are the numbers that
+`make vivado` prints:
+
+| `G_STEPS` | 24 bits, 6 iterations: Clock cycles | Clock period | Latency | LUT | FF |
+| --------- | ---- | ------------------ | ------ | ---- | --- |
+| 1         | 39   | 5.75 ns (5.5 ns)   | 224 ns |  629 | 305 |
+| 2         | 21   | 7.75 ns (7.5 ns)   | 163 ns |  887 | 303 |
+| 3         | 15   | 9.0 ns (8.75 ns)   | 135 ns | 1075 | 336 |
+| 4         | 13   | 11.5 ns (11.25 ns) | 150 ns | 1348 | 335 |
+| 8         | 8    | 21.0 ns (20.5 ns)  | 168 ns | 2066 | 295 |
+
+| `G_STEPS` | 32 bits, 8 iterations: Clock cycles | Clock period | Latency | LUT | FF |
+| --------- | ---- | ------------------ | ------ | ---- | --- |
+| 1         | 51   | 9.5 ns (9.2 ns)    | 485 ns |  823 | 378 |
+| 2         | 27   | 9.5 ns (9.0 ns)    | 257 ns | 1196 | 373 |
+| 3         | 20   | 11.5 ns (11.0 ns)  | 230 ns | 2042 | 416 |
+| 4         | 15   | 12.5 ns (12.0 ns)  | 188 ns | 1840 | 369 |
+| 8         | 9    | 24.5 ns (24.0 ns)  | 221 ns | 3180 | 403 |
+
+Each iteration takes about 2.5 to 3 ns. With `G_STEPS` of 1 (and 2, for 32 bits),
+the multiplication `z*z` in `PADE_MUL_ST` is the critical path instead. For 24 bits,
+`G_STEPS=3` gives the lowest latency, since 3 divides both 6 and 24, and for 32 bits
+`G_STEPS=4`. The default is `G_STEPS=4`, and the constraint in `tan_cordic.xdc` is
+11.5 ns (87.0 MHz), which the default configuration meets with a slack of 0.211 ns,
+using 1212 Slice LUTs, 335 registers, and one `DSP48E1`. The critical path then runs
+through the four pseudo-division iterations, with 25 logic levels.
+
+### Earlier versions
+The earlier versions below are from the git history, with one iteration in each clock
+cycle, at the default configuration (with 16 iterations for the first three). The first
+two (commits 677aa4e and 59e9417) were implemented the same way as the current
+version, but with a clock period of 14 ns and 11 ns, which they met with a slack of
+0.535 ns and 0.291 ns. The next two met a clock period of 8 ns. The critical path is
+the clock period minus the slack (for the last two versions: of the shortest clock
+period that was met), and the wall time is the critical path times the number of clock
+cycles per calculation (60 for the original version, 61 for the next two, 41 for the
+fourth, 40 for the fifth, and 14 for the current version). The Slice LUTs are from
+`utilization.rpt`. The summary printed by `make vivado` counts LUT cells instead, which
+is higher, since two LUT cells can share one slice LUT:
 
 | | Slice LUTs | Registers | DSP48E1 | Critical path | Fmax | Wall time/calc |
 | --- | --- | --- | --- | --- | --- | --- |
 | Original (single-cycle Padé) | 624 | 254 | 4 | 13.47 ns | ~74 MHz | ~808 ns |
 | Split Padé (`PADE_MUL_ST` + `PADE_ST`) | 826 | 333 | 4 | 10.71 ns | ~93 MHz | ~653 ns |
 | ...and narrowed `z*z` multiplier | 561 | 282 | 1 | 7.68 ns | ~130 MHz | ~468 ns |
-| ...and 6 instead of 16 iterations (current) | 556 | 310 | 1 | 7.22 ns | ~139 MHz | ~296 ns |
+| ...and 6 instead of 16 iterations | 556 | 310 | 1 | 7.22 ns | ~139 MHz | ~296 ns |
+| ...and non-restoring division, wrapped arithmetic, no `LOAD_DIV_ST` (`G_STEPS=1`) | 520 | 305 | 1 | 5.61 ns | ~178 MHz | ~224 ns |
+| ...and `G_STEPS=4` (current) | 1212 | 335 | 1 | 11.29 ns | ~89 MHz | ~158 ns |
 
 Splitting the Padé phase across two cycles removes the multiplier from the same
 combinational path as the following 36-bit-wide subtraction, at the cost of one
@@ -214,15 +280,13 @@ the lower bits of $z$ before squaring it (see
 single tile, without changing the accuracy. Altogether, the wall time is now about
 63% lower than in the original version.
 
-The remaining critical path still runs into `zz_reg`, but the next paths are only
-about 0.8 to 1.4 ns behind, and there are several of them: into `x` (the
-pseudo-multiplication add/subtract in `ROTATE_ST`), into `rem_reg` (the restoring
-division in `DIVIDE_ST`), and into `angle` (the compare-and-subtract of the
-pseudo-division in `REDUCE_ST`). Closing that gap further would mean pipelining
-all three iterative phases (e.g. splitting the shift and the add/subtract of
-`ROTATE_ST` across two cycles), which -- unlike the changes above -- would add one
-extra cycle *per iteration* (about `2*G_ITERATIONS + G_FRAC_BITS` more cycles in
-total), a much larger latency cost for a smaller, less clear-cut potential gain.
-That trade-off has not been attempted here.
+With 6 iterations and one iteration in each clock cycle, the critical path ran into
+`zz_reg`, but the next paths were only about 0.8 to 1.4 ns behind: into `x` (the
+pseudo-multiplication in `ROTATE_ST`), into `rem_reg` (the division in `DIVIDE_ST`),
+and into `angle` (the pseudo-division in `REDUCE_ST`). Pipelining these would have
+added clock cycles to every iteration. Instead, several iterations in each clock
+cycle (see above) share the fixed overhead of a clock cycle (the clock-to-output
+delay, the setup time, and the routing), which reduces the latency by about 50% from
+the version with 6 iterations, at the cost of about twice as many LUTs.
 
 Utilization remains well under 1% of the device throughout.

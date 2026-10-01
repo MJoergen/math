@@ -22,22 +22,23 @@ SRC = tan_cordic.vhd tb_tan_cordic.vhd
 # "make sim ITERATIONS=6 FRAC_BITS=24"
 ITERATIONS ?= 2 4 6 8 16 20
 FRAC_BITS  ?= 8 16 20 24 28 32
+STEPS      ?= 1 2 3 4 8
 
 # Run the testbench with:
-# * 150 random angles for each combination of G_ITERATIONS and G_FRAC_BITS,
-#   with random stalls.
+# * 150 random angles for each combination of G_ITERATIONS, G_FRAC_BITS, and
+#   G_STEPS, with random stalls.
 # * 500 random angles without stalls, and with a slow consumer or a slow
 #   producer, which is ready (or valid) in only 10% of the clock cycles.
 # * 5000 random angles with the default G_ITERATIONS=6 and G_FRAC_BITS=24,
 #   with random stalls.
 .PHONY: sim
-sim: $(SRC) ## Run the testbench for all the configurations (about 10 seconds)
+sim: $(SRC) ## Run the testbench for all the configurations (about 30 seconds)
 	ghdl -a --std=08 $(SRC)
 	ghdl -e --std=08 tb_tan_cordic
-	set -e; for iterations in $(ITERATIONS); do for frac_bits in $(FRAC_BITS); do \
+	set -e; for iterations in $(ITERATIONS); do for frac_bits in $(FRAC_BITS); do for steps in $(STEPS); do \
 	   ghdl -r --std=08 tb_tan_cordic -gG_ITERATIONS=$$iterations -gG_FRAC_BITS=$$frac_bits \
-	      -gG_NUM_TESTS=150 --assert-level=error; \
-	done; done
+	      -gG_STEPS=$$steps -gG_NUM_TESTS=150 --assert-level=error; \
+	done; done; done
 	ghdl -r --std=08 tb_tan_cordic -gG_NUM_TESTS=500 -gG_VALID_PCT=100 -gG_READY_PCT=100 --assert-level=error
 	ghdl -r --std=08 tb_tan_cordic -gG_NUM_TESTS=500 -gG_VALID_PCT=100 -gG_READY_PCT=10  --assert-level=error
 	ghdl -r --std=08 tb_tan_cordic -gG_NUM_TESTS=500 -gG_VALID_PCT=10  -gG_READY_PCT=100 --assert-level=error
@@ -65,11 +66,12 @@ show_debug: ## Show the waveform from "make debug" in GTKWave
 
 XILINX_DIR = /opt/Xilinx/2025.1/Vivado
 
-# The generics, e.g. "make vivado VIVADO_ITERATIONS=8 VIVADO_FRAC_BITS=16"
+# The generics, e.g. "make vivado VIVADO_ITERATIONS=8 VIVADO_FRAC_BITS=16 VIVADO_STEPS=2"
 VIVADO_ITERATIONS ?= 6
 VIVADO_FRAC_BITS  ?= 24
+VIVADO_STEPS      ?= 4
 VIVADO_PART        = xc7a200tfbg484-2
-VIVADO_DIR         = vivado/tan_cordic_$(VIVADO_ITERATIONS)_$(VIVADO_FRAC_BITS)
+VIVADO_DIR         = vivado/tan_cordic_$(VIVADO_ITERATIONS)_$(VIVADO_FRAC_BITS)_$(VIVADO_STEPS)
 
 # Synthesize and implement the design out of context (see vivado.tcl), and
 # write the reports timing_summary.rpt and utilization.rpt to $(VIVADO_DIR).
@@ -88,7 +90,7 @@ $(VIVADO_DIR)/post_route.dcp: vivado.tcl tan_cordic.vhd tan_cordic.xdc
 	mkdir -p $(VIVADO_DIR)
 	cd $(VIVADO_DIR) && bash -c "source $(XILINX_DIR)/settings64.sh ; \
 	   vivado -mode batch -nojournal -log vivado.log -source $(CURDIR)/vivado.tcl \
-	   -tclargs $(VIVADO_ITERATIONS) $(VIVADO_FRAC_BITS) $(VIVADO_PART) $(CURDIR)"
+	   -tclargs $(VIVADO_ITERATIONS) $(VIVADO_FRAC_BITS) $(VIVADO_STEPS) $(VIVADO_PART) $(CURDIR)"
 
 
 .PHONY: clean
