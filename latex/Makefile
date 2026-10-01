@@ -5,6 +5,8 @@ names += pell.tex
 names += pendulum.tex
 names += tredje.tex
 names += euler.tex
+names += modular.tex
+names += quintic.tex
 
 tex_pdfs   = $(names:.tex=.pdf)
 
