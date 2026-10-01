@@ -156,45 +156,34 @@ architecture synthesis of c64_sincos is
    -- Rotate a fraction either right or left. Interpret the fraction as a signed number.
 
    pure function rotate (arg : fraction_type; ncount : integer) return unsigned is
-      variable res_v : fraction_type;
    begin
       if ncount > 0 then
          -- rotate right
-         res_v                           := (others => arg(C_SIZE));
-         res_v(C_SIZE - ncount downto 0) := arg(C_SIZE downto ncount);
+         return unsigned(shift_right(signed(arg), ncount));
       else
          -- rotate left
-         res_v                         := (others => '0');
-         res_v(C_SIZE downto - ncount) := arg(C_SIZE + ncount downto 0);
+         return shift_left(arg, -ncount);
       end if;
-      return res_v;
    end function rotate;
 
    -- Rotate a fraction either right or left. Interpret the fraction as an unsigned number.
 
    pure function rotate_unsigned (arg : fraction_type; ncount : integer) return unsigned is
-      variable res_v : fraction_type;
    begin
       if ncount > 0 then
          -- rotate right
-         res_v                           := (others => '0');
-         res_v(C_SIZE - ncount downto 0) := arg(C_SIZE downto ncount);
+         return shift_right(arg, ncount);
       else
          -- rotate left
-         res_v                         := (others => '0');
-         res_v(C_SIZE downto - ncount) := arg(C_SIZE + ncount downto 0);
+         return shift_left(arg, -ncount);
       end if;
-      return res_v;
    end function rotate_unsigned;
 
    -- Rotate a fraction left.
 
    pure function rotate_left (arg : fraction_type; ncount : integer) return unsigned is
-      variable res_v : fraction_type;
    begin
-      res_v                       := (others => '0');
-      res_v(C_SIZE downto ncount) := arg(C_SIZE - ncount downto 0);
-      return res_v;
+      return shift_left(arg, ncount);
    end function rotate_left;
 
    type rom_type is array (0 to C_ANGLE_NUM - 1) of fraction_type;

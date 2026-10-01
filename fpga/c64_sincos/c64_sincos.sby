@@ -1,0 +1,49 @@
+# Formal verification of c64_sincos.vhd, see c64_sincos.psl. This file is
+# run by SymbiYosys (see https://github.com/YosysHQ/sby), and its format is
+# described in
+# https://yosyshq.readthedocs.io/projects/sby/en/latest/reference.html
+#
+# The prove task uses k-induction (see
+# https://doi.org/10.1007/3-540-40922-X_8), so the properties are proven for
+# every clock cycle, not just for a bounded number of them. The depth option
+# is k.
+#
+# The cover task shows that the cover statements in c64_sincos.psl can be
+# reached. A calculation takes 37 clock cycles, so the depth must be larger
+# than that. This takes about 1.5 minutes.
+#
+# The engine smtbmc uses the Boolector SMT solver (see
+# https://github.com/Boolector/boolector).
+#
+# "memory_map -rom-only" (see
+# https://yosyshq.readthedocs.io/projects/yosys/en/latest/cmd/index_passes_memory.html#cmd-memory_map)
+# turns the ROM of the special angles (C_ANGLES) into logic. The initial
+# contents of a memory only hold in the first clock cycle, but induction
+# starts from an arbitrary clock cycle, and could otherwise use any contents.
+#
+# The script reads the VHDL and PSL files with the GHDL plugin for Yosys (see
+# https://github.com/ghdl/ghdl-yosys-plugin). c64_sincos_pkg.vhd is read
+# first, since c64_sincos.vhd uses it.
+
+[tasks]
+prove
+cover
+
+[options]
+prove: mode prove
+prove: depth 3
+cover: mode cover
+cover: depth 42
+
+[engines]
+smtbmc boolector
+
+[script]
+ghdl --std=08 c64_sincos_pkg.vhd c64_sincos.vhd c64_sincos.psl -e c64_sincos
+prep -top c64_sincos
+memory_map -rom-only
+
+[files]
+c64_sincos_pkg.vhd
+c64_sincos.vhd
+c64_sincos.psl

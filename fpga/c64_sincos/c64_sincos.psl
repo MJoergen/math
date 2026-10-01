@@ -1,0 +1,241 @@
+-- Formal verification of c64_sincos.vhd, written in PSL (see
+-- https://en.wikipedia.org/wiki/Property_Specification_Language). Run with
+-- "make formal", which uses SymbiYosys (see https://github.com/YosysHQ/sby).
+--
+-- The checker below models the design at its ports, and verifies:
+-- * No result is lost or duplicated.
+-- * The result stays valid and unchanged until it is taken.
+-- * If the consumer is ready, the result is valid 37 clock cycles after the
+--   input was accepted, and if the consumer is always ready, a new input is
+--   accepted every 38 clock cycles, as stated in c64_sincos.vhd.
+-- * The sine and the cosine are at most 1 in absolute value.
+-- * The CORDIC iterations: The residual angle stays within a bound that
+--   halves in every iteration (C_BOUND below), so it never overflows, and
+--   after the last iteration it is at most C_BOUND(C_ANGLE_NUM), i.e. about
+--   arctan(2^-32).
+--
+-- The values of the sine and the cosine depend on the CORDIC rotations,
+-- which induction cannot easily capture, so they are verified by the
+-- simulation.
+--
+-- The properties are proven with k-induction (see c64_sincos.sby): If they
+-- hold in a few consecutive clock cycles, then they also hold in the next
+-- one. This needs the assertions marked "for induction", which relate the
+-- internal state of the design to the checker.
+
+vunit c64_sincos_inst (c64_sincos(synthesis))
+{
+   -- set all declarations to run on clk_i
+   default clock is rising_edge(clk_i);
+
+   -----------------------------
+   -- AUXILIARY SIGNALS
+   -----------------------------
+
+   -- The number of clock cycles from the clock cycle where the input is
+   -- accepted, until the clock cycle where the result is valid
+   constant C_LATENCY : positive := C_ANGLE_NUM + 4;
+
+   -- The bound on the absolute value of the residual angle before iteration
+   -- i (and after the last iteration, for i = C_ANGLE_NUM), in the same
+   -- units as angle. Before the first iteration, the angle is in [0, 0.5],
+   -- i.e. [0, pi/4]. In iteration i, the special angle C_ANGLES(i) is
+   -- subtracted from a non-negative residual angle, and added to a negative
+   -- one, so the absolute value afterwards is at most
+   -- max(C_ANGLES(i), C_BOUND(i) - C_ANGLES(i)). This is calculated from the
+   -- special angles as they are rounded in C_ANGLES. Since
+   -- arctan(2^(1-i)) < 2*arctan(2^-i), the bound is about C_ANGLES(i-1).
+   type bound_type is array (0 to C_ANGLE_NUM) of unsigned(C_SIZE downto 0);
+
+   pure function calc_bound return bound_type is
+      variable res_v : bound_type;
+   begin
+      res_v(0) := shift_left(to_unsigned(1, C_SIZE + 1), C_SIZE - 1);
+      for i in 0 to C_ANGLE_NUM - 1 loop
+         if res_v(i) > shift_left(C_ANGLES(i), 1) then
+            res_v(i + 1) := res_v(i) - C_ANGLES(i);
+         else
+            res_v(i + 1) := C_ANGLES(i);
+         end if;
+      end loop;
+      return res_v;
+   end function calc_bound;
+
+   constant C_BOUND : bound_type := calc_bound;
+
+   -- Set after the first clock cycle, when the signals below are valid
+   signal f_started : std_logic := '0';
+
+   -- The handshakes on the input and the output
+   signal f_push : std_logic;
+   signal f_pop  : std_logic;
+
+   -- The result is written to the output register
+   signal f_write : std_logic;
+
+   -- The number of inputs accepted, whose result has not been taken yet
+   signal f_cnt : natural range 0 to 2;
+
+   -- The number of clock cycles since the last input was accepted (up to
+   -- C_LATENCY), and whether m_ready_i has been high and rst_i low in all
+   -- of them
+   signal f_since : natural range 0 to C_LATENCY;
+   signal f_flow  : std_logic;
+
+   -- The absolute value of the residual angle, which is a signed number
+   signal f_abs_angle : unsigned(C_SIZE downto 0);
+
+   f_push <= s_valid_i and s_ready_o;
+   f_pop  <= m_valid_o and m_ready_i;
+
+   -- See NORMALIZE_ST in c64_sincos.vhd. f_count below verifies that this
+   -- happens once for each input, and only when the output register is free.
+   f_write <= '1' when state = NORMALIZE_ST and (m_valid_o = '0' or m_ready_i = '1') else
+              '0';
+
+   f_abs_angle <= unsigned(abs(signed(angle)));
+
+   f_track_proc : process (clk_i)
+      variable cnt_v : natural range 0 to 2;
+   begin
+      if rising_edge(clk_i) then
+         -- f_no_overflow below verifies that no input is accepted while the
+         -- design already holds two
+         cnt_v := f_cnt;
+         if f_pop = '1' and cnt_v > 0 then
+            cnt_v := cnt_v - 1;
+         end if;
+         if f_push = '1' and cnt_v < 2 then
+            cnt_v := cnt_v + 1;
+         end if;
+         f_cnt <= cnt_v;
+
+         if f_push = '1' then
+            f_since <= 0;
+            f_flow  <= not rst_i;
+         else
+            if f_since < C_LATENCY then
+               f_since <= f_since + 1;
+            end if;
+            f_flow <= f_flow and m_ready_i and not rst_i;
+         end if;
+
+         if rst_i = '1' then
+            f_cnt <= 0;
+         end if;
+
+         f_started <= '1';
+      end if;
+   end process f_track_proc;
+
+
+   -----------------------------
+   -- ASSERTIONS ABOUT OUTPUTS
+   -----------------------------
+
+   -- No result is output without an input. The sine and the cosine are at
+   -- most 1 in absolute value: The exponent 0x81 means [1, 2), so the
+   -- mantissa (apart from the sign) must then be zero, i.e. the value 1.
+   f_out : assert always f_started = '1' and m_valid_o = '1' ->
+      f_cnt >= 1 and
+      unsigned(m_cos_exp_o) <= X"81" and (m_cos_exp_o /= X"81" or unsigned(m_cos_mant_o(30 downto 0)) = 0) and
+      unsigned(m_sin_exp_o) <= X"81" and (m_sin_exp_o /= X"81" or unsigned(m_sin_mant_o(30 downto 0)) = 0);
+
+   -- The result stays valid and unchanged until it is taken
+   f_hold : assert always {f_started = '1' and m_valid_o = '1' and m_ready_i = '0' and rst_i = '0'} |=>
+      {m_valid_o = '1' and m_cos_exp_o = prev(m_cos_exp_o) and m_cos_mant_o = prev(m_cos_mant_o) and
+       m_sin_exp_o = prev(m_sin_exp_o) and m_sin_mant_o = prev(m_sin_mant_o)};
+
+   -- No input is accepted while the design already holds two
+   f_no_overflow : assert always f_started = '1' -> not (f_push = '1' and f_pop = '0' and f_cnt = 2);
+
+   -- A reset clears m_valid_o
+   f_rst : assert always {rst_i = '1'} |=> {m_valid_o = '0'};
+
+   -- Latency: In the last clock cycle of the calculation, if the consumer is
+   -- ready, the result is valid in the next clock cycle. It is not valid
+   -- before.
+   f_latency : assert always {f_started = '1' and f_flow = '1' and f_since = C_LATENCY - 1 and
+                              m_ready_i = '1' and rst_i = '0'} |=> {m_valid_o = '1' and state = IDLE_ST};
+
+   -- Throughput: If the consumer has been ready since the last input was
+   -- accepted, the next input is accepted in the clock cycle after the result
+   -- was written to the output register, i.e. every C_LATENCY + 1 = 38 clock
+   -- cycles
+   f_throughput : assert always f_started = '1' and f_flow = '1' and f_since = C_LATENCY -> s_ready_o = '1';
+
+
+   -----------------------------
+   -- ASSERTIONS FOR INDUCTION
+   -----------------------------
+
+   -- None of the inputs is lost or duplicated: The output register holds the
+   -- result of one input (if valid), and the calculation works on one (if
+   -- not idle)
+   f_count : assert always f_started = '1' ->
+      (f_cnt = 0 and state = IDLE_ST and m_valid_o = '0') or
+      (f_cnt = 1 and state = IDLE_ST and m_valid_o = '1') or
+      (f_cnt = 1 and state /= IDLE_ST and m_valid_o = '0') or
+      (f_cnt = 2 and state /= IDLE_ST and m_valid_o = '1');
+
+   -- state follows the calculation
+   f_state : assert always f_started = '1' ->
+      state = IDLE_ST or
+      (state = STAGE1_ST and f_since = 0) or
+      (state = STAGE2_ST and f_since = 1) or
+      (state = CALC_ST and f_since = count + 2) or
+      (state = SHIFT_ST and f_since = C_ANGLE_NUM + 2) or
+      (state = NORMALIZE_ST and f_since >= C_ANGLE_NUM + 3);
+
+   -- If the consumer is ready, the previous result is taken in the first
+   -- clock cycle of the calculation
+   f_flow_empty : assert always f_started = '1' and f_flow = '1' and f_since >= 1 and state /= IDLE_ST ->
+      m_valid_o = '0';
+
+   -- Without a reset, the calculation is still running
+   f_flow_busy : assert always f_started = '1' and f_flow = '1' and f_since < C_LATENCY -> state /= IDLE_ST;
+
+
+   -----------------------------
+   -- ASSERTIONS ABOUT INTERNAL STATE
+   -----------------------------
+
+   -- The residual angle stays within its bound in every iteration
+   f_angle : assert always f_started = '1' and state = CALC_ST ->
+      count < C_ANGLE_NUM and f_abs_angle <= C_BOUND(count) and (count > 0 or angle(C_SIZE) = '0');
+   f_angle_done : assert always f_started = '1' and (state = SHIFT_ST or state = NORMALIZE_ST) ->
+      f_abs_angle <= C_BOUND(C_ANGLE_NUM);
+
+
+   -----------------------------
+   -- ASSUMPTIONS ABOUT INPUTS
+   -----------------------------
+
+   -- Require a reset at startup
+   f_reset : assume {rst_i = '1'};
+
+   -- For induction: The signals above are only invalid in the first clock
+   -- cycle, where f_reset requires a reset anyway
+   f_start_first : assume always f_started = '0' -> rst_i = '1';
+
+
+   --------------------------------------------
+   -- COVER STATEMENTS TO VERIFY REACHABILITY
+   --------------------------------------------
+
+   -- A result is taken
+   f_cover_done : cover {f_started = '1' and f_pop = '1'};
+
+   -- The cosine is exactly 1
+   f_cover_one : cover {f_started = '1' and f_pop = '1' and m_cos_exp_o = X"81"};
+
+   -- The result waits to be taken, so f_hold is not vacuous
+   f_cover_wait : cover {f_started = '1' and m_valid_o = '1' and m_ready_i = '0'; m_valid_o = '1' and m_ready_i = '1'};
+
+   -- A new input is accepted while the previous result waits to be taken
+   f_cover_overlap : cover {f_started = '1' and f_push = '1' and m_valid_o = '1' and m_ready_i = '0'};
+
+   -- A reset during a calculation
+   f_cover_reset : cover {f_started = '1' and state = CALC_ST and rst_i = '1'};
+
+} -- vunit c64_sincos_inst (c64_sincos(synthesis))
