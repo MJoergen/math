@@ -6,23 +6,30 @@ precise it is, and the trade-offs.
 
 | Folder | Description | Latency (32 bits)
 | ------ | ----------- | -------
-| [`booth`](booth) | Multiplies two signed numbers using Booth's algorithm with radix 4, and a faster carry-save version. | 64 ns (24 ns for the carry-save version)
-| [`fast_divide`](fast_divide) | Divides two 32-bit unsigned integers using Goldschmidt division, with about 34 significant bits. | At most 140 ns
-| [`srt`](srt) | Divides two 29-bit unsigned integers using SRT division with radix 4, as in the Pentium, including the FDIV bug. | 185 ns
-| [`c64_sqrt`](c64_sqrt) | Square root of a C64 floating point number, using the digit-by-digit method. | 139 ns
-| [`c64_sqrt2`](c64_sqrt2) | Square root of a C64 floating point number, using Goldschmidt's algorithm with multipliers. | 40 to 119 ns
-| [`pipeline_sqrt`](pipeline_sqrt) | Pipelined square root of a 22-bit fixed-point number (format 2.20, with a 22-bit result), using lookup tables and one multiplier, with one result per clock cycle. | 16 ns
-| [`c64_sincos`](c64_sincos) | Sine and cosine of a C64 floating point number, using CORDIC. | 237 ns
-| [`tan_cordic`](tan_cordic) | Tangent of a fixed-point angle, using the CORDIC variant of the Intel 8087. | 478 ns, with 8 iterations, at 108.7 MHz
+| [`booth`](booth) | Multiplies two signed numbers using Booth's algorithm with radix 4, and a faster carry-save version. | 42 ns at 377 MHz (15 ns at 392 MHz for the carry-save version)
+| [`fast_divide`](fast_divide) | Divides two 32-bit unsigned integers using Goldschmidt division, with about 34 significant bits. | At most 95 ns at 74.1 MHz
+| [`srt`](srt) | Divides two 29-bit unsigned integers using SRT division with radix 4, as in the Pentium, including the FDIV bug. | 170 ns at 217 MHz
+| [`c64_sqrt`](c64_sqrt) | Square root of a C64 floating point number, using the digit-by-digit method. | 131 ns at 260 MHz
+| [`c64_sqrt2`](c64_sqrt2) | Square root of a C64 floating point number, using Goldschmidt's algorithm with multipliers. | 38 to 113 ns at 79.4 MHz
+| [`pipeline_sqrt`](pipeline_sqrt) | Pipelined square root of a 22-bit fixed-point number (format 2.20, with a 22-bit result), using lookup tables and one multiplier, with one result per clock cycle. | 9 ns at 222 MHz
+| [`c64_sincos`](c64_sincos) | Sine and cosine of a C64 floating point number, using CORDIC. | 226 ns at 164 MHz
+| [`tan_cordic`](tan_cordic) | Tangent of a fixed-point angle, using the CORDIC variant of the Intel 8087. | 478 ns at 109 MHz
 
 The latency is the time from when the input is accepted until the result is
 valid, for 32-bit operands, or a 32-bit mantissa for the C64 floating point
 numbers. `srt` and `pipeline_sqrt` do not support 32 bits, so their latency is
-for the width given in the description. The latency is at the clock frequency
-of the timing constraint in the `.xdc` file of each folder, which `make vivado`
-verifies. The exception is `tan_cordic`, whose constraint (125 MHz) is for the
-default of 24 bits, where the latency is 320 ns. With 32 bits it only meets
-108.7 MHz. Some designs can run at a higher clock frequency, see their READMEs.
+for the width given in the description, and `tan_cordic` uses 8 iterations,
+which give full precision for 32 bits.
+
+The latency is at the highest clock frequency where `make vivado` meets the
+timing, with the RTL unchanged. This was found by reducing the clock period in
+the `.xdc` file of each folder in steps of 0.05 to 0.5 ns, until the timing was
+no longer met. So each latency is within about 4 ns of the latency at the
+highest possible clock frequency. The `.xdc` files of `fast_divide` and
+`pipeline_sqrt` have these clock frequencies. The other `.xdc` files have lower
+clock frequencies, with more slack, and the READMEs give the latency at those.
+At 222 MHz, Vivado implements the ROMs of `pipeline_sqrt` in LUTs instead of
+Block RAM.
 
 ## Interface
 All the designs have the same top-level interface, with the same naming
