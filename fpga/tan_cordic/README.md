@@ -37,7 +37,8 @@ the Padé approximation gains about 5 bits per iteration), and the timing.
 | [`ALGORITHM.md`](ALGORITHM.md) | Detailed explanation of the algorithm, the accuracy, and the timing.
 | [`tan_cordic.gtkw`](tan_cordic.gtkw) | GTKWave setup for viewing the waveform from `make debug`.
 | [`tan_cordic.xdc`](tan_cordic.xdc), [`vivado.tcl`](vivado.tcl) | Timing constraint (125 MHz) and script for synthesis with Vivado, see `make vivado`.
-| [`Makefile`](Makefile) | Runs the simulation and the synthesis, see [Running](#running).
+| [`tan_cordic.psl`](tan_cordic.psl), [`tan_cordic_bmc.psl`](tan_cordic_bmc.psl), [`tan_cordic.sby`](tan_cordic.sby) | Formal verification, see [Formal verification](#formal-verification).
+| [`Makefile`](Makefile) | Runs the simulation, the formal verification, and the synthesis, see [Running](#running).
 
 ## Interface
 The generic `G_ITERATIONS` is the number of CORDIC iterations (default 6; the 8087
@@ -94,7 +95,42 @@ Type `make` to list the supported targets:
   `make vivado VIVADO_ITERATIONS=8 VIVADO_FRAC_BITS=16` selects other generics. It
   takes about 2 minutes, and expects Vivado in `/opt/Xilinx/2025.1/Vivado` (the
   variable `XILINX_DIR`).
+* `make formal` runs the formal verification (see [below](#formal-verification)).
+  This requires [SymbiYosys](https://github.com/YosysHQ/sby), the
+  [GHDL plugin](https://github.com/ghdl/ghdl-yosys-plugin) for Yosys, and the
+  [Boolector](https://github.com/Boolector/boolector) solver. It takes about 30
+  seconds. If it fails, use `make show_prove TASK=prove` or
+  `make show_induct TASK=prove` to view the counterexample in GTKWave, where the
+  task is one of those in `tan_cordic.sby`.
 * `make clean` removes the generated files.
+
+## Formal verification
+The formal verification (`tan_cordic.psl`, `tan_cordic.sby`) proves with
+k-induction, i.e. for every sequence of inputs and stalls, including resets:
+* The result stays valid and unchanged until it is taken, and a new angle is
+  only accepted when no result is waiting.
+* The result is valid exactly `2*G_ITERATIONS + G_FRAC_BITS + 4` clock cycles
+  after the angle is accepted (see [Timing](#timing)), and not before.
+* After pseudo-division, the residual angle $z$ satisfies
+  $0 \le z < \arctan(2^{1-n}) < 2^{1-n}$, where $n$ is `G_ITERATIONS`. So the
+  upper bits of $z$, which are dropped for the multiplication $z \cdot z$, are
+  always zero, as claimed in `tan_cordic.vhd`. This holds for any input angle
+  in $[0, 1)$.
+* The restoring division is exact: if $0 \le y \le x < 8$ when the divider is
+  loaded, the result is $\lfloor 2^F y/x \rfloor$ (where $F$ is
+  `G_FRAC_BITS`), or all ones if $y = x$.
+
+The condition $0 \le y \le x$ depends on the values of sine and cosine, which
+induction cannot easily capture. So `tan_cordic_bmc.psl` verifies it with
+bounded model checking instead, for one calculation from the reset, with any
+angle in $[0, \pi/4)$. It also verifies that the Padé approximation and the
+rotations never saturate (`resize` in `fixed_pkg` saturates by default, which
+would silently give a wrong result). If the angle may be one unit of the last
+bit above $\pi/4$, it fails, so the range of the input is tight.
+
+The proofs use `G_ITERATIONS=3` and `G_FRAC_BITS=8` (short traces), and the
+default generics (6 and 24). The accuracy of the tangent is not verified
+formally, only by the simulation.
 
 ## Simulation
 `make sim` runs the testbench `tb_tan_cordic.vhd` using GHDL (`--std=08`).

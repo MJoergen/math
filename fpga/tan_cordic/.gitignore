@@ -9,3 +9,11 @@ tb_tan_cordic
 # Vivado (make vivado)
 vivado/
 .Xil/
+
+# Formal verification (make formal)
+tan_cordic_prove/
+tan_cordic_prove_default/
+tan_cordic_bmc/
+tan_cordic_bmc_default/
+tan_cordic_cover/
+tan_cordic_cover_bmc/

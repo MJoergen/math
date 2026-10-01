@@ -1,0 +1,252 @@
+-- Formal verification of tan_cordic.vhd, written in PSL (see
+-- https://en.wikipedia.org/wiki/Property_Specification_Language). Run with
+-- "make formal", which uses SymbiYosys (see https://github.com/YosysHQ/sby).
+--
+-- The properties are proven with k-induction (see tan_cordic.sby), so they
+-- hold in every clock cycle, not just for a bounded number of them:
+-- * The handshake: The result stays valid and unchanged until it is taken,
+--   and a new angle is only accepted when there is no result waiting.
+-- * The latency: The result is valid exactly C_LATENCY clock cycles after
+--   the angle is accepted, see "Timing" in README.md.
+-- * Pseudo-division leaves a residual angle 0 <= z < arctan(2^(1-n)), where
+--   n = G_ITERATIONS. So the upper bits of z, which PADE_MUL_ST drops for the
+--   multiplication z*z, are zero, as claimed in tan_cordic.vhd. This holds
+--   for every input angle in [0, 1), not only for angles below pi/4.
+-- * The restoring division is exact: If 0 <= y <= x < 8 when the divider is
+--   loaded, then the result is floor(y/x * 2^G_FRAC_BITS), or all ones if
+--   y = x (i.e. the tangent is 1.0, which the output cannot hold).
+--
+-- That 0 <= y <= x holds for every angle in [0, pi/4) depends on the CORDIC
+-- rotations, which induction cannot easily capture (it is a property of
+-- sin and cos). tan_cordic_bmc.psl verifies it with bounded model checking
+-- instead, for one complete calculation from the reset.
+--
+-- The assertions marked "for induction" rule out states that can never be
+-- reached, but from which induction could otherwise start.
+
+vunit tan_cordic_inst (tan_cordic(synthesis))
+{
+   -- set all declarations to run on clk_i
+   default clock is rising_edge(clk_i);
+
+   -----------------------------
+   -- AUXILIARY SIGNALS
+   -----------------------------
+
+   -- The number of clock cycles from the clock cycle where the angle is
+   -- accepted, until the clock cycle where the result is valid
+   constant C_LATENCY : positive := 2 * G_ITERATIONS + G_FRAC_BITS + 4;
+
+   -- The width of the products in the division, which are scaled by
+   -- 2^C_FRAC (like x and y) and by up to 2^G_FRAC_BITS
+   constant C_DW : positive := C_FRAC + G_FRAC_BITS + 8;
+
+   -- Set after the first clock cycle, when the signals below are valid
+   signal f_started : std_logic := '0';
+
+   -- The handshakes on the input and the output
+   signal f_push : std_logic;
+   signal f_pop  : std_logic;
+
+   -- The number of clock cycles since the last angle was accepted (up to
+   -- C_LATENCY), and whether rst_i has been low in all of them
+   signal f_since   : natural range 0 to C_LATENCY;
+   signal f_no_rst  : std_logic;
+
+   -- The divisor x and the dividend y, when they are loaded into the
+   -- divider, as integers scaled by 2^C_FRAC
+   signal f_dx : signed(C_DW - 1 downto 0);
+   signal f_dy : signed(C_DW - 1 downto 0);
+
+   -- The quotient bits, and the quotient times x, calculated alongside the
+   -- divider: f_qd := 2*f_qd + qbit*x. So by construction f_qd = q*x, and
+   -- the solver never multiplies.
+   signal f_q  : std_logic_vector(G_FRAC_BITS - 1 downto 0);
+   signal f_qd : signed(C_DW - 1 downto 0);
+
+   -- The number of quotient bits calculated (G_FRAC_BITS after the division)
+   signal f_k : natural range 0 to G_FRAC_BITS;
+
+   -- Whether the divider is loaded with 0 <= y <= x < 8, and x > 0
+   signal f_cond : boolean;
+
+   -- The residual angle, and the special angles, as integers scaled by
+   -- 2^C_FRAC. The comparisons of sfixed in fixed_pkg are not used here,
+   -- since the GHDL plugin for Yosys does not support them in PSL.
+   type angles_type is array (0 to G_ITERATIONS - 1) of signed(C_FRAC downto 0);
+
+   pure function angles_int return angles_type is
+      variable res_v : angles_type;
+   begin
+      for i in 0 to G_ITERATIONS - 1 loop
+         res_v(i) := signed(to_slv(C_ANGLES(i)));
+      end loop;
+      return res_v;
+   end function angles_int;
+
+   constant f_angles : angles_type := angles_int;
+   signal   f_angle  : signed(C_FRAC downto 0);
+
+   -- The results of the checks, see f_check_proc
+   signal f_div_ok : boolean;
+
+   f_angle <= signed(to_slv(angle));
+
+   f_push <= s_valid_i and s_ready_o;
+   f_pop  <= m_valid_o and m_ready_i;
+
+   f_k <= div_count when state = DIVIDE_ST else
+          G_FRAC_BITS;
+
+   f_track_proc : process (clk_i)
+      variable r2_v : signed(C_DW - 1 downto 0);
+   begin
+      if rising_edge(clk_i) then
+         if state = LOAD_DIV_ST then
+            f_dx <= resize(signed(to_slv(x)), C_DW);
+            f_dy <= resize(signed(to_slv(y)), C_DW);
+            f_q  <= quotient;
+            f_qd <= (others => '0');
+         end if;
+
+         if state = DIVIDE_ST then
+            -- The quotient bit is set if 2*rem - x >= 0
+            r2_v := shift_left(resize(signed(to_slv(rem_reg)), C_DW), 1);
+            if r2_v - f_dx >= 0 then
+               f_q  <= f_q(G_FRAC_BITS - 2 downto 0) & '1';
+               f_qd <= shift_left(f_qd, 1) + f_dx;
+            else
+               f_q  <= f_q(G_FRAC_BITS - 2 downto 0) & '0';
+               f_qd <= shift_left(f_qd, 1);
+            end if;
+         end if;
+
+         if f_push = '1' then
+            f_since  <= 0;
+            f_no_rst <= not rst_i;
+         else
+            if f_since < C_LATENCY then
+               f_since <= f_since + 1;
+            end if;
+            f_no_rst <= f_no_rst and not rst_i;
+         end if;
+
+         f_started <= '1';
+      end if;
+   end process f_track_proc;
+
+   f_cond <= f_dy >= 0 and f_dy <= f_dx and f_dx > 0 and f_dx < shift_left(to_signed(1, C_DW), C_FRAC + 3);
+
+   f_check_proc : process (all)
+      variable rem_v : signed(C_DW - 1 downto 0);
+      variable ok_v  : boolean;
+   begin
+      -- After k iterations, y*2^k = q*x + rem. If y < x, then 0 <= rem < x,
+      -- so q = floor(y*2^k/x). If y = x, then rem = x, and all the bits of q
+      -- are set.
+      rem_v := shift_left(f_dy, f_k) - f_qd;
+      ok_v  := resize(signed(to_slv(div)), C_DW) = f_dx and
+               resize(signed(to_slv(rem_reg)), C_DW) = rem_v and quotient = f_q;
+      if f_dy < f_dx then
+         ok_v := ok_v and rem_v >= 0 and rem_v < f_dx;
+      else
+         ok_v := ok_v and rem_v = f_dx and
+                 (f_q or not std_logic_vector(shift_left(to_unsigned(1, G_FRAC_BITS), f_k) - 1)) = (f_q'range => '1');
+      end if;
+      f_div_ok <= ok_v;
+   end process f_check_proc;
+
+
+   -----------------------------
+   -- ASSERTIONS ABOUT OUTPUTS
+   -----------------------------
+
+   -- The result stays valid and unchanged until it is taken
+   f_hold : assert always {f_started = '1' and m_valid_o = '1' and m_ready_i = '0' and rst_i = '0'} |=>
+      {m_valid_o = '1' and m_tan_o = prev(m_tan_o)};
+
+   -- A reset clears m_valid_o
+   f_rst : assert always {rst_i = '1'} |=> {m_valid_o = '0'};
+
+   -- A new angle is only accepted when there is no result waiting
+   f_one : assert always f_started = '1' and s_ready_o = '1' -> m_valid_o = '0';
+
+   -- The result is valid C_LATENCY clock cycles after the angle was
+   -- accepted, and not before
+   f_latency : assert always f_started = '1' and f_no_rst = '1' and f_since < C_LATENCY - 1 ->
+      m_valid_o = '0' and s_ready_o = '0';
+   f_valid : assert always {f_started = '1' and f_no_rst = '1' and f_since = C_LATENCY - 2 and rst_i = '0'} |=>
+      {m_valid_o = '1'};
+
+   -- The quotient is correct, if 0 <= y <= x < 8 when the divider was loaded
+   f_result : assert always f_started = '1' and m_valid_o = '1' and f_cond -> f_div_ok and m_tan_o = quotient;
+
+
+   -----------------------------
+   -- ASSERTIONS FOR INDUCTION
+   -----------------------------
+
+   -- state follows the calculation, see "Timing" in ALGORITHM.md
+   f_state : assert always f_started = '1' ->
+      (state = IDLE_ST and m_valid_o = '0') or
+      (state = REDUCE_ST and f_since = count and m_valid_o = '0') or
+      (state = PADE_MUL_ST and f_since = G_ITERATIONS and m_valid_o = '0') or
+      (state = PADE_ST and f_since = G_ITERATIONS + 1 and m_valid_o = '0') or
+      (state = ROTATE_ST and f_since = 2 * G_ITERATIONS + 1 - count and m_valid_o = '0') or
+      (state = LOAD_DIV_ST and f_since = 2 * G_ITERATIONS + 2 and m_valid_o = '0') or
+      (state = DIVIDE_ST and f_since = 2 * G_ITERATIONS + 3 + div_count and m_valid_o = '0') or
+      (state = WAIT_ST and f_since >= C_LATENCY - 1 and m_valid_o = '1');
+
+   -- Without a reset, the calculation is not abandoned
+   f_busy : assert always f_started = '1' and f_no_rst = '1' and f_since < C_LATENCY - 1 -> state /= IDLE_ST;
+
+   -- The divider matches the checker. Before the division (in LOAD_DIV_ST)
+   -- the condition is not known yet.
+   f_divide : assert always f_started = '1' and (state = DIVIDE_ST or state = WAIT_ST) and f_cond -> f_div_ok;
+
+
+   -----------------------------
+   -- ASSERTIONS ABOUT INTERNAL STATE
+   -----------------------------
+
+   -- Pseudo-division: Before the special angle arctan(2^-i) is tried, the
+   -- residual angle is less than arctan(2^(1-i)), which follows from
+   -- arctan(2^(1-i)) <= 2*arctan(2^-i). The input angle is less than 1, so
+   -- this also holds for i = 0, with 2*arctan(1) = pi/2 instead.
+   f_reduce : assert always f_started = '1' and state = REDUCE_ST ->
+      f_angle >= 0 and (count = 0 or f_angle < f_angles(maximum(count, 1) - 1));
+
+   -- After pseudo-division, the residual angle is less than
+   -- arctan(2^(1-n)) < 2^(1-n). So the bits that PADE_MUL_ST drops (above
+   -- the sign bit of small_angle_type) are zero.
+   f_residual : assert always f_started = '1' and state = PADE_MUL_ST ->
+      f_angle >= 0 and f_angle < f_angles(G_ITERATIONS - 1) and
+      f_angle < shift_left(to_signed(1, C_FRAC + 1), C_FRAC + small_angle_type'high);
+
+
+   -----------------------------
+   -- ASSUMPTIONS ABOUT INPUTS
+   -----------------------------
+
+   -- Require a reset at startup
+   f_reset : assume {rst_i = '1'};
+
+   -- For induction: The signals above are only invalid in the first clock
+   -- cycle, where f_reset requires a reset anyway
+   f_start_first : assume always f_started = '0' -> rst_i = '1';
+
+
+   --------------------------------------------
+   -- COVER STATEMENTS TO VERIFY REACHABILITY
+   --------------------------------------------
+
+   -- A result is taken
+   f_cover_done : cover {f_started = '1' and f_pop = '1'};
+
+   -- The result waits to be taken, so f_hold is not vacuous
+   f_cover_wait : cover {m_valid_o = '1' and m_ready_i = '0'; m_valid_o = '1' and m_ready_i = '1'};
+
+   -- A reset during a calculation
+   f_cover_reset : cover {f_started = '1' and state = ROTATE_ST and rst_i = '1'};
+
+} -- vunit tan_cordic_inst (tan_cordic(synthesis))
