@@ -12,9 +12,9 @@ jobs:
           sudo apt-get install -y make latexmk texlive-lang-european texlive-latex-extra
       - name: Build pdf
         run: |
-          make
+          make -C latex
           mkdir artifact
-          cp *.pdf artifact/.
+          cp latex/*.pdf artifact/.
       - name: Archive
         uses: actions/upload-artifact@v7
         with:
