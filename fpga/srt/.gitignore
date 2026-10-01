@@ -23,18 +23,7 @@ pla.fls
 pla.fdb_latexmk
 
 # Vivado (make vivado)
-vivado_build.tcl
-post_synth.dcp
-post_route.dcp
-timing_summary.rpt
-utilization.rpt
-srt.bit
-vivado*.jou
-vivado*.log
-usage_statistics_webtalk*
-.Xil/
-clockInfo.txt
-tight_setup_hold_pins.txt
+vivado/
 
 # Vivado (srt.xpr project)
 srt.cache/
@@ -43,6 +32,7 @@ srt.hw/
 srt.ip_user_files/
 srt.runs/
 srt.sim/
+.Xil/
 
 # Downloaded papers (not generated, but not redistributed either)
 doc/

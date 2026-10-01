@@ -53,8 +53,8 @@ partial remainder, and the Pentium bug. It also has a diagram of the table.
 | [`srt_core.psl`](srt_core.psl), [`srt_core.sby`](srt_core.sby) | Formal verification of `srt_core`.
 | [`srt_core.gtkw`](srt_core.gtkw) | GTKWave setup for viewing the formal verification traces.
 | [`srt.gtkw`](srt.gtkw) | [GTKWave](https://github.com/gtkwave/gtkwave) setup for viewing the waveform from `make debug`.
-| [`srt.xpr`](srt.xpr) | [Vivado](https://www.amd.com/en/products/software/adaptive-socs-and-fpgas/vivado.html) project (Artix-7 xc7a200tfbg484-2), for use in the Vivado GUI. `make vivado` does not use it.
-| [`srt.xdc`](srt.xdc) | Timing constraint (200 MHz), for synthesis.
+| [`srt.xdc`](srt.xdc), [`vivado.tcl`](vivado.tcl) | Timing constraint (200 MHz) and script for synthesis with Vivado, see `make vivado`.
+| [`srt.xpr`](srt.xpr) | Vivado project, for use in the Vivado GUI. It has the same settings as `make vivado`.
 | [`srt.py`](srt.py) | Bit-exact model of `srt`, and a checker for the quotient digit table.
 | [`pla.tex`](pla.tex), [`pla_steps.tex`](pla_steps.tex), [`pla.svg`](pla.svg) | Diagram of the quotient digit table.
 | [`ALGORITHM.md`](ALGORITHM.md) | Detailed explanation of the algorithm.
@@ -125,11 +125,15 @@ Type `make` to list the supported targets. The most important ones are:
   counterexample in GTKWave, and `make show_cover` to view the cover trace.
 * `make model` (or `./srt.py` and `./srt.py --exact`) checks the quotient
   digit table, and tests the model. See [below](#the-model).
-* `make vivado` runs synthesis and implementation in Vivado, and fails if the
-  design does not meet the 200 MHz timing constraint. The timing report is
-  written to `timing_summary.rpt`. No I/O pins are assigned, so the bitstream
-  is not meant to be loaded into a board. It takes about 2 minutes, and expects
-  Vivado in `/opt/Xilinx/2025.1/Vivado` (the variable `XILINX_DIR`).
+* `make vivado` synthesizes and implements `srt.vhd`, using
+  [Vivado](https://www.amd.com/en/products/software/adaptive-socs-and-fpgas/vivado.html)
+  for the Artix-7 part xc7a200tfbg484-2. The design is implemented out of
+  context, i.e. as a module inside a larger design, so only the paths between
+  registers are timed. It fails if the design does not meet the 200 MHz clock
+  constraint in `srt.xdc`. At the end it prints the number of cells and the
+  slack of the worst path, and the reports are written to `vivado/`. It takes
+  about 2 minutes, and expects Vivado in `/opt/Xilinx/2025.1/Vivado` (the
+  variable `XILINX_DIR`).
 * `make clean` removes the generated files.
 
 The CI (`.github/workflows/srt.yml`) runs `make model`, `make sim`, and

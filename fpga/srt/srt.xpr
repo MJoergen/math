@@ -204,6 +204,7 @@
         <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2021"/>
         <Step Id="synth_design">
           <Option Id="FlattenHierarchy">1</Option>
+          <Option Id="MoreOptsStr"><![CDATA[-mode out_of_context]]></Option>
         </Step>
       </Strategy>
       <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
