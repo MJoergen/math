@@ -44,6 +44,10 @@ vunit tan_cordic_inst (tan_cordic(synthesis))
    -- Set after the first clock cycle, when the signals below are valid
    signal f_started : std_logic := '0';
 
+   -- The conditions of f_state, see below. (Writing them directly in the
+   -- assertions makes GHDL 4.1 fail.)
+   signal f_state_ok : boolean;
+
    -- The handshakes on the input and the output
    signal f_push : std_logic;
    signal f_pop  : std_logic;
@@ -151,7 +155,7 @@ vunit tan_cordic_inst (tan_cordic(synthesis))
          ok_v := ok_v and rem_v >= 0 and rem_v < f_dx;
       else
          ok_v := ok_v and rem_v = f_dx and
-                 (f_q or not std_logic_vector(shift_left(to_unsigned(1, G_FRAC_BITS), f_k) - 1)) = (f_q'range => '1');
+                 (f_q or not std_logic_vector(shift_left(to_unsigned(1, G_FRAC_BITS), f_k) - 1)) = (G_FRAC_BITS - 1 downto 0 => '1');
       end if;
       f_div_ok <= ok_v;
    end process f_check_proc;
@@ -187,15 +191,15 @@ vunit tan_cordic_inst (tan_cordic(synthesis))
    -----------------------------
 
    -- state follows the calculation, see "Timing" in ALGORITHM.md
-   f_state : assert always f_started = '1' ->
-      (state = IDLE_ST and m_valid_o = '0') or
-      (state = REDUCE_ST and f_since = count and m_valid_o = '0') or
-      (state = PADE_MUL_ST and f_since = G_ITERATIONS and m_valid_o = '0') or
-      (state = PADE_ST and f_since = G_ITERATIONS + 1 and m_valid_o = '0') or
-      (state = ROTATE_ST and f_since = 2 * G_ITERATIONS + 1 - count and m_valid_o = '0') or
-      (state = LOAD_DIV_ST and f_since = 2 * G_ITERATIONS + 2 and m_valid_o = '0') or
-      (state = DIVIDE_ST and f_since = 2 * G_ITERATIONS + 3 + div_count and m_valid_o = '0') or
-      (state = WAIT_ST and f_since >= C_LATENCY - 1 and m_valid_o = '1');
+   f_state_ok <= (state = IDLE_ST and m_valid_o = '0') or
+                 (state = REDUCE_ST and f_since = count and m_valid_o = '0') or
+                 (state = PADE_MUL_ST and f_since = G_ITERATIONS and m_valid_o = '0') or
+                 (state = PADE_ST and f_since = G_ITERATIONS + 1 and m_valid_o = '0') or
+                 (state = ROTATE_ST and f_since = 2 * G_ITERATIONS + 1 - count and m_valid_o = '0') or
+                 (state = LOAD_DIV_ST and f_since = 2 * G_ITERATIONS + 2 and m_valid_o = '0') or
+                 (state = DIVIDE_ST and f_since = 2 * G_ITERATIONS + 3 + div_count and m_valid_o = '0') or
+                 (state = WAIT_ST and f_since >= C_LATENCY - 1 and m_valid_o = '1');
+   f_state : assert always f_started = '1' -> f_state_ok;
 
    -- Without a reset, the calculation is not abandoned
    f_busy : assert always f_started = '1' and f_no_rst = '1' and f_since < C_LATENCY - 1 -> state /= IDLE_ST;

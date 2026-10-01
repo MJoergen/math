@@ -66,6 +66,11 @@ vunit c64_sincos_inst (c64_sincos(synthesis))
    -- Set after the first clock cycle, when the signals below are valid
    signal f_started : std_logic := '0';
 
+   -- The conditions of f_count and f_state, see below. (Writing them directly in the
+   -- assertions makes GHDL 4.1 fail.)
+   signal f_count_ok : boolean;
+   signal f_state_ok : boolean;
+
    -- The handshakes on the input and the output
    signal f_push : std_logic;
    signal f_pop  : std_logic;
@@ -172,20 +177,20 @@ vunit c64_sincos_inst (c64_sincos(synthesis))
    -- None of the inputs is lost or duplicated: The output register holds the
    -- result of one input (if valid), and the calculation works on one (if
    -- not idle)
-   f_count : assert always f_started = '1' ->
-      (f_cnt = 0 and state = IDLE_ST and m_valid_o = '0') or
-      (f_cnt = 1 and state = IDLE_ST and m_valid_o = '1') or
-      (f_cnt = 1 and state /= IDLE_ST and m_valid_o = '0') or
-      (f_cnt = 2 and state /= IDLE_ST and m_valid_o = '1');
+   f_count_ok <= (f_cnt = 0 and state = IDLE_ST and m_valid_o = '0') or
+                 (f_cnt = 1 and state = IDLE_ST and m_valid_o = '1') or
+                 (f_cnt = 1 and state /= IDLE_ST and m_valid_o = '0') or
+                 (f_cnt = 2 and state /= IDLE_ST and m_valid_o = '1');
+   f_count : assert always f_started = '1' -> f_count_ok;
 
    -- state follows the calculation
-   f_state : assert always f_started = '1' ->
-      state = IDLE_ST or
-      (state = STAGE1_ST and f_since = 0) or
-      (state = STAGE2_ST and f_since = 1) or
-      (state = CALC_ST and f_since = count + 2) or
-      (state = SHIFT_ST and f_since = C_ANGLE_NUM + 2) or
-      (state = NORMALIZE_ST and f_since >= C_ANGLE_NUM + 3);
+   f_state_ok <= state = IDLE_ST or
+                 (state = STAGE1_ST and f_since = 0) or
+                 (state = STAGE2_ST and f_since = 1) or
+                 (state = CALC_ST and f_since = count + 2) or
+                 (state = SHIFT_ST and f_since = C_ANGLE_NUM + 2) or
+                 (state = NORMALIZE_ST and f_since >= C_ANGLE_NUM + 3);
+   f_state : assert always f_started = '1' -> f_state_ok;
 
    -- If the consumer is ready, the previous result is taken in the first
    -- clock cycle of the calculation
