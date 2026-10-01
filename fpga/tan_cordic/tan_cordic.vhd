@@ -147,11 +147,37 @@ architecture synthesis of tan_cordic is
 
    type rom_type is array (0 to G_ITERATIONS - 1) of angle_type;
 
+   -- arctan(2**-i). This does not use arctan of ieee.math_real, since in GHDL it
+   -- is only accurate to about 2**-27, which is less than C_FRAC bits. (Some
+   -- builds of GHDL calculate it precisely when they evaluate a constant during
+   -- elaboration, so the results of the simulation would depend on the build.)
+   -- Instead, arctan(1) = pi/4, and for i >= 1 the Taylor series
+   -- arctan(x) = x - x**3/3 + x**5/5 - ... is used. Since x <= 0.5, the terms
+   -- after x**61/61 are less than 2**-63, far below the precision of a real.
+   pure function arctan_pow2 (
+      i : natural
+   ) return real is
+      variable x_v    : real;
+      variable term_v : real;
+      variable res_v  : real := 0.0;
+   begin
+      if i = 0 then
+         return math_pi / 4.0;
+      end if;
+      x_v    := 2.0 ** (-i);
+      term_v := x_v;
+      for n in 0 to 30 loop
+         res_v  := res_v + term_v / real(2 * n + 1);
+         term_v := -term_v * x_v * x_v;
+      end loop;
+      return res_v;
+   end function arctan_pow2;
+
    pure function calc_angles return rom_type is
       variable res_v : rom_type;
    begin
       for i in 0 to G_ITERATIONS - 1 loop
-         res_v(i) := to_sfixed(arctan(2.0 ** (-i)), angle_type'high, angle_type'low);
+         res_v(i) := to_sfixed(arctan_pow2(i), angle_type'high, angle_type'low);
       end loop;
       return res_v;
    end function calc_angles;

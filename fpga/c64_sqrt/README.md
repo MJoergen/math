@@ -118,6 +118,9 @@ Type `make` to list the supported targets:
   task is one of those in `c64_sqrt.sby`.
 * `make clean` removes the generated files.
 
+The CI (`.github/workflows/c64_sqrt.yml`) runs `make sim` and `make formal` on
+every pull request, and every push to master, that changes this directory.
+
 ## Formal verification
 The formal verification (`c64_sqrt.psl`, `c64_sqrt.sby`) proves with
 k-induction, for every input, and every sequence of inputs and stalls, including

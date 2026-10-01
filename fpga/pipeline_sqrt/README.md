@@ -136,6 +136,10 @@ Type `make` to list the supported targets:
   task is one of those in `pipeline_sqrt.sby`.
 * `make clean` removes the generated files.
 
+The CI (`.github/workflows/pipeline_sqrt.yml`) runs `make sim` and `make
+formal` on every pull request, and every push to master, that changes this
+directory.
+
 ## Formal verification
 The formal verification (`pipeline_sqrt.psl`, `pipeline_sqrt.sby`) proves with
 k-induction, for every sequence of inputs and stalls, including resets, and for

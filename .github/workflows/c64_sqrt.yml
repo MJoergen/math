@@ -1,0 +1,58 @@
+name: c64_sqrt
+
+# Test the square root in the directory fpga/c64_sqrt. This only runs when
+# something in that directory (or this file) changes: on pull requests, and on
+# pushes to master. (Running on all pushes would test each pull request twice.)
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'fpga/c64_sqrt/**'
+      - '.github/workflows/c64_sqrt.yml'
+  pull_request:
+    paths:
+      - 'fpga/c64_sqrt/**'
+      - '.github/workflows/c64_sqrt.yml'
+
+# When a pull request is updated, cancel the run for the previous commit
+concurrency:
+  group: c64_sqrt-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+defaults:
+  run:
+    working-directory: fpga/c64_sqrt
+
+jobs:
+  # Run the testbench (about a minute)
+  sim:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install OSS CAD Suite
+        # This contains GHDL, see fpga/README.md
+        uses: YosysHQ/setup-oss-cad-suite@v4
+        with:
+          version: '2026-10-01'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run the testbench
+        run: make sim
+
+  # Run the formal verification (about 10 minutes)
+  formal:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install OSS CAD Suite
+        # This contains Yosys, the GHDL plugin for Yosys, SymbiYosys, and
+        # Boolector 3 (the version in Ubuntu 24.04 does not work with
+        # SymbiYosys), see fpga/README.md
+        uses: YosysHQ/setup-oss-cad-suite@v4
+        with:
+          version: '2026-10-01'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run the formal verification
+        run: make formal
