@@ -2,28 +2,21 @@
 
 # This tries to find Steiner Systems, see:
 # https://en.wikipedia.org/wiki/Steiner_system
+#
+# A Steiner system S(t,k,n) is a collection of k-element subsets (blocks)
+# of an n-element set, such that every t-element subset is contained in
+# exactly one block.
+#
+# The search uses backtracking: In each step it finds the first t-subset that
+# is not yet covered by any block, and then tries each block that contains
+# this t-subset and is compatible with the blocks chosen so far.
 
+from itertools import combinations
 from typing import List
 from typing import Iterator
-
-# n      : Total number of positions available
-# k      : Total number of filled positions wanted
-# a_temp : Current, half-filled, array
-# k_temp : Number of currently filled positions
-# pos    : Position after last filled position
-def place(n:int, k:int, a_temp:List[int] = None, k_temp:int = None, pos:int = None) -> Iterator[List[int]]:
-    if a_temp == None:
-        a_temp = [0]*n
-    if k_temp == None:
-        k_temp = sum(a_temp)
-    if pos == None:
-        pos = 0
-    if k_temp == k:
-        yield a_temp
-    for i in range(pos,n):
-        a_temp[i] = 1
-        yield from place(n, k, a_temp, k_temp+1, i+1)
-        a_temp[i] = 0
+from typing import Optional
+from typing import Set
+from typing import Tuple
 
 def binom(n:int, k:int) -> int:
     r = 1
@@ -32,93 +25,66 @@ def binom(n:int, k:int) -> int:
         r//=i # This division will always be exact
     return r
 
-def count(a:List[int]) -> int:
-    s = 0
-    for i in a:
-        if i != 0:
-            s += 1
-    return s
+# Number of blocks in the Steiner system S(t,k,n)
+def calc_b(n:int, k:int, t:int) -> int:
+    return binom(n,t) // binom(k,t)
 
-def valid(cols:List[List[int]], c:List[int], t:int) -> bool:
-    for pc in cols:
-        if sum([a*b for a,b in zip(pc,c)]) >= t:
-            return False
-    return True
+# Number of blocks containing any given point
+def calc_r(n:int, k:int, t:int) -> int:
+    return binom(n-1,t-1) // binom(k-1,t-1)
 
-def steiner(n         : int,
-            k         : int,
-            t         : int,
-            b         : int             = None,
-            r         : int             = None,
-            cols      : List[List[int]] = None,
-            col_index : int             = 0,
-            all_cols  : List[List[int]] = None) -> Iterator[List[List[int]]]:
-    if b == None:
-        b = calc_b(n,k,t)
-    assert b is not None
-    if r == None:
-        r = calc_r(n,k,t)
-    assert r is not None
-    if all_cols == None:
-        print(f"n={n}, k={k}, t={t}, b={b}, r={r}")
-        all_cols = []
-        for c in place(n, k):
-            all_cols.append(list(c))
-    assert all_cols is not None
+# Convert a block to a list of n elements, each 0 or 1
+def to_col(n:int, block:Tuple[int, ...]) -> List[int]:
+    col = [0]*n
+    for i in block:
+        col[i] = 1
+    return col
 
-    if cols == None:
-        cols=[]
-    else:
-        assert cols is not None
-        res = [sum(i) for i in zip(*cols)]
-        if max(res) > r:
-            print("Illegal")
-            return
+# n       : Total number of points
+# k       : Number of points in each block
+# t       : Every t-subset must be in exactly one block
+# blocks  : The blocks chosen so far
+# covered : The t-subsets contained in the blocks chosen so far
+def steiner(n       : int,
+            k       : int,
+            t       : int,
+            blocks  : Optional[List[Tuple[int, ...]]] = None,
+            covered : Optional[Set[Tuple[int, ...]]]  = None) -> Iterator[List[List[int]]]:
+    if blocks is None:
+        print(f"n={n}, k={k}, t={t}, b={calc_b(n,k,t)}, r={calc_r(n,k,t)}")
+        blocks = []
+        covered = set()
+    assert covered is not None
 
-    if len(cols) >= binom(n,t) // binom(k,t):
-        yield cols
+    # Find the first t-subset not yet covered
+    first = next((s for s in combinations(range(n), t) if s not in covered), None)
+    if first is None:
+        # All t-subsets are covered, so we have a Steiner system
+        assert len(blocks) == calc_b(n,k,t)
+        yield [to_col(n, block) for block in blocks]
+        return
 
-    for i in range(col_index, len(all_cols)):
-        c = all_cols[i]
-        if valid(cols,c,t):
-            cols.append(c)
-            yield from steiner(n, k, t, b, r, list(cols), i, all_cols)
-            cols.pop()
+    # Try each block containing this t-subset.
+    # The block is the t-subset together with k-t of the remaining points.
+    rest = [i for i in range(n) if i not in first]
+    for extra in combinations(rest, k-t):
+        block = tuple(sorted(first + extra))
+        subsets = list(combinations(block, t))
+        if any(s in covered for s in subsets):
+            continue
+        blocks.append(block)
+        covered.update(subsets)
+        yield from steiner(n, k, t, blocks, covered)
+        covered.difference_update(subsets)
+        blocks.pop()
 
-for s in steiner(7,3,2):
-    print(s)
-    break
+def main() -> None:
+    for (t,k,n) in [(2,3,7), (3,4,8), (3,4,10), (4,5,11), (5,6,12), (4,7,23), (5,8,24)]:
+        for s in steiner(n,k,t):
+            for col in s:
+                print(''.join(str(i) for i in col))
+            print()
+            break
 
-for s in steiner(9,3,2):
-    print(s)
-    break
-
-for s in steiner(15,3,2):
-    print(s)
-    break
-
-for s in steiner(8,4,3):
-    print(s)
-    break
-
-# The rest fail for some reason
-for s in steiner(10,4,3):
-    print(s)
-    break
-
-for s in steiner(11,5,4):
-    print(s)
-    break
-
-for s in steiner(23,7,4):
-    print(s)
-    break
-
-for s in steiner(12,6,5):
-    print(s)
-    break
-
-for s in steiner(24,8,5):
-    print(s)
-    break
-
+if __name__ == '__main__':
+    main()
