@@ -1,0 +1,55 @@
+# Formal verification of pipeline_sqrt.vhd, see pipeline_sqrt.psl. This file
+# is run by SymbiYosys (see https://github.com/YosysHQ/sby), and its format is
+# described in
+# https://yosyshq.readthedocs.io/projects/sby/en/latest/reference.html
+#
+# The prove tasks use k-induction (see
+# https://doi.org/10.1007/3-540-40922-X_8), so the properties are proven for
+# every clock cycle, not just for a bounded number of them. The depth option
+# is k. They use G_EXTRA_BITS of 0, 2 (as in "make vivado"), and 4.
+#
+# The cover task shows that the cover statements in pipeline_sqrt.psl can be
+# reached.
+#
+# The engine smtbmc uses the Boolector SMT solver (see
+# https://github.com/Boolector/boolector).
+#
+# "memory_map -rom-only" (see
+# https://yosyshq.readthedocs.io/projects/yosys/en/latest/cmd/index_passes_memory.html#cmd-memory_map)
+# turns the lookup tables (ROMs) into logic. The initial contents of a
+# memory only hold in the first clock cycle, but induction starts from an
+# arbitrary clock cycle, and could otherwise use any contents.
+#
+# The script reads the VHDL and PSL files with the GHDL plugin for Yosys (see
+# https://github.com/ghdl/ghdl-yosys-plugin).
+
+[tasks]
+prove0
+prove2
+prove4
+cover2
+
+[options]
+prove0: mode prove
+prove0: depth 3
+prove2: mode prove
+prove2: depth 3
+prove4: mode prove
+prove4: depth 3
+cover2: mode cover
+cover2: depth 10
+
+[engines]
+smtbmc boolector
+
+[script]
+prove0: ghdl --std=08 -gG_EXTRA_BITS=0 pipeline_sqrt.vhd pipeline_sqrt.psl -e pipeline_sqrt
+prove2: ghdl --std=08 -gG_EXTRA_BITS=2 pipeline_sqrt.vhd pipeline_sqrt.psl -e pipeline_sqrt
+prove4: ghdl --std=08 -gG_EXTRA_BITS=4 pipeline_sqrt.vhd pipeline_sqrt.psl -e pipeline_sqrt
+cover2: ghdl --std=08 -gG_EXTRA_BITS=2 pipeline_sqrt.vhd pipeline_sqrt.psl -e pipeline_sqrt
+prep -top pipeline_sqrt
+memory_map -rom-only
+
+[files]
+pipeline_sqrt.vhd
+pipeline_sqrt.psl

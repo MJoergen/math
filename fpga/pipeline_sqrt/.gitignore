@@ -17,3 +17,9 @@ pipeline_sqrt.ip_user_files/
 pipeline_sqrt.runs/
 pipeline_sqrt.sim/
 .Xil/
+
+# Formal verification (make formal)
+pipeline_sqrt_prove0/
+pipeline_sqrt_prove2/
+pipeline_sqrt_prove4/
+pipeline_sqrt_cover2/

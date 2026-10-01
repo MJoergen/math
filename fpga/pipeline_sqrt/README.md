@@ -76,7 +76,8 @@ and the timing.
 | [`pipeline_sqrt.gtkw`](pipeline_sqrt.gtkw) | GTKWave setup for viewing the waveform from `make debug`.
 | [`pipeline_sqrt.xdc`](pipeline_sqrt.xdc), [`vivado.tcl`](vivado.tcl) | Timing constraint (222 MHz) and script for synthesis with Vivado, see `make vivado`.
 | [`pipeline_sqrt.xpr`](pipeline_sqrt.xpr) | Vivado project, for use in the Vivado GUI. It has the same settings as `make vivado`, with G_EXTRA_BITS = 2.
-| [`Makefile`](Makefile) | Runs the simulation and the synthesis, see [Running](#running).
+| [`pipeline_sqrt.psl`](pipeline_sqrt.psl), [`pipeline_sqrt.sby`](pipeline_sqrt.sby) | Formal verification, see [Formal verification](#formal-verification).
+| [`Makefile`](Makefile) | Runs the simulation, the formal verification, and the synthesis, see [Running](#running).
 
 ## Interface
 The generic `G_EXTRA_BITS` is the number of upper bits of f(a) that are calculated
@@ -126,7 +127,35 @@ Type `make` to list the supported targets:
   reports are written to `vivado/pipeline_sqrt_2/`. E.g. `make vivado VIVADO_EXTRA_BITS=4`
   selects another value of G_EXTRA_BITS. It takes about 2 minutes, and expects Vivado in
   `/opt/Xilinx/2025.1/Vivado` (the variable `XILINX_DIR`).
+* `make formal` runs the formal verification (see [below](#formal-verification)).
+  This requires [SymbiYosys](https://github.com/YosysHQ/sby), the
+  [GHDL plugin](https://github.com/ghdl/ghdl-yosys-plugin) for Yosys, and the
+  [Boolector](https://github.com/Boolector/boolector) solver. It takes about 20
+  seconds. If it fails, use `make show_prove TASK=prove2` or
+  `make show_induct TASK=prove2` to view the counterexample in GTKWave, where the
+  task is one of those in `pipeline_sqrt.sby`.
 * `make clean` removes the generated files.
+
+## Formal verification
+The formal verification (`pipeline_sqrt.psl`, `pipeline_sqrt.sby`) proves with
+k-induction, for every sequence of inputs and stalls, including resets, and for
+G_EXTRA_BITS = 0, 2, and 4:
+* The results come out in order, none is lost, and none is duplicated: the
+  skid buffer, stage 1, and the output register hold the inputs in the order they
+  were accepted.
+* Stage 1 holds the table lookups and the low bits of the right input, and the
+  output register is loaded with the result that stage 1 calculates from them.
+* The result stays valid and unchanged until it is taken, and a reset empties the
+  pipeline.
+* If the pipeline is not stalled, the result is valid two clock cycles after the
+  input was accepted, and if the consumer is ready, an input is accepted in the next
+  clock cycle.
+
+The checker does not calculate the result from the input itself, since then the
+solver would have to prove that two multipliers with the same inputs give the same
+product, which is very slow. So this verifies how the data moves through the
+pipeline, and the simulation verifies the accuracy of the square root, for all the
+inputs.
 
 ## Simulation
 The testbench cycles through all 3*2^20 valid values of the input, from 0x100000 (1.0)
