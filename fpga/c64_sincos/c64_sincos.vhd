@@ -199,12 +199,37 @@ architecture synthesis of c64_sincos is
 
    type rom_type is array (0 to C_ANGLE_NUM - 1) of fraction_type;
 
+   -- arctan(2**-i). This does not use arctan of ieee.math_real, since in GHDL it
+   -- is only accurate to about 2**-27, and for small arguments it is even
+   -- negative. (Some builds of GHDL calculate it precisely when they evaluate a
+   -- constant during elaboration, so the results of the simulation would depend
+   -- on the build.) Instead, arctan(1) = pi/4, and for i >= 1 the Taylor series
+   -- arctan(x) = x - x**3/3 + x**5/5 - ... is used. Since x <= 0.5, the terms
+   -- after x**61/61 are less than 2**-63, far below the precision of a real.
+
+   pure function arctan_pow2 (i : natural) return real is
+      variable x_v    : real;
+      variable term_v : real;
+      variable res_v  : real := 0.0;
+   begin
+      if i = 0 then
+         return math_pi / 4.0;
+      end if;
+      x_v    := 0.5 ** i;
+      term_v := x_v;
+      for n in 0 to 30 loop
+         res_v  := res_v + term_v / real(2 * n + 1);
+         term_v := -term_v * x_v * x_v;
+      end loop;
+      return res_v;
+   end function arctan_pow2;
+
    pure function calc_angles return rom_type is
       variable res_v   : rom_type := (others => (others => '0'));
       variable angle_v : real;
    begin
       for i in 0 to C_ANGLE_NUM - 1 loop
-         angle_v  := arctan(0.5 ** i) / (2.0 * arctan(1.0)); -- In units of pi/2
+         angle_v  := arctan_pow2(i) / math_pi_over_2; -- In units of pi/2
          res_v(i) := real2fraction(angle_v);
          if G_DEBUG then
             report "C_ANGLES(" & to_string(i) & ") = " & to_string(angle_v, 11) & " = 0x" & to_hstring(res_v(i));
