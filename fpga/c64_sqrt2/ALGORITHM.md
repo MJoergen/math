@@ -146,7 +146,8 @@ From the bit-exact model, over 20000 random inputs:
   then take several clock cycles, and since each step depends on the result of
   the previous one, the latency in nanoseconds would hardly improve.
 
-Compared with [`c64_sqrt`](../c64_sqrt/ALGORITHM.md), which calculates one bit
-per clock cycle with a single carry chain, this design has a lower latency
-(40 to 119 ns versus 139 ns), but needs 8 DSP blocks and about three times as
-many LUTs, and is not always correctly rounded.
+Compared with [`c64_sqrt`](../c64_sqrt/ALGORITHM.md), which calculates four
+bits per clock cycle with four carry chains in series, this design has a
+latency of 40 to 119 ns (94 ns on average) versus always 95 ns, but needs 8
+DSP blocks and about twice as many LUTs, and is not always correctly
+rounded.

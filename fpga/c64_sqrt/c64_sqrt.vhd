@@ -19,7 +19,9 @@ library ieee;
 -- See also: https://www.c64-wiki.com/wiki/Floating_point_arithmetic
 --
 -- The algorithm is taken from
--- https://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Binary_numeral_system_(base_2).
+-- https://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Binary_numeral_system_(base_2),
+-- in its non-restoring form, with G_STEPS iterations in each clock cycle, see
+-- ALGORITHM.md.
 --
 -- Interface:
 -- The input is accepted when s_valid_i and s_ready_o are both asserted on the
@@ -32,13 +34,19 @@ library ieee;
 -- input is zero, the result is zero.
 --
 -- Latency and throughput:
--- m_valid_o is asserted 34 clock cycles after the input is accepted (1 clock
--- cycle for a negative or zero input). The result is written to a separate
--- output register, so in the clock cycle where the result is written, a new
--- input is accepted provided the output register is empty. So if m_ready_i is
--- constantly asserted, a new input is accepted every 34 clock cycles.
+-- m_valid_o is asserted 32/G_STEPS + 1 clock cycles after the input is
+-- accepted, i.e. 9 clock cycles for G_STEPS = 4 (1 clock cycle for a negative
+-- or zero input). The result is written to a separate output register, so in
+-- the clock cycle where the result is written, a new input is accepted
+-- provided the output register is empty. So if m_ready_i is constantly
+-- asserted, a new input is accepted every 32/G_STEPS + 1 clock cycles.
 
 entity c64_sqrt is
+   generic (
+      -- The number of iterations, i.e. bits of the root, in each clock cycle.
+      -- 32 must be divisible by it, i.e. 1, 2, 4, 8, 16, or 32.
+      G_STEPS : positive := 4
+   );
    port (
       clk_i     : in  std_logic;
       rst_i     : in  std_logic;
@@ -61,7 +69,7 @@ end entity c64_sqrt;
 architecture synthesis of c64_sqrt is
 
    -- IDLE_ST : Waiting for a new input.
-   -- CALC_ST : Calculation in progress, one bit in each clock cycle.
+   -- CALC_ST : Calculation in progress, G_STEPS bits in each clock cycle.
    -- DONE_ST : The result is ready. It is written to the output register as
    --           soon as the output register is free.
    type   state_type is (IDLE_ST, CALC_ST, DONE_ST);
@@ -69,12 +77,14 @@ architecture synthesis of c64_sqrt is
 
    -- The digit-by-digit calculation, see ALGORITHM.md. The radicand x (in
    -- [0.25, 1)) is scaled by 2^34, and the root r = sqrt(x) (in [0.5, 1)) is
-   -- calculated in mant, also scaled by 2^34, one bit in each clock cycle,
-   -- from bit 33 down to bit 1. mask holds the bit being calculated. val is
-   -- the remainder x - r^2, scaled by 2^(34+k) after k iterations. mant(1)
-   -- is the extra bit used for rounding, and bit 0 of val, mant, and mask is
-   -- needed for the comparison in the last iteration.
-   signal val  : unsigned(34 downto 0);
+   -- calculated in mant, also scaled by 2^34, from bit 33 down to bit 1. Bit
+   -- 33 is always set, so it is set when the input is accepted, and the other
+   -- 32 bits are calculated G_STEPS at a time. mask holds the next bit to be
+   -- calculated. val is twice the signed remainder of the previous iteration,
+   -- which is negative if its bit was not set (non-restoring). mant(1) is the
+   -- extra bit used for rounding, and bit 0 of mant and mask is needed for the
+   -- last iteration.
+   signal val  : signed(35 downto 0);
    signal mant : unsigned(34 downto 0);
    signal mask : unsigned(34 downto 0);
 
@@ -84,12 +94,21 @@ architecture synthesis of c64_sqrt is
 
 begin
 
+   assert 32 mod G_STEPS = 0
+      report "G_STEPS must divide 32"
+      severity failure;
+
    -- Accept a new input when idle, or when the result is written to the
    -- output register
    s_ready_o <= '1' when state = IDLE_ST or (state = DONE_ST and m_valid_o = '0') else
                 '0';
 
    fsm_proc : process (clk_i)
+      variable val_v  : signed(35 downto 0);
+      variable mant_v : unsigned(34 downto 0);
+      variable mask_v : unsigned(34 downto 0);
+      variable diff_v : signed(35 downto 0);
+      variable x_v    : unsigned(33 downto 0);
    begin
       if rising_edge(clk_i) then
          if m_ready_i = '1' then
@@ -102,18 +121,34 @@ begin
                null;
 
             when CALC_ST =>
-               -- Set the bit if (r + mask)^2 <= x, i.e. if
-               -- x - r^2 >= 2*r*mask + mask^2
-               if val >= (mant or ("0" & mask(34 downto 1))) then
-                  val(34 downto 1) <= val(33 downto 0) - (mant(33 downto 0) or mask(34 downto 1));
-                  val(0)           <= '0';
-                  mant             <= mant or mask;
-               else
-                  val <= val(33 downto 0) & "0";
-               end if;
-               mask <= "0" & mask(34 downto 1);
+               val_v  := val;
+               mant_v := mant;
+               mask_v := mask;
 
-               if mask(1) = '1' then
+               for i in 1 to G_STEPS loop
+                  -- The bit is set if (r + mask)^2 <= x, i.e. if the remainder
+                  -- x - r^2 - (2*r*mask + mask^2) is not negative. If the
+                  -- previous bit was set (val >= 0), it is val - (mant | mask/2).
+                  -- Otherwise val was not restored, and it is
+                  -- val + (mant | mask | mask/2), see ALGORITHM.md.
+                  if val_v >= 0 then
+                     diff_v := val_v - signed("0" & (mant_v or ("0" & mask_v(34 downto 1))));
+                  else
+                     diff_v := val_v + signed("0" & (mant_v or mask_v or ("0" & mask_v(34 downto 1))));
+                  end if;
+
+                  if diff_v >= 0 then
+                     mant_v := mant_v or mask_v;
+                  end if;
+                  val_v  := diff_v(34 downto 0) & "0";
+                  mask_v := "0" & mask_v(34 downto 1);
+               end loop;
+
+               val  <= val_v;
+               mant <= mant_v;
+               mask <= mask_v;
+
+               if mask(G_STEPS) = '1' then
                   state <= DONE_ST;
                end if;
 
@@ -136,17 +171,24 @@ begin
 
          -- This takes priority over the state machine above
          if s_valid_i = '1' and s_ready_o = '1' then
-            val <= (others => '0');
+            -- The radicand x, scaled by 2^34
+            x_v := (others => '0');
             if s_exp_i(0) = '0' then
-               val(33 downto 2) <= unsigned(s_mant_i) or X"80000000";
+               x_v(33 downto 2) := unsigned(s_mant_i) or X"80000000";
                exp              <= ("0" & unsigned(s_exp_i(7 downto 1))) + X"40";
             else
-               val(32 downto 1) <= unsigned(s_mant_i) or X"80000000";
+               x_v(32 downto 1) := unsigned(s_mant_i) or X"80000000";
                exp              <= ("0" & unsigned(s_exp_i(7 downto 1))) + X"41";
             end if;
+
+            -- The first iteration: Since x >= 1/4, bit 33 (the 1/2) of the
+            -- root is always set, and the remainder is x - 1/4.
+            x_v      := x_v - shift_left(to_unsigned(1, 34), 32);
+            val      <= signed("0" & x_v & "0");
             mant     <= (others => '0');
+            mant(33) <= '1';
             mask     <= (others => '0');
-            mask(33) <= '1';
+            mask(32) <= '1';
             neg      <= s_mant_i(31);
 
             if s_mant_i(31) = '1' or s_exp_i = X"00" then

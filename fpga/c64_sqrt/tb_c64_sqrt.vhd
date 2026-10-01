@@ -17,6 +17,7 @@ library ieee;
 
 entity tb_c64_sqrt is
    generic (
+      G_STEPS     : positive := 4;  -- Iterations in each clock cycle, see c64_sqrt.vhd
       G_VALID_PCT : natural := 70;  -- Probability (in percent) of asserting VALID
       G_READY_PCT : natural := 70   -- Probability (in percent) of asserting READY
    );
@@ -174,6 +175,9 @@ begin
    rst <= '1', '0' after 10 * C_CLK_PERIOD;
 
    c64_sqrt_inst : entity work.c64_sqrt
+      generic map (
+         G_STEPS => G_STEPS
+      )
       port map (
          clk_i     => clk,
          rst_i     => rst,

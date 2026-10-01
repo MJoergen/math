@@ -144,5 +144,5 @@ Block RAM, depending on `G_EXTRA_BITS`. It meets the timing with a slack of
   second multiplier.
 * **Compared with the iterative designs:** [`c64_sqrt`](../c64_sqrt) and
   [`c64_sqrt2`](../c64_sqrt2) calculate a 32-bit result, correctly rounded or
-  almost, but need 4 to 34 clock cycles per result. This design gives 18 to
+  almost, but need 4 to 10 clock cycles per result. This design gives 18 to
   21 bits, but a new result in every clock cycle.

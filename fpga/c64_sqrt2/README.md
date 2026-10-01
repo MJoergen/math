@@ -2,9 +2,10 @@
 This calculates the square root of a
 [C64 floating point number](../README.md#c64-floating-point-format), using an
 iterative method with multipliers, in VHDL for an FPGA. It has the same
-interface as [`c64_sqrt`](../c64_sqrt), but has a latency of 40 to 119 ns
-(94 ns on average in the testbench) instead of 139 ns, at a lower clock
-frequency (75.8 MHz). The latency depends on how many iterations are needed.
+interface as [`c64_sqrt`](../c64_sqrt), and a latency of 40 to 119 ns (94 ns on
+average in the testbench), at a clock frequency of 75.8 MHz. The latency
+depends on how many iterations are needed. `c64_sqrt` has a latency of 95 ns
+for all inputs, at 94.3 MHz.
 
 When `C_ROM_SIZE=6` and `C_GUARDS=4` (see [`c64_sqrt2.vhd`](c64_sqrt2.vhd))
 we have the following statistics:
