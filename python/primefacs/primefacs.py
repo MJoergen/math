@@ -7,7 +7,7 @@ from typing import List
 from typing import Dict
 
 def primefaclist(n:int) -> List[Dict[int,int]]:
-    a = [dict() for i in range(n)]
+    a: List[Dict[int,int]] = [dict() for i in range(n)]
     for p in range(2, len(a)):
         if len(a[p]) > 0:
             continue
@@ -21,7 +21,7 @@ def primefaclist(n:int) -> List[Dict[int,int]]:
             f *= p
     return a
 
-def main():
+def main() -> None:
     a = primefaclist(10000)
     for i,d in enumerate(a):
         print(f"i={i}: ",end='')

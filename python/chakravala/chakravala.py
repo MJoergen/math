@@ -3,6 +3,7 @@
 # to a^2 - N*b^2 = 1
 
 import math
+from typing import Tuple
 
 # The algorithm is called Chakravala's method and
 # works by iteratively finding solutions to the more
@@ -12,7 +13,7 @@ import math
 # See: https://en.wikipedia.org/wiki/Chakravala_method
 
 # Helper function
-def find_m(n,a,b,k):
+def find_m(n: int, a: int, b: int, k: int) -> int:
     m = 0
     diff = abs(m*m-n)
     last_m = 0
@@ -28,7 +29,7 @@ def find_m(n,a,b,k):
             last_m = m
 
 # The main iterative loop starts here
-def find_solution(n,a,b,k):
+def find_solution(n: int, a: int, b: int, k: int) -> Tuple[int, int, int]:
     count=0
     while k != 1:
         #print(f"(a,b,k) = ({a}, {b}, {k})")

@@ -10,6 +10,7 @@
 # Since we'll be working with fractions let's import the module
 from fractions import Fraction
 from typing import Iterator
+from typing import Set
 
 # This function calculates the left-hand-side of equation (1)
 def calc_equation(x: int, y: int, z: int) -> Fraction:
@@ -45,7 +46,7 @@ class Point:
         self.y = y
 
 # We start with a helper function to return a list of factors of any integer
-def factors(n):
+def factors(n: int) -> Set[int]:
     return set(
         factor for i in range(1, int(n**0.5) + 1) if n % i == 0
         for factor in (i, n//i)
@@ -161,7 +162,7 @@ def new_point_secant(p1: Point, p2: Point) -> Point:
 
 # We need to convert from a rational solution of (2) to an integer solution of (1).
 # We do this by multiplying both x and y by their common denominator.
-def print_solution(p: Point):
+def print_solution(p: Point) -> None:
     assert p.x.denominator == p.y.denominator
     assert calc_curve(p) == 0 # Verify equation (2) is satisfied
     (x,y,z) = (p.x.numerator, p.y.numerator, p.x.denominator)

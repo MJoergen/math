@@ -7,7 +7,7 @@
 
 NUM_CARDS = 13
 res = 0
-def extended():
+def extended() -> None:
     global res
     for a in range(NUM_CARDS+1):
         for b in range(a, NUM_CARDS+1):

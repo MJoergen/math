@@ -70,17 +70,17 @@ from typing import Optional
 from typing import List
 
 class Equation1:
-    x: Fraction
-    y: Fraction
-    z: Fraction
+    x: int
+    y: int
+    z: int
 
-    def __init__(self, x, y, z) -> None:
+    def __init__(self, x: int, y: int, z: int) -> None:
         self.x = x
         self.y = y
         self.z = z
 
     # This function calculates the left-hand-side of equation (1)
-    def eval(self):
+    def eval(self) -> Fraction:
         return Fraction(self.x,self.y+self.z) + Fraction(self.y,self.x+self.z) + Fraction(self.z,self.x+self.y)
 
 # Verify the known solution for n=4 (all permutations)
@@ -122,7 +122,7 @@ class Equation2:
         self.d = y*y*y-(n-1)*y*y-(n-1)*y+1
 
     # This function calculates the left-hand-side of equation (2)
-    def eval(self, x):
+    def eval(self, x: Fraction) -> Fraction:
         return (((self.a*x+self.b)*x+self.c)*x+self.d)
 
 # Convert from rational (x,y) to integer (x,y,z) solution
@@ -138,9 +138,9 @@ def sort_xyz(x: int, y: int, z: int) -> Tuple[int, int, int]:
         return (-res[0], -res[1], -res[2])
 
 # Verify trivial solutions (for various n values)
-assert Equation2(Fraction(-1), 1234).eval(-1) == 0
-assert Equation2(Fraction( 0), 2345).eval(-1) == 0
-assert Equation2(Fraction( 1), 3456).eval(-1) == 0
+assert Equation2(Fraction(-1), 1234).eval(Fraction(-1)) == 0
+assert Equation2(Fraction( 0), 2345).eval(Fraction(-1)) == 0
+assert Equation2(Fraction( 1), 3456).eval(Fraction(-1)) == 0
 
 # Verify known solutions for n=4.
 assert Equation2(Fraction(-4), 4).eval(Fraction(-11)) == 0
@@ -307,18 +307,18 @@ class Line:
     a: Fraction
     b: Fraction
 
-    def __init__(self, a, b) -> None:
+    def __init__(self, a: Fraction, b: Fraction) -> None:
         self.a = a
         self.b = b
 
-    def eval(self, s) -> Fraction:
+    def eval(self, s: Fraction) -> Fraction:
         return self.a*s+self.b
 
 class Point:
     s: Fraction
     t: Fraction
 
-    def __init__(self, s, t) -> None:
+    def __init__(self, s: Fraction, t: Fraction) -> None:
         self.s = s
         self.t = t
 
@@ -326,10 +326,12 @@ class Point:
         return f"({self.s},{self.t})"
 
     # Useful for sorting points based on the "complexity" of the first coordinate
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Point):
+            return NotImplemented
         return self.s == other.s and self.t == other.t
 
-    def __lt__(self, other):
+    def __lt__(self, other: 'Point') -> bool:
         return abs(self.s.denominator)  < abs(other.s.denominator) or \
               (abs(self.s.denominator) == abs(other.s.denominator) and \
                abs(self.s.numerator)    < abs(other.s.numerator))
@@ -430,7 +432,7 @@ def find_a_small_solution(n: int, depth: int) -> Optional[Point]:
                 return Point(s,t)
     return None
 
-assert find_a_small_solution(4, 10) == Point(-4, 28)
+assert find_a_small_solution(4, 10) == Point(Fraction(-4), Fraction(28))
 
 
 ## PART 7 - GENERATING A FAMILY OF SOLUTIONS

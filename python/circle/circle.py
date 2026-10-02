@@ -84,15 +84,17 @@
 # T == (2*pi + 4/(R*a)) / a.
 
 import math
+from typing import List
+from typing import Tuple
 
 # Generate the sequence of points corresponding to one full period
 # The starting point is (xstart, 0) and the parameter is a.
 # In the real case, x and y are real numbers.
 # However, in the truncated case, x and y are integers.
-def calc_circle(xstart, a):
+def calc_circle(xstart: float, a: float) -> List[List[int]]:
     x = math.trunc(xstart)  # This just makes sure the initial value is an integer point
     y = 0
-    res = []
+    res: List[List[int]] = []
     while True:
         oldy = y
         x = x - math.trunc(y*a) # Here the result of the multiplication is truncated
@@ -103,19 +105,19 @@ def calc_circle(xstart, a):
     return res
 
 # Calculate r and w such that s=r*cos(w) and t=r*sin(w)
-def calc_rw(x, y, a):
+def calc_rw(x: float, y: float, a: float) -> Tuple[float, float]:
     p,q = (x+y)/2, (x-y)/2
     s,t = math.sqrt(2-a)*p, math.sqrt(2+a)*q
     r,w = math.sqrt(s*s+t*t), math.atan2(t,s)
     return r,w
 
 # Use Welford's algotithm to calculate mean and standard deviation
-def get_stat(v):
-    vmin = 0
-    vmax = 0
+def get_stat(v: List[float]) -> Tuple[int, float, float, float, float, float]:
+    vmin: float = 0
+    vmax: float = 0
     vlen = 0
-    vavg = 0
-    vm2  = 0
+    vavg: float = 0
+    vm2: float = 0
     for e in v:
         if e < vmin or vlen == 0:
             vmin = e
@@ -129,15 +131,15 @@ def get_stat(v):
     # Return: count, max, min, mean, stddev, and range.
     return (vlen, vmax, vmin, vavg, math.sqrt(vm2/vlen), vmax-vmin)
 
-def main():
+def main() -> None:
     xstart = 1024*1024 # Choose a large circle
     a = 1/4 # Start with a large step size
     while a >= 1/65536:
         res = calc_circle(xstart, a)
         v = 2*math.asin(a/2)
 
-        rvec = []
-        pvec = []
+        rvec: List[float] = []
+        pvec: List[float] = []
 
         # Iterate over all points
         for i,(x,y) in enumerate(res):
@@ -151,10 +153,9 @@ def main():
         rstat = get_stat(rvec)
         pstat = get_stat(pvec)
         alpha = pstat[5]*a*xstart # Here pstat[5] is the range (max-min) of p_n.
-        pstat += (alpha,) # Append to list
         print("a=%9.7f, v=%9.7f, period=%8.1f, expected=%8.1f" % (a,v,2*math.pi/v,(2*math.pi + 4/(xstart*a))/a))
         print("rvec: len=%6d, max=%12.1f, min=%12.1f, avg=%12.1f, stddev=%7.1f, range=%12.1f" % (rstat))
-        print("pvec: len=%6d, max=%12.5f, min=%12.5f, avg=%12.5f, stddev=%7.5f, range=%12.5f, alpha=%6.2f" % (pstat))
+        print("pvec: len=%6d, max=%12.5f, min=%12.5f, avg=%12.5f, stddev=%7.5f, range=%12.5f, alpha=%6.2f" % (pstat + (alpha,)))
         print()
         a /= 2 # Repeat with smaller step size
 

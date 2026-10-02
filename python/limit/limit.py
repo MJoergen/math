@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import math
+from typing import List
 
 # Given a finite sequence of numbers a_n, what is a good estimate of the
 # limit as n goes to infinity ?
@@ -19,7 +20,7 @@ import math
 # In this case the limit a can be estimated as
 # a = (a_n*(a_{n+2}-a_{n+1}) - a_{n+2}*(a_{n+1}-a_n))/(a_{n+2} - 2*a_{n+1} + a_n)
 
-def test(s, l, a):
+def test(s: str, l: float, a: List[float]) -> None:
     print(s, l)
     print("list: ", end='')
     for e in a:
@@ -29,8 +30,8 @@ def test(s, l, a):
     calc_lim_pow(a)
     print()
 
-def calc_lim_exp(a):
-    lims = []
+def calc_lim_exp(a: List[float]) -> None:
+    lims: List[float] = []
     for n in range(len(a)-2):
         lims.append((a[n+2]*a[n]-a[n+1]*a[n+1])/(a[n+2]+a[n]-2*a[n+1]))
     print(" exp: ", end='')
@@ -38,8 +39,8 @@ def calc_lim_exp(a):
         print("%8.5f"%(e), end='')
     print()
 
-def calc_lim_pow(a):
-    lims = []
+def calc_lim_pow(a: List[float]) -> None:
+    lims: List[float] = []
     for n in range(len(a)-2):
         lims.append((a[n]*(a[n+2]-a[n+1]) - a[n+2]*(a[n+1]-a[n]))/(a[n+2] - 2*a[n+1] + a[n]))
     print(" pow: ", end='')
@@ -47,7 +48,7 @@ def calc_lim_pow(a):
         print("%8.5f"%(e), end='')
     print()
 
-def main():
+def main() -> None:
     seq0 = [2+3*math.exp(-n) for n in range(10)]
     seq1 = [3+4/(n+1) for n in range(10)]
     seq2 = [1+2*math.exp(-n)-4*math.exp(-2*n) for n in range(10)]

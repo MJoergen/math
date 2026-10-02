@@ -7,21 +7,25 @@
 
 # Count number of distinct permutations:
 # https://codegolf.stackexchange.com/questions/78399/permutations-with-indistinguishable-items
+from typing import Callable
+from typing import List
+
+f: Callable[[List[int]], float]
 f=lambda l:l==[]or len(l)*f(l[1:])/l.count(l[0])
 
-def factorial(n):
+def factorial(n: int) -> int:
     res = 1
     for f in range(2, n+1):
         res *= f
     return res
 
-def binom(a,b):
+def binom(a: int, b: int) -> int:
     return factorial(a) // factorial(b) // factorial(a-b)
 
 NUM_CARDS=13
 n = 0
-s = 0
-def simplified():
+s: float = 0
+def simplified() -> None:
     global n;
     global s;
     for a in range(NUM_CARDS, -1, -1):

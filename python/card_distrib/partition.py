@@ -11,7 +11,7 @@
 # p(n,3) = (n^2+6)//12
 # p(n,4) = (n^3 + 3*n^2 - 9*n*(n % 2) + 32)//144
 
-def p(n,k):
+def p(n: int, k: int) -> int:
     if n<k:
         return 0
     if k==1:

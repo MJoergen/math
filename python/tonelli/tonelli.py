@@ -3,25 +3,26 @@
 # This follows the algorithm outlined in https://en.wikipedia.org/wiki/Tonelli%E2%80%93Shanks_algorithm
 
 import math
+from typing import Tuple
 
-def is_prime(a):
+def is_prime(a: int) -> bool:
     return all(a % i for i in range(2, math.isqrt(a)+1))
 
-def find_z(p):
+def find_z(p: int) -> int:
     assert is_prime(p)
     for z in range(2, p-1):
         if pow(z, (p-1)//2, p) == p-1:
             return z
     assert False
 
-def find_pow(n, a):
+def find_pow(n: int, a: int) -> Tuple[int, int]:
     s = 0
     while (n % a) == 0:
         s += 1
         n //= a
     return (n,s)
 
-def find_sqrt(n,p):
+def find_sqrt(n: int, p: int) -> int:
     assert is_prime(p)
     assert n < p
     assert pow(n, (p-1)//2, p) == 1
@@ -59,7 +60,7 @@ def find_sqrt(n,p):
         t = t*b*b % p
         r = r*b % p
 
-def main():
+def main() -> None:
     assert find_sqrt(5, 41) == 28    # Because 28^2 = 5 mod 41
     assert find_sqrt(13, 127) == 34  # Because 34^2 = 13 mod 127
 
